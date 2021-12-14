@@ -2,7 +2,6 @@ import * as anchor from "@project-serum/anchor";
 import {Connection, Keypair} from "@solana/web3.js";
 import Context from "./types/context";
 import {SolanaEndpoint} from "./constants";
-import * as fs from "fs";
 import {readJsonFile} from "./utils/generic";
 import {OptifiExchangeIDL} from "./types/optifi-exchange-types";
 
