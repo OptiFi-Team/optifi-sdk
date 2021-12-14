@@ -1,0 +1,34 @@
+import Context from "../types/context";
+import {SolanaEndpoint} from "../constants";
+
+export enum SolanaEntityType {
+    Transaction = "tx",
+    Account = "address",
+    Block = "block"
+}
+
+/**
+ * Return a solana explorer URL for a transaction, to aid in debugging
+ *
+ * @param context Program context
+ * @param entity The entity to generate the explorer URL for
+ * @param entity_type The
+ */
+export function formatExplorerAddress(context: Context,
+                                      entity: string,
+                                      entity_type: SolanaEntityType): string {
+    let suffix: string;
+    switch (context.endpoint) {
+        case SolanaEndpoint.Mainnet:
+            suffix = '';
+            break;
+        case SolanaEndpoint.Devnet:
+            suffix = '?cluster=devnet';
+            break;
+        case SolanaEndpoint.Testnet:
+            suffix = '?cluster=testnet';
+            break;
+    }
+
+    return `https://explorer.solana.com/${entity_type}/${entity}${suffix}`;
+}
