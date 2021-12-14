@@ -18,7 +18,6 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
         userAccountExists(context).then(([alreadyExists, _]) => {
 
             if (alreadyExists) {
-                console.log("Rejecting bc already exist");
                 reject({
                     successful: false,
                     error: "User account already existed"
@@ -27,7 +26,6 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
 
             // Derive the address the new user account will be at
             findUserAccount(context).then((newUserAccount) => {
-                console.log("Found");
                 // Create a new account with no seeds for the PDA
                 let newUserVault = anchor.web3.Keypair.generate();
 
