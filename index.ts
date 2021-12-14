@@ -44,6 +44,7 @@ export function initializeContext(wallet?: string | Keypair,
     return {
         program: program,
         user: keypair,
-        endpoint: endpoint
+        endpoint: endpoint,
+        connection: connection
     }
 }

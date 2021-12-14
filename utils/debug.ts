@@ -1,5 +1,6 @@
 import Context from "../types/context";
 import {SolanaEndpoint} from "../constants";
+import {findUserAccount} from "./accounts";
 
 export enum SolanaEntityType {
     Transaction = "tx",
@@ -31,4 +32,13 @@ export function formatExplorerAddress(context: Context,
     }
 
     return `https://explorer.solana.com/${entity_type}/${entity}${suffix}`;
+}
+
+
+export function logUserAccount(context: Context): Promise<void> {
+    return new Promise(() => {
+      findUserAccount(context).then(([account, _]) => {
+        console.log(`User account: ${formatExplorerAddress(context, account.toString(), SolanaEntityType.Account)}`)
+      })
+    })
 }

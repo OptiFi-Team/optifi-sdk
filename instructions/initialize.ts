@@ -23,7 +23,10 @@ export default function initialize(context: Context): Promise<InstructionResult<
             )
         }).catch((err) => {
             console.error("Got error while trying to execute initialize instruction ", err);
-            reject(err);
+            reject({
+                successful: false,
+                error: err
+            } as InstructionResult<any>);
         })
     });
 }
