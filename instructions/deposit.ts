@@ -1,6 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { BN } from "@project-serum/anchor";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
 import { USDC_TOKEN_MINT } from "../constants";
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
@@ -15,7 +16,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
  * @param amount
  * @param account
  */
- export default async function deposit(context: Context, amount: BN, account: UserAccount) : Promise<InstructionResult<object>> {
+ export default async function deposit(context: Context, amount: BN, account: UserAccount) : Promise<InstructionResult<string>> {
     return new Promise(async (resolve, reject) => {
         const [exists, userAccount] = await userAccountExists(context);
 
@@ -24,11 +25,18 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
             error: "User account does not exist"
         } as InstructionResult<any>) 
 
+        const acc = await context.program.account.userAccount.fetch(context.user.publicKey);
+        
+        if(!acc || amount > acc.reserve) reject({
+            successful: false,
+            error: "User account does not have enough reserve for deposit"
+        } as InstructionResult<any>) 
+
         context.program.rpc.deposit(amount, {
             accounts: {
-            userAccount: context.user.publicKey,
+            userAccount: account,
             depositTokenMint: USDC_TOKEN_MINT, 
-            depositSource: user_usdc_token_account, 
+            depositSource: /* user_usdc_token_account */context.user.publicKey, 
             userVaultOwnedByPda: userAccount.userVaultOwnedByPda.toString(),
             depositor: context.user.publicKey,
             tokenProgram: TOKEN_PROGRAM_ID,
@@ -40,7 +48,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
                 console.log("Successfully deposited, ", txUrl);
                 resolve({
                     successful: true,
-                    txUrl
+                    data: txUrl,
                 })
         }).catch((err) => {
             console.error("Got error trying to deposit", err);

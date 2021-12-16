@@ -8,7 +8,7 @@
   },
   "name": "@optifi/optifi-sdk",
   "description": "TypeScript interfaces for working with the on-chain Optifi system",
-  "version": "1.0.0",
+  "version": "1.0.1a",
   "main": "index.ts",
   "scripts": {
     "test": "ts-mocha test/test*.ts"
