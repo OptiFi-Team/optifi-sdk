@@ -16,7 +16,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
  * @param amount
  * @param account
  */
- export default async function deposit(context: Context, amount: BN, account: UserAccount) : Promise<InstructionResult<string>> {
+ export default async function deposit(context: Context, amount: BN, account: PublicKey) : Promise<InstructionResult<string>> {
     return new Promise(async (resolve, reject) => {
         const [exists, userAccount] = await userAccountExists(context);
 

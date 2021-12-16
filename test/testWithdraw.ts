@@ -2,7 +2,6 @@ import {initializeContext} from "../index";
 import {findUserAccount, userAccountExists} from "../utils/accounts";
 import * as assert from "assert";
 import * as anchor from "@project-serum/anchor";
-import initializeUserAccount from "../instructions/initializeUserAccount";
 import withdraw from "../instructions/withdraw";
 
 describe('Withdraw', () => {

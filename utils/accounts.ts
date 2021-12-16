@@ -1,8 +1,7 @@
 import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import {USER_ACCOUNT_PREFIX, USER_TOKEN_ACCOUNT_PDA} from "../constants";
-import {EXCHANGE_PREFIX, OPTIFI_EXCHANGE_ID, USER_ACCOUNT_PREFIX} from "../constants";
+import {EXCHANGE_PREFIX, OPTIFI_EXCHANGE_ID, USER_ACCOUNT_PREFIX, USER_TOKEN_ACCOUNT_PDA} from "../constants";
 import {UserAccount} from "../types/optifi-exchange-types";
 
 /**
@@ -77,11 +76,12 @@ export function userAccountExists(context: Context): Promise<[boolean, UserAccou
  *
  * @param context The program context
  */
- export function findPDA(context: Context): Promise<[PublicKey, number]> {
+ export async function findPDA(context: Context): Promise<[PublicKey, number]> {
+    const [address, bump] = await findOptifiExchange(context);
     return anchor.web3.PublicKey.findProgramAddress(
         [
             Buffer.from(USER_TOKEN_ACCOUNT_PDA),
-            context.program.account.exchange.programId.toBuffer()
+            address.toBuffer()
         ],
         context.program.programId
     )

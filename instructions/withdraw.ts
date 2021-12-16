@@ -6,7 +6,7 @@ import { USDC_TOKEN_MINT } from "../constants";
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import { UserAccount } from "../types/optifi-exchange-types";
-import { findPDA, userAccountExists } from "../utils/accounts";
+import { findOptifiExchange, findPDA, userAccountExists } from "../utils/accounts";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 
 /**
@@ -14,7 +14,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
  * @param context
  * @param amount
  */
- export default async function withdraw(context: Context, amount: BN) : Promise<InstructionResult<string>> {
+ export default async function withdraw(context: Context, amount: BN, account: PublicKey) : Promise<InstructionResult<string>> {
     return new Promise(async (resolve, reject) => {
         const [exists, userAccount] = await userAccountExists(context);
 
@@ -24,12 +24,12 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
         } as InstructionResult<any>)
         
         let [pda, _bump] = await findPDA(context);
-
+        const [exchangeAddress, bump] = await findOptifiExchange(context);
 
           context.program.rpc.withdraw(amount, {
             accounts: {
-                optifiExchange: context.program.account.exchange.programId,
-                userAccount: context.user.publicKey,
+                optifiExchange: exchangeAddress,
+                userAccount: account,
                 depositTokenMint: USDC_TOKEN_MINT,
                 userVaultOwnedByPda: userAccount.userVaultOwnedByPda.toString(),
                 withdrawDest: context.user.publicKey,
