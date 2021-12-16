@@ -25,11 +25,6 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
                 error: "User account does not exist"
             } as InstructionResult<any>)
 
-            if(!userAccount || amount > userAccount.reserve) reject({
-                successful: false,
-                error: "User account does not have enough reserve for deposit"
-            } as InstructionResult<any>)
-
             context.program.rpc.deposit(amount, {
                 accounts: {
                     userAccount: account,

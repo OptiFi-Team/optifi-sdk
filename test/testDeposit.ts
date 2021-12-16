@@ -18,7 +18,6 @@ describe('Deposit', () => {
             console.log(err)
             assert.fail("Couldn't deposit")
         });
-        console.log("After deposity")
     });
 
     it('Can derive a user address', () => {
