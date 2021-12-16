@@ -23,10 +23,17 @@ export function findAccountWithSeeds(context: Context, seeds: Buffer[]): Promise
  * @param context The program context
  */
 export function findUserAccount(context: Context): Promise<[PublicKey, number]> {
-    return findAccountWithSeeds(context, [
-            Buffer.from(USER_ACCOUNT_PREFIX),
-            context.user.publicKey.toBuffer()
-        ])
+    return new Promise((resolve, reject) => {
+        findOptifiExchange(context).then(([exchangeId, _]) => {
+            findAccountWithSeeds(context, [
+                Buffer.from(USER_ACCOUNT_PREFIX),
+                exchangeId.toBuffer(),
+                context.user.publicKey.toBuffer()
+            ]).then((res) => resolve(res))
+                .catch((err) => reject(err));
+        })
+    })
+
 }
 
 export function findExchangeAccount(context: Context, uuid: string): Promise<[PublicKey, number]> {
