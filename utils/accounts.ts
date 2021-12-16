@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import {EXCHANGE_PREFIX, USER_ACCOUNT_PREFIX} from "../constants";
+import {EXCHANGE_PREFIX, OPTIFI_EXCHANGE_ID, USER_ACCOUNT_PREFIX} from "../constants";
 import {UserAccount} from "../types/optifi-exchange-types";
 
 /**
@@ -34,6 +34,10 @@ export function findExchangeAccount(context: Context, uuid: string): Promise<[Pu
         Buffer.from(EXCHANGE_PREFIX),
         Buffer.from(uuid)
     ])
+}
+
+export function findOptifiExchange(context: Context): Promise<[PublicKey, number]> {
+    return findExchangeAccount(context, OPTIFI_EXCHANGE_ID[context.endpoint]);
 }
 
 /**
