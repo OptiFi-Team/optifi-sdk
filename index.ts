@@ -4,6 +4,7 @@ import Context from "./types/context";
 import {SolanaEndpoint} from "./constants";
 import {readJsonFile} from "./utils/generic";
 import {OptifiExchangeIDL} from "./types/optifi-exchange-types";
+require('dotenv').config();
 
 /**
  * Initialize a context to use the SDK with, given a wallet and a program ID
@@ -32,7 +33,6 @@ export function initializeContext(wallet?: string | Keypair,
             keypair = wallet;
         }
     }
-
     const idl = readJsonFile<OptifiExchangeIDL>("idl/optifi_exchange.json");
     const connection = new Connection(endpoint);
     const walletWrapper = new anchor.Wallet(keypair);
