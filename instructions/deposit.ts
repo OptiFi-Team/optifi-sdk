@@ -19,7 +19,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
  export default async function deposit(context: Context, amount: BN, account: PublicKey) : Promise<InstructionResult<string>> {
     return new Promise( (resolve, reject) => {
         userAccountExists(context).then(([exists, userAccount]) => {
-
+            console.log("Got user account in deposit ", userAccount);
             if(!exists) reject({
                 successful: false,
                 error: "User account does not exist"
@@ -28,7 +28,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
             context.program.rpc.deposit(amount, {
                 accounts: {
                     userAccount: account,
-                    depositTokenMint: new PublicKey(USDC_TOKEN_MINT),
+                    depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
                     depositSource: /* user_usdc_token_account */context.user.publicKey,
                     userVaultOwnedByPda: userAccount.userVaultOwnedByPda,
                     depositor: context.user.publicKey,
@@ -37,6 +37,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
                 signers: [context.user],
                 instructions: [],
             }).then((tx) => {
+                console.log("After deposit");
                 let txUrl = formatExplorerAddress(context, tx, SolanaEntityType.Transaction);
                 console.log("Successfully deposited, ", txUrl);
                 resolve({
@@ -47,6 +48,9 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
                 console.error("Got error trying to deposit", err);
                 reject(err);
             })
+        }).catch((err) => {
+            console.error(err);
+            reject(err);
         });
         })
 

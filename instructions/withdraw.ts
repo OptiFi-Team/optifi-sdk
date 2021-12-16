@@ -28,7 +28,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
                         accounts: {
                             optifiExchange: exchangeAddress,
                             userAccount: account,
-                            depositTokenMint: new PublicKey(USDC_TOKEN_MINT),
+                            depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
                             userVaultOwnedByPda: userAccount.userVaultOwnedByPda,
                             withdrawDest: context.user.publicKey,
                             depositor: context.user.publicKey,
