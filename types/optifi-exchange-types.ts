@@ -42,6 +42,13 @@ export const OrderSide = {
 }
     
 
+export type SpotInputOption = Record<string, Record<string, any>>
+export const SpotInputOption = {
+  SingleSpot: { singlespot: {} },
+  MultiSpots: { multispots: {} }
+}
+    
+
 export type AccountState = Record<string, Record<string, any>>
 export const AccountState = {
   Uninitialized: { uninitialized: {} },
@@ -56,7 +63,11 @@ export type Chain = IdlAccounts<OptifiExchangeIDL>["chain"]
 
 export type MarketSpecifiers = IdlAccounts<OptifiExchangeIDL>["marketSpecifiers"]
 
+export type Exchange = IdlAccounts<OptifiExchangeIDL>["exchange"]
+
 export type Market = IdlAccounts<OptifiExchangeIDL>["market"]
+
+export type OptifiMarket = IdlAccounts<OptifiExchangeIDL>["optifiMarket"]
 
 export type UserAccount = IdlAccounts<OptifiExchangeIDL>["userAccount"]
   
