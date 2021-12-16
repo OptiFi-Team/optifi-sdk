@@ -10,7 +10,7 @@ describe('Deposit', () => {
     let context = initializeContext();
 
     it('Deposit', () => {
-        deposit(context, new anchor.BN(1), context.user.publicKey).then((tx: any) => {
+        deposit(context, new anchor.BN(1),).then((tx: any) => {
             console.log('Deposit made', tx)
             assert.ok("Finished deposit");
         }).catch((err) => {

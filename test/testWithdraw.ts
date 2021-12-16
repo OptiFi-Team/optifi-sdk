@@ -13,7 +13,7 @@ describe('Withdraw', () => {
 
     it('Withdraw', () => {
         console.log("Trying withdraw");
-        withdraw(context, new anchor.BN(1), context.user.publicKey).then((tx: any) => {
+        withdraw(context, new anchor.BN(1)).then((tx: any) => {
             console.log('Withdraw made', tx)
             assert.ok("Finished withdraw");
         }).catch((err) => {
