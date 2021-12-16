@@ -1,8 +1,21 @@
 import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import {USER_ACCOUNT_PREFIX} from "../constants";
+import {EXCHANGE_PREFIX, USER_ACCOUNT_PREFIX} from "../constants";
 import {UserAccount} from "../types/optifi-exchange-types";
+
+/**
+ * Helper function for finding an account with a list of seeds
+ *
+ * @param context Program context
+ * @param seeds The seeds to look for the account with
+ */
+export function findAccountWithSeeds(context: Context, seeds: Buffer[]): Promise<[PublicKey, number]> {
+    return anchor.web3.PublicKey.findProgramAddress(
+        seeds,
+        context.program.programId
+    )
+}
 
 /**
  * Find the Solana program address for the user in context with the expected seeds
@@ -10,13 +23,17 @@ import {UserAccount} from "../types/optifi-exchange-types";
  * @param context The program context
  */
 export function findUserAccount(context: Context): Promise<[PublicKey, number]> {
-    return anchor.web3.PublicKey.findProgramAddress(
-        [
+    return findAccountWithSeeds(context, [
             Buffer.from(USER_ACCOUNT_PREFIX),
             context.user.publicKey.toBuffer()
-        ],
-        context.program.programId
-    )
+        ])
+}
+
+export function findExchangeAccount(context: Context, uuid: string): Promise<[PublicKey, number]> {
+    return findAccountWithSeeds(context, [
+        Buffer.from(EXCHANGE_PREFIX),
+        Buffer.from(uuid)
+    ])
 }
 
 /**
@@ -41,5 +58,4 @@ export function userAccountExists(context: Context): Promise<[boolean, UserAccou
             })
         })
     })
-
 }

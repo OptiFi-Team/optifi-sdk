@@ -5,6 +5,7 @@ export enum SolanaEndpoint {
 }
 
 export const USER_ACCOUNT_PREFIX: string = "user_account";
+export const EXCHANGE_PREFIX: string = "optifi_exchange";
 
 export type EndpointConstant = {
     [endpoint in SolanaEndpoint]: any;
