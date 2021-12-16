@@ -77,12 +77,16 @@ export function userAccountExists(context: Context): Promise<[boolean, UserAccou
  * @param context The program context
  */
  export async function findPDA(context: Context): Promise<[PublicKey, number]> {
-    const [address, bump] = await findOptifiExchange(context);
-    return anchor.web3.PublicKey.findProgramAddress(
-        [
-            Buffer.from(USER_TOKEN_ACCOUNT_PDA),
-            address.toBuffer()
-        ],
-        context.program.programId
-    )
+     return new Promise((resolve, reject) => {
+         findOptifiExchange(context).then(([address, bump]) => {
+             anchor.web3.PublicKey.findProgramAddress(
+                 [
+                     Buffer.from(USER_TOKEN_ACCOUNT_PDA),
+                     address.toBuffer()
+                 ],
+                 context.program.programId
+             ).then((res) => resolve(res)).catch((err) => reject(err))
+         })
+     })
+
 }

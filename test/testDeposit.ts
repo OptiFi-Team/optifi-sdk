@@ -9,16 +9,21 @@ import deposit from "../instructions/deposit";
 describe('Deposit', () => {
     let context = initializeContext();
 
+    it('Deposit', () => {
+        deposit(context, new anchor.BN(1), context.user.publicKey).then((tx: any) => {
+            console.log('Deposit made', tx)
+            assert.ok("Finished deposit");
+        }).catch((err) => {
+            console.log('error trying to deposit')
+            console.log(err)
+            assert.fail("Couldn't deposit")
+        });
+        console.log("After deposity")
+    });
+
     it('Can derive a user address', () => {
         assert.doesNotReject(findUserAccount(context))
     });
 
-    it('Deposit', () => {
-        deposit(context, new anchor.BN(1), context.user.publicKey).then((tx: any) => {
-            console.log('Deposit made', tx)
-        }).catch((err) => {
-            console.log('error trying to deposit')
-            console.log(err)
-        })
-    })
+
 })

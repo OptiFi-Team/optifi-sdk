@@ -17,43 +17,43 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
  * @param account
  */
  export default async function deposit(context: Context, amount: BN, account: PublicKey) : Promise<InstructionResult<string>> {
-    return new Promise(async (resolve, reject) => {
-        const [exists, userAccount] = await userAccountExists(context);
+    return new Promise( (resolve, reject) => {
+        userAccountExists(context).then(([exists, userAccount]) => {
 
-        if(!exists) reject({
-            successful: false,
-            error: "User account does not exist"
-        } as InstructionResult<any>) 
+            if(!exists) reject({
+                successful: false,
+                error: "User account does not exist"
+            } as InstructionResult<any>)
 
-        const acc = await context.program.account.userAccount.fetch(context.user.publicKey);
-        
-        if(!acc || amount > acc.reserve) reject({
-            successful: false,
-            error: "User account does not have enough reserve for deposit"
-        } as InstructionResult<any>) 
+            if(!userAccount || amount > userAccount.reserve) reject({
+                successful: false,
+                error: "User account does not have enough reserve for deposit"
+            } as InstructionResult<any>)
 
-        context.program.rpc.deposit(amount, {
-            accounts: {
-            userAccount: account,
-            depositTokenMint: USDC_TOKEN_MINT, 
-            depositSource: /* user_usdc_token_account */context.user.publicKey, 
-            userVaultOwnedByPda: userAccount.userVaultOwnedByPda.toString(),
-            depositor: context.user.publicKey,
-            tokenProgram: TOKEN_PROGRAM_ID,
-            },
-            signers: [context.user],
-            instructions: [],
-        }).then((tx) => {
-            let txUrl = formatExplorerAddress(context, tx, SolanaEntityType.Transaction);
+            context.program.rpc.deposit(amount, {
+                accounts: {
+                    userAccount: account,
+                    depositTokenMint: new PublicKey(USDC_TOKEN_MINT),
+                    depositSource: /* user_usdc_token_account */context.user.publicKey,
+                    userVaultOwnedByPda: userAccount.userVaultOwnedByPda,
+                    depositor: context.user.publicKey,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                },
+                signers: [context.user],
+                instructions: [],
+            }).then((tx) => {
+                let txUrl = formatExplorerAddress(context, tx, SolanaEntityType.Transaction);
                 console.log("Successfully deposited, ", txUrl);
                 resolve({
                     successful: true,
                     data: txUrl,
                 })
-        }).catch((err) => {
-            console.error("Got error trying to deposit", err);
-            reject(err);
+            }).catch((err) => {
+                console.error("Got error trying to deposit", err);
+                reject(err);
+            })
+        });
         })
-    });
+
 };
 

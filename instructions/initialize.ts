@@ -35,7 +35,7 @@ export default function Initialize(context: Context): Promise<InstructionResult<
                 }
             ).then((res) => {
                 let txUrl = formatExplorerAddress(context, res, SolanaEntityType.Transaction);
-                console.log("Successfully created exchange, ", txUrl);
+                //console.log("Successfully created exchange, ", txUrl);
                 resolve({
                     successful: true,
                     data: uuid

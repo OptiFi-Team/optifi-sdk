@@ -13,16 +13,16 @@ describe('User Account', () => {
 
     it('Already exists, or initializes successfully', () => {
 
-        console.log("Checking whether account already exists...");
+        //console.log("Checking whether account already exists...");
         userAccountExists(context).then(([alreadyExists, acct]) => {
 
             if (alreadyExists) {
-                console.log("Account does already exist, ", acct);
+                //console.log("Account does already exist, ", acct);
                 logUserAccount(context).then(() => {
                     assert.ok("Account already exists");
                 })
             } else {
-                console.log("Account does not already exist, creating... ");
+                //console.log("Account does not already exist, creating... ");
                 initializeUserAccount(context).then((res) => {
                     console.log("Created account")
                     assert.strictEqual(res.successful, true);
