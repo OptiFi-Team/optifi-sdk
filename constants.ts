@@ -16,3 +16,9 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
     "https://api.devnet.solana.com": "EyvvsvLH53EkdWK7orfBuoYdaN7hG1oVEbVbRw4AbEzW",
     "https://api.testnet.solana.com": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 }
+
+export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
+    "https://api.devnet.solana.com" : "29wBWV",
+    "https://api.testnet.solana.com": "TBD",
+    "https://api.mainnet-beta.solana.com": "TBD",
+}
