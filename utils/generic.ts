@@ -1,5 +1,4 @@
-import * as fs from "fs";
-
+import fs from "fs";
 /**
  * Small helper function to read a JSON file as a type from a filepath
  *
