@@ -6,6 +6,7 @@ export enum SolanaEndpoint {
 
 export const USER_ACCOUNT_PREFIX: string = "user_account";
 export const EXCHANGE_PREFIX: string = "optifi_exchange";
+export const USER_TOKEN_ACCOUNT_PDA: string = "user_token_account_pda";
 
 export type EndpointConstant = {
     [endpoint in SolanaEndpoint]: any;

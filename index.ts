@@ -8,6 +8,10 @@ import optifiExchange from './idl/optifi_exchange.json';
 import {MathWallet, SlopeWallet, SolongWallet, SolWindow, WalletProvider} from './types/solanaTypes';
 import WalletType from "./types/walletType";
 
+//instructions
+import deposit from './instructions/deposit';
+import withdraw from './instructions/withdraw';
+
 require('dotenv').config();
 
 interface WalletContext {
@@ -106,7 +110,7 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
  *
  * @param endpoint The Solana cluster to connect to. Devnet by default
  */
-export function initializeContext(wallet?: string | WalletProvider,
+function initializeContext(wallet?: string | WalletProvider,
                                   optifiProgramId?: string,
                                   endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<Context> {
     return new Promise((resolve, reject) => {
@@ -164,3 +168,5 @@ export function initializeContext(wallet?: string | WalletProvider,
     
     
 }
+
+export {initializeContext, deposit, withdraw}

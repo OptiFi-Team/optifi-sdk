@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import {EXCHANGE_PREFIX, OPTIFI_EXCHANGE_ID, SWITCHBOARD, USER_ACCOUNT_PREFIX} from "../constants";
+import {EXCHANGE_PREFIX, OPTIFI_EXCHANGE_ID, SWITCHBOARD, USER_ACCOUNT_PREFIX, USER_TOKEN_ACCOUNT_PDA} from "../constants";
 import {UserAccount} from "../types/optifi-exchange-types";
 
 /**
@@ -84,4 +84,24 @@ export function oracleAccountsWrapper(context: Context, accounts: { [name: strin
     accounts['eth_iv_oracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV)
 
     return accounts
+}
+
+/**
+ * Find the PDA, who is the account which controls all user's usdc vaults
+ *
+ * @param context The program context
+ */
+ export async function findPDA(context: Context): Promise<[PublicKey, number]> {
+    return new Promise((resolve, reject) => {
+        findOptifiExchange(context).then(([address, bump]) => {
+            anchor.web3.PublicKey.findProgramAddress(
+                [
+                    Buffer.from(USER_TOKEN_ACCOUNT_PDA),
+                    address.toBuffer()
+                ],
+                context.program.programId
+            ).then((res) => resolve(res)).catch((err) => reject(err))
+        })
+    })
+
 }
