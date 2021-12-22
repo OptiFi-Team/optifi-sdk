@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@types/bs58": "^4.0.1",
     "@types/expect": "^24.3.0",
     "@types/mocha": "^9.0.0",
     "prettier": "^2.5.1",
@@ -32,6 +33,7 @@
     "argparse": "^1.0.10",
     "balanced-match": "^1.0.2",
     "brace-expansion": "^1.1.11",
+    "bs58": "^4.0.1",
     "builtin-modules": "^1.1.1",
     "chalk": "^2.4.2",
     "color-convert": "^1.9.3",

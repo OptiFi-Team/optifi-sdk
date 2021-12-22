@@ -5,6 +5,7 @@ import * as anchor from "@project-serum/anchor";
 import {findExchangeAccount} from "../utils/accounts";
 import {SystemProgram, SYSVAR_RENT_PUBKEY, Transaction} from "@solana/web3.js";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
+import {signAndSendTransaction} from "../utils/transactions";
 
 export default function Initialize(context: Context): Promise<InstructionResult<string>> {
     return new Promise((resolve, reject) => {
@@ -13,28 +14,29 @@ export default function Initialize(context: Context): Promise<InstructionResult<
             .slice(0, 6);
 
         findExchangeAccount(context, uuid).then(([exchangeAddress, bump]) => {
-            context.program.rpc.initialize(
+            let initializeTx = context.program.transaction.initialize(
                 bump,
                 {
                     uuid: uuid,
                     version: 1,
-                    exchangeAuthority: context.user.publicKey,
-                    owner: context.user.publicKey,
+                    exchangeAuthority: context.provider.wallet.publicKey,
+                    owner: context.provider.wallet.publicKey,
                     markets: [],
                     instruments: [],
                 },
                 {
                     accounts: {
                         optifiExchange: exchangeAddress,
-                        authority: context.user.publicKey,
-                        payer: context.user.publicKey,
+                        authority: context.provider.wallet.publicKey,
+                        payer: context.provider.wallet.publicKey,
                         systemProgram: anchor.web3.SystemProgram.programId,
                         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                     },
-                    signers: [context.user],
+                    signers: [],
                 }
-            ).then((res) => {
-                let txUrl = formatExplorerAddress(context, res, SolanaEntityType.Transaction);
+            )
+            signAndSendTransaction(context, initializeTx).then((res) => {
+                let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
                 console.log("Successfully created exchange, ", txUrl);
                 resolve({
                     successful: true,

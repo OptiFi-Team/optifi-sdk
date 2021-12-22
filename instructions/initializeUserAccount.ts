@@ -6,6 +6,7 @@ import {PublicKey, SystemProgram} from "@solana/web3.js";
 import {findOptifiExchange, findUserAccount, userAccountExists} from "../utils/accounts";
 import {AccountLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {USDC_TOKEN_MINT} from "../constants";
+import {signAndSendTransaction} from "../utils/transactions";
 
 /**
  * Create an Optifi controlled user account, to which users can deposit and withdrawal collateral for trading.
@@ -33,7 +34,7 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                     // Get the minimum lamports for rent exemption
                     context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then((min) => {
                         // Actually initialize the account
-                        context.program.rpc.initUserAccount(
+                        let initUserAccountTx = context.program.transaction.initUserAccount(
                             newUserAccount[1],
                             {
                                 accounts: {
@@ -41,20 +42,19 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                     optifiExchange: exchangeId,
                                     userVaultOwnedByPda: newUserVault.publicKey,
 
-                                    owner: context.user.publicKey,
-                                    payer: context.user.publicKey,
+                                    owner: context.provider.wallet.publicKey,
+                                    payer: context.provider.wallet.publicKey,
                                     tokenProgram: new PublicKey(TOKEN_PROGRAM_ID),
                                     systemProgram: SystemProgram.programId,
                                     rent: anchor.web3.SYSVAR_RENT_PUBKEY
                                 },
                                 signers: [
-                                    context.user,
                                     newUserVault
                                 ],
                                 // These instructions transfer the necessary lamports to the new user vault
                                 instructions: [
                                     anchor.web3.SystemProgram.createAccount({
-                                        fromPubkey: context.user.publicKey,
+                                        fromPubkey: context.provider.wallet.publicKey,
                                         newAccountPubkey: newUserVault.publicKey, //usdc vault
                                         space: AccountLayout.span,
                                         lamports: min,
@@ -64,11 +64,12 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                         TOKEN_PROGRAM_ID,
                                         USDC_TOKEN_MINT[context.endpoint],
                                         newUserVault.publicKey,
-                                        context.user.publicKey
+                                        context.provider.wallet.publicKey
                                     ), // to receive usdc token
                                 ],
                             }
-                        ).then(() => {
+                        )
+                        signAndSendTransaction(context, initUserAccountTx).then(() => {
                             userAccountExists(context).then(([existsNow, acct]) => {
                                 if (existsNow) {
                                     resolve({

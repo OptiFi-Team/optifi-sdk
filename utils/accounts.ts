@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import {EXCHANGE_PREFIX, OPTIFI_EXCHANGE_ID, USER_ACCOUNT_PREFIX} from "../constants";
+import {EXCHANGE_PREFIX, OPTIFI_EXCHANGE_ID, SWITCHBOARD, USER_ACCOUNT_PREFIX} from "../constants";
 import {UserAccount} from "../types/optifi-exchange-types";
 
 /**
@@ -28,7 +28,7 @@ export function findUserAccount(context: Context): Promise<[PublicKey, number]> 
             findAccountWithSeeds(context, [
                 Buffer.from(USER_ACCOUNT_PREFIX),
                 exchangeId.toBuffer(),
-                context.user.publicKey.toBuffer()
+                context.provider.wallet.publicKey.toBuffer()
             ]).then((res) => resolve(res))
                 .catch((err) => reject(err));
         })
@@ -69,4 +69,19 @@ export function userAccountExists(context: Context): Promise<[boolean, UserAccou
             })
         })
     })
+}
+
+/**
+ * Helper function to add the oracle accounts for a particular endpoint to an accounts object
+ *
+ * @param context The program context
+ * @param accounts The current accounts
+ */
+export function oracleAccountsWrapper(context: Context, accounts: { [name: string]: PublicKey }): { [name: string]: PublicKey } {
+    accounts['btc_spot_oracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
+    accounts['btc_iv_oracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV);
+    accounts['eth_spot_oracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD);
+    accounts['eth_iv_oracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV)
+
+    return accounts
 }

@@ -27,7 +27,8 @@ export default function initializeMarket(context: Context,
         let requestQueueAcct = anchor.web3.Keypair.generate();
         let eventQueueAcct = anchor.web3.Keypair.generate();
 
-        context.program.rpc.initializeMarket(
+
+        let intiailizeMarketTx = context.program.transaction.initializeMarket(
             authority,
             authority,
             coinLotSize,
@@ -38,7 +39,7 @@ export default function initializeMarket(context: Context,
                 // TODO: sync with prince about latest account info
                 accounts: {},
                 signers: [
-                    context.user,
+                    context.provider.wallet,
                     bidsAcct,
                     asksAcct,
                     requestQueueAcct,
@@ -47,5 +48,6 @@ export default function initializeMarket(context: Context,
                 instructions: []
             }
         )
+
     });
 }
