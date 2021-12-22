@@ -3,8 +3,8 @@ import {initializeContext} from "../index";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import * as assert from "assert";
 
-describe('Validate constant exchange ID exists', () => {
-    let context = initializeContext();
+describe('Validate constant exchange ID exists', async () => {
+    let context = await initializeContext();
 
     it('Can be found on chain', () => {
         findOptifiExchange(context).then(([address, bump]) => {

@@ -4,9 +4,9 @@ import * as assert from "assert";
 import {findExchangeAccount} from "../utils/accounts";
 import {Exchange} from "../types/optifi-exchange-types";
 
-describe('Initialization', () => {
-    it('Should create a new optifi exchange account, with the user as the authority', () => {
-        let context = initializeContext();
+describe('Initialization', async () => {
+    it('Should create a new optifi exchange account, with the user as the authority', async () => {
+        let context = await initializeContext();
         initialize(context).then((res) => {
             console.log("Did initialize, got UUID, ", res.data);
             if (res.data) {
