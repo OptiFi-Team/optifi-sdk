@@ -33,7 +33,7 @@ export function initializeContext(wallet?: string | Keypair,
             keypair = wallet;
         }
     }
-    const idl = readJsonFile<OptifiExchangeIDL>("idl/optifi_exchange.json");
+    const idl = readJsonFile<OptifiExchangeIDL>("./idl/optifi_exchange.json");
     const connection = new Connection(endpoint);
     const walletWrapper = new anchor.Wallet(keypair);
     const provider = new anchor.Provider(connection, walletWrapper, anchor.Provider.defaultOptions());
