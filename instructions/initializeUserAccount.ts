@@ -30,63 +30,67 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                 findOptifiExchange(context).then(([exchangeId, _]) => {
                     // Create a new account with no seeds for the PDA
                     let newUserVault = anchor.web3.Keypair.generate();
-
                     // Get the minimum lamports for rent exemption
-                    context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then((min) => {
+                    context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then(async (min) => {
                         // Actually initialize the account
-                        let initUserAccountTx = context.program.transaction.initUserAccount(
-                            newUserAccount[1],
-                            {
-                                accounts: {
-                                    userAccount: newUserAccount[0],
-                                    optifiExchange: exchangeId,
-                                    userVaultOwnedByPda: newUserVault.publicKey,
-
-                                    owner: context.provider.wallet.publicKey,
-                                    payer: context.provider.wallet.publicKey,
-                                    tokenProgram: new PublicKey(TOKEN_PROGRAM_ID),
-                                    systemProgram: SystemProgram.programId,
-                                    rent: anchor.web3.SYSVAR_RENT_PUBKEY
+                        context.connection.getRecentBlockhash().then((recentBlockhash) => {
+                            let initUserAccountTx = context.program.transaction.initUserAccount(
+                                newUserAccount[1],
+                                {
+                                    accounts: {
+                                        userAccount: newUserAccount[0],
+                                        optifiExchange: exchangeId,
+                                        userVaultOwnedByPda: newUserVault.publicKey,
+    
+                                        owner: context.provider.wallet.publicKey,
+                                        payer: context.provider.wallet.publicKey,
+                                        tokenProgram: new PublicKey(TOKEN_PROGRAM_ID),
+                                        systemProgram: SystemProgram.programId,
+                                        rent: anchor.web3.SYSVAR_RENT_PUBKEY
+                                    },
+                                    signers: [],
+                                    // These instructions transfer the necessary lamports to the new user vault
+                                    instructions: [
+                                        anchor.web3.SystemProgram.createAccount({
+                                            fromPubkey: context.provider.wallet.publicKey,
+                                            newAccountPubkey: newUserVault.publicKey, //usdc vault
+                                            space: AccountLayout.span,
+                                            lamports: min,
+                                            programId: TOKEN_PROGRAM_ID,
+                                        }),
+                                        Token.createInitAccountInstruction(
+                                            TOKEN_PROGRAM_ID,
+                                            USDC_TOKEN_MINT[context.endpoint],
+                                            newUserVault.publicKey,
+                                            context.provider.wallet.publicKey
+                                        ), // to receive usdc token
+                                    ],
                                 },
-                                signers: [
-                                    newUserVault
-                                ],
-                                // These instructions transfer the necessary lamports to the new user vault
-                                instructions: [
-                                    anchor.web3.SystemProgram.createAccount({
-                                        fromPubkey: context.provider.wallet.publicKey,
-                                        newAccountPubkey: newUserVault.publicKey, //usdc vault
-                                        space: AccountLayout.span,
-                                        lamports: min,
-                                        programId: TOKEN_PROGRAM_ID,
-                                    }),
-                                    Token.createInitAccountInstruction(
-                                        TOKEN_PROGRAM_ID,
-                                        USDC_TOKEN_MINT[context.endpoint],
-                                        newUserVault.publicKey,
-                                        context.provider.wallet.publicKey
-                                    ), // to receive usdc token
-                                ],
-                            }
-                        )
-                        signAndSendTransaction(context, initUserAccountTx).then(() => {
-                            userAccountExists(context).then(([existsNow, acct]) => {
-                                if (existsNow) {
-                                    resolve({
-                                        successful: true,
-                                        data: acct
-                                    })
-                                } else {
-                                    reject({
-                                        successful: false,
-                                        error: "Account didn't exist after initialization"
-                                    } as InstructionResult<any>)
-                                }
+                            )
+                            initUserAccountTx.recentBlockhash = recentBlockhash.blockhash;
+                            initUserAccountTx.feePayer = context.provider.wallet.publicKey;
+                            signAndSendTransaction(context, initUserAccountTx).then(() => {
+                                userAccountExists(context).then(([existsNow, acct]) => {
+                                    if (existsNow) {
+                                        resolve({
+                                            successful: true,
+                                            data: acct
+                                        })
+                                    } else {
+                                        reject({
+                                            successful: false,
+                                            error: "Account didn't exist after initialization"
+                                        } as InstructionResult<any>)
+                                    }
+                                })
+                            }).catch((err) => {
+                                console.error("Got error trying to create account", err);
+                                reject(err);
                             })
                         }).catch((err) => {
-                            console.error("Got error trying to create account", err);
+                            console.error(err);
                             reject(err);
-                        })
+                        });
                     });
                 })
 

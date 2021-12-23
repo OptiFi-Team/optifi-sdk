@@ -13,42 +13,49 @@ export default function Initialize(context: Context): Promise<InstructionResult<
             .publicKey.toBase58()
             .slice(0, 6);
 
-        findExchangeAccount(context, uuid).then(([exchangeAddress, bump]) => {
-            let initializeTx = context.program.transaction.initialize(
-                bump,
-                {
-                    uuid: uuid,
-                    version: 1,
-                    exchangeAuthority: context.provider.wallet.publicKey,
-                    owner: context.provider.wallet.publicKey,
-                    markets: [],
-                    instruments: [],
-                },
-                {
-                    accounts: {
-                        optifiExchange: exchangeAddress,
-                        authority: context.provider.wallet.publicKey,
-                        payer: context.provider.wallet.publicKey,
-                        systemProgram: anchor.web3.SystemProgram.programId,
-                        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+        findExchangeAccount(context, uuid).then(async ([exchangeAddress, bump]) => {
+            context.connection.getRecentBlockhash().then((recentBlockhash) => {
+                let initializeTx = context.program.transaction.initialize(
+                    bump,
+                    {
+                        uuid: uuid,
+                        version: 1,
+                        exchangeAuthority: context.provider.wallet.publicKey,
+                        owner: context.provider.wallet.publicKey,
+                        markets: [],
+                        instruments: [],
                     },
-                    signers: [],
-                }
-            )
-            signAndSendTransaction(context, initializeTx).then((res) => {
-                let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
-                console.log("Successfully created exchange, ", txUrl);
-                resolve({
-                    successful: true,
-                    data: uuid
+                    {
+                        accounts: {
+                            optifiExchange: exchangeAddress,
+                            authority: context.provider.wallet.publicKey,
+                            payer: context.provider.wallet.publicKey,
+                            systemProgram: anchor.web3.SystemProgram.programId,
+                            rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+                        },
+                        signers: [],
+                    },
+                )
+                initializeTx.recentBlockhash = recentBlockhash.blockhash;
+                initializeTx.feePayer = context.provider.wallet.publicKey;
+                signAndSendTransaction(context, initializeTx).then((res) => {
+                    let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
+                    console.log("Successfully created exchange, ", txUrl);
+                    resolve({
+                        successful: true,
+                        data: uuid
+                    })
+                }).catch((err) => {
+                    console.error(err);
+                    reject({
+                        successful: false,
+                        error: err
+                    } as InstructionResult<any>);
                 })
             }).catch((err) => {
                 console.error(err);
-                reject({
-                    successful: false,
-                    error: err
-                } as InstructionResult<any>);
-            })
+                reject(err);
+            });
         })
     });
 }

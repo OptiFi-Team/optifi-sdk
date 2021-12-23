@@ -27,34 +27,41 @@ import { signAndSendTransaction } from "../utils/transactions";
                 findPDA(context).then(([pda, _bump]) => {
                     findOptifiExchange(context).then(([exchangeAddress, bump]) => {
                         if(userAccount) {
-                            let withrawTx = context.program.transaction.withdraw(amount, {
-                                accounts: {
-                                    optifiExchange: exchangeAddress,
-                                    userAccount: userAccountAddress[0],
-                                    depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
-                                    userVaultOwnedByPda: userAccount.userVaultOwnedByPda,
-                                    withdrawDest: context.provider.wallet.publicKey,
-                                    depositor: context.provider.wallet.publicKey,
-                                    pda: pda,
-                                    tokenProgram: TOKEN_PROGRAM_ID,
-                                },
-                                signers: [],
-                                instructions: [],
-                            })
-                            signAndSendTransaction(context, withrawTx).then((res) => {
-                                let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
-                                console.log("Successfully withdrawn, ", txUrl);
-                                resolve({
-                                    successful: true,
-                                    data: txUrl
+                            context.connection.getRecentBlockhash().then((recentBlockhash) => {
+                                let withdrawTx = context.program.transaction.withdraw(amount, {
+                                    accounts: {
+                                        optifiExchange: exchangeAddress,
+                                        userAccount: userAccountAddress[0],
+                                        depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                        userVaultOwnedByPda: userAccount.userVaultOwnedByPda,
+                                        withdrawDest: context.provider.wallet.publicKey,
+                                        depositor: context.provider.wallet.publicKey,
+                                        pda: pda,
+                                        tokenProgram: TOKEN_PROGRAM_ID,
+                                    },
+                                    signers: [],
+                                    instructions: [],
+                                })
+                                withdrawTx.feePayer = context.provider.wallet.publicKey;
+                                withdrawTx.recentBlockhash = recentBlockhash.blockhash;
+                                signAndSendTransaction(context, withdrawTx).then((res) => {
+                                    let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
+                                    console.log("Successfully withdrawn, ", txUrl);
+                                    resolve({
+                                        successful: true,
+                                        data: txUrl
+                                    })
+                                }).catch((err) => {
+                                    console.error(err);
+                                    reject({
+                                        successful: false,
+                                        error: err
+                                    } as InstructionResult<any>);
                                 })
                             }).catch((err) => {
                                 console.error(err);
-                                reject({
-                                    successful: false,
-                                    error: err
-                                } as InstructionResult<any>);
-                            })
+                                reject(err);
+                            });
                         }
                         else {
                             reject({

@@ -11,6 +11,9 @@ import WalletType from "./types/walletType";
 //instructions
 import deposit from './instructions/deposit';
 import withdraw from './instructions/withdraw';
+import Initialize from './instructions/initialize';
+import initializeUserAccount from './instructions/initializeUserAccount';
+import initializeMarket from './instructions/initializeMarket';
 
 require('dotenv').config();
 
@@ -162,11 +165,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 walletType: WalletType.Keypair
             })
         }
-    })
-
-    
-    
-    
+    })   
 }
 
-export {initializeContext, deposit, withdraw}
+export {initializeContext, deposit, withdraw, Initialize, initializeMarket, initializeUserAccount }

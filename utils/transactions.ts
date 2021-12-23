@@ -99,6 +99,8 @@ export function signAndSendTransaction(context: Context, transaction: Transactio
                         resultType: TransactionResultType.Failed
                     } as TransactionResult)
                 })
-        }).catch((err) => reject(err))
+        }).catch((err) => {
+            reject(err)
+        })
     })
 }

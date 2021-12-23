@@ -17,10 +17,10 @@ import { signAndSendTransaction } from "../utils/transactions";
  * @param amount
  * @param account
  */
- export default async function deposit(context: Context, amount: BN) : Promise<InstructionResult<string>> {
+ export default function deposit(context: Context, amount: BN) : Promise<InstructionResult<string>> {
     return new Promise( (resolve, reject) => {
         findUserAccount(context).then((userAccountAddress) => {
-            userAccountExists(context).then(([exists, userAccount]) => {                
+            userAccountExists(context).then(async ([exists, userAccount]) => {                
                 if(!exists || !userAccount) reject({
                     successful: false,
                     error: "User account does not exist"
@@ -28,33 +28,40 @@ import { signAndSendTransaction } from "../utils/transactions";
                 console.log("Got user account in deposit ", userAccount);
 
                 //console.log("User vault is ", userAccount.userVaultOwnedByPda);
-                const depositTx = context.program.transaction.deposit(amount, {
-                    accounts: {
-                        userAccount: userAccountAddress[0],
-                        depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
-                        depositSource: /* user_usdc_token_account */context.provider.wallet.publicKey,
-                        // @ts-ignore
-                        userVaultOwnedByPda: userAccount.userVaultOwnedByPda,
-                        depositor: context.provider.wallet.publicKey,
-                        tokenProgram: TOKEN_PROGRAM_ID,
-                    },
-                    signers: [],
-                    instructions: [],
-                })
-                signAndSendTransaction(context, depositTx).then((res) => {
-                    let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
-                    console.log("Successfully deposited, ", txUrl);
-                    resolve({
-                        successful: true,
-                        data: txUrl
+                context.connection.getRecentBlockhash().then((recentBlockhash) => {
+                    let depositTx = context.program.transaction.deposit(amount, {
+                        accounts: {
+                            userAccount: userAccountAddress[0],
+                            depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                            depositSource: /* user_usdc_token_account */context.provider.wallet.publicKey,
+                            // @ts-ignore
+                            userVaultOwnedByPda: userAccount.userVaultOwnedByPda,
+                            depositor: context.provider.wallet.publicKey,
+                            tokenProgram: TOKEN_PROGRAM_ID,
+                        },
+                        signers: [],
+                        instructions: [],
+                    })
+                    depositTx.recentBlockhash = recentBlockhash.blockhash;
+                    depositTx.feePayer = context.provider.wallet.publicKey;
+                    signAndSendTransaction(context, depositTx).then((res) => {
+                        let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
+                        console.log("Successfully deposited, ", txUrl);
+                        resolve({
+                            successful: true,
+                            data: txUrl
+                        })
+                    }).catch((err) => {
+                        console.error(err);
+                        reject({
+                            successful: false,
+                            error: err
+                        } as InstructionResult<any>);
                     })
                 }).catch((err) => {
                     console.error(err);
-                    reject({
-                        successful: false,
-                        error: err
-                    } as InstructionResult<any>);
-                })
+                    reject(err);
+                });
             }).catch((err) => {
                 console.error(err);
                 reject(err);
