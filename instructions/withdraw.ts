@@ -15,7 +15,7 @@ import { signAndSendTransaction } from "../utils/transactions";
  * @param context
  * @param amount
  */
- export default async function withdraw(context: Context, amount: BN) : Promise<InstructionResult<string>> {
+ export default function withdraw(context: Context, amount: BN) : Promise<InstructionResult<string>> {
     return new Promise( (resolve, reject) => {
         findUserAccount(context).then((userAccountAddress) => {
             userAccountExists(context).then(([exists, userAccount]) => {
