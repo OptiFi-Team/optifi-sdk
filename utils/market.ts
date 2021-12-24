@@ -2,7 +2,7 @@ import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Market } from "@project-serum/serum";
-import {OptifiMarket} from "../types/optifi-exchange-types";
+import {Chain, OptifiMarket} from "../types/optifi-exchange-types";
 import {findAccountWithSeeds, findOptifiExchange} from "./accounts";
 import {OPTIFI_MARKET_PREFIX} from "../constants";
 
@@ -56,10 +56,36 @@ export function findOptifiMarkets(context: Context): Promise<OptifiMarket[]> {
     })
 }
 
+export function findOptifiInstruments(context: Context): Promise<Chain[]> {
+    return new Promise((resolve, reject) => {
+        findOptifiMarkets(context).then((markets) => {
+            let instruments: Chain[] = []
+            Promise.all([
+                markets.map((m) =>
+                    context.program.account.chain.fetch(m.instrument).then((res) => {
+
+                    })
+                )
+            ])
+            markets.forEach((market) => {
+                context.program.account.chain.fetch(market.instrument).then((res) => {
+                    // @ts-ignore
+                    instruments.push(res as Chain)
+                }).catch((err) => reject(err))
+            })
+
+        })
+    })
+}
+
 export function findExpiredMarkets(context: Context): Promise<void> {
     return new Promise((resolve, reject) => {
         findOptifiMarkets(context).then((markets) => {
+            let expiredIns
             markets.forEach((market) => {
+                context.program.account.chain.fetch(market.instrument).then((res) => {
+
+                }).catch((err) => reject(err))
                 // TODO: fetch the instrument from the address, and check the xpiration date
             })
         })
