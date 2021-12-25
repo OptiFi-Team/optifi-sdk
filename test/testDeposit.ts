@@ -9,8 +9,8 @@ import deposit from "../instructions/deposit";
 describe('Deposit', () => {
     let context = initializeContext();
 
-    it('Deposit', () => {
-        deposit(context, new anchor.BN(1),).then((tx: any) => {
+    it('Deposit', async () => {
+        deposit(await context, new anchor.BN(1)).then((tx: any) => {
             console.log('Deposit made', tx)
             assert.ok("Finished deposit");
         }).catch((err) => {
@@ -20,8 +20,8 @@ describe('Deposit', () => {
         });
     });
 
-    it('Can derive a user address', () => {
-        assert.doesNotReject(findUserAccount(context))
+    it('Can derive a user address', async () => {
+        assert.doesNotReject(findUserAccount(await context))
     });
 
 

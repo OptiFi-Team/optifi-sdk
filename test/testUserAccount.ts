@@ -4,8 +4,8 @@ import * as assert from "assert";
 import initializeUserAccount from "../instructions/initializeUserAccount";
 import {logUserAccount} from "../utils/debug";
 
-describe('User Account', () => {
-    let context = initializeContext();
+describe('User Account', async () => {
+    let context = await initializeContext();
 
     it('Can derive a user address', () => {
         assert.doesNotReject(findUserAccount(context))

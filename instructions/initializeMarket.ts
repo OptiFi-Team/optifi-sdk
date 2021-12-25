@@ -3,6 +3,8 @@ import Context from "../types/context";
 import {Market} from "../types/optifi-exchange-types";
 import InstructionResult from "../types/instructionResult";
 import * as anchor from "@project-serum/anchor";
+import { signAndSendTransaction } from "../utils/transactions";
+import { userAccountExists } from "../utils/accounts";
 
 /**
  * Initialize a new serum market
@@ -27,7 +29,7 @@ export default function initializeMarket(context: Context,
         let requestQueueAcct = anchor.web3.Keypair.generate();
         let eventQueueAcct = anchor.web3.Keypair.generate();
 
-        context.program.rpc.initializeMarket(
+        let intializeMarketTx = context.program.transaction.initializeMarket(
             authority,
             authority,
             coinLotSize,
@@ -36,16 +38,35 @@ export default function initializeMarket(context: Context,
             pcDustThreshold,
             {
                 // TODO: sync with prince about latest account info
-                accounts: {},
-                signers: [
+                /* accounts: {}, */
+                /* signers: [
                     context.user,
                     bidsAcct,
                     asksAcct,
                     requestQueueAcct,
                     eventQueueAcct
-                ],
+                ], */
+                signers: [],
                 instructions: []
             }
         )
+        signAndSendTransaction(context, intializeMarketTx).then(() => {
+            userAccountExists(context).then(([existsNow, acct]) => {
+                if (existsNow) {
+                    resolve({
+                        successful: true,
+                        data: acct
+                    })
+                } else {
+                    reject({
+                        successful: false,
+                        error: "Error on initialization"
+                    } as InstructionResult<any>)
+                }
+            })
+        }).catch((err) => {
+            console.error("Got error trying to initialize market", err);
+            reject(err);
+        })
     });
 }

@@ -7,13 +7,13 @@ import withdraw from "../instructions/withdraw";
 describe('Withdraw', () => {
     let context = initializeContext();
 
-    it('Can derive a user address', () => {
-        assert.doesNotReject(findUserAccount(context))
+    it('Can derive a user address', async () => {
+        assert.doesNotReject(findUserAccount(await context))
     });
 
-    it('Withdraw', () => {
+    it('Withdraw', async () => {
         console.log("Trying withdraw");
-        withdraw(context, new anchor.BN(1)).then((tx: any) => {
+        withdraw(await context, new anchor.BN(1)).then((tx: any) => {
             console.log('Withdraw made', tx)
             assert.ok("Finished withdraw");
         }).catch((err) => {

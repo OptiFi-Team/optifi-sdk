@@ -1,4 +1,5 @@
-import * as fs from "fs";
+import fs from "fs";
+import { WalletProvider } from "../types/solanaTypes";
 
 /**
  * Small helper function to read a JSON file as a type from a filepath
@@ -12,4 +13,9 @@ export function readJsonFile<T>(filePath: string): T {
             "utf-8"
         )
     )
+}
+
+export function isWalletProvider(object: unknown): object is WalletProvider {
+    return Object.prototype.hasOwnProperty.call(object, "name")
+        && Object.prototype.hasOwnProperty.call(object, "url");
 }
