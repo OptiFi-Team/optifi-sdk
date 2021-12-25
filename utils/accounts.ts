@@ -47,6 +47,13 @@ export function findOptifiExchange(context: Context): Promise<[PublicKey, number
     return findExchangeAccount(context, OPTIFI_EXCHANGE_ID[context.endpoint]);
 }
 
+export function getDexOpenOrders(context: Context): Promise<[PublicKey, number]> {
+    return anchor.web3.PublicKey.findProgramAddress(
+        [Buffer.from("dex-open-orders"), new PublicKey("DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY").toBuffer()],
+        context.program.programId
+      );
+}
+
 /**
  * Helper function to determine whether or not an optifi user account exists associated
  * with the current user

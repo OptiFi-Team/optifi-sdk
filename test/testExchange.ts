@@ -9,9 +9,9 @@ describe('Validate constant exchange ID exists', async () => {
     it('Can be found on chain', () => {
         findOptifiExchange(context).then(([address, bump]) => {
             let optifiExchangeUrl = formatExplorerAddress(context, address.toString(), SolanaEntityType.Account)
-            console.log("Looking for exchange at ", optifiExchangeUrl);
+            //console.log("Looking for exchange at ", optifiExchangeUrl);
             context.program.account.exchange.fetch(address).then((res) => {
-                console.log("Got res ", res);
+                //console.log("Got res ", res);
                 assert.ok("Found exchange");
             }).catch((err) => {
                 console.error(err);

@@ -17,6 +17,7 @@ import { signAndSendTransaction } from "../utils/transactions";
  * @param amount
  * @param account
  */
+
  export default function deposit(context: Context, amount: BN) : Promise<InstructionResult<string>> {
     return new Promise( (resolve, reject) => {
         findUserAccount(context).then((userAccountAddress) => {
