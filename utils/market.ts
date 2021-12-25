@@ -78,16 +78,23 @@ export function findOptifiInstruments(context: Context): Promise<Chain[]> {
     })
 }
 
-export function findExpiredMarkets(context: Context): Promise<void> {
+export function findExpiredMarkets(context: Context): Promise<OptifiMarket[]> {
     return new Promise((resolve, reject) => {
         findOptifiMarkets(context).then((markets) => {
-            let expiredIns
-            markets.forEach((market) => {
-                context.program.account.chain.fetch(market.instrument).then((res) => {
-
-                }).catch((err) => reject(err))
-                // TODO: fetch the instrument from the address, and check the xpiration date
-            })
+            let expiredMarkets: OptifiMarket[] = [];
+            let now = new anchor.BN(Date.now());
+            Promise.all(markets.map((m) => new Promise((chainRes) => {
+                context.program.account.chain.fetch(m.instrument).then((res) => {
+                    // @ts-ignore
+                    let chain = res as Chain;
+                    if (chain.expiryDate >= now) {
+                        expiredMarkets.push(m);
+                    }
+                    chainRes(chain);
+                }).catch((err) => reject(err));
+            }))).then(() => resolve(
+                expiredMarkets
+            )).catch((err) => reject(err));
         })
     })
 }
