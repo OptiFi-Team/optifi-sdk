@@ -7,13 +7,19 @@ import {SystemProgram, SYSVAR_RENT_PUBKEY, Transaction} from "@solana/web3.js";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {signAndSendTransaction} from "../utils/transactions";
 
-export default function Initialize(context: Context): Promise<InstructionResult<string>> {
+/**
+ * Create a new optifi exchange - the first instruction that will be run in the Optifi system
+ *
+ * @param context The program context
+ * @param uuid Optionally supply the UUID of the new exchange to create. One will be generated if not specified.
+ */
+export default function initialize(context: Context, uuid?: string): Promise<InstructionResult<string>> {
+    let exchangeUuid = uuid || anchor.web3.Keypair.generate()
+        .publicKey.toBase58()
+        .slice(0, 6);
     return new Promise((resolve, reject) => {
-        let uuid = anchor.web3.Keypair.generate()
-            .publicKey.toBase58()
-            .slice(0, 6);
 
-        findExchangeAccount(context, uuid).then(async ([exchangeAddress, bump]) => {
+        findExchangeAccount(context, exchangeUuid).then(async ([exchangeAddress, bump]) => {
             context.connection.getRecentBlockhash().then((recentBlockhash) => {
                 let initializeTx = context.program.transaction.initialize(
                     bump,

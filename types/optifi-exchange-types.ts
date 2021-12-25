@@ -56,7 +56,8 @@ export const AccountState = {
   Initialized: { initialized: {} },
   Frozen: { frozen: {} }
 }
-  
+    
+
   
 
 export type Chain = IdlAccounts<OptifiExchangeIDL>["chain"]

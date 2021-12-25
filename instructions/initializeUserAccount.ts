@@ -3,9 +3,9 @@ import InstructionResult from "../types/instructionResult";
 import {UserAccount} from "../types/optifi-exchange-types";
 import * as anchor from "@project-serum/anchor";
 import {PublicKey, SystemProgram} from "@solana/web3.js";
-import {findOptifiExchange, findUserAccount, userAccountExists} from "../utils/accounts";
+import {findExchangeAccount, findUserAccount, userAccountExists} from "../utils/accounts";
 import {AccountLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
-import {USDC_TOKEN_MINT} from "../constants";
+import {OPTIFI_EXCHANGE_ID, USDC_TOKEN_MINT} from "../constants";
 import {signAndSendTransaction} from "../utils/transactions";
 
 /**
@@ -13,8 +13,10 @@ import {signAndSendTransaction} from "../utils/transactions";
  * Owner
  *
  * @param context The program context
+ * @param exchangeUuid Optionally specify exchange account
  */
-export default function initializeUserAccount(context: Context): Promise<InstructionResult<UserAccount>> {
+export default function initializeUserAccount(context: Context, exchangeUuid?: string): Promise<InstructionResult<UserAccount>> {
+    let uuid = exchangeUuid || OPTIFI_EXCHANGE_ID[context.endpoint];
     return new Promise((resolve, reject) => {
         userAccountExists(context).then(([alreadyExists, _]) => {
 
@@ -27,9 +29,9 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
 
             // Derive the address the new user account will be at
             findUserAccount(context).then((newUserAccount) => {
-                findOptifiExchange(context).then(([exchangeId, _]) => {
+                findExchangeAccount(context, uuid).then(([exchangeId, _]) => {
                     // Create a new account with no seeds for the PDA
-                    let newUserVault = anchor.web3.Keypair.generate();
+                    let newUserMarginAccount = anchor.web3.Keypair.generate();
                     // Get the minimum lamports for rent exemption
                     context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then(async (min) => {
                         // Actually initialize the account
@@ -40,8 +42,7 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                     accounts: {
                                         userAccount: newUserAccount[0],
                                         optifiExchange: exchangeId,
-                                        userVaultOwnedByPda: newUserVault.publicKey,
-    
+                                        userMarginAccountUsdc: newUserMarginAccount.publicKey,
                                         owner: context.provider.wallet.publicKey,
                                         payer: context.provider.wallet.publicKey,
                                         tokenProgram: new PublicKey(TOKEN_PROGRAM_ID),
@@ -53,7 +54,7 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                     instructions: [
                                         anchor.web3.SystemProgram.createAccount({
                                             fromPubkey: context.provider.wallet.publicKey,
-                                            newAccountPubkey: newUserVault.publicKey, //usdc vault
+                                            newAccountPubkey: newUserMarginAccount.publicKey, //margin account - usdc vault
                                             space: AccountLayout.span,
                                             lamports: min,
                                             programId: TOKEN_PROGRAM_ID,
@@ -61,9 +62,9 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                         Token.createInitAccountInstruction(
                                             TOKEN_PROGRAM_ID,
                                             USDC_TOKEN_MINT[context.endpoint],
-                                            newUserVault.publicKey,
+                                            newUserMarginAccount.publicKey,
                                             context.provider.wallet.publicKey
-                                        ), // to receive usdc token
+                                        ), // Create a new account for USDC
                                     ],
                                 },
                             )

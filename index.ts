@@ -11,9 +11,9 @@ import WalletType from "./types/walletType";
 //instructions
 import deposit from './instructions/deposit';
 import withdraw from './instructions/withdraw';
-import Initialize from './instructions/initialize';
+import initialize from './instructions/initialize';
 import initializeUserAccount from './instructions/initializeUserAccount';
-import initializeMarket from './instructions/initializeMarket';
+import initializeSerumMarket from './instructions/initializeSerumMarket';
 
 require('dotenv').config();
 
@@ -168,4 +168,4 @@ function initializeContext(wallet?: string | WalletProvider,
     })   
 }
 
-export {initializeContext, deposit, withdraw, Initialize, initializeMarket, initializeUserAccount }
+export {initializeContext, deposit, withdraw, initialize, initializeSerumMarket, initializeUserAccount }

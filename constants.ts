@@ -10,20 +10,23 @@ export const EXCHANGE_PREFIX: string = "optifi_exchange";
 export const INSTRUMENT_PREFIX: string = "instrument";
 export const OPTIFI_MARKET_PREFIX: string = "optifi_market";
 
+// How many serum markets the program should keep
+export const SERUM_MARKETS: number = 2;
+
 export type EndpointConstant = {
     [endpoint in SolanaEndpoint]: any;
 }
 
 export const USDC_TOKEN_MINT: EndpointConstant = {
     "https://api.mainnet-beta.solana.com": "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9",
-    "https://api.devnet.solana.com": "EyvvsvLH53EkdWK7orfBuoYdaN7hG1oVEbVbRw4AbEzW",
+    "https://api.devnet.solana.com": "2yran6ooPNw43UBrPQTygYopEwEpMKBL6dcTiLwd1YGR",
     "https://api.testnet.solana.com": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
     "https://api.devnet.solana.com" : "29wBWV",
-    "https://api.testnet.solana.com": "TBD",
-    "https://api.mainnet-beta.solana.com": "TBD",
+    "https://api.testnet.solana.com": "29wBWV",
+    "https://api.mainnet-beta.solana.com": "29wBWV",
 }
 
 export const SWITCHBOARD: EndpointConstant = {
@@ -45,4 +48,10 @@ export const SWITCHBOARD: EndpointConstant = {
         SWITCHBOARD_ETH_USD: "QJc2HgGhdtW4e7zjvLB1TGRuwEpTre2agU5Lap2UqYz",
         SWITCHBOARD_ETH_IV: "4AGPMUEfBCSNqVd4Y6veHAep6VPtrkMa89rBhPqMYegz",
     }
+}
+
+export const SERUM_DEX_PROGRAM_ID: EndpointConstant = {
+    "https://api.mainnet-beta.solana.com": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+    "https://api.devnet.solana.com": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY",
+    "https://api.testnet.solana.com": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
 }

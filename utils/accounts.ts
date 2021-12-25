@@ -2,7 +2,7 @@ import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import {EXCHANGE_PREFIX, OPTIFI_EXCHANGE_ID, SWITCHBOARD, USER_ACCOUNT_PREFIX, USER_TOKEN_ACCOUNT_PDA} from "../constants";
-import {UserAccount} from "../types/optifi-exchange-types";
+import {Exchange, UserAccount} from "../types/optifi-exchange-types";
 
 /**
  * Helper function for finding an account with a list of seeds
@@ -21,10 +21,14 @@ export function findAccountWithSeeds(context: Context, seeds: Buffer[]): Promise
  * Find the Solana program address for the user in context with the expected seeds
  *
  * @param context The program context
+ * @param exchangeUuid Optionally supply the UUID of the exchange - otherwise the
+ *                     Optifi constant will be used
  */
-export function findUserAccount(context: Context): Promise<[PublicKey, number]> {
+export function findUserAccount(context: Context,
+                                exchangeUuid?: string): Promise<[PublicKey, number]> {
+    let uuid = exchangeUuid || OPTIFI_EXCHANGE_ID[context.endpoint];
     return new Promise((resolve, reject) => {
-        findOptifiExchange(context).then(([exchangeId, _]) => {
+        findExchangeAccount(context, uuid).then(([exchangeId, _]) => {
             findAccountWithSeeds(context, [
                 Buffer.from(USER_ACCOUNT_PREFIX),
                 exchangeId.toBuffer(),
@@ -59,15 +63,33 @@ export function getDexOpenOrders(context: Context): Promise<[PublicKey, number]>
  * with the current user
  *
  * @param context The program context
+ * @param exchangeUuid Optionally supply the UUID of the exchange - otherwise the
+ *                     Optifi constant will be used
  */
-export function userAccountExists(context: Context): Promise<[boolean, UserAccount?]> {
+export function userAccountExists(context: Context, exchangeUuid?: string): Promise<[boolean, UserAccount?]> {
     return new Promise((resolve) => {
-        findUserAccount(context).then((userAccount) => {
+        findUserAccount(context, exchangeUuid).then((userAccount) => {
             context.program.account.userAccount.fetch(userAccount[0]).then((res) => {
                 if (res) {
                     console.log("Account already exists", res);
                     // @ts-ignore
                     resolve([true, res as UserAccount])
+                } else {
+                    resolve([false, undefined])
+                }
+            }).catch(() => {
+                resolve([false, undefined])
+            })
+        })
+    })
+}
+
+export function exchangeAccountExists(context: Context, uuid: string): Promise<[boolean, Exchange?]> {
+    return new Promise((resolve) => {
+        findExchangeAccount(context, uuid).then(([exchangeAddress, _]) => {
+            context.program.account.exchange.fetch(exchangeAddress).then((res) => {
+                if (res) {
+                    resolve([true, res as Exchange])
                 } else {
                     resolve([false, undefined])
                 }
