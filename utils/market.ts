@@ -3,8 +3,8 @@ import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Market } from "@project-serum/serum";
 import {Chain, OptifiMarket} from "../types/optifi-exchange-types";
-import {findAccountWithSeeds, findOptifiExchange} from "./accounts";
-import {OPTIFI_MARKET_PREFIX} from "../constants";
+import {findAccountWithSeeds, findExchangeAccount, findOptifiExchange} from "./accounts";
+import {OPTIFI_EXCHANGE_ID, OPTIFI_MARKET_PREFIX} from "../constants";
 
 
 export function getMarketInfo (context: Context): Promise<Market> {
@@ -16,16 +16,25 @@ export function getMarketInfo (context: Context): Promise<Market> {
       );
 }
 
+export function findOptifiMarketWithIdx(context: Context,
+                                         exchangeAddress: PublicKey,
+                                         idx: number): Promise<[PublicKey, number]> {
+    return findAccountWithSeeds(context, [
+        Buffer.from(OPTIFI_MARKET_PREFIX),
+        exchangeAddress.toBuffer(),
+        Buffer.from(new Uint8Array([idx]))
+    ])
+}
+
 function iterateFindMarkets(context: Context,
                             exchangeAddress: PublicKey,
                             idx: number = 0): Promise<OptifiMarket[]> {
     return new Promise((resolve, reject) => {
         let optifiMarkets: OptifiMarket[] = [];
-        findAccountWithSeeds(context, [
-            Buffer.from(OPTIFI_MARKET_PREFIX),
-            exchangeAddress.toBuffer(),
-            Buffer.from(new Uint8Array([idx]))
-        ]).then(([address, bump]) => {
+        findOptifiMarketWithIdx(
+            context,
+            exchangeAddress,
+            idx).then(([address, bump]) => {
             context.program.account.optifiMarket.fetch(
                 address
             ).then((res) => {
@@ -44,7 +53,7 @@ function iterateFindMarkets(context: Context,
 
 export function findOptifiMarkets(context: Context): Promise<OptifiMarket[]> {
     return new Promise((resolve, reject) => {
-        findOptifiExchange(context).then(([exchangeAddress, _]) => {
+        findExchangeAccount(context).then(([exchangeAddress, _]) => {
             iterateFindMarkets(
                 context,
                 exchangeAddress
@@ -63,17 +72,13 @@ export function findOptifiInstruments(context: Context): Promise<Chain[]> {
             Promise.all([
                 markets.map((m) =>
                     context.program.account.chain.fetch(m.instrument).then((res) => {
-
+                        // @ts-ignore
+                        instruments.push(res as Chain)
                     })
                 )
             ])
-            markets.forEach((market) => {
-                context.program.account.chain.fetch(market.instrument).then((res) => {
-                    // @ts-ignore
-                    instruments.push(res as Chain)
-                }).catch((err) => reject(err))
-            })
-
+                .then(() => resolve(instruments))
+                .catch((err) => reject(err))
         })
     })
 }

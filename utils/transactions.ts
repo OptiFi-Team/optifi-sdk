@@ -67,13 +67,7 @@ function signStandardProviderTransaction(context: Context, transaction: Transact
     })
 }
 
-/**
- * Use either the users keypair, or the wallet provider API, to sign and send a transaction
- *
- * @param context
- * @param transaction
- */
-export function signAndSendTransaction(context: Context, transaction: Transaction): Promise<TransactionResult> {
+export function signTransaction(context: Context, transaction: Transaction): Promise<Transaction> {
     // Sign the transaction before sending it
     let signPromise: Promise<Transaction>;
     if (context.walletType === WalletType.Slope) {
@@ -81,10 +75,20 @@ export function signAndSendTransaction(context: Context, transaction: Transactio
     } else {
         signPromise = signStandardProviderTransaction(context, transaction);
     }
+    return signPromise;
+}
+
+/**
+ * Use either the users keypair, or the wallet provider API, to sign and send a transaction
+ *
+ * @param context
+ * @param transaction
+ */
+export function signAndSendTransaction(context: Context, transaction: Transaction): Promise<TransactionResult> {
 
     // Send the transaction
     return new Promise((resolve, reject) => {
-        signPromise.then((res) => {
+        signTransaction(context, transaction).then((res) => {
             const rawTransaction = res.serialize();
             context.provider.connection.sendRawTransaction(rawTransaction, context.provider.opts)
                 .then((txId) => {

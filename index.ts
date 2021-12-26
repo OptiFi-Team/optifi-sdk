@@ -1,7 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import {Connection, Keypair} from "@solana/web3.js";
 import Context from "./types/context";
-import {SolanaEndpoint} from "./constants";
+import {OPTIFI_EXCHANGE_ID, SolanaEndpoint} from "./constants";
 import {isWalletProvider, readJsonFile} from './utils/generic';
 import {OptifiExchangeIDL} from './types/optifi-exchange-types';
 import optifiExchange from './idl/optifi_exchange.json';
@@ -111,11 +111,16 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
  * @param optifiProgramId The ID of the on chain Optifi program. If not provided, will try to read in from
  * process.env.OPTIFI_PROGRAM_ID
  *
+ * @param customExchangeUUID Optionally supply a custom UUID for the exchange, instead of using the Optifi
+ * constant
+ *
  * @param endpoint The Solana cluster to connect to. Devnet by default
  */
 function initializeContext(wallet?: string | WalletProvider,
-                                  optifiProgramId?: string,
-                                  endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<Context> {
+                           optifiProgramId?: string,
+                           customExchangeUUID?: string,
+                           endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<Context> {
+    let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
     return new Promise((resolve, reject) => {
 
         // If the wallet was a provider object, figure out it's type for later specifics of transaction signing,
@@ -135,7 +140,8 @@ function initializeContext(wallet?: string | WalletProvider,
                     walletType: walletRes.walletType,
                     provider: provider,
                     endpoint: endpoint,
-                    connection: connection
+                    connection: connection,
+                    exchangeUUID: uuid
                 })
             }).catch((err) => reject(err))
 
@@ -162,7 +168,8 @@ function initializeContext(wallet?: string | WalletProvider,
                 provider: provider,
                 endpoint: endpoint,
                 connection: connection,
-                walletType: WalletType.Keypair
+                walletType: WalletType.Keypair,
+                exchangeUUID: uuid
             })
         }
     })   

@@ -13,18 +13,16 @@ import {signAndSendTransaction} from "../utils/transactions";
  * @param context The program context
  * @param uuid Optionally supply the UUID of the new exchange to create. One will be generated if not specified.
  */
-export default function initialize(context: Context, uuid?: string): Promise<InstructionResult<string>> {
-    let exchangeUuid = uuid || anchor.web3.Keypair.generate()
-        .publicKey.toBase58()
-        .slice(0, 6);
+export default function initialize(context: Context): Promise<InstructionResult<string>> {
+
     return new Promise((resolve, reject) => {
 
-        findExchangeAccount(context, exchangeUuid).then(async ([exchangeAddress, bump]) => {
+        findExchangeAccount(context).then(async ([exchangeAddress, bump]) => {
             context.connection.getRecentBlockhash().then((recentBlockhash) => {
                 let initializeTx = context.program.transaction.initialize(
                     bump,
                     {
-                        uuid: uuid,
+                        uuid: context.exchangeUUID,
                         version: 1,
                         exchangeAuthority: context.provider.wallet.publicKey,
                         owner: context.provider.wallet.publicKey,
@@ -49,7 +47,7 @@ export default function initialize(context: Context, uuid?: string): Promise<Ins
                     console.log("Successfully created exchange, ", txUrl);
                     resolve({
                         successful: true,
-                        data: uuid
+                        data: context.exchangeUUID
                     })
                 }).catch((err) => {
                     console.error(err);

@@ -18,11 +18,10 @@ export interface BootstrapResult {
  * is the exchange authority
  *
  * @param context The program context
- * @param uuid The UUID of the exchange
  */
-function createOrFetchExchange(context: Context, uuid: string): Promise<void> {
+function createOrFetchExchange(context: Context): Promise<void> {
     return new Promise((resolve, reject) => {
-        exchangeAccountExists(context, uuid).then(([exchAcctExists, exchAcct]) => {
+        exchangeAccountExists(context).then(([exchAcctExists, exchAcct]) => {
             if (exchAcctExists && exchAcct !== undefined) {
                 if (exchAcct.exchangeAuthority == context.provider.wallet.publicKey) {
                     console.debug("Successfully fetched existing exchange account, and validated that user is the" +
@@ -36,7 +35,7 @@ function createOrFetchExchange(context: Context, uuid: string): Promise<void> {
                 }
             } else {
                 console.debug("Creating a new exchange");
-                initialize(context, uuid).then((res) => {
+                initialize(context).then((res) => {
                     if (res.successful) {
                         let createExchangeTxUrl = formatExplorerAddress(
                             context,
@@ -60,15 +59,15 @@ function createOrFetchExchange(context: Context, uuid: string): Promise<void> {
  * Helper function to either fetch the user's account on this exchange, or create it if it doesn't already exist
  *
  */
-function createUserAccountIfNotExist(context: Context, exchangeUuid: string): Promise<void> {
+function createUserAccountIfNotExist(context: Context): Promise<void> {
     return new Promise((resolve, reject) => {
-            userAccountExists(context, exchangeUuid).then(([exists, _]) => {
+            userAccountExists(context).then(([exists, _]) => {
                 if (exists) {
                     console.debug("User account already exists");
                     resolve()
                 } else {
                     console.debug("User account does not already exist, creating...");
-                    initializeUserAccount(context, exchangeUuid).then((_) => {
+                    initializeUserAccount(context).then((_) => {
                         resolve()
                     }).catch((err) => reject(err))
                 }
@@ -81,15 +80,14 @@ function createUserAccountIfNotExist(context: Context, exchangeUuid: string): Pr
  * Helper function to create as many serum markets as the SERUM_MARKETS constant specifies
  *
  * @param context Program context
- * @param exchangeUuid UUID of the exchange
  */
-async function createSerumMarkets(context: Context, exchangeUuid: string): Promise<PublicKey[]> {
+async function createSerumMarkets(context: Context): Promise<PublicKey[]> {
     let createdMarkets: PublicKey[] = [];
     // Intentionally do this the slow way because creating the serum markets is a super expensive process -
     // if there's a problem, we want to know before we've committed all our capital
     for (let i = 0; i < SERUM_MARKETS; i++) {
         try {
-            let res = await initializeSerumMarket(context, exchangeUuid);
+            let res = await initializeSerumMarket(context);
             if (res.successful) {
                 createdMarkets.push(res.data as PublicKey);
             } else {
@@ -108,23 +106,19 @@ async function createSerumMarkets(context: Context, exchangeUuid: string): Promi
  * Bootstrap the optifi exchange entirely, creating new instruments, etc.
  *
  * @param context The program context
- * @param uuid Optionally, supply a UUID to create the exchagne account under. The UUID in constants will otherwise
- *             be used
  */
-export default function boostrap(context: Context,
-                                 uuid?: string): Promise<InstructionResult<BootstrapResult>> {
-    let exchangeUuid = uuid || OPTIFI_EXCHANGE_ID[context.endpoint];
+export default function boostrap(context: Context): Promise<InstructionResult<BootstrapResult>> {
     return new Promise((resolve, reject) => {
         // Find or create the addresses of both the exchange and user accounts,
         // and make sure that our user is an authority
         console.debug("Finding or initializing a new Optifi exchange...")
-        createOrFetchExchange(context, exchangeUuid).then(() => {
-            findExchangeAccount(context, exchangeUuid).then(([exchangeAddress, _]) => {
-                createUserAccountIfNotExist(context, exchangeUuid).then(() => {
-                    findUserAccount(context, exchangeUuid).then(([accountAddress, _]) => {
+        createOrFetchExchange(context).then(() => {
+            findExchangeAccount(context).then(([exchangeAddress, _]) => {
+                createUserAccountIfNotExist(context).then(() => {
+                    findUserAccount(context).then(([accountAddress, _]) => {
                         // Now that we have both addresses, create as many new serum markets
                         // as are specified in the constants
-                        createSerumMarkets(context, exchangeUuid).then((marketKeys) => {
+                        createSerumMarkets(context).then((marketKeys) => {
                             // TODO: for each of the new serum markets, create a new instrument, and a new Optifi market
                         }).catch((err) => reject(err))
                     })

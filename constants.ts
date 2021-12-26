@@ -9,9 +9,16 @@ export const USER_TOKEN_ACCOUNT_PDA: string = "user_token_account_pda";
 export const EXCHANGE_PREFIX: string = "optifi_exchange";
 export const INSTRUMENT_PREFIX: string = "instrument";
 export const OPTIFI_MARKET_PREFIX: string = "optifi_market";
+export const OPTIFI_MARKET_MINT_AUTH_PREFIX: string = "optifi_market_mint_auth";
 
 // How many serum markets the program should keep
-export const SERUM_MARKETS: number = 2;
+export const SERUM_MARKETS: number = 4;
+
+// This should always be an even number to make the split between different assets work,
+// so if it's not, throw an error
+if (SERUM_MARKETS % 2 !== 0) {
+    throw new Error("Must be an even number of Serum markets")
+}
 
 export type EndpointConstant = {
     [endpoint in SolanaEndpoint]: any;

@@ -21,14 +21,10 @@ export function findAccountWithSeeds(context: Context, seeds: Buffer[]): Promise
  * Find the Solana program address for the user in context with the expected seeds
  *
  * @param context The program context
- * @param exchangeUuid Optionally supply the UUID of the exchange - otherwise the
- *                     Optifi constant will be used
  */
-export function findUserAccount(context: Context,
-                                exchangeUuid?: string): Promise<[PublicKey, number]> {
-    let uuid = exchangeUuid || OPTIFI_EXCHANGE_ID[context.endpoint];
+export function findUserAccount(context: Context): Promise<[PublicKey, number]> {
     return new Promise((resolve, reject) => {
-        findExchangeAccount(context, uuid).then(([exchangeId, _]) => {
+        findExchangeAccount(context).then(([exchangeId, _]) => {
             findAccountWithSeeds(context, [
                 Buffer.from(USER_ACCOUNT_PREFIX),
                 exchangeId.toBuffer(),
@@ -40,15 +36,15 @@ export function findUserAccount(context: Context,
 
 }
 
-export function findExchangeAccount(context: Context, uuid: string): Promise<[PublicKey, number]> {
+export function findExchangeAccount(context: Context): Promise<[PublicKey, number]> {
     return findAccountWithSeeds(context, [
         Buffer.from(EXCHANGE_PREFIX),
-        Buffer.from(uuid)
+        Buffer.from(context.exchangeUUID)
     ])
 }
 
 export function findOptifiExchange(context: Context): Promise<[PublicKey, number]> {
-    return findExchangeAccount(context, OPTIFI_EXCHANGE_ID[context.endpoint]);
+    return findExchangeAccount(context);
 }
 
 export function getDexOpenOrders(context: Context): Promise<[PublicKey, number]> {
@@ -63,12 +59,10 @@ export function getDexOpenOrders(context: Context): Promise<[PublicKey, number]>
  * with the current user
  *
  * @param context The program context
- * @param exchangeUuid Optionally supply the UUID of the exchange - otherwise the
- *                     Optifi constant will be used
  */
-export function userAccountExists(context: Context, exchangeUuid?: string): Promise<[boolean, UserAccount?]> {
+export function userAccountExists(context: Context): Promise<[boolean, UserAccount?]> {
     return new Promise((resolve) => {
-        findUserAccount(context, exchangeUuid).then((userAccount) => {
+        findUserAccount(context).then((userAccount) => {
             context.program.account.userAccount.fetch(userAccount[0]).then((res) => {
                 if (res) {
                     console.log("Account already exists", res);
@@ -84,9 +78,9 @@ export function userAccountExists(context: Context, exchangeUuid?: string): Prom
     })
 }
 
-export function exchangeAccountExists(context: Context, uuid: string): Promise<[boolean, Exchange?]> {
+export function exchangeAccountExists(context: Context): Promise<[boolean, Exchange?]> {
     return new Promise((resolve) => {
-        findExchangeAccount(context, uuid).then(([exchangeAddress, _]) => {
+        findExchangeAccount(context).then(([exchangeAddress, _]) => {
             context.program.account.exchange.fetch(exchangeAddress).then((res) => {
                 if (res) {
                     resolve([true, res as Exchange])

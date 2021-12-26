@@ -10,5 +10,6 @@ export default interface Context {
     provider: anchor.Provider,
     walletType: WalletType,
     endpoint: SolanaEndpoint,
-    connection: Connection
+    connection: Connection,
+    exchangeUUID: string,
 }

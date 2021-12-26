@@ -15,8 +15,7 @@ import {signAndSendTransaction} from "../utils/transactions";
  * @param context The program context
  * @param exchangeUuid Optionally specify exchange account
  */
-export default function initializeUserAccount(context: Context, exchangeUuid?: string): Promise<InstructionResult<UserAccount>> {
-    let uuid = exchangeUuid || OPTIFI_EXCHANGE_ID[context.endpoint];
+export default function initializeUserAccount(context: Context): Promise<InstructionResult<UserAccount>> {
     return new Promise((resolve, reject) => {
         userAccountExists(context).then(([alreadyExists, _]) => {
 
@@ -29,7 +28,7 @@ export default function initializeUserAccount(context: Context, exchangeUuid?: s
 
             // Derive the address the new user account will be at
             findUserAccount(context).then((newUserAccount) => {
-                findExchangeAccount(context, uuid).then(([exchangeId, _]) => {
+                findExchangeAccount(context).then(([exchangeId, _]) => {
                     // Create a new account with no seeds for the PDA
                     let newUserMarginAccount = anchor.web3.Keypair.generate();
                     // Get the minimum lamports for rent exemption
