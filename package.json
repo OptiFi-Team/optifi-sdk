@@ -15,7 +15,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test": "ts-mocha test/test*.ts",
+    "test": "tsc && ts-mocha test/test*.ts",
     "build": "tsc",
     "prepare": "npm run build",
     "prepublishOnly": "npm test",

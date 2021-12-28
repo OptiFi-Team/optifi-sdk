@@ -1,8 +1,7 @@
 import Context from "../types/context";
-import {PublicKey, Transaction, TransactionSignature} from "@solana/web3.js";
+import {Keypair, PublicKey, Signer, Transaction, TransactionSignature} from "@solana/web3.js";
 import WalletType from "../types/walletType";
 import * as bs58 from "bs58";
-import {sign} from "crypto";
 
 export enum TransactionResultType {
     Successful,
@@ -67,10 +66,20 @@ function signStandardProviderTransaction(context: Context, transaction: Transact
     })
 }
 
-export function signTransaction(context: Context, transaction: Transaction): Promise<Transaction> {
+export function signTransaction(context: Context,
+                                transaction: Transaction,
+                                signers?: Signer[]): Promise<Transaction> {
+    if (signers && signers.length > 0) {
+        transaction.partialSign(...signers);
+    }
     // Sign the transaction before sending it
     let signPromise: Promise<Transaction>;
-    if (context.walletType === WalletType.Slope) {
+    if (context.walletType === WalletType.Keypair) {
+        if (context.walletKeypair === undefined) {
+            throw new Error("Wallet type is keypair, but no keypair provided in initialization")
+        }
+        signPromise = context.provider.wallet.signTransaction(transaction);
+    } else if (context.walletType === WalletType.Slope) {
         signPromise = signSlopeTransaction(context, transaction);
     } else {
         signPromise = signStandardProviderTransaction(context, transaction);
@@ -78,33 +87,51 @@ export function signTransaction(context: Context, transaction: Transaction): Pro
     return signPromise;
 }
 
+export function annotateTransactionWithBlockhash(context: Context, transaction: Transaction): Promise<Transaction> {
+    return new Promise((resolve, reject) => {
+        context.connection.getRecentBlockhash().then((blockhash) => {
+            transaction.recentBlockhash = blockhash.blockhash;
+            transaction.feePayer = context.provider.wallet.publicKey;
+            resolve(transaction);
+        }).catch((err) => reject(err))
+    })
+}
+
 /**
  * Use either the users keypair, or the wallet provider API, to sign and send a transaction
  *
  * @param context
  * @param transaction
+ * @param signers
  */
-export function signAndSendTransaction(context: Context, transaction: Transaction): Promise<TransactionResult> {
+export function signAndSendTransaction(context: Context,
+                                       transaction: Transaction,
+                                       signers?: Signer[]): Promise<TransactionResult> {
 
     // Send the transaction
     return new Promise((resolve, reject) => {
-        signTransaction(context, transaction).then((res) => {
-            const rawTransaction = res.serialize();
-            context.provider.connection.sendRawTransaction(rawTransaction, context.provider.opts)
-                .then((txId) => {
-                    resolve({
-                        txId,
-                        resultType: TransactionResultType.Successful
+        annotateTransactionWithBlockhash(context, transaction).then((transaction) => {
+            signTransaction(context, transaction, signers).then((res) => {
+                console.debug("Sending transaction ", transaction);
+                const rawTransaction = res.serialize();
+                context.provider.connection.sendRawTransaction(
+                    rawTransaction,
+                    context.provider.opts)
+                    .then((txId) => {
+                        resolve({
+                            txId,
+                            resultType: TransactionResultType.Successful
+                        })
                     })
-                })
-                .catch((err) => {
-                    console.error("Got error in send phase for transaction ", err);
-                    reject({
-                        resultType: TransactionResultType.Failed
-                    } as TransactionResult)
-                })
-        }).catch((err) => {
-            reject(err)
-        })
+                    .catch((err) => {
+                        console.error("Got error in send phase for transaction ", err);
+                        reject({
+                            resultType: TransactionResultType.Failed
+                        } as TransactionResult)
+                    })
+            }).catch((err) => {
+                reject(err)
+            })
+        }).catch((err) => reject(err))
     })
 }

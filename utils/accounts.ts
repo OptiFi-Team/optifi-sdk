@@ -100,11 +100,11 @@ export function exchangeAccountExists(context: Context): Promise<[boolean, Excha
  * @param context The program context
  * @param accounts The current accounts
  */
-export function oracleAccountsWrapper(context: Context, accounts: { [name: string]: PublicKey }): { [name: string]: PublicKey } {
-    accounts['btc_spot_oracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
-    accounts['btc_iv_oracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV);
-    accounts['eth_spot_oracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD);
-    accounts['eth_iv_oracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV)
+export function oracleAccountsWrapper(context: Context, accounts: { [name: string]: any }): { [name: string]: any} {
+    accounts['btcSpotOracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
+    accounts['btcIvOracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV);
+    accounts['ethSpotOracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD);
+    accounts['ethIvOracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV)
 
     return accounts
 }

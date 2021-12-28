@@ -148,6 +148,7 @@ function initializeContext(wallet?: string | WalletProvider,
         // Otherwise, try to read in a keypair from an environment variable, or a specified string
         } else {
             let keypair: Keypair;
+            console.log("Optifi wallet is ", process.env.OPTIFI_WALLET, " wallet is ", wallet);
             if (wallet === undefined) {
                 keypair = Keypair.fromSecretKey(new Uint8Array(readJsonFile<any>(process.env.OPTIFI_WALLET as string)))
             } else {
@@ -169,6 +170,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 endpoint: endpoint,
                 connection: connection,
                 walletType: WalletType.Keypair,
+                walletKeypair: keypair,
                 exchangeUUID: uuid
             })
         }

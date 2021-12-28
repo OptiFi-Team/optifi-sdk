@@ -36,6 +36,7 @@ function createOrFetchExchange(context: Context): Promise<void> {
             } else {
                 console.debug("Creating a new exchange");
                 initialize(context).then((res) => {
+                    console.debug("Initialized")
                     if (res.successful) {
                         let createExchangeTxUrl = formatExplorerAddress(
                             context,
@@ -49,7 +50,10 @@ function createOrFetchExchange(context: Context): Promise<void> {
                         console.error("Couldn't create new exchange", res);
                         reject(res);
                     }
-                }).catch((err) => reject(err))
+                }).catch((err) => {
+                    console.error(err);
+                    reject(err)
+                })
             }
         })
     })
@@ -111,14 +115,16 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
     return new Promise((resolve, reject) => {
         // Find or create the addresses of both the exchange and user accounts,
         // and make sure that our user is an authority
-        console.debug("Finding or initializing a new Optifi exchange...")
+        console.log("Finding or initializing a new Optifi exchange...")
         createOrFetchExchange(context).then(() => {
+            console.log("Created exchange")
             findExchangeAccount(context).then(([exchangeAddress, _]) => {
                 createUserAccountIfNotExist(context).then(() => {
                     findUserAccount(context).then(([accountAddress, _]) => {
                         // Now that we have both addresses, create as many new serum markets
                         // as are specified in the constants
                         createSerumMarkets(context).then((marketKeys) => {
+
                             // TODO: for each of the new serum markets, create a new instrument, and a new Optifi market
                         }).catch((err) => reject(err))
                     })

@@ -1,3 +1,6 @@
+import Asset from "./types/asset";
+import InstrumentType from "./types/instrumentType";
+
 export enum SolanaEndpoint {
     Mainnet = "https://api.mainnet-beta.solana.com",
     Devnet = "https://api.devnet.solana.com",
@@ -10,15 +13,21 @@ export const EXCHANGE_PREFIX: string = "optifi_exchange";
 export const INSTRUMENT_PREFIX: string = "instrument";
 export const OPTIFI_MARKET_PREFIX: string = "optifi_market";
 export const OPTIFI_MARKET_MINT_AUTH_PREFIX: string = "optifi_market_mint_auth";
+export const USDC_CENTRAL_POOL_PREFIX: string = "central_usdc_pool";
+export const USDC_POOL_AUTH_PREFIX: string = "central_udsc_pool_auth";
+export const SERUM_OPEN_ORDERS_PREFIX: string = "serum_open_orders";
+
+// Size of the strike ladder
+export const STRIKE_LADDER_SIZE: number = 9;
+
+// How many assets are supported
+export const SUPPORTED_ASSETS: Asset[] = [Asset.Ethereum, Asset.Bitcoin];
+
+//How many instrument types are supported
+export const SUPPORTED_INSTRUMENTS: InstrumentType[] = [InstrumentType.Put, InstrumentType.Call, InstrumentType.Future];
 
 // How many serum markets the program should keep
-export const SERUM_MARKETS: number = 4;
-
-// This should always be an even number to make the split between different assets work,
-// so if it's not, throw an error
-if (SERUM_MARKETS % 2 !== 0) {
-    throw new Error("Must be an even number of Serum markets")
-}
+export const SERUM_MARKETS: number = SUPPORTED_INSTRUMENTS.length * SUPPORTED_ASSETS.length * STRIKE_LADDER_SIZE;
 
 export type EndpointConstant = {
     [endpoint in SolanaEndpoint]: any;
@@ -26,7 +35,7 @@ export type EndpointConstant = {
 
 export const USDC_TOKEN_MINT: EndpointConstant = {
     "https://api.mainnet-beta.solana.com": "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9",
-    "https://api.devnet.solana.com": "2yran6ooPNw43UBrPQTygYopEwEpMKBL6dcTiLwd1YGR",
+    "https://api.devnet.solana.com": "71bkrU4PprY2vf8yodAJpaVAdwoiTcTGpTARpKfLDumf",
     "https://api.testnet.solana.com": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 }
 
