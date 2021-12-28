@@ -16,7 +16,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "tsc && ts-mocha test/test*.ts",
-    "build": "tsc",
+    "build": "rm *.js instructions/*.js scripts/*.js sequences/*.js test/*.js types/*.js utils/*.js && tsc",
     "prepare": "npm run build",
     "prepublishOnly": "npm test",
     "preversion": "npm run lint",

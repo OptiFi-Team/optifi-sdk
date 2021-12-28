@@ -16,6 +16,7 @@ export const OPTIFI_MARKET_MINT_AUTH_PREFIX: string = "optifi_market_mint_auth";
 export const USDC_CENTRAL_POOL_PREFIX: string = "central_usdc_pool";
 export const USDC_POOL_AUTH_PREFIX: string = "central_usdc_pool_auth";
 export const SERUM_OPEN_ORDERS_PREFIX: string = "serum_open_orders";
+export const SERUM_MARKET_AUTHORITY: string = "serum_market_auth";
 
 // Size of the strike ladder
 export const STRIKE_LADDER_SIZE: number = 9;

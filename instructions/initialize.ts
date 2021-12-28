@@ -12,7 +12,7 @@ import {
 } from "@solana/web3.js";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {signAndSendTransaction, TransactionResult, TransactionResultType} from "../utils/transactions";
-import {findOptifiUSDCPoolAuthPDA} from "../utils/token";
+import {findOptifiUSDCPoolAuthPDA} from "../utils/pda";
 import {AccountLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {SWITCHBOARD, USDC_TOKEN_MINT} from "../constants";
 

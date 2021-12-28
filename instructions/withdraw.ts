@@ -33,6 +33,7 @@ import { signAndSendTransaction } from "../utils/transactions";
                                         optifiExchange: exchangeAddress,
                                         userAccount: userAccountAddress[0],
                                         depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                        // @ts-ignore
                                         userVaultOwnedByPda: userAccount.userVaultOwnedByPda,
                                         withdrawDest: context.provider.wallet.publicKey,
                                         depositor: context.provider.wallet.publicKey,

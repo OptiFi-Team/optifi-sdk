@@ -6,7 +6,7 @@ import {findExchangeAccount} from "../utils/accounts";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import {findOptifiMarkets, findOptifiMarketWithIdx} from "../utils/market";
 import * as anchor from "@project-serum/anchor";
-import {findOptifiMarketMintAuthPDA} from "../utils/token";
+import {findOptifiMarketMintAuthPDA} from "../utils/pda";
 import {signAndSendTransaction} from "../utils/transactions";
 
 export function createOptifiMarket(context: Context,
