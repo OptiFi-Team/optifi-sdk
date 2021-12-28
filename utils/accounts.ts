@@ -1,8 +1,19 @@
 import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import {EXCHANGE_PREFIX, OPTIFI_EXCHANGE_ID, SWITCHBOARD, USER_ACCOUNT_PREFIX, USER_TOKEN_ACCOUNT_PDA} from "../constants";
+import {
+    EXCHANGE_PREFIX,
+    INSTRUMENT_PREFIX,
+    OPTIFI_EXCHANGE_ID,
+    SWITCHBOARD,
+    USER_ACCOUNT_PREFIX,
+    USER_TOKEN_ACCOUNT_PDA
+} from "../constants";
 import {Exchange, UserAccount} from "../types/optifi-exchange-types";
+import Asset from "../types/asset";
+import InstrumentType from "../types/instrumentType";
+import ExpiryType from "../types/expiryType";
+import {dateToAnchorTimestampBuffer} from "./generic";
 
 /**
  * Helper function for finding an account with a list of seeds
@@ -114,7 +125,7 @@ export function oracleAccountsWrapper(context: Context, accounts: { [name: strin
  *
  * @param context The program context
  */
- export async function findPDA(context: Context): Promise<[PublicKey, number]> {
+ export function findPDA(context: Context): Promise<[PublicKey, number]> {
     return new Promise((resolve, reject) => {
         findOptifiExchange(context).then(([address, bump]) => {
             anchor.web3.PublicKey.findProgramAddress(
@@ -126,5 +137,20 @@ export function oracleAccountsWrapper(context: Context, accounts: { [name: strin
             ).then((res) => resolve(res)).catch((err) => reject(err))
         })
     })
+}
 
+export function findInstrument(context: Context,
+                               asset: Asset,
+                               instrumentType: InstrumentType,
+                               expiryDate: Date,
+                               expiryType: ExpiryType,
+                               idx: number): Promise<[PublicKey, number]> {
+     return findAccountWithSeeds(context, [
+         Buffer.from(INSTRUMENT_PREFIX),
+         Buffer.from(Uint8Array.of(asset as number)),
+         Buffer.from(Uint8Array.of(instrumentType as number)),
+         Buffer.from(Uint8Array.of(expiryType as number)),
+         dateToAnchorTimestampBuffer(expiryDate),
+         Buffer.from(Uint8Array.of(idx))
+     ])
 }
