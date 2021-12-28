@@ -68,7 +68,7 @@ export default function initialize(context: Context): Promise<InstructionResult<
                             let initializeTx = context.program.transaction.initialize(
                                 bump,
                                 {
-                                    uuid: Buffer.from(context.exchangeUUID),
+                                    uuid: context.exchangeUUID,
                                     version: 1,
                                     exchangeAuthority: context.provider.wallet.publicKey,
                                     owner: context.provider.wallet.publicKey,

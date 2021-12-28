@@ -14,7 +14,7 @@ export const INSTRUMENT_PREFIX: string = "instrument";
 export const OPTIFI_MARKET_PREFIX: string = "optifi_market";
 export const OPTIFI_MARKET_MINT_AUTH_PREFIX: string = "optifi_market_mint_auth";
 export const USDC_CENTRAL_POOL_PREFIX: string = "central_usdc_pool";
-export const USDC_POOL_AUTH_PREFIX: string = "central_udsc_pool_auth";
+export const USDC_POOL_AUTH_PREFIX: string = "central_usdc_pool_auth";
 export const SERUM_OPEN_ORDERS_PREFIX: string = "serum_open_orders";
 
 // Size of the strike ladder
@@ -40,9 +40,9 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com" : "29wBWV",
-    "https://api.testnet.solana.com": "29wBWV",
-    "https://api.mainnet-beta.solana.com": "29wBWV",
+    "https://api.devnet.solana.com" : "dmeWlh",
+    "https://api.testnet.solana.com": "dmeWlh",
+    "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
 
 export const SWITCHBOARD: EndpointConstant = {

@@ -97,6 +97,18 @@ export function annotateTransactionWithBlockhash(context: Context, transaction: 
     })
 }
 
+export function annotateAndSignTransaction(context: Context,
+                                           transaction: Transaction,
+                                           signers?: Signer[]): Promise<Transaction> {
+    return new Promise((resolve, reject) => {
+        annotateTransactionWithBlockhash(context, transaction).then((res) => {
+            signTransaction(context, transaction, signers)
+                .then((res) => resolve(res))
+                .catch((err) => reject(err))
+        }).catch((err) => reject(err));
+    })
+}
+
 /**
  * Use either the users keypair, or the wallet provider API, to sign and send a transaction
  *
@@ -110,28 +122,25 @@ export function signAndSendTransaction(context: Context,
 
     // Send the transaction
     return new Promise((resolve, reject) => {
-        annotateTransactionWithBlockhash(context, transaction).then((transaction) => {
-            signTransaction(context, transaction, signers).then((res) => {
-                console.debug("Sending transaction ", transaction);
-                const rawTransaction = res.serialize();
-                context.provider.connection.sendRawTransaction(
-                    rawTransaction,
-                    context.provider.opts)
-                    .then((txId) => {
-                        resolve({
-                            txId,
-                            resultType: TransactionResultType.Successful
-                        })
+        annotateAndSignTransaction(context, transaction).then((res) => {
+            const rawTransaction = res.serialize();
+            context.provider.connection.sendRawTransaction(
+                rawTransaction,
+                context.provider.opts)
+                .then((txId) => {
+                    resolve({
+                        txId,
+                        resultType: TransactionResultType.Successful
                     })
-                    .catch((err) => {
-                        console.error("Got error in send phase for transaction ", err);
-                        reject({
-                            resultType: TransactionResultType.Failed
-                        } as TransactionResult)
-                    })
-            }).catch((err) => {
-                reject(err)
-            })
-        }).catch((err) => reject(err))
+                })
+                .catch((err) => {
+                    console.error("Got error in send phase for transaction ", err);
+                    reject({
+                        resultType: TransactionResultType.Failed
+                    } as TransactionResult)
+                })
+        }).catch((err) => {
+            reject(err)
+        })
     })
 }

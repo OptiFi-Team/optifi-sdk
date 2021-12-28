@@ -23,7 +23,7 @@ function createOrFetchExchange(context: Context): Promise<void> {
     return new Promise((resolve, reject) => {
         exchangeAccountExists(context).then(([exchAcctExists, exchAcct]) => {
             if (exchAcctExists && exchAcct !== undefined) {
-                if (exchAcct.exchangeAuthority == context.provider.wallet.publicKey) {
+                if (exchAcct.exchangeAuthority.toString() == context.provider.wallet.publicKey.toString()) {
                     console.debug("Successfully fetched existing exchange account, and validated that user is the" +
                         "authority.")
                     resolve();
@@ -120,13 +120,18 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
             console.log("Created exchange")
             findExchangeAccount(context).then(([exchangeAddress, _]) => {
                 createUserAccountIfNotExist(context).then(() => {
+                    console.debug("Created or found user account")
                     findUserAccount(context).then(([accountAddress, _]) => {
+                        console.debug("Creating serum markets")
                         // Now that we have both addresses, create as many new serum markets
                         // as are specified in the constants
                         createSerumMarkets(context).then((marketKeys) => {
-
+                            console.debug("Created serum markets ", marketKeys);
                             // TODO: for each of the new serum markets, create a new instrument, and a new Optifi market
-                        }).catch((err) => reject(err))
+                        }).catch((err) => {
+                            console.error("Got error creating serum markets ", err);
+
+                        })
                     })
                 }).catch((err) => reject(err));
             })

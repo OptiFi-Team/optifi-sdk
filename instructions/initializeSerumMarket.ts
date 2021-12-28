@@ -4,7 +4,13 @@ import InstructionResult from "../types/instructionResult";
 import * as anchor from "@project-serum/anchor";
 import {MARKET_STATE_LAYOUT_V3} from "@project-serum/serum";
 import {AccountLayout, MintLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
-import {signAndSendTransaction, signTransaction, TransactionResultType} from "../utils/transactions";
+import {
+    annotateAndSignTransaction,
+    annotateTransactionWithBlockhash,
+    signAndSendTransaction,
+    signTransaction,
+    TransactionResultType
+} from "../utils/transactions";
 import {findExchangeAccount} from "../utils/accounts";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
@@ -23,16 +29,13 @@ function deriveVaultNonce(marketKey: PublicKey,
                           dexProgramId: PublicKey,
                           nonceS: number = 0): Promise<[anchor.web3.PublicKey, anchor.BN]> {
     return new Promise((resolve, reject) => {
+        console.log("Derwefwqfewiving vault ", nonceS);
         const nonce = new anchor.BN(nonceS);
         if (nonceS > 255) {
             reject(new Error("Unable to find nonce"));
         }
-        try {
-            PublicKey.createProgramAddress([marketKey.toBuffer(), nonce.toArrayLike(Buffer, "le", 8)],
-                dexProgramId).then((vaultOwner) => {
-                    resolve([vaultOwner, nonce])
-            })
-        } catch (e) {
+        const tryNext = () => {
+            console.log("Trying next vault");
             deriveVaultNonce(
                 marketKey,
                 dexProgramId,
@@ -41,17 +44,28 @@ function deriveVaultNonce(marketKey: PublicKey,
                 .then((res) => resolve(res))
                 .catch((err) => reject(err))
         }
+        try {
+            PublicKey.createProgramAddress([marketKey.toBuffer(), nonce.toArrayLike(Buffer, "le", 8)],
+                dexProgramId).then((vaultOwner) => {
+                    console.log("Returning vault ", vaultOwner, nonce);
+                    resolve([vaultOwner, nonce])
+            }).catch((err) => {
+                console.log("here!")
+                tryNext();
+            })
+        } catch (e) {
+            tryNext();
+        }
     })
-
 }
 
 /**
  * Helper function to do the requests to get the different balance exemptions for the different
  * data length constants at runtime
  */
-function getMinimumRentBalances(context: Context): Promise<{ [size: number]: number}> {
+function getMinimumRentBalances(context: Context): Promise<{ [size: string]: number}> {
     return new Promise((resolve, reject) => {
-        let exemptionSizes: { [size: number]: number } = {};
+        let exemptionBalances: { [size: number]: number } = {};
         Promise.all([
             REQUEST_QUEUE_DATA_LENGTH,
             EVENT_QUEUE_DATA_LENGTH,
@@ -60,18 +74,29 @@ function getMinimumRentBalances(context: Context): Promise<{ [size: number]: num
             MARKET_DATA_LENGTH,
             MINT_DATA_LENGTH,
             ACCOUNT_LAYOUT_DATA_LENGTH
-        ].map((dataLength) => new Promise((resolve, reject) => {
-            context.connection.getMinimumBalanceForRentExemption(dataLength)
-                .then((minBalance) => exemptionSizes[dataLength] = minBalance)
-                .catch((err) => reject(err));
-        })))
-            .then(() => resolve(exemptionSizes))
-            .catch((err) => reject(err))
+        ].map((size) => new Promise((resolve, reject) => {
+            try {
+                context.connection.getMinimumBalanceForRentExemption(size)
+                    .then((res) => {
+                        exemptionBalances[size] = res;
+                        resolve(res);
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        reject(err);
+                    })
+            } catch (e) {
+                console.error(e);
+                reject(e);
+            }
+        }))).then(() => {
+            resolve(exemptionBalances);
+        }).catch((err) => reject(err));
     })
 }
 
 function initializeAccountsWithLayouts(context: Context,
-                                       rentBalances: { [space: number]: number },
+                                       rentBalances: { [space: string]: number },
                                        marketAccount: Keypair,
                                        coinVaultAccount: Keypair,
                                        pcVaultAccount: Keypair,
@@ -88,27 +113,27 @@ function initializeAccountsWithLayouts(context: Context,
                     fromPubkey: context.provider.wallet.publicKey,
                     newAccountPubkey: marketAccount.publicKey,
                     space: MARKET_STATE_LAYOUT_V3,
-                    lamports: rentBalances[MARKET_DATA_LENGTH],
-                    programId: new PublicKey(SERUM_DEX_PROGRAM_ID)
+                    lamports: rentBalances[MARKET_DATA_LENGTH as string],
+                    programId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
                 }),
                 SystemProgram.createAccount({
                     fromPubkey: context.provider.wallet.publicKey,
                     newAccountPubkey: coinVaultAccount.publicKey,
-                    lamports: rentBalances[ACCOUNT_LAYOUT_DATA_LENGTH],
+                    lamports: rentBalances[ACCOUNT_LAYOUT_DATA_LENGTH as string],
                     space: ACCOUNT_LAYOUT_DATA_LENGTH,
                     programId: TOKEN_PROGRAM_ID
                 }),
                 SystemProgram.createAccount({
                     fromPubkey: context.provider.wallet.publicKey,
                     newAccountPubkey: pcVaultAccount.publicKey,
-                    lamports: rentBalances[ACCOUNT_LAYOUT_DATA_LENGTH],
+                    lamports: rentBalances[ACCOUNT_LAYOUT_DATA_LENGTH as string],
                     space: ACCOUNT_LAYOUT_DATA_LENGTH,
                     programId: TOKEN_PROGRAM_ID
                 }),
                 SystemProgram.createAccount({
                     fromPubkey: context.provider.wallet.publicKey,
                     newAccountPubkey: coinMintAccount.publicKey,
-                    lamports: rentBalances[MINT_DATA_LENGTH],
+                    lamports: rentBalances[MINT_DATA_LENGTH as string],
                     space: MINT_DATA_LENGTH,
                     programId: TOKEN_PROGRAM_ID
                 }),
@@ -133,7 +158,7 @@ function initializeAccountsWithLayouts(context: Context,
                 )
             )
 
-            signTransaction(context, marketTransaction).then((signedTransaction) => {
+            annotateAndSignTransaction(context, marketTransaction).then((signedTransaction) => {
                 context.provider.send(signedTransaction, [
                     coinMintAccount,
                     coinVaultAccount,
@@ -161,6 +186,8 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
     let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
     return new Promise((resolve, reject) => {
 
+        console.debug("Starting serum market creation");
+
         // Create the new accounts necessary for the serum market
         let marketAccount = anchor.web3.Keypair.generate();
         let coinMintAccount = anchor.web3.Keypair.generate();
@@ -172,6 +199,7 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
         let requestQueueAccount = anchor.web3.Keypair.generate();
         let eventQueueAccount = anchor.web3.Keypair.generate();
 
+        console.debug("Deriving vault");
         deriveVaultNonce(marketAccount.publicKey, serumId).then(([vaultOwner, vaultSignerNonce]) => {
             console.debug("Initializing market with nonce ", vaultSignerNonce);
             // Constants
@@ -179,8 +207,12 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
             let pcLotSize = new anchor.BN(1);
             let pcDustThreshold = new anchor.BN(2);
 
+            console.debug("Finding exchange account")
+
             findExchangeAccount(context).then(([exchangeAddress, _]) => {
+                console.debug("Getting rent balances");
                 getMinimumRentBalances(context).then((minimumRentBalances) => {
+                    console.debug("Initializing layout accounts");
                     initializeAccountsWithLayouts(
                         context,
                         minimumRentBalances,
@@ -214,7 +246,7 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
                                     serumMarketAuthority: context.provider.wallet.publicKey,
                                     systemProgram: SystemProgram.programId,
                                     rent: SYSVAR_RENT_PUBKEY,
-                                    serumDexProgramId: serumId,
+                                    serumDexProgram: serumId,
                                 },
                                 signers: [
                                     marketAccount,
@@ -279,7 +311,13 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
                     console.error("Got error trying to create initial serum accounts", err);
                     reject(err)
                 })
+            }).catch((err) => {
+                console.error("Got error trying to find exchange account ", err);
+                reject(err);
             })
+        }).catch((err) => {
+            console.error("Got error trying to derive vault nonce ", err);
+            reject(err);
         })
     })
 }

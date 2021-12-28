@@ -10,7 +10,7 @@ describe('Initialization', async () => {
         initialize(context).then((res) => {
             //console.log("Did initialize, got UUID, ", res.data);
             if (res.data) {
-                findExchangeAccount(context, res.data).then((acct) => {
+                findExchangeAccount(context).then((acct) => {
                     context.connection.getAccountInfo(acct[0]).then((acctInfo) => {
                         //console.log("Got account info ", acctInfo?.data);
                         assert.ok("Got account info successfully")

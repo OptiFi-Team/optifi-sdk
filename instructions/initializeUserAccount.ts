@@ -2,20 +2,20 @@ import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {UserAccount} from "../types/optifi-exchange-types";
 import * as anchor from "@project-serum/anchor";
-import {PublicKey, SystemProgram} from "@solana/web3.js";
+import {PublicKey, SystemProgram, TransactionSignature} from "@solana/web3.js";
 import {findExchangeAccount, findUserAccount, userAccountExists} from "../utils/accounts";
 import {AccountLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
-import {OPTIFI_EXCHANGE_ID, USDC_TOKEN_MINT} from "../constants";
-import {signAndSendTransaction} from "../utils/transactions";
+import {USDC_TOKEN_MINT} from "../constants";
+import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 
 /**
  * Create an Optifi controlled user account, to which users can deposit and withdrawal collateral for trading.
  * Owner
  *
  * @param context The program context
- * @param exchangeUuid Optionally specify exchange account
  */
-export default function initializeUserAccount(context: Context): Promise<InstructionResult<UserAccount>> {
+export default function initializeUserAccount(context: Context): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         userAccountExists(context).then(([alreadyExists, _]) => {
 
@@ -69,20 +69,19 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                             )
                             initUserAccountTx.recentBlockhash = recentBlockhash.blockhash;
                             initUserAccountTx.feePayer = context.provider.wallet.publicKey;
-                            signAndSendTransaction(context, initUserAccountTx).then(() => {
-                                userAccountExists(context).then(([existsNow, acct]) => {
-                                    if (existsNow) {
-                                        resolve({
-                                            successful: true,
-                                            data: acct
-                                        })
-                                    } else {
-                                        reject({
-                                            successful: false,
-                                            error: "Account didn't exist after initialization"
-                                        } as InstructionResult<any>)
-                                    }
-                                })
+                            signAndSendTransaction(context, initUserAccountTx, [newUserMarginAccount]).then(
+                                    (res) => {
+                                  if (res.resultType === TransactionResultType.Successful) {
+                                      let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
+                                      console.debug("Transaction successful", txUrl);
+                                      resolve({
+                                          successful: true,
+                                          data: res.txId as TransactionSignature
+                                      })
+                                  } else {
+                                      console.error(res);
+                                      reject(res);
+                                  }
                             }).catch((err) => {
                                 console.error("Got error trying to create account", err);
                                 reject(err);
