@@ -4,7 +4,7 @@ import * as anchor from "@project-serum/anchor";
 import {
     EXCHANGE_PREFIX,
     INSTRUMENT_PREFIX,
-    OPTIFI_EXCHANGE_ID,
+    SERUM_OPEN_ORDERS_PREFIX,
     SWITCHBOARD,
     USER_ACCOUNT_PREFIX,
     USER_TOKEN_ACCOUNT_PDA
@@ -58,11 +58,19 @@ export function findOptifiExchange(context: Context): Promise<[PublicKey, number
     return findExchangeAccount(context);
 }
 
-export function getDexOpenOrders(context: Context): Promise<[PublicKey, number]> {
-    return anchor.web3.PublicKey.findProgramAddress(
-        [Buffer.from("dex-open-orders"), new PublicKey("DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY").toBuffer()],
-        context.program.programId
-      );
+export function getDexOpenOrders(context: Context,
+                                 marketAddress: PublicKey,
+                                 userAccountAddress: PublicKey): Promise<[PublicKey, number]> {
+    return new Promise((resolve, reject) => {
+        findExchangeAccount(context).then(([exchangeAddress, _]) => {
+            findAccountWithSeeds(context, [
+                Buffer.from(SERUM_OPEN_ORDERS_PREFIX),
+                exchangeAddress.toBuffer(),
+                marketAddress.toBuffer(),
+                userAccountAddress.toBuffer()
+            ]).catch((err) => reject(err))
+        }).catch((err) => reject(err))
+    })
 }
 
 /**

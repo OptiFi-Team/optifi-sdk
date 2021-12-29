@@ -4,8 +4,7 @@ import * as anchor from "@project-serum/anchor";
 import { Market } from "@project-serum/serum";
 import {Chain, OptifiMarket} from "../types/optifi-exchange-types";
 import {findAccountWithSeeds, findExchangeAccount, findOptifiExchange} from "./accounts";
-import {OPTIFI_EXCHANGE_ID, OPTIFI_MARKET_PREFIX} from "../constants";
-
+import {OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID} from "../constants";
 
 export function getMarketInfo (context: Context): Promise<Market> {
     return Market.load(
@@ -101,5 +100,40 @@ export function findExpiredMarkets(context: Context): Promise<OptifiMarket[]> {
                 expiredMarkets
             )).catch((err) => reject(err));
         })
+    })
+}
+
+export function getSerumMarket(context: Context, marketAddress: PublicKey): Promise<Market> {
+    return Market.load(context.connection, marketAddress, {}, new PublicKey(SERUM_DEX_PROGRAM_ID))
+}
+
+export function deriveVaultNonce(marketKey: PublicKey,
+                          dexProgramId: PublicKey,
+                          nonceS: number = 0): Promise<[anchor.web3.PublicKey, anchor.BN]> {
+    return new Promise((resolve, reject) => {
+        const nonce = new anchor.BN(nonceS);
+        if (nonceS > 255) {
+            reject(new Error("Unable to find nonce"));
+        }
+        const tryNext = () => {
+            deriveVaultNonce(
+                marketKey,
+                dexProgramId,
+                nonceS+1
+            )
+                .then((res) => resolve(res))
+                .catch((err) => reject(err))
+        }
+        try {
+            PublicKey.createProgramAddress([marketKey.toBuffer(), nonce.toArrayLike(Buffer, "le", 8)],
+                dexProgramId).then((vaultOwner) => {
+                console.log("Returning vault ", vaultOwner, nonce);
+                resolve([vaultOwner, nonce])
+            }).catch((err) => {
+                tryNext();
+            })
+        } catch (e) {
+            tryNext();
+        }
     })
 }

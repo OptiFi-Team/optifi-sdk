@@ -3,11 +3,6 @@
   "name": "optifi_exchange",
   "instructions": [
     {
-      "name": "ping",
-      "accounts": [],
-      "args": []
-    },
-    {
       "name": "initialize",
       "accounts": [
         {

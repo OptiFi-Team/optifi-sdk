@@ -15,7 +15,6 @@ import { signAndSendTransaction } from "../utils/transactions";
  *
  * @param context
  * @param amount
- * @param account
  */
 
  export default function deposit(context: Context, amount: BN) : Promise<InstructionResult<string>> {

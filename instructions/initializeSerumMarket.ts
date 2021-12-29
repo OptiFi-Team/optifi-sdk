@@ -15,6 +15,7 @@ import {findExchangeAccount} from "../utils/accounts";
 import {SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {findOptifiMarketMintAuthPDA, findSerumAuthorityPDA} from "../utils/pda";
+import {deriveVaultNonce} from "../utils/market";
 
 // Data lengths for different accounts on the market
 const REQUEST_QUEUE_DATA_LENGTH = 5132;
@@ -25,36 +26,6 @@ const MARKET_DATA_LENGTH = MARKET_STATE_LAYOUT_V3.span;
 const ACCOUNT_LAYOUT_DATA_LENGTH = AccountLayout.span;
 const MINT_DATA_LENGTH = MintLayout.span;
 
-function deriveVaultNonce(marketKey: PublicKey,
-                          dexProgramId: PublicKey,
-                          nonceS: number = 0): Promise<[anchor.web3.PublicKey, anchor.BN]> {
-    return new Promise((resolve, reject) => {
-        const nonce = new anchor.BN(nonceS);
-        if (nonceS > 255) {
-            reject(new Error("Unable to find nonce"));
-        }
-        const tryNext = () => {
-            deriveVaultNonce(
-                marketKey,
-                dexProgramId,
-                nonceS+1
-            )
-                .then((res) => resolve(res))
-                .catch((err) => reject(err))
-        }
-        try {
-            PublicKey.createProgramAddress([marketKey.toBuffer(), nonce.toArrayLike(Buffer, "le", 8)],
-                dexProgramId).then((vaultOwner) => {
-                    console.log("Returning vault ", vaultOwner, nonce);
-                    resolve([vaultOwner, nonce])
-            }).catch((err) => {
-                tryNext();
-            })
-        } catch (e) {
-            tryNext();
-        }
-    })
-}
 
 /**
  * Helper function to do the requests to get the different balance exemptions for the different
