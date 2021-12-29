@@ -410,6 +410,11 @@
           "isSigner": false
         },
         {
+          "name": "usdcCentralPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "user",
           "isMut": false,
           "isSigner": false
@@ -552,6 +557,11 @@
         {
           "name": "exchange",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcCentralPool",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -701,6 +711,11 @@
         {
           "name": "exchange",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcCentralPool",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1131,6 +1146,428 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "initializeAmm",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "depositSource",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "data",
+          "type": {
+            "defined": "InitializeAMMData"
+          }
+        }
+      ]
+    },
+    {
+      "name": "depositIntoAmm",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammQuoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammQuoteTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userQuoteTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lpTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userLpTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdrawFromAmm",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammQuoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammQuoteTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userQuoteTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lpTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userLpTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "syncPositions",
+      "accounts": [
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "longTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shortTokenVault",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "instrumentIndex",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "calculateDelta",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ivFeed",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "calculateProposal",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "spotOracle",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ivOracle",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "updateOrders",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammUsdcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "requestQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "orderPayerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentTokenMintAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pruneAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "orderLimit",
+          "type": "u16"
+        },
+        {
+          "name": "instrumentIndex",
+          "type": "u16"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1180,6 +1617,10 @@
           {
             "name": "isListedOnMarket",
             "type": "bool"
+          },
+          {
+            "name": "contractSize",
+            "type": "u32"
           }
         ]
       }
@@ -1332,8 +1773,16 @@
             }
           },
           {
+            "name": "instruments",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
             "name": "positions",
-            "type": "u16"
+            "type": {
+              "vec": "i32"
+            }
           },
           {
             "name": "bump",
@@ -1386,6 +1835,10 @@
           {
             "name": "isListedOnMarket",
             "type": "bool"
+          },
+          {
+            "name": "contractSize",
+            "type": "u32"
           }
         ]
       }
@@ -1549,6 +2002,48 @@
       }
     },
     {
+      "name": "InitializeAMMData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ammUuid",
+            "type": "string"
+          },
+          {
+            "name": "quoteTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "quoteTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "lpTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "ammCapacity",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "numInstruments",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
       "name": "OptionData",
       "type": {
         "kind": "struct",
@@ -1556,6 +2051,36 @@
           {
             "name": "size",
             "type": "i32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Position",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "instruments",
+            "type": "publicKey"
+          },
+          {
+            "name": "longTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "shortTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "latestPosition",
+            "type": "i64"
+          },
+          {
+            "name": "usdcBalance",
+            "type": {
+              "defined": "f64"
+            }
           }
         ]
       }
@@ -1919,6 +2444,26 @@
       "code": 6011,
       "name": "CannotSettleFundBeforeMarketsStopped",
       "msg": "Cannot settle fund befor markets have been stopped!"
+    },
+    {
+      "code": 6012,
+      "name": "IncorrectOracleAccount",
+      "msg": "Incorrect oracle account"
+    },
+    {
+      "code": 6013,
+      "name": "WrongState",
+      "msg": "the amm state is wrong"
+    },
+    {
+      "code": 6014,
+      "name": "WrongInstrument",
+      "msg": "the instrument has already been done"
+    },
+    {
+      "code": 6015,
+      "name": "NoEnoughOrdersInProposal",
+      "msg": "no enough orders in proposal to execute"
     }
   ]
 }

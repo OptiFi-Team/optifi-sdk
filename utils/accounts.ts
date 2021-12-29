@@ -90,7 +90,8 @@ export function userAccountExists(context: Context): Promise<[boolean, UserAccou
                 } else {
                     resolve([false, undefined])
                 }
-            }).catch(() => {
+            }).catch((err) => {
+                console.error(err);
                 resolve([false, undefined])
             })
         })

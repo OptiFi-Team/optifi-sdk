@@ -24,7 +24,7 @@ function createOrFetchExchange(context: Context): Promise<void> {
         exchangeAccountExists(context).then(([exchAcctExists, exchAcct]) => {
             if (exchAcctExists && exchAcct !== undefined) {
                 if (exchAcct.exchangeAuthority.toString() == context.provider.wallet.publicKey.toString()) {
-                    console.debug("Successfully fetched existing exchange account, and validated that user is the" +
+                    console.debug("Successfully fetched existing exchange account, and validated that user is the " +
                         "authority.")
                     resolve();
                 } else {
