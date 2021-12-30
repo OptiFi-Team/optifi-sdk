@@ -101,8 +101,10 @@ export function userAccountExists(context: Context): Promise<[boolean, UserAccou
 export function exchangeAccountExists(context: Context): Promise<[boolean, Exchange?]> {
     return new Promise((resolve) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
+            console.log("Exchange address is ", exchangeAddress.toString());
             context.program.account.exchange.fetch(exchangeAddress).then((res) => {
                 if (res) {
+                    console.log("Exchange data is ", res);
                     resolve([true, res as Exchange])
                 } else {
                     resolve([false, undefined])

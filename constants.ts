@@ -17,6 +17,7 @@ export const USDC_CENTRAL_POOL_PREFIX: string = "central_usdc_pool";
 export const USDC_POOL_AUTH_PREFIX: string = "central_usdc_pool_auth";
 export const SERUM_OPEN_ORDERS_PREFIX: string = "serum_open_orders";
 export const SERUM_MARKET_AUTHORITY: string = "serum_market_auth";
+export const SERUM_PRUNE_AUTHORITY: string = "serum_prune_auth";
 
 // Size of the strike ladder
 export const STRIKE_LADDER_SIZE: number = 9;
@@ -41,7 +42,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com" : "dmeWlh",
+    "https://api.devnet.solana.com" : "skRvEx",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }

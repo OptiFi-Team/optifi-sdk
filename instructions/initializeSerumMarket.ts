@@ -14,8 +14,9 @@ import {
 import {findExchangeAccount} from "../utils/accounts";
 import {SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {findOptifiMarketMintAuthPDA, findSerumAuthorityPDA} from "../utils/pda";
+import {findOptifiMarketMintAuthPDA, findSerumAuthorityPDA, findSerumPruneAuthorityPDA} from "../utils/pda";
 import {deriveVaultNonce} from "../utils/market";
+import {Key} from "readline";
 
 // Data lengths for different accounts on the market
 const REQUEST_QUEUE_DATA_LENGTH = 5132;
@@ -26,12 +27,11 @@ const MARKET_DATA_LENGTH = MARKET_STATE_LAYOUT_V3.span;
 const ACCOUNT_LAYOUT_DATA_LENGTH = AccountLayout.span;
 const MINT_DATA_LENGTH = MintLayout.span;
 
-
 /**
  * Helper function to do the requests to get the different balance exemptions for the different
  * data length constants at runtime
  */
-function getMinimumRentBalances(context: Context): Promise<{ [size: string]: number}> {
+function getMinimumRentBalances(context: Context): Promise<{ [size: string]: number }> {
     return new Promise((resolve, reject) => {
         let exemptionBalances: { [size: number]: number } = {};
         Promise.all([
@@ -80,28 +80,28 @@ function initializeAccountsWithLayouts(context: Context,
                 SystemProgram.createAccount({
                     fromPubkey: context.provider.wallet.publicKey,
                     newAccountPubkey: marketAccount.publicKey,
-                    space: MARKET_STATE_LAYOUT_V3,
-                    lamports: rentBalances[MARKET_DATA_LENGTH as string],
+                    space: MARKET_DATA_LENGTH,
+                    lamports: rentBalances[MARKET_DATA_LENGTH],
                     programId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
                 }),
                 SystemProgram.createAccount({
                     fromPubkey: context.provider.wallet.publicKey,
                     newAccountPubkey: coinVaultAccount.publicKey,
-                    lamports: rentBalances[ACCOUNT_LAYOUT_DATA_LENGTH as string],
+                    lamports: rentBalances[ACCOUNT_LAYOUT_DATA_LENGTH],
                     space: ACCOUNT_LAYOUT_DATA_LENGTH,
                     programId: TOKEN_PROGRAM_ID
                 }),
                 SystemProgram.createAccount({
                     fromPubkey: context.provider.wallet.publicKey,
                     newAccountPubkey: pcVaultAccount.publicKey,
-                    lamports: rentBalances[ACCOUNT_LAYOUT_DATA_LENGTH as string],
+                    lamports: rentBalances[ACCOUNT_LAYOUT_DATA_LENGTH],
                     space: ACCOUNT_LAYOUT_DATA_LENGTH,
                     programId: TOKEN_PROGRAM_ID
                 }),
                 SystemProgram.createAccount({
                     fromPubkey: context.provider.wallet.publicKey,
                     newAccountPubkey: coinMintAccount.publicKey,
-                    lamports: rentBalances[MINT_DATA_LENGTH as string],
+                    lamports: rentBalances[MINT_DATA_LENGTH],
                     space: MINT_DATA_LENGTH,
                     programId: TOKEN_PROGRAM_ID
                 }),
@@ -126,19 +126,16 @@ function initializeAccountsWithLayouts(context: Context,
                 )
             )
 
-            annotateAndSignTransaction(context, marketTransaction).then((signedTransaction) => {
-                context.provider.send(signedTransaction, [
-                    coinMintAccount,
-                    coinVaultAccount,
-                    pcVaultAccount,
-                    marketAccount
-                ]).then((res) => {
-                    let explorerTxUrl = formatExplorerAddress(context, res, SolanaEntityType.Transaction);
-                    console.debug(`Created preliminary serum market accounts, ${explorerTxUrl}`);
-                    resolve({
-                        successful: true
-                    })
-                }).catch((err) => reject(err))
+            context.provider.send(marketTransaction, [coinMintAccount,
+                coinVaultAccount,
+                pcVaultAccount,
+                marketAccount,
+            ]).then((res) => {
+                let explorerTxUrl = formatExplorerAddress(context, res, SolanaEntityType.Transaction);
+                console.debug(`Created preliminary serum market accounts, ${explorerTxUrl}`);
+                resolve({
+                    successful: true
+                })
             }).catch((err) => reject(err))
         })
     })
@@ -179,104 +176,106 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
 
             findExchangeAccount(context).then(([exchangeAddress, _]) => {
                 findSerumAuthorityPDA(context).then(([authorityAddress, _]) => {
-                    console.debug("Getting rent balances");
-                    getMinimumRentBalances(context).then((minimumRentBalances) => {
-                        console.debug("Initializing layout accounts");
-                        initializeAccountsWithLayouts(
-                            context,
-                            minimumRentBalances,
-                            marketAccount,
-                            coinVaultAccount,
-                            pcVaultAccount,
-                            usdcMint,
-                            coinMintAccount,
-                            vaultOwner
-                        ).then((res) => {
-                            // Actually create the orderbook
-                            let tx = context.program.transaction.initializeSerumOrderbook(
-                                authorityAddress, // Authority PK
-                                authorityAddress, // Prune authority PK
-                                coinLotSize,
-                                pcLotSize,
-                                vaultSignerNonce,
-                                pcDustThreshold,
-                                {
-                                    accounts: {
-                                        optifiExchange: exchangeAddress,
-                                        market: marketAccount.publicKey,
-                                        coinMintPk: coinMintAccount.publicKey,
-                                        pcMintPk: usdcMint,
-                                        coinVaultPk: coinVaultAccount.publicKey,
-                                        pcVaultPk: pcVaultAccount.publicKey,
-                                        bidsPk: bidsAccount.publicKey,
-                                        asksPk: asksAccount.publicKey,
-                                        reqQPk: requestQueueAccount.publicKey,
-                                        eventQPk: eventQueueAccount.publicKey,
-                                        serumMarketAuthority: authorityAddress,
-                                        systemProgram: SystemProgram.programId,
-                                        rent: SYSVAR_RENT_PUBKEY,
-                                        serumDexProgram: serumId,
-                                    },
-                                    instructions: [
-                                        SystemProgram.createAccount({
-                                            fromPubkey: context.provider.wallet.publicKey,
-                                            newAccountPubkey: requestQueueAccount.publicKey,
-                                            space: REQUEST_QUEUE_DATA_LENGTH,
-                                            lamports: minimumRentBalances[REQUEST_QUEUE_DATA_LENGTH],
-                                            programId: serumId
-                                        }),
-                                        SystemProgram.createAccount({
-                                            fromPubkey: context.provider.wallet.publicKey,
-                                            newAccountPubkey: eventQueueAccount.publicKey,
-                                            space: EVENT_QUEUE_DATA_LENGTH,
-                                            lamports: minimumRentBalances[EVENT_QUEUE_DATA_LENGTH],
-                                            programId: serumId
-                                        }),
-                                        SystemProgram.createAccount({
-                                            fromPubkey: context.provider.wallet.publicKey,
-                                            newAccountPubkey: bidsAccount.publicKey,
-                                            space: BIDS_DATA_LENGTH,
-                                            lamports: minimumRentBalances[BIDS_DATA_LENGTH],
-                                            programId: serumId,
-                                        }),
-                                        SystemProgram.createAccount({
-                                            fromPubkey: context.provider.wallet.publicKey,
-                                            newAccountPubkey: asksAccount.publicKey,
-                                            space: ASKS_DATA_LENGTH,
-                                            lamports: minimumRentBalances[ASKS_DATA_LENGTH],
-                                            programId: serumId
-                                        })
-                                    ]
-                                }
-                            )
-                            signAndSendTransaction(context, tx, [
-                                requestQueueAccount,
-                                eventQueueAccount,
-                                asksAccount,
-                                bidsAccount
-                            ]).then((res) => {
-                                if (res.resultType === TransactionResultType.Successful) {
-                                    let explorerAddress = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
-                                    console.debug(`Successfully created new serum market: ${explorerAddress}`);
-                                    resolve({
-                                        successful: true,
-                                        data: marketAccount.publicKey
+                    findSerumPruneAuthorityPDA(context).then(([pruneAuthorityAddress, _]) => {
+                        console.debug("Getting rent balances");
+                        getMinimumRentBalances(context).then((minimumRentBalances) => {
+                            console.debug("Initializing layout accounts");
+                            findOptifiMarketMintAuthPDA(context).then(([mintAuthAddress, _]) => {
+                                initializeAccountsWithLayouts(
+                                    context,
+                                    minimumRentBalances,
+                                    marketAccount,
+                                    coinVaultAccount,
+                                    pcVaultAccount,
+                                    usdcMint,
+                                    coinMintAccount,
+                                    vaultOwner
+                                ).then((res) => {
+                                    let tx = context.program.transaction.initializeSerumOrderbook(
+                                        context.provider.wallet.publicKey, // Authority PK
+                                        context.provider.wallet.publicKey, // Prune authority PK
+                                        coinLotSize,
+                                        pcLotSize,
+                                        vaultSignerNonce,
+                                        pcDustThreshold,
+                                        {
+                                            accounts: {
+                                                optifiExchange: exchangeAddress,
+                                                market: marketAccount.publicKey,
+                                                coinMintPk: coinMintAccount.publicKey,
+                                                pcMintPk: usdcMint,
+                                                coinVaultPk: coinVaultAccount.publicKey,
+                                                pcVaultPk: pcVaultAccount.publicKey,
+                                                bidsPk: bidsAccount.publicKey,
+                                                asksPk: asksAccount.publicKey,
+                                                reqQPk: requestQueueAccount.publicKey,
+                                                eventQPk: eventQueueAccount.publicKey,
+                                                serumMarketAuthority: authorityAddress,
+                                                systemProgram: SystemProgram.programId,
+                                                rent: SYSVAR_RENT_PUBKEY,
+                                                serumDexProgram: serumId,
+                                            },
+                                            instructions: [
+                                                SystemProgram.createAccount({
+                                                    fromPubkey: context.provider.wallet.publicKey,
+                                                    newAccountPubkey: requestQueueAccount.publicKey,
+                                                    space: REQUEST_QUEUE_DATA_LENGTH,
+                                                    lamports: minimumRentBalances[REQUEST_QUEUE_DATA_LENGTH],
+                                                    programId: serumId
+                                                }),
+                                                SystemProgram.createAccount({
+                                                    fromPubkey: context.provider.wallet.publicKey,
+                                                    newAccountPubkey: eventQueueAccount.publicKey,
+                                                    space: EVENT_QUEUE_DATA_LENGTH,
+                                                    lamports: minimumRentBalances[EVENT_QUEUE_DATA_LENGTH],
+                                                    programId: serumId
+                                                }),
+                                                SystemProgram.createAccount({
+                                                    fromPubkey: context.provider.wallet.publicKey,
+                                                    newAccountPubkey: bidsAccount.publicKey,
+                                                    space: BIDS_DATA_LENGTH,
+                                                    lamports: minimumRentBalances[BIDS_DATA_LENGTH],
+                                                    programId: serumId,
+                                                }),
+                                                SystemProgram.createAccount({
+                                                    fromPubkey: context.provider.wallet.publicKey,
+                                                    newAccountPubkey: asksAccount.publicKey,
+                                                    space: ASKS_DATA_LENGTH,
+                                                    lamports: minimumRentBalances[ASKS_DATA_LENGTH],
+                                                    programId: serumId
+                                                })
+                                            ]
+                                        });
+                                    signAndSendTransaction(context, tx, [
+                                        requestQueueAccount,
+                                        eventQueueAccount,
+                                        asksAccount,
+                                        bidsAccount
+                                    ]).then((res) => {
+                                        if (res.resultType === TransactionResultType.Successful) {
+                                            let explorerAddress = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
+                                            console.debug(`Successfully created new serum market: ${explorerAddress}`);
+                                            resolve({
+                                                successful: true,
+                                                data: marketAccount.publicKey
+                                            })
+                                        } else {
+                                            console.error("Couldn't create market ", res);
+                                            reject(res);
+                                        }
+                                    }).catch((err) => {
+                                        console.error("Got error trying to initialize serum market ", err);
+                                        reject(err);
                                     })
-                                } else {
-                                    console.error("Couldn't create market ", res);
-                                    reject(res);
-                                }
-                            }).catch((err) => {
-                                console.error("Got error trying to initialize serum market ", err);
-                                reject(err);
+                                }).catch((err) => {
+                                    console.error("Got error trying to retrieve rent balances ", err);
+                                    reject(err);
+                                })
                             })
                         }).catch((err) => {
-                            console.error("Got error trying to retrieve rent balances ", err);
-                            reject(err);
+                            console.error("Got error trying to create initial serum accounts", err);
+                            reject(err)
                         })
-                    }).catch((err) => {
-                        console.error("Got error trying to create initial serum accounts", err);
-                        reject(err)
                     })
                 })
             }).catch((err) => {
