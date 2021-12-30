@@ -2,7 +2,6 @@ import Asset from "./types/asset";
 import InstrumentType from "./types/instrumentType";
 import ExpiryType from "./types/expiryType";
 import MaturityType from "./types/maturityType";
-import {calculateSerumMarketsCount} from "./utils/chains";
 
 export enum SolanaEndpoint {
     Mainnet = "https://api.mainnet-beta.solana.com",
@@ -52,8 +51,11 @@ export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
     ]
 }
 
-// We want our maturities to end on Wednesdays
+// We want our maturities to end on Wednesdays, 2:00PM UTC
 export const EXPIRATION_WEEKDAY: number = 3;
+export const EXPIRATION_TIME: number = 14;
+
+export const SECONDS_IN_YEAR: number = (60 * 60) * 24 * 365;
 
 // The expiration durations we're supporting for standard expiries
 export const SUPPORTED_MATURITIES = [
@@ -66,7 +68,7 @@ export function calculateSerumMarketsCount(): number {
     let totalMarkets = 0;
 
     for (let instrumentType of Object.keys(SUPPORTED_EXPIRATION_TYPES)) {
-        let supportedExpirations: ExpiryType[] = SUPPORTED_EXPIRATION_TYPES[instrumentType];
+        let supportedExpirations: ExpiryType[] = SUPPORTED_EXPIRATION_TYPES[Number(instrumentType) as InstrumentType];
         for (let supportedExpiryType of supportedExpirations) {
             switch (supportedExpiryType) {
                 case ExpiryType.Perpetual:

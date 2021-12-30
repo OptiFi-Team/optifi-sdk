@@ -153,9 +153,10 @@ export function oracleAccountsWrapper(context: Context, accounts: { [name: strin
 export function findInstrument(context: Context,
                                asset: Asset,
                                instrumentType: InstrumentType,
-                               expiryDate: Date,
                                expiryType: ExpiryType,
-                               idx: number): Promise<[PublicKey, number]> {
+                               idx: number,
+                               expiryDate?: Date,
+                               ): Promise<[PublicKey, number]> {
      return findAccountWithSeeds(context, [
          Buffer.from(INSTRUMENT_PREFIX),
          Buffer.from(Uint8Array.of(asset as number)),

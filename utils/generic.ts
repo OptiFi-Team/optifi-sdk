@@ -27,10 +27,12 @@ export function generateUuid(): string {
         .slice(0, 6);
 }
 
-export function dateToAnchorTimestamp(date: Date): anchor.BN {
-   return new anchor.BN(date.getTime() / 1000)
+export function dateToAnchorTimestamp(date?: Date): anchor.BN {
+    return date ?
+        new anchor.BN(date.getTime() / 1000)
+        : new anchor.BN(0)
 }
 
-export function dateToAnchorTimestampBuffer(date: Date): Buffer {
+export function dateToAnchorTimestampBuffer(date?: Date): Buffer {
     return dateToAnchorTimestamp(date).toArrayLike(Buffer, "be", 8)
 }
