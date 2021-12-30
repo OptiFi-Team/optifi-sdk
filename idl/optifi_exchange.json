@@ -410,11 +410,6 @@
           "isSigner": false
         },
         {
-          "name": "usdcCentralPool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "user",
           "isMut": false,
           "isSigner": false
@@ -557,11 +552,6 @@
         {
           "name": "exchange",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcCentralPool",
-          "isMut": true,
           "isSigner": false
         },
         {
@@ -711,11 +701,6 @@
         {
           "name": "exchange",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcCentralPool",
-          "isMut": true,
           "isSigner": false
         },
         {
@@ -1338,6 +1323,21 @@
           "name": "shortTokenVault",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersOwner",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1572,6 +1572,104 @@
   ],
   "accounts": [
     {
+      "name": "AMM",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ammIdx",
+            "type": "u8"
+          },
+          {
+            "name": "quoteTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "quoteTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "lpTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "ammCapacity",
+            "type": {
+              "defined": "f64"
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "tradingInstruments",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "positions",
+            "type": {
+              "vec": {
+                "defined": "Position"
+              }
+            }
+          },
+          {
+            "name": "proposals",
+            "type": {
+              "vec": {
+                "defined": "Proposal"
+              }
+            }
+          },
+          {
+            "name": "state",
+            "type": {
+              "defined": "AmmState"
+            }
+          },
+          {
+            "name": "flags",
+            "type": {
+              "vec": "bool"
+            }
+          },
+          {
+            "name": "iv",
+            "type": {
+              "defined": "f64"
+            }
+          },
+          {
+            "name": "price",
+            "type": {
+              "defined": "f64"
+            }
+          },
+          {
+            "name": "netDelta",
+            "type": {
+              "defined": "f64"
+            }
+          },
+          {
+            "name": "totalLiquidity",
+            "type": {
+              "defined": "f64"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Chain",
       "type": {
         "kind": "struct",
@@ -1620,7 +1718,9 @@
           },
           {
             "name": "contractSize",
-            "type": "u32"
+            "type": {
+              "defined": "f32"
+            }
           }
         ]
       }
@@ -1794,6 +1894,54 @@
   ],
   "types": [
     {
+      "name": "Proposal",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "instrument",
+            "type": "publicKey"
+          },
+          {
+            "name": "isStarted",
+            "type": "bool"
+          },
+          {
+            "name": "askOrdersSize",
+            "type": {
+              "vec": {
+                "defined": "f64"
+              }
+            }
+          },
+          {
+            "name": "bidOrdersSize",
+            "type": {
+              "vec": {
+                "defined": "f64"
+              }
+            }
+          },
+          {
+            "name": "askOrdersPrice",
+            "type": {
+              "vec": {
+                "defined": "f64"
+              }
+            }
+          },
+          {
+            "name": "bidOrdersPrice",
+            "type": {
+              "vec": {
+                "defined": "f64"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "ChainData",
       "type": {
         "kind": "struct",
@@ -1838,7 +1986,9 @@
           },
           {
             "name": "contractSize",
-            "type": "u32"
+            "type": {
+              "defined": "f32"
+            }
           }
         ]
       }
@@ -2007,8 +2157,8 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "ammUuid",
-            "type": "string"
+            "name": "ammIdx",
+            "type": "u8"
           },
           {
             "name": "quoteTokenMint",
@@ -2024,7 +2174,9 @@
           },
           {
             "name": "ammCapacity",
-            "type": "u64"
+            "type": {
+              "defined": "f64"
+            }
           },
           {
             "name": "bump",
@@ -2078,9 +2230,7 @@
           },
           {
             "name": "usdcBalance",
-            "type": {
-              "defined": "f64"
-            }
+            "type": "u64"
           }
         ]
       }
@@ -2237,6 +2387,26 @@
           {
             "name": "epoch",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AmmState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Sync"
+          },
+          {
+            "name": "CalculateDelta"
+          },
+          {
+            "name": "CalculateProposal"
+          },
+          {
+            "name": "Execute"
           }
         ]
       }

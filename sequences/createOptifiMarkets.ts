@@ -16,7 +16,7 @@ export default function createOptifiMarkets(context: Context): Promise<Instructi
                 console.debug(`Creating ${marketsToCreate} markets`);
                 for (let i = 0; i < marketsToCreate; i++) {
                     // Send the instruction to create each market
-
+                    // TODO: create a new AMM for each new market that we need to create
                 }
             } else {
                 console.debug("All markets already created", markets);
