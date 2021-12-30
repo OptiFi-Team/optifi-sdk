@@ -8,7 +8,5 @@ import Asset from "../types/asset";
  * @param context
  */
 export function createInstruments(context: Context) {
-    createOptifiMarkets(context).then((res) => {
 
-    })
 }

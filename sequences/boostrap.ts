@@ -6,6 +6,7 @@ import {exchangeAccountExists, findExchangeAccount, findUserAccount, userAccount
 import {OPTIFI_EXCHANGE_ID, SERUM_MARKETS} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {PublicKey} from "@solana/web3.js";
+import {createInstruments} from "./createInstruments";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -127,7 +128,9 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                         // as are specified in the constants
                         createSerumMarkets(context).then((marketKeys) => {
                             console.debug("Created serum markets ", marketKeys);
+                            createInstruments(context)
                             // TODO: for each of the new serum markets, create a new instrument, and a new Optifi market
+
                         }).catch((err) => {
                             console.error("Got error creating serum markets ", err);
 

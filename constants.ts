@@ -1,5 +1,8 @@
 import Asset from "./types/asset";
 import InstrumentType from "./types/instrumentType";
+import ExpiryType from "./types/expiryType";
+import MaturityType from "./types/maturityType";
+import {calculateSerumMarketsCount} from "./utils/chains";
 
 export enum SolanaEndpoint {
     Mainnet = "https://api.mainnet-beta.solana.com",
@@ -7,6 +10,7 @@ export enum SolanaEndpoint {
     Testnet = "https://api.testnet.solana.com"
 }
 
+// Constant prefixes for account seeds
 export const USER_ACCOUNT_PREFIX: string = "user_account";
 export const USER_TOKEN_ACCOUNT_PDA: string = "user_token_account_pda";
 export const EXCHANGE_PREFIX: string = "optifi_exchange";
@@ -29,8 +33,62 @@ export const SUPPORTED_ASSETS: Asset[] = [Asset.Ethereum, Asset.Bitcoin];
 //How many instrument types are supported
 export const SUPPORTED_INSTRUMENTS: InstrumentType[] = [InstrumentType.Put, InstrumentType.Call, InstrumentType.Future];
 
+type ExpirationMapping = {
+    [instrumentType in InstrumentType]: ExpiryType[]
+}
+// What expiration types we're currently supporting for each instrument
+export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
+    // Puts
+    0: [
+        ExpiryType.Standard
+    ],
+    // Calls
+    1: [
+        ExpiryType.Standard
+    ],
+    // Futures
+    2: [
+        ExpiryType.Perpetual
+    ]
+}
+
+// We want our maturities to end on Wednesdays
+export const EXPIRATION_WEEKDAY: number = 3;
+
+// The expiration durations we're supporting for standard expiries
+export const SUPPORTED_MATURITIES = [
+    MaturityType.Monthly,
+    MaturityType.SixMonth
+]
+
+
+export function calculateSerumMarketsCount(): number {
+    let totalMarkets = 0;
+
+    for (let instrumentType of Object.keys(SUPPORTED_EXPIRATION_TYPES)) {
+        let supportedExpirations: ExpiryType[] = SUPPORTED_EXPIRATION_TYPES[instrumentType];
+        for (let supportedExpiryType of supportedExpirations) {
+            switch (supportedExpiryType) {
+                case ExpiryType.Perpetual:
+                    totalMarkets += 1;
+                    break;
+                case ExpiryType.Standard:
+                    totalMarkets += SUPPORTED_MATURITIES.length;
+                    break;
+            }
+        }
+    }
+
+    totalMarkets *= SUPPORTED_ASSETS.length;
+    totalMarkets *= STRIKE_LADDER_SIZE;
+
+    console.debug(`${totalMarkets} total serum markets`);
+
+    return totalMarkets;
+}
+
 // How many serum markets the program should keep
-export const SERUM_MARKETS: number = SUPPORTED_INSTRUMENTS.length * SUPPORTED_ASSETS.length * STRIKE_LADDER_SIZE;
+export const SERUM_MARKETS: number = calculateSerumMarketsCount();
 
 export type EndpointConstant = {
     [endpoint in SolanaEndpoint]: any;
