@@ -17,6 +17,7 @@ export default function createOptifiMarkets(context: Context): Promise<Instructi
                 for (let i = 0; i < marketsToCreate; i++) {
                     // Send the instruction to create each market,
                     // derive the instrument address
+
                     // TODO: create a new AMM for each new market that we need to create
                 }
             } else {

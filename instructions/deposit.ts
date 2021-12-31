@@ -1,72 +1,47 @@
 import * as anchor from "@project-serum/anchor";
-import { BN } from "@project-serum/anchor";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
-import { USDC_TOKEN_MINT } from "../constants";
+import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {PublicKey, TransactionSignature} from "@solana/web3.js";
+import {USDC_TOKEN_MINT} from "../constants";
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import { UserAccount } from "../types/optifi-exchange-types";
-import {findUserAccount, userAccountExists} from "../utils/accounts";
-import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
-import { signAndSendTransaction } from "../utils/transactions";
+import {findUserAccount, findUserUSDCAddress, userAccountExists} from "../utils/accounts";
+import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 
-/**
- * Make deposit
- *
- * @param context
- * @param amount
- */
-
- export default function deposit(context: Context, amount: BN) : Promise<InstructionResult<string>> {
-    return new Promise( (resolve, reject) => {
-        findUserAccount(context).then((userAccountAddress) => {
-            userAccountExists(context).then(async ([exists, userAccount]) => {                
-                if(!exists || !userAccount) reject({
-                    successful: false,
-                    error: "User account does not exist"
-                } as InstructionResult<any>)
-                console.log("Got user account in deposit ", userAccount);
-
-                //console.log("User vault is ", userAccount.userVaultOwnedByPda);
-                context.connection.getRecentBlockhash().then((recentBlockhash) => {
-                    let depositTx = context.program.transaction.deposit(amount, {
-                        accounts: {
-                            userAccount: userAccountAddress[0],
-                            depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
-                            depositSource: /* user_usdc_token_account */context.provider.wallet.publicKey,
-                            // @ts-ignore
-                            userVaultOwnedByPda: userAccount.userVaultOwnedByPda,
-                            depositor: context.provider.wallet.publicKey,
-                            tokenProgram: TOKEN_PROGRAM_ID,
-                        },
-                        signers: [],
-                        instructions: [],
-                    })
-                    depositTx.recentBlockhash = recentBlockhash.blockhash;
-                    depositTx.feePayer = context.provider.wallet.publicKey;
-                    signAndSendTransaction(context, depositTx).then((res) => {
-                        let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
-                        console.log("Successfully deposited, ", txUrl);
-                        resolve({
-                            successful: true,
-                            data: txUrl
+export default function deposit(context: Context, amount: number): Promise<InstructionResult<TransactionSignature>> {
+    return new Promise((resolve, reject) => {
+        findUserAccount(context).then(([userAccountAddress, _]) => {
+            userAccountExists(context).then(([acctExists, acct]) => {
+                if (acctExists && acct !== undefined) {
+                    findUserUSDCAddress(context).then(([userUSDCAddress, _]) => {
+                        let depositTx = context.program.transaction.deposit(new anchor.BN(amount),
+                            {
+                                accounts: {
+                                    userAccount: userAccountAddress,
+                                    depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                    userMarginAccountUsdc: acct.userMarginAccountUsdc,
+                                    depositSource: userUSDCAddress,
+                                    user: context.provider.wallet.publicKey,
+                                    tokenProgram: TOKEN_PROGRAM_ID
+                                }
+                            }
+                        )
+                        signAndSendTransaction(context, depositTx).then((res) => {
+                            if (res.resultType === TransactionResultType.Successful) {
+                                resolve({
+                                    successful: true,
+                                    data: res.txId as TransactionSignature
+                                });
+                            } else {
+                                console.error(res);
+                                reject(res);
+                            }
                         })
-                    }).catch((err) => {
-                        console.error(err);
-                        reject({
-                            successful: false,
-                            error: err
-                        } as InstructionResult<any>);
-                    })
-                }).catch((err) => {
-                    console.error(err);
-                    reject(err);
-                });
-            }).catch((err) => {
-                console.error(err);
-                reject(err);
-            });
-        })
+                    }).catch((err) => reject(err));
+                } else {
+                    console.error("User account did not exist at ", userAccountAddress);
+                    reject(userAccountAddress);
+                }
+            }).catch((err) => reject(err));
+        }).catch((err) => reject(err));
     })
-};
-
+}

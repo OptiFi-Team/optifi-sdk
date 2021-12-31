@@ -5,7 +5,7 @@ import {
     EXCHANGE_PREFIX,
     INSTRUMENT_PREFIX,
     SERUM_OPEN_ORDERS_PREFIX,
-    SWITCHBOARD,
+    SWITCHBOARD, USDC_TOKEN_MINT,
     USER_ACCOUNT_PREFIX,
     USER_TOKEN_ACCOUNT_PDA
 } from "../constants";
@@ -14,6 +14,7 @@ import Asset from "../types/asset";
 import InstrumentType from "../types/instrumentType";
 import ExpiryType from "../types/expiryType";
 import {dateToAnchorTimestampBuffer} from "./generic";
+import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 /**
  * Helper function for finding an account with a list of seeds
@@ -71,6 +72,22 @@ export function getDexOpenOrders(context: Context,
             ]).catch((err) => reject(err))
         }).catch((err) => reject(err))
     })
+}
+
+export function findAssociatedTokenAccount(context: Context,
+                                           tokenMintAddress: PublicKey): Promise<[PublicKey, number]> {
+    return anchor.web3.PublicKey.findProgramAddress(
+        [
+            context.provider.wallet.publicKey.toBuffer(),
+            TOKEN_PROGRAM_ID.toBuffer(),
+            tokenMintAddress.toBuffer(),
+        ],
+        context.program.programId
+    )
+}
+
+export function findUserUSDCAddress(context: Context): Promise<[PublicKey, number]> {
+    return findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint]))
 }
 
 /**
