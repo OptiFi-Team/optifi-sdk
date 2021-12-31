@@ -2,6 +2,7 @@ import Asset from "./types/asset";
 import InstrumentType from "./types/instrumentType";
 import ExpiryType from "./types/expiryType";
 import MaturityType from "./types/maturityType";
+import * as anchor from "@project-serum/anchor";
 
 export enum SolanaEndpoint {
     Mainnet = "https://api.mainnet-beta.solana.com",
@@ -137,3 +138,8 @@ export const SERUM_DEX_PROGRAM_ID: EndpointConstant = {
 
 // Associated token program is constant across all of the clusters
 export const ASSOCIATED_TOKEN_PROGRAM_ID: string = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+
+// Serum market constants
+export const COIN_LOT_SIZE: number = 1; // let's set 1 as one instrument spl token represents 1 contract
+export const PC_LOT_SIZE: number = 1;
+export const PC_DUST_THRESHOLD: number = 2;

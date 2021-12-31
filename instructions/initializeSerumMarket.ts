@@ -12,7 +12,7 @@ import {
     TransactionResultType
 } from "../utils/transactions";
 import {findExchangeAccount} from "../utils/accounts";
-import {SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT} from "../constants";
+import {COIN_LOT_SIZE, PC_DUST_THRESHOLD, PC_LOT_SIZE, SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {findOptifiMarketMintAuthPDA, findSerumAuthorityPDA, findSerumPruneAuthorityPDA} from "../utils/pda";
 import {deriveVaultNonce} from "../utils/market";
@@ -168,9 +168,7 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
         deriveVaultNonce(marketAccount.publicKey, serumId).then(([vaultOwner, vaultSignerNonce]) => {
             console.debug("Initializing market with nonce ", vaultSignerNonce);
             // Constants
-            let coinLotSize = new anchor.BN(1); // let's set 1 as one instrument spl token represents 1 contract
-            let pcLotSize = new anchor.BN(1);
-            let pcDustThreshold = new anchor.BN(2);
+
 
             console.debug("Finding exchange account")
 
@@ -194,10 +192,10 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
                                     let tx = context.program.transaction.initializeSerumOrderbook(
                                         context.provider.wallet.publicKey, // Authority PK
                                         context.provider.wallet.publicKey, // Prune authority PK
-                                        coinLotSize,
-                                        pcLotSize,
+                                        new anchor.BN(COIN_LOT_SIZE),
+                                        new anchor.BN(PC_LOT_SIZE),
                                         vaultSignerNonce,
-                                        pcDustThreshold,
+                                        new anchor.BN(PC_DUST_THRESHOLD),
                                         {
                                             accounts: {
                                                 optifiExchange: exchangeAddress,
