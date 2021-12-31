@@ -1185,7 +1185,7 @@
       ]
     },
     {
-      "name": "depositIntoAmm",
+      "name": "ammDeposit",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -1246,7 +1246,7 @@
       ]
     },
     {
-      "name": "withdrawFromAmm",
+      "name": "ammWithdraw",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -1307,11 +1307,16 @@
       ]
     },
     {
-      "name": "syncPositions",
+      "name": "ammSyncPositions",
       "accounts": [
         {
           "name": "amm",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1348,7 +1353,7 @@
       ]
     },
     {
-      "name": "calculateDelta",
+      "name": "ammCalculateDelta",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -1394,7 +1399,7 @@
       "args": []
     },
     {
-      "name": "calculateProposal",
+      "name": "ammCalculateProposal",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -1435,7 +1440,7 @@
       "args": []
     },
     {
-      "name": "updateOrders",
+      "name": "ammUpdateOrders",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -1568,6 +1573,83 @@
           "type": "u16"
         }
       ]
+    },
+    {
+      "name": "ammRemoveInstrument",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrument",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "instrumentIndex",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "ammAddInstrument",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrument",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammLongTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammShortTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -1594,9 +1676,7 @@
           },
           {
             "name": "ammCapacity",
-            "type": {
-              "defined": "f64"
-            }
+            "type": "u64"
           },
           {
             "name": "bump",
@@ -1644,27 +1724,19 @@
           },
           {
             "name": "iv",
-            "type": {
-              "defined": "f64"
-            }
+            "type": "u64"
           },
           {
             "name": "price",
-            "type": {
-              "defined": "f64"
-            }
+            "type": "u64"
           },
           {
             "name": "netDelta",
-            "type": {
-              "defined": "f64"
-            }
+            "type": "u64"
           },
           {
             "name": "totalLiquidity",
-            "type": {
-              "defined": "f64"
-            }
+            "type": "u64"
           }
         ]
       }
@@ -1717,10 +1789,8 @@
             "type": "bool"
           },
           {
-            "name": "contractSize",
-            "type": {
-              "defined": "f32"
-            }
+            "name": "contractSizePercent",
+            "type": "u64"
           }
         ]
       }
@@ -1909,33 +1979,25 @@
           {
             "name": "askOrdersSize",
             "type": {
-              "vec": {
-                "defined": "f64"
-              }
+              "vec": "u64"
             }
           },
           {
             "name": "bidOrdersSize",
             "type": {
-              "vec": {
-                "defined": "f64"
-              }
+              "vec": "u64"
             }
           },
           {
             "name": "askOrdersPrice",
             "type": {
-              "vec": {
-                "defined": "f64"
-              }
+              "vec": "u64"
             }
           },
           {
             "name": "bidOrdersPrice",
             "type": {
-              "vec": {
-                "defined": "f64"
-              }
+              "vec": "u64"
             }
           }
         ]
@@ -1981,14 +2043,8 @@
             "type": "publicKey"
           },
           {
-            "name": "isListedOnMarket",
-            "type": "bool"
-          },
-          {
-            "name": "contractSize",
-            "type": {
-              "defined": "f32"
-            }
+            "name": "contractSizePercent",
+            "type": "u64"
           }
         ]
       }
@@ -2174,9 +2230,7 @@
           },
           {
             "name": "ammCapacity",
-            "type": {
-              "defined": "f64"
-            }
+            "type": "u64"
           },
           {
             "name": "bump",
@@ -2226,7 +2280,7 @@
           },
           {
             "name": "latestPosition",
-            "type": "i64"
+            "type": "u64"
           },
           {
             "name": "usdcBalance",
@@ -2634,6 +2688,16 @@
       "code": 6015,
       "name": "NoEnoughOrdersInProposal",
       "msg": "no enough orders in proposal to execute"
+    },
+    {
+      "code": 6016,
+      "name": "CannotRemoveInstrumentForAMM",
+      "msg": "can remove the instrument for amm"
+    },
+    {
+      "code": 6017,
+      "name": "DuplicateInstrumentForAMM",
+      "msg": "can add the instrument for amm due to duplication"
     }
   ]
 }
