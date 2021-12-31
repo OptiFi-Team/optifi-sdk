@@ -75,10 +75,12 @@ export function getDexOpenOrders(context: Context,
 }
 
 export function findAssociatedTokenAccount(context: Context,
-                                           tokenMintAddress: PublicKey): Promise<[PublicKey, number]> {
+                                           tokenMintAddress: PublicKey,
+                                           owner?: PublicKey): Promise<[PublicKey, number]> {
+    let accountOwner = owner || context.provider.wallet.publicKey;
     return anchor.web3.PublicKey.findProgramAddress(
         [
-            context.provider.wallet.publicKey.toBuffer(),
+            accountOwner.toBuffer(),
             TOKEN_PROGRAM_ID.toBuffer(),
             tokenMintAddress.toBuffer(),
         ],

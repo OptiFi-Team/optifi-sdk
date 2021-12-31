@@ -25,6 +25,7 @@ export function initializeChain(context: Context,
                                 instrumentContext: InstrumentContext): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
+            console.log("Found exchange account ", exchangeAddress);
             let foundInstruments: any = [];
             let instrumentPromises: Promise<any>[] = [];
             for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
@@ -39,9 +40,13 @@ export function initializeChain(context: Context,
                         .then(([instrumentAddress, bump]) => {
                             foundInstruments.push([instrumentAddress, bump])
                         })
-                        .catch((err) => reject(err))
+                        .catch((err) => {
+                            console.error("Got error trying to derive instrument address");
+                            reject(err);
+                        })
                 )
             }
+            console.log("Instrument promises are", instrumentPromises);
             Promise.all(instrumentPromises).then(() => {
                 let accounts: any = {};
                 let bumps: any = {};
@@ -51,10 +56,11 @@ export function initializeChain(context: Context,
                 }
                 accounts['optifiExchange'] = exchangeAddress;
                 accounts['payer'] = context.provider.wallet.publicKey;
-                accounts['systemProgram'] = SystemProgram;
+                accounts['systemProgram'] = SystemProgram.programId;
                 accounts['rent'] = SYSVAR_RENT_PUBKEY;
-                accounts['assetSpotPriceOracleFeed'] = SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD;
-                accounts['assetIvOracleFeed'] = SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV;
+                accounts['assetSpotPriceOracleFeed'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
+                accounts['assetIvOracleFeed'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV);
+                console.log("Accounts are ", accounts, "bumps are ", bumps);
                 let newInstrumentTx = context.program.transaction.createNewInstrument(
                     // @ts-ignore
                     bumps,
@@ -67,7 +73,9 @@ export function initializeChain(context: Context,
                         start: dateToAnchorTimestamp(instrumentContext.start),
                         authority: context.provider.wallet.publicKey,
                     },
-                    accounts
+                    {
+                        accounts: accounts
+                    }
                 );
                 signAndSendTransaction(context, newInstrumentTx)
                     .then((res) => {
@@ -89,9 +97,12 @@ export function initializeChain(context: Context,
                             reject(res);
                         }
                     })
-                    .catch((err) => reject(err))
+                    .catch((err) => {
+                        console.error("Got error trying to sign and send chain instruction ", err);
+                        reject(err);
+                    })
             }).catch((err) => {
-                console.error(err);
+                console.error("Got error trying to execute instrument promises", err);
                 reject(err);
             })
         })

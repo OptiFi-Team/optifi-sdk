@@ -2,12 +2,13 @@ import Context from "../types/context";
 import {OptifiMarket} from "../types/optifi-exchange-types";
 import InstructionResult from "../types/instructionResult";
 import {OPTIFI_EXCHANGE_ID, SERUM_DEX_PROGRAM_ID} from "../constants";
-import {findExchangeAccount} from "../utils/accounts";
-import {PublicKey, TransactionSignature} from "@solana/web3.js";
-import {findOptifiMarkets, findOptifiMarketWithIdx} from "../utils/market";
+import {findAssociatedTokenAccount, findExchangeAccount} from "../utils/accounts";
+import {PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, TransactionSignature} from "@solana/web3.js";
+import {findOptifiMarkets, findOptifiMarketWithIdx, getSerumMarket} from "../utils/market";
 import * as anchor from "@project-serum/anchor";
 import {findOptifiMarketMintAuthPDA} from "../utils/pda";
-import {signAndSendTransaction} from "../utils/transactions";
+import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import {Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 export function createOptifiMarket(context: Context,
                                    serumMarket: PublicKey,
@@ -25,18 +26,44 @@ export function createOptifiMarket(context: Context,
            ).then(([derivedMarketAddress, bump]) => {
                // Find the PDA authority
                findOptifiMarketMintAuthPDA(context).then(([mintAuthPDAAddress, _]) => {
+                    let shortSplTokenMint = anchor.web3.Keypair.generate();
                     let createMarketTx = context.program.transaction.createOptifiMarket(
                         bump,
                         {
-                            optifiMarket: derivedMarketAddress,
-                            exchange: exchangeAddress,
-                            serumMarket: new PublicKey(SERUM_DEX_PROGRAM_ID),
-                            instrument: initialInstrument,
-                            longSPk
-                        }
+                            accounts: {
+                                optifiMarket: derivedMarketAddress,
+                                exchange: exchangeAddress,
+                                serumMarket: new PublicKey(SERUM_DEX_PROGRAM_ID),
+                                instrument: initialInstrument,
+                                longSplTokenMint: coinMintPk,
+                                shortSplTokenMint: shortSplTokenMint.publicKey,
+                                systemProgram: SystemProgram.programId,
+                                payer: context.provider.wallet.publicKey,
+                                clock: SYSVAR_CLOCK_PUBKEY
+                            },
+                            instructions: [
+                                Token.createInitMintInstruction(
+                                    TOKEN_PROGRAM_ID,
+                                    shortSplTokenMint.publicKey,
+                                    0,
+                                    mintAuthPDAAddress,
+                                    mintAuthPDAAddress
+                                )
+                            ]
+                        },
                     );
 
-                    signAndSendTransaction(context, createMarketTx)
+                    signAndSendTransaction(context, createMarketTx).then((txResult) => {
+                        if (txResult.resultType === TransactionResultType.Successful) {
+                            resolve({
+                                successful: true,
+                                data: txResult.txId as TransactionSignature,
+                            })
+                        } else {
+                            console.error(txResult);
+                            reject(txResult);
+                        }
+                    })
                }).catch((err) => reject(err))
            })
        }).catch((err) => reject(err))
@@ -44,14 +71,21 @@ export function createOptifiMarket(context: Context,
 }
 
 export function createNextOptifiMarket(context: Context,
-                                       serumMarket: PublicKey,
+                                       serumMarketAddress: PublicKey,
                                        initialInstrument: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
-        findOptifiMarkets(context).then((markets) => {
-            let marketLen = markets.length;
-            createOptifiMarket(context, serumMarket, initialInstrument, marketLen+1)
-                .then((res) => resolve(res))
-                .catch((err) => reject(err))
+        getSerumMarket(context, serumMarketAddress).then((serumMarket) => {
+            findOptifiMarkets(context).then((markets) => {
+                let marketLen = markets.length;
+                createOptifiMarket(context,
+                    serumMarketAddress,
+                    initialInstrument,
+                    serumMarket.baseMintAddress,
+                    marketLen+1
+                )
+                    .then((res) => resolve(res))
+                    .catch((err) => reject(err))
+            })
         })
     })
 }

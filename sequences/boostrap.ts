@@ -131,6 +131,7 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                             createInstruments(context).then((res) => {
                                 console.debug("Created instruments ", res);
                                 // Create the optifi markets
+
                             })
                             // TODO: for each of the new serum markets, create a new instrument, and a new Optifi market
 

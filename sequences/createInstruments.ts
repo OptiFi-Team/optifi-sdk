@@ -40,7 +40,7 @@ export function createInstruments(context: Context): Promise<TransactionSignatur
                                     asset: asset,
                                     instrumentType: instrumentType,
                                     duration: duration,
-                                    start: new Date(),
+                                    start: start,
                                     expiryType: expiryType
                                 })
                             }
@@ -50,7 +50,7 @@ export function createInstruments(context: Context): Promise<TransactionSignatur
                                 asset: asset,
                                 instrumentType: instrumentType,
                                 duration: SECONDS_IN_YEAR,
-                                start: new Date(),
+                                start: start,
                                 expiryType: expiryType
                             })
                             break;
