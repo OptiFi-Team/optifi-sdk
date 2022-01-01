@@ -28,25 +28,27 @@ export default function recordPnl(context: Context,
                                     getSerumMarket(context, serumMarketAddress).then((serumMarket) => {
                                         getDexOpenOrders(context, serumMarketAddress, userToSettle).then(([openOrdersAccount, _]) => {
                                             let settlementTx = context.program.transaction.recordPnlForOneUser({
-                                                optifiExchange: exchangeAddress,
-                                                userAccount: userToSettle,
-                                                optifiMarket: market,
-                                                serumMarket: serumMarketAddress,
-                                                userSerumOpenOrders: openOrdersAccount,
-                                                instrument: instrument,
-                                                bids: serumMarket.bidsAddress,
-                                                asks: serumMarket.asksAddress,
-                                                eventQueue: serumMarket.decoded.eventQueue,
-                                                coinVault: serumMarket.decoded.baseVault,
-                                                pcVault: serumMarket.decoded.quoteVault,
-                                                vaultSigner: vaultAddress,
-                                                userMarginAccount: userAccount.userMarginAccountUsdc,
-                                                instrumentLongSplTokenMint: optifiMarket.instrumentLongSplToken,
-                                                instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
-                                                userInstrumentLongTokenVault: userAccount,
-                                                userInstrumentShortTokenVault: userAccount,
-                                                pruneAuthority: pruneAuthorityAddress
-                                            })
+                                                accounts: {
+                                                    optifiExchange: exchangeAddress,
+                                                    userAccount: userToSettle,
+                                                    optifiMarket: market,
+                                                    serumMarket: serumMarketAddress,
+                                                    userSerumOpenOrders: openOrdersAccount,
+                                                    instrument: instrument,
+                                                    bids: serumMarket.bidsAddress,
+                                                    asks: serumMarket.asksAddress,
+                                                    eventQueue: serumMarket.decoded.eventQueue,
+                                                    coinVault: serumMarket.decoded.baseVault,
+                                                    pcVault: serumMarket.decoded.quoteVault,
+                                                    vaultSigner: vaultAddress,
+                                                    userMarginAccount: userAccount.userMarginAccountUsdc,
+                                                    instrumentLongSplTokenMint: optifiMarket.instrumentLongSplToken,
+                                                    instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
+                                                    userInstrumentLongTokenVault: userAccount,
+                                                    userInstrumentShortTokenVault: userAccount,
+                                                    pruneAuthority: pruneAuthorityAddress
+                                                }
+                                                })
                                             signAndSendTransaction(context, settlementTx).then((settlementRes) => {
                                                 resolve({
                                                     successful: true,

@@ -5,18 +5,18 @@ import InstructionResult from "../types/instructionResult";
 import {formOrderContext} from "../utils/orders";
 import {OrderSide} from "../types/optifi-exchange-types";
 import {getSerumMarket} from "../utils/market";
-import {COIN_LOT_SIZE, PC_LOT_SIZE} from "../constants";
+import {COIN_LOT_SIZE, MAX_COIN_QTY, MAX_PC_QTY, PC_LOT_SIZE} from "../constants";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 
-export function placeOrder(context: Context,
+export default function placeOrder(context: Context,
                            marketAddress: PublicKey,
                            side: OrderSide,
                            limit: number): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         formOrderContext(context, marketAddress).then((orderContext) => {
             getSerumMarket(context, marketAddress).then((serumMarket) => {
-                let maxCoinQty = new anchor.BN(8 * COIN_LOT_SIZE);
-                let maxPcQty = new anchor.BN(8 * PC_LOT_SIZE);
+                let maxCoinQty = new anchor.BN(MAX_COIN_QTY);
+                let maxPcQty = new anchor.BN(MAX_PC_QTY);
                 let placeOrderTx = context.program.transaction.placeOrder(
                     side,
                     new anchor.BN(limit),

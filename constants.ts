@@ -143,3 +143,6 @@ export const ASSOCIATED_TOKEN_PROGRAM_ID: string = "ATokenGPvbdGVxr1b2hvZbsiqW5x
 export const COIN_LOT_SIZE: number = 1; // let's set 1 as one instrument spl token represents 1 contract
 export const PC_LOT_SIZE: number = 1;
 export const PC_DUST_THRESHOLD: number = 2;
+
+export const MAX_COIN_QTY = 8 * COIN_LOT_SIZE;
+export const MAX_PC_QTY = 4 * PC_LOT_SIZE;
