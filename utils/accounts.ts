@@ -9,8 +9,9 @@ import {
     USER_ACCOUNT_PREFIX,
     USER_TOKEN_ACCOUNT_PDA
 } from "../constants";
-import {Exchange, UserAccount} from "../types/optifi-exchange-types";
+import {Chain, Exchange, UserAccount} from "../types/optifi-exchange-types";
 import Asset from "../types/asset";
+import {Asset as OptifiAsset} from "../types/optifi-exchange-types";
 import InstrumentType from "../types/instrumentType";
 import ExpiryType from "../types/expiryType";
 import {dateToAnchorTimestampBuffer} from "./generic";
@@ -184,4 +185,30 @@ export function findInstrument(context: Context,
          dateToAnchorTimestampBuffer(expiryDate),
          Buffer.from(Uint8Array.of(idx))
      ])
+}
+
+
+export function findOracleSpotAccount(context: Context,
+                                      instrumentAddress: PublicKey): Promise<PublicKey> {
+     return new Promise((resolve, reject) => {
+         context.program.account.chain.fetch(instrumentAddress).then((chainRes) => {
+             // @ts-ignore
+             let chain = chainRes as Chain;
+             switch (chain.asset) {
+                 case OptifiAsset.Bitcoin:
+                     resolve(new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
+                     break;
+                 case OptifiAsset.Ethereum:
+                     resolve(new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD));
+                     break;
+                 case OptifiAsset.USDC:
+                     resolve(new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USDC));
+                     break;
+                 default:
+                     reject(chain.asset);
+                     break;
+             }
+
+         })
+     })
 }

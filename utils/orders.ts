@@ -42,7 +42,7 @@ export interface OrderAccountContext {
 
 export function formOrderContext(context: Context,
                                  marketAddress: PublicKey): Promise<OrderAccountContext> {
-    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID);
+    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findUserAccount(context).then(([userAccountAddress, _]) => {

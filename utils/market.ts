@@ -3,7 +3,7 @@ import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Market } from "@project-serum/serum";
 import {Chain, OptifiMarket} from "../types/optifi-exchange-types";
-import {findAccountWithSeeds, findExchangeAccount, findOptifiExchange} from "./accounts";
+import {findAccountWithSeeds, findAssociatedTokenAccount, findExchangeAccount, findOptifiExchange} from "./accounts";
 import {OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID} from "../constants";
 
 export function getMarketInfo (context: Context): Promise<Market> {
@@ -135,5 +135,28 @@ export function deriveVaultNonce(marketKey: PublicKey,
         } catch (e) {
             tryNext();
         }
+    })
+}
+
+export interface InstrumentAccounts {
+    longSPLTokenVault: PublicKey,
+    shortSPLTokenVault: PublicKey,
+    optifiMarket: OptifiMarket,
+}
+
+export function findMarketInstrumentContext(context: Context, marketAddress: PublicKey): Promise<InstrumentAccounts> {
+    return new Promise((resolve, reject) => {
+        context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {
+            let optifiMarket = marketRes as OptifiMarket;
+            findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken).then(([longSPLTokenVault, _]) => {
+                findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken).then(([shortSPLTokenVault, _]) => {
+                    resolve({
+                        longSPLTokenVault: longSPLTokenVault,
+                        shortSPLTokenVault: shortSPLTokenVault,
+                        optifiMarket: optifiMarket
+                    })
+                }).catch((err) => reject(err))
+            }).catch((err) => reject(err))
+        }).catch((err) => reject(err))
     })
 }
