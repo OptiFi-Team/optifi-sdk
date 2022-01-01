@@ -23,7 +23,7 @@ export default function recordPnl(context: Context,
                     findMarketInstrumentContext(context, market).then((marketContext) => {
                         findSerumPruneAuthorityPDA(context).then(([pruneAuthorityAddress, _]) => {
                             findOracleSpotAccount(context, marketContext.optifiMarket.instrument).then((oracleSpotAccount) =>
-                                deriveVaultNonce(marketContext.optifiMarket.serumMarket, new PublicKey(SERUM_DEX_PROGRAM_ID))
+                                deriveVaultNonce(marketContext.optifiMarket.serumMarket, new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]))
                                     .then(([vaultAddress, nonce]) => {
                                         getSerumMarket(context, marketContext.optifiMarket.serumMarket).then((serumMarket) => {
                                             getDexOpenOrders(context, marketContext.optifiMarket.serumMarket, userToSettle).then(([openOrdersAccount, _]) => {

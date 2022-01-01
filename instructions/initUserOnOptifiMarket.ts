@@ -17,7 +17,7 @@ import {signAndSendTransaction, TransactionResultType} from "../utils/transactio
  export default function initUserOnOptifiMarket(context: Context,
                                                 marketAddress: PublicKey,
                                                 ) : Promise<InstructionResult<string>> {
-     let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID);
+     let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
     return new Promise( (resolve, reject) => {
             userAccountExists(context).then(([exists, userAccount]) => {
                 if(!exists || !userAccount) reject({

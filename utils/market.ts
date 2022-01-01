@@ -104,7 +104,7 @@ export function findExpiredMarkets(context: Context): Promise<OptifiMarket[]> {
 }
 
 export function getSerumMarket(context: Context, marketAddress: PublicKey): Promise<Market> {
-    return Market.load(context.connection, marketAddress, {}, new PublicKey(SERUM_DEX_PROGRAM_ID))
+    return Market.load(context.connection, marketAddress, {}, new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]))
 }
 
 export function deriveVaultNonce(marketKey: PublicKey,

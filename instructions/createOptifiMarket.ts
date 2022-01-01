@@ -33,7 +33,7 @@ export function createOptifiMarket(context: Context,
                             accounts: {
                                 optifiMarket: derivedMarketAddress,
                                 exchange: exchangeAddress,
-                                serumMarket: new PublicKey(SERUM_DEX_PROGRAM_ID),
+                                serumMarket: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
                                 instrument: initialInstrument,
                                 longSplTokenMint: coinMintPk,
                                 shortSplTokenMint: shortSplTokenMint.publicKey,
