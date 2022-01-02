@@ -1,31 +1,58 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
-import {findExchangeAccount, findUserAccount} from "../utils/accounts";
+import {findAssociatedTokenAccount, findExchangeAccount, findUserAccount} from "../utils/accounts";
 import {Amm} from "../types/optifi-exchange-types";
-import {SERUM_MARKETS} from "../constants";
+import {getAmmLiquidityAuthPDA} from "../utils/pda";
+import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import InstructionResult from "../types/instructionResult";
 
-export function ammDeposit(context: Context,
+export default function ammDeposit(context: Context,
                            ammAddress: PublicKey,
-                           amount: number): Promise<TransactionSignature> {
+                           amount: number): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findUserAccount(context).then(([userAccountAddress, _]) => {
                 context.program.account.amm.fetch(ammAddress).then((ammRes) => {
                     // @ts-ignore
                     let amm = ammRes as Amm;
-                    let ammDepositTx = context.program.transaction.ammDeposit(
-                        new anchor.BN(amount),
-                        {
-                            accounts: {
-                                optifiExchange: exchangeAddress,
-                                userAccount: userACcountAddress,
-                                ammQuoteTokenVault: ammRes.quoteTokenVault,
-                            }
-                        }
-                    )
-                })
-            })
-        })
+                    findAssociatedTokenAccount(context, amm.quoteTokenMint).then(([userQuoteTokenVault, _]) => {
+                        findAssociatedTokenAccount(context, amm.lpTokenMint).then(([userLpTokenVault, _]) => {
+                            getAmmLiquidityAuthPDA(context).then(([liquidityAuthPDA, _]) => {
+                                let ammDepositTx = context.program.transaction.ammDeposit(
+                                    new anchor.BN(amount),
+                                    {
+                                        accounts: {
+                                            optifiExchange: exchangeAddress,
+                                            amm: ammAddress,
+                                            userAccount: userAccountAddress,
+                                            ammQuoteTokenVault: amm.quoteTokenVault,
+                                            userQuoteTokenVault: userQuoteTokenVault,
+                                            lpTokenMint: amm.lpTokenMint,
+                                            ammLiquidityAuth: liquidityAuthPDA,
+                                            userLpTokenVault: userLpTokenVault,
+                                            user: context.provider.wallet.publicKey,
+                                            tokenProgram: TOKEN_PROGRAM_ID
+                                        }
+                                    }
+                                );
+                                signAndSendTransaction(context, ammDepositTx).then((ammDepositRes) => {
+                                    if (ammDepositRes.resultType === TransactionResultType.Successful) {
+                                        resolve({
+                                            successful: true,
+                                            data: ammDepositRes.txId as TransactionSignature
+                                        })
+                                    } else {
+                                        console.error(ammDepositRes);
+                                        reject(ammDepositRes)
+                                    }
+                                }).catch((err) => reject(err))
+                            }).catch((err) => reject(err))
+                        }).catch((err) => reject(err))
+                    }).catch((err) => reject(err))
+                }).catch((err) => reject(err))
+            }).catch((err) => reject(err))
+        }).catch((err) => reject(err))
     })
 }
