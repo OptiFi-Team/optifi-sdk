@@ -1,6 +1,8 @@
 import fs from "fs";
 import { WalletProvider } from "../types/solanaTypes";
 import * as anchor from "@project-serum/anchor";
+import Asset from "../types/asset";
+import { Asset as OptifiAsset } from '../types/optifi-exchange-types';
 
 /**
  * Small helper function to read a JSON file as a type from a filepath
@@ -35,4 +37,13 @@ export function dateToAnchorTimestamp(date?: Date): anchor.BN {
 
 export function dateToAnchorTimestampBuffer(date?: Date): Buffer {
     return dateToAnchorTimestamp(date).toArrayLike(Buffer, "be", 8)
+}
+
+export function assetToOptifiAsset(asset: Asset): OptifiAsset {
+    switch (asset) {
+        case Asset.Bitcoin:
+            return OptifiAsset.Bitcoin;
+        case Asset.Ethereum:
+            return OptifiAsset.Ethereum;
+    }
 }

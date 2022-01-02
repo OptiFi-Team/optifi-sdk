@@ -1146,14 +1146,19 @@
           "isSigner": false
         },
         {
+          "name": "usdcTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lpTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": false,
           "isSigner": true
-        },
-        {
-          "name": "depositSource",
-          "isMut": true,
-          "isSigner": false
         },
         {
           "name": "tokenProgram",
@@ -1203,11 +1208,6 @@
           "isSigner": false
         },
         {
-          "name": "ammQuoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "ammQuoteTokenVault",
           "isMut": true,
           "isSigner": false
@@ -1220,6 +1220,11 @@
         {
           "name": "lpTokenMint",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammLiquidityAuth",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -2043,6 +2048,10 @@
             "type": "publicKey"
           },
           {
+            "name": "isListedOnMarket",
+            "type": "bool"
+          },
+          {
             "name": "contractSizePercent",
             "type": "u64"
           }
@@ -2215,18 +2224,6 @@
           {
             "name": "ammIdx",
             "type": "u8"
-          },
-          {
-            "name": "quoteTokenMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "quoteTokenVault",
-            "type": "publicKey"
-          },
-          {
-            "name": "lpTokenMint",
-            "type": "publicKey"
           },
           {
             "name": "ammCapacity",

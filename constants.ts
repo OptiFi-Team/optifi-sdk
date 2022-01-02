@@ -23,9 +23,13 @@ export const SERUM_OPEN_ORDERS_PREFIX: string = "serum_open_orders";
 export const SERUM_MARKET_AUTHORITY: string = "serum_market_auth";
 export const SERUM_PRUNE_AUTHORITY: string = "serum_prune_auth";
 export const AMM_PREFIX: string = "amm";
+export const AMM_LIQUIDITY_AUTH_PREFIX: string = "amm_liquidity_auth";
 
 // Size of the strike ladder
 export const STRIKE_LADDER_SIZE: number = 9;
+
+// AMM Trade capacity
+export const AMM_TRADE_CAPACITY = 25;
 
 // How many assets are supported
 export const SUPPORTED_ASSETS: Asset[] = [Asset.Ethereum, Asset.Bitcoin];

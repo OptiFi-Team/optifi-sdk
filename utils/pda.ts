@@ -1,6 +1,7 @@
 import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import {
+    AMM_LIQUIDITY_AUTH_PREFIX,
     OPTIFI_MARKET_MINT_AUTH_PREFIX, SERUM_MARKET_AUTHORITY, SERUM_PRUNE_AUTHORITY,
     USDC_CENTRAL_POOL_PREFIX,
     USDC_POOL_AUTH_PREFIX
@@ -38,4 +39,8 @@ export function findSerumAuthorityPDA(context: Context): Promise<[PublicKey, num
 
 export function findSerumPruneAuthorityPDA(context: Context): Promise<[PublicKey, number]> {
     return derivePDAAddress(context, SERUM_PRUNE_AUTHORITY);
+}
+
+export function getAmmLiquidityAuthPDA(context: Context): Promise<[PublicKey, number]> {
+    return derivePDAAddress(context, AMM_LIQUIDITY_AUTH_PREFIX);
 }
