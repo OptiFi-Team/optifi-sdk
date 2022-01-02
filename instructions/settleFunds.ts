@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
-import {findExchangeAccount, findOracleSpotAccount, findUserAccount} from "../utils/accounts";
+import {findExchangeAccount, findOracleAccountFromInstrument, findUserAccount} from "../utils/accounts";
 import {deriveVaultNonce, findMarketInstrumentContext, getSerumMarket} from "../utils/market";
 import {findOptifiUSDCPoolAuthPDA, findSerumPruneAuthorityPDA} from "../utils/pda";
 import {SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT} from "../constants";

@@ -187,28 +187,51 @@ export function findInstrument(context: Context,
      ])
 }
 
+export enum OracleAccountType {
+     Spot,
+     Iv,
+}
 
-export function findOracleSpotAccount(context: Context,
-                                      instrumentAddress: PublicKey): Promise<PublicKey> {
+export function findOracleAccountFromAsset(context: Context,
+                                           asset: OptifiAsset,
+                                           oracleAccountType: OracleAccountType = OracleAccountType.Spot): PublicKey {
+    switch (asset.asset) {
+        case OptifiAsset.Bitcoin:
+            if (oracleAccountType === OracleAccountType.Spot) {
+                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
+            } else {
+                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV)
+            }
+        case OptifiAsset.Ethereum:
+            if (oracleAccountType === OracleAccountType.Spot) {
+                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD)
+            } else {
+                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV)
+            }
+        case OptifiAsset.USDC:
+            if (oracleAccountType === OracleAccountType.Iv) {
+                console.warn("No IV account for USDC, returning spot");
+            }
+            return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USDC)
+        default:
+            throw new Error(`Unsupported asset ${asset}`);
+    }
+
+}
+
+export function findOracleAccountFromInstrument(context: Context,
+                                                instrumentAddress: PublicKey,
+                                                oracleAccountType: OracleAccountType = OracleAccountType.Spot): Promise<PublicKey> {
      return new Promise((resolve, reject) => {
          context.program.account.chain.fetch(instrumentAddress).then((chainRes) => {
              // @ts-ignore
              let chain = chainRes as Chain;
-             switch (chain.asset) {
-                 case OptifiAsset.Bitcoin:
-                     resolve(new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
-                     break;
-                 case OptifiAsset.Ethereum:
-                     resolve(new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD));
-                     break;
-                 case OptifiAsset.USDC:
-                     resolve(new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USDC));
-                     break;
-                 default:
-                     reject(chain.asset);
-                     break;
+             try {
+                 resolve(findOracleAccountFromAsset(context, chain.asset, oracleAccountType))
+             } catch (e) {
+                 console.error(e);
+                 reject(e);
              }
-
          })
      })
 }
