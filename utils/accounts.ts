@@ -3,7 +3,7 @@ import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import {
     EXCHANGE_PREFIX,
-    INSTRUMENT_PREFIX,
+    INSTRUMENT_PREFIX, MARKET_MAKER_PREFIX,
     SERUM_OPEN_ORDERS_PREFIX,
     SWITCHBOARD, USDC_TOKEN_MINT,
     USER_ACCOUNT_PREFIX,
@@ -232,6 +232,22 @@ export function findOracleAccountFromInstrument(context: Context,
                  console.error(e);
                  reject(e);
              }
+         })
+     })
+}
+
+export function findMarketMakerAccount(context: Context): Promise<[PublicKey, number]> {
+     return new Promise((resolve, reject) => {
+         findExchangeAccount(context).then(([exchangeAddress, _]) => {
+             findUserAccount(context).then(([userAccountAddress, _]) => {
+                 findAccountWithSeeds(context, [
+                     Buffer.from(MARKET_MAKER_PREFIX),
+                     exchangeAddress.toBuffer(),
+                     userAccountAddress.toBuffer()
+                 ])
+                     .then((res) => resolve(res))
+                     .catch((err) => reject(err))
+             })
          })
      })
 }

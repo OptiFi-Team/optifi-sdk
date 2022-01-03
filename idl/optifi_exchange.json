@@ -846,6 +846,11 @@
           "isSigner": false
         },
         {
+          "name": "marketMakerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "userMarginAccountUsdc",
           "isMut": true,
           "isSigner": false
@@ -1645,6 +1650,58 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "registerMarketMaker",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marketMaker",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "deregisterMarketMaker",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marketMaker",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -1872,6 +1929,22 @@
           {
             "name": "marketAuthority",
             "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketMakerAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "userAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "active",
+            "type": "bool"
           }
         ]
       }
