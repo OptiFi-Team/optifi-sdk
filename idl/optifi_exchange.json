@@ -1430,16 +1430,6 @@
           "name": "clock",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "spotOracle",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ivOracle",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
@@ -1737,7 +1727,7 @@
           },
           {
             "name": "netDelta",
-            "type": "u64"
+            "type": "i64"
           },
           {
             "name": "totalLiquidity",
