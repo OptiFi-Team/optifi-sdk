@@ -11,7 +11,7 @@
   },
   "name": "@optifi/optifi-sdk",
   "description": "TypeScript interfaces for working with the on-chain Optifi system",
-  "version": "1.0.22",
+  "version": "1.0.30",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -19,7 +19,6 @@
     "clean": "rm *.js instructions/*.js scripts/*.js sequences/*.js test/*.js types/*.js utils/*.js",
     "build": "tsc",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
