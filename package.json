@@ -11,9 +11,10 @@
   },
   "name": "@optifi/optifi-sdk",
   "description": "TypeScript interfaces for working with the on-chain Optifi system",
-  "version": "1.0.30",
+  "version": "1.0.34",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "files": [ "lib" ],
   "scripts": {
     "test": "tsc && ts-mocha test/test*.ts",
     "clean": "rm *.js instructions/*.js scripts/*.js sequences/*.js test/*.js types/*.js utils/*.js",
