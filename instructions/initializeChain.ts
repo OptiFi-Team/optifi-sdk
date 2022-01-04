@@ -22,7 +22,7 @@ export interface InstrumentContext {
 }
 
 export function initializeChain(context: Context,
-                                instrumentContext: InstrumentContext): Promise<InstructionResult<TransactionSignature>> {
+                                instrumentContext: InstrumentContext): Promise<InstructionResult<PublicKey[]>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             console.log("Found exchange account ", exchangeAddress);
@@ -90,7 +90,7 @@ export function initializeChain(context: Context,
                         if (res.resultType === TransactionResultType.Successful) {
                             resolve({
                                 successful: true,
-                                data: res.txId as string,
+                                data: foundInstruments.map((i: [PublicKey, number]) => i[0])
                             });
                         } else {
                             console.error(res);

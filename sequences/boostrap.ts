@@ -2,11 +2,18 @@ import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {Exchange, OptifiMarket} from "../types/optifi-exchange-types";
 import {initialize, initializeSerumMarket, initializeUserAccount} from "../index";
-import {exchangeAccountExists, findExchangeAccount, findUserAccount, userAccountExists} from "../utils/accounts";
+import {
+    exchangeAccountExists,
+    findExchangeAccount,
+    findInstrument,
+    findUserAccount,
+    userAccountExists
+} from "../utils/accounts";
 import {SERUM_MARKETS} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {PublicKey} from "@solana/web3.js";
 import {createInstruments} from "./createInstruments";
+import {createNextOptifiMarket} from "../instructions/createOptifiMarket";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -120,6 +127,7 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
         createOrFetchExchange(context).then(() => {
             console.log("Created exchange")
             findExchangeAccount(context).then(([exchangeAddress, _]) => {
+                console.log("Exchange is ", exchangeAddress.toString());
                 createUserAccountIfNotExist(context).then(() => {
                     console.debug("Created or found user account")
                     findUserAccount(context).then(([accountAddress, _]) => {
@@ -130,10 +138,29 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                             console.debug("Created serum markets ", marketKeys);
                             createInstruments(context).then((res) => {
                                 console.debug("Created instruments ", res);
+                                let marketPromises: Promise<any>[] = [];
                                 // Create the optifi markets
-
+                                for (let i = 0; i < marketKeys.length; i++) {
+                                    let serumMarketKey = marketKeys[i];
+                                    let initialInstrumentAddress = res[i];
+                                    console.log(`Creating Optifi market with serum market key 
+                                    ${serumMarketKey.toString()}, instrument ${initialInstrumentAddress.toString()}`);
+                                    marketPromises.push(new Promise((resolve, reject) => {
+                                        createNextOptifiMarket(context,
+                                            serumMarketKey,
+                                            initialInstrumentAddress).then((marketCreationRes) => {
+                                                console.log("Got market creation res", marketCreationRes);
+                                                resolve(marketCreationRes);
+                                        }).catch((err) => {
+                                            console.error(err);
+                                            reject(err);
+                                        })
+                                    }))
+                                }
+                                Promise.all(marketPromises).then(() => {
+                                    console.log("Finished market promises")
+                                }).catch((err) => reject(err));
                             })
-                            // TODO: for each of the new serum markets, create a new instrument, and a new Optifi market
 
                         }).catch((err) => {
                             console.error("Got error creating serum markets ", err);

@@ -111,7 +111,7 @@ export function userAccountExists(context: Context): Promise<[boolean, UserAccou
                     resolve([false, undefined])
                 }
             }).catch((err) => {
-                console.error(err);
+                console.error("From user account exists ", err);
                 resolve([false, undefined])
             })
         })

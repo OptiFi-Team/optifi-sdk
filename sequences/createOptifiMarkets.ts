@@ -1,10 +1,12 @@
 import Context from "../types/context";
-import {TransactionSignature} from "@solana/web3.js";
+import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import {findOptifiMarkets} from "../utils/market";
 import {SERUM_MARKETS} from "../constants";
+import {createNextOptifiMarket} from "../instructions/createOptifiMarket";
 
-export default function createOptifiMarkets(context: Context): Promise<InstructionResult<void>[]> {
+export default function createOptifiMarkets(context: Context,
+                                            initialInstruments: PublicKey[]): Promise<InstructionResult<void>[]> {
     return new Promise((resolve, reject) => {
         console.debug("Finding existing markets");
         findOptifiMarkets(context).then((markets) => {
@@ -17,7 +19,6 @@ export default function createOptifiMarkets(context: Context): Promise<Instructi
                 for (let i = 0; i < marketsToCreate; i++) {
                     // Send the instruction to create each market,
                     // derive the instrument address
-
                     // TODO: create a new AMM for each new market that we need to create
                 }
             } else {

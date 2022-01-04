@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import {TransactionSignature} from "@solana/web3.js";
+import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import {generateExpirations} from "../utils/chains";
 import {
     SECONDS_IN_YEAR,
@@ -10,6 +10,7 @@ import {
 import InstrumentType from "../types/instrumentType";
 import ExpiryType from "../types/expiryType";
 import {initializeChain, InstrumentContext} from "../instructions/initializeChain";
+import {findInstrument} from "../utils/accounts";
 
 
 /**
@@ -17,13 +18,14 @@ import {initializeChain, InstrumentContext} from "../instructions/initializeChai
  *
  * @param context
  */
-export function createInstruments(context: Context): Promise<TransactionSignature[]> {
+export function createInstruments(context: Context): Promise<PublicKey[]> {
     let expirations = generateExpirations();
     let start = new Date();
 
     return new Promise((resolve, reject) => {
         let signatures: TransactionSignature[] = [];
         let instrumentsToCreate: InstrumentContext[] = [];
+        let instrumentKeys: PublicKey[] = [];
 
         for (let asset of SUPPORTED_ASSETS) {
             for (let instrumentTypeRaw of Object.keys(SUPPORTED_EXPIRATION_TYPES)) {
@@ -66,7 +68,7 @@ export function createInstruments(context: Context): Promise<TransactionSignatur
                 .then((chainRes) => {
                     if (chainRes.successful) {
                         console.debug("Successfully created chain ", chainRes);
-                        signatures.push(chainRes.data as string);
+                        instrumentKeys.push(...chainRes.data as PublicKey[]);
                     } else {
                         console.error("Couldn't create instrument", chainRes);
                         reject(chainRes);
@@ -78,7 +80,7 @@ export function createInstruments(context: Context): Promise<TransactionSignatur
         }
 
         Promise.all(instrumentPromises)
-            .then(() => resolve(signatures))
+            .then(() => resolve(instrumentKeys))
             .catch((err) => {
                 console.error(err);
                 reject(err);
