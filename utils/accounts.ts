@@ -185,23 +185,28 @@ export function findInstrument(context: Context,
                                expiryType: OptifiExpiryType,
                                idx: number,
                                expiryDate?: Date,
-                               ): Promise<[PublicKey, number]> {
-     return new Promise((resolve, reject) => {
-         let expiryDateStr: string = dateToAnchorTimestamp(expiryDate).toNumber().toString()
-         findExchangeAccount(context).then(([exchangeAddress, _]) => {
-             findAccountWithSeeds(context, [
-                 Buffer.from(INSTRUMENT_PREFIX),
-                 exchangeAddress.toBuffer(),
-                 Uint8Array.of(optifiAssetToNumber(asset)),
-                 Uint8Array.of(instrumentTypeToNumber(instrumentType)),
-                 Uint8Array.of(expiryTypeToNumber(expiryType)),
-                 dateToAnchorTimestampBuffer(expiryDate),
-                 Uint8Array.of(idx)
-             ]).then((res) => resolve(res)).catch((err) => reject(err))
-         })
-     })
+): Promise<[PublicKey, number]> {
+    return new Promise((resolve, reject) => {
+        let expiryDateStr: string = dateToAnchorTimestamp(expiryDate).toNumber().toString()
+        let seedStr: string =   (optifiAssetToNumber(asset).toString()) +
+            (instrumentTypeToNumber(instrumentType)).toString() +
+            (expiryTypeToNumber(expiryType)).toString() +
+            expiryDateStr +
+            idx.toString();
+        findExchangeAccount(context).then(([exchangeAddress, _]) => {
+            console.log("Asset is ", optifiAssetToNumber(asset), " instrument type is ",
+                instrumentTypeToNumber(instrumentType), " expiry type is ", expiryTypeToNumber(expiryType),
+                "idx is ", idx, "expiry date is ", expiryDateStr, "exchange addr is ", exchangeAddress.toString(),
+                " seed string is ", seedStr);
+            findAccountWithSeeds(context, [
+                Buffer.from(INSTRUMENT_PREFIX),
+                exchangeAddress.toBuffer(),
+                //dateToAnchorTimestampBuffer(expiryDate),
+                Buffer.from(seedStr)
+            ]).then((res) => resolve(res)).catch((err) => reject(err))
+        })
+    })
 }
-
 export enum OracleAccountType {
      Spot,
      Iv,
