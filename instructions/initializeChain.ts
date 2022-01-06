@@ -17,6 +17,7 @@ import {
 import * as anchor from "@project-serum/anchor";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
+import {Chain} from "../types/optifi-exchange-types";
 
 export interface InstrumentContext {
     asset: Asset,
@@ -32,7 +33,7 @@ export function initializeChain(context: Context,
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             console.log("Found exchange account ", exchangeAddress);
-            let foundInstruments: any = [];
+            let foundInstruments: { [idx: number]: [PublicKey, number] } = {};
             let instrumentPromises: Promise<any>[] = [];
             for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                 instrumentPromises.push(findInstrument(
@@ -44,7 +45,7 @@ export function initializeChain(context: Context,
                         instrumentContext.expirationDate
                     )
                         .then(([instrumentAddress, bump]) => {
-                            foundInstruments.push([instrumentAddress, bump])
+                            foundInstruments[i] = [instrumentAddress, bump]
                         })
                         .catch((err) => {
                             console.error("Got error trying to derive instrument address");
@@ -78,6 +79,7 @@ export function initializeChain(context: Context,
                 };
                 let assetNumber = optifiAssetToNumber(assetToOptifiAsset(instrumentContext.asset));
                 let optifiAsset = assetToOptifiAsset(instrumentContext.asset);
+                console.log("Instrument 8 is ", foundInstruments[8][0].toString());
                 let newInstrumentTx = context.program.transaction.createNewInstrument(
                     {
                         instrument0: foundInstruments[0][1],
@@ -104,7 +106,6 @@ export function initializeChain(context: Context,
                         accounts: {
                             optifiExchange: exchangeAddress,
                             instrument0: foundInstruments[0][0],
-                            /*
                             instrument1: foundInstruments[1][0],
                             instrument2: foundInstruments[2][0],
                             instrument3: foundInstruments[3][0],
@@ -113,7 +114,6 @@ export function initializeChain(context: Context,
                             instrument6: foundInstruments[6][0],
                             instrument7: foundInstruments[7][0],
                             instrument8: foundInstruments[8][0],
-                             */
                             payer: context.provider.wallet.publicKey,
                             systemProgram: SystemProgram.programId,
                             rent: SYSVAR_RENT_PUBKEY,
@@ -136,7 +136,7 @@ export function initializeChain(context: Context,
                             )
                             resolve({
                                 successful: true,
-                                data: foundInstruments.map((i: [PublicKey, number]) => i[0])
+                                data: Object.values(foundInstruments).map((i: [PublicKey, number]) => i[0])
                             });
                         } else {
                             console.error(res);

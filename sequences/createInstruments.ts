@@ -43,7 +43,8 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                                     instrumentType: instrumentType,
                                     duration: duration,
                                     start: start,
-                                    expiryType: expiryType
+                                    expiryType: expiryType,
+                                    expirationDate: expirationDate,
                                 })
                             }
                             break;

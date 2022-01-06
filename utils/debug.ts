@@ -42,3 +42,11 @@ export function logUserAccount(context: Context): Promise<void> {
       })
     })
 }
+
+export function logFormatted(items: { [item: string]: any}) {
+    let logStr = '';
+    for (let item of Object.keys(items)) {
+        logStr += `${item}: ${items[item]}\n`
+    }
+    console.log(logStr);
+}

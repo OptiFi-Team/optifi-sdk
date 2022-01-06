@@ -118,7 +118,6 @@ export function userAccountExists(context: Context): Promise<[boolean, UserAccou
                     resolve([false, undefined])
                 }
             }).catch((err) => {
-                console.error("From user account exists ", err);
                 resolve([false, undefined])
             })
         })
@@ -201,9 +200,11 @@ export function findInstrument(context: Context,
             findAccountWithSeeds(context, [
                 Buffer.from(INSTRUMENT_PREFIX),
                 exchangeAddress.toBuffer(),
-                //dateToAnchorTimestampBuffer(expiryDate),
                 Buffer.from(seedStr)
-            ]).then((res) => resolve(res)).catch((err) => reject(err))
+            ]).then((res) => {
+                console.log("Address for signed seed ", seedStr, " is , ", res[0].toString(), res[1]);
+                resolve(res);
+            }).catch((err) => reject(err))
         })
     })
 }
