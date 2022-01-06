@@ -33,7 +33,7 @@ export function initializeChain(context: Context,
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             console.log("Found exchange account ", exchangeAddress);
-            let foundInstruments: { [idx: number]: [PublicKey, number] } = {};
+            let foundInstruments: { [idx: number]: [PublicKey, number, string] } = {};
             let instrumentPromises: Promise<any>[] = [];
             for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                 instrumentPromises.push(findInstrument(
@@ -44,8 +44,8 @@ export function initializeChain(context: Context,
                         i,
                         instrumentContext.expirationDate
                     )
-                        .then(([instrumentAddress, bump]) => {
-                            foundInstruments[i] = [instrumentAddress, bump]
+                        .then((res) => {
+                            foundInstruments[i] = res
                         })
                         .catch((err) => {
                             console.error("Got error trying to derive instrument address");
@@ -101,6 +101,15 @@ export function initializeChain(context: Context,
                         authority: context.provider.wallet.publicKey,
                         contractSizePercent: new anchor.BN(10),
                         expiryType: expiryTypeToNumber(expiryTypeToOptifiExpiryType(instrumentContext.expiryType)),
+                        instrument0Seed: foundInstruments[0][2],
+                        instrument1Seed: foundInstruments[1][2],
+                        instrument2Seed: foundInstruments[2][2],
+                        instrument3Seed: foundInstruments[3][2],
+                        instrument4Seed: foundInstruments[4][2],
+                        instrument5Seed: foundInstruments[5][2],
+                        instrument6Seed: foundInstruments[6][2],
+                        instrument7Seed: foundInstruments[7][2],
+                        instrument8Seed: foundInstruments[8][2]
                     },
                     {
                         accounts: {
@@ -136,7 +145,7 @@ export function initializeChain(context: Context,
                             )
                             resolve({
                                 successful: true,
-                                data: Object.values(foundInstruments).map((i: [PublicKey, number]) => i[0])
+                                data: Object.values(foundInstruments).map((i: [PublicKey, number, string]) => i[0])
                             });
                         } else {
                             console.error(res);

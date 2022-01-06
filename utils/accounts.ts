@@ -184,7 +184,7 @@ export function findInstrument(context: Context,
                                expiryType: OptifiExpiryType,
                                idx: number,
                                expiryDate?: Date,
-): Promise<[PublicKey, number]> {
+): Promise<[PublicKey, number, string]> {
     return new Promise((resolve, reject) => {
         let expiryDateStr: string = dateToAnchorTimestamp(expiryDate).toNumber().toString()
         let seedStr: string =   (optifiAssetToNumber(asset).toString()) +
@@ -203,7 +203,7 @@ export function findInstrument(context: Context,
                 Buffer.from(seedStr)
             ]).then((res) => {
                 console.log("Address for signed seed ", seedStr, " is , ", res[0].toString(), res[1]);
-                resolve(res);
+                resolve([...res, seedStr]);
             }).catch((err) => reject(err))
         })
     })

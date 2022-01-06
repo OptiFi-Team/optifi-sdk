@@ -72,11 +72,9 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                         instrumentKeys.push(...chainRes.data as PublicKey[]);
                     } else {
                         console.error("Couldn't create instrument", chainRes);
-                        reject(chainRes);
                     }
                 }).catch((err) => {
                     console.error("Got error trying to create instrument", err);
-                    reject(err);
             }))
         }
 

@@ -63,6 +63,41 @@
           "isSigner": false
         },
         {
+          "name": "instrument1",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrument2",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrument3",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrument4",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrument5",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrument6",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrument7",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
