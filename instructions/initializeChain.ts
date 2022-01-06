@@ -6,7 +6,14 @@ import Asset from "../types/asset";
 import InstrumentType from "../types/instrumentType";
 import {STRIKE_LADDER_SIZE, SWITCHBOARD} from "../constants";
 import ExpiryType from "../types/expiryType";
-import {assetToOptifiAsset, dateToAnchorTimestamp, optifiAssetToNumber} from "../utils/generic";
+import {
+    assetToOptifiAsset,
+    dateToAnchorTimestamp, expiryTypeToOptifiExpiryType,
+    instrumentTypeToOptifiInstrumentType,
+    optifiAssetToNumber,
+    instrumentTypeToNumber,
+    expiryTypeToNumber
+} from "../utils/generic";
 import * as anchor from "@project-serum/anchor";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
@@ -31,8 +38,8 @@ export function initializeChain(context: Context,
                 instrumentPromises.push(findInstrument(
                         context,
                         assetToOptifiAsset(instrumentContext.asset),
-                        instrumentContext.instrumentType,
-                        instrumentContext.expiryType,
+                        instrumentTypeToOptifiInstrumentType(instrumentContext.instrumentType),
+                        expiryTypeToOptifiExpiryType(instrumentContext.expiryType),
                         i,
                         instrumentContext.expirationDate
                     )
@@ -85,13 +92,13 @@ export function initializeChain(context: Context,
                     },
                     {
                         asset: optifiAssetToNumber(optifiAsset),
-                        instrumentType: instrumentContext.instrumentType as number,
+                        instrumentType: instrumentTypeToNumber(instrumentTypeToOptifiInstrumentType(instrumentContext.instrumentType)),
                         expiryDate: dateToAnchorTimestamp(instrumentContext.expirationDate),
                         duration: new anchor.BN(instrumentContext.duration),
                         start: dateToAnchorTimestamp(instrumentContext.start),
                         authority: context.provider.wallet.publicKey,
                         contractSizePercent: new anchor.BN(10),
-                        expiryType: instrumentContext.expiryType as number,
+                        expiryType: expiryTypeToNumber(expiryTypeToOptifiExpiryType(instrumentContext.expiryType)),
                     },
                     {
                         accounts: {

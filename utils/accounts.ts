@@ -14,7 +14,14 @@ import Asset from "../types/asset";
 import {Asset as OptifiAsset} from "../types/optifi-exchange-types";
 import InstrumentType from "../types/instrumentType";
 import ExpiryType from "../types/expiryType";
-import {dateToAnchorTimestamp, dateToAnchorTimestampBuffer, optifiAssetToNumber} from "./generic";
+import {InstrumentType as OptifiInstrumentType} from '../types/optifi-exchange-types';
+import {ExpiryType as OptifiExpiryType} from '../types/optifi-exchange-types';
+import {
+    dateToAnchorTimestamp,
+    dateToAnchorTimestampBuffer, expiryTypeToNumber,
+    instrumentTypeToNumber,
+    optifiAssetToNumber
+} from "./generic";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 /**
@@ -170,10 +177,12 @@ export function oracleAccountsWrapper(context: Context, accounts: { [name: strin
     })
 }
 
+
+
 export function findInstrument(context: Context,
                                asset: OptifiAsset,
-                               instrumentType: InstrumentType,
-                               expiryType: ExpiryType,
+                               instrumentType: OptifiInstrumentType,
+                               expiryType: OptifiExpiryType,
                                idx: number,
                                expiryDate?: Date,
                                ): Promise<[PublicKey, number]> {
@@ -183,13 +192,11 @@ export function findInstrument(context: Context,
              findAccountWithSeeds(context, [
                  Buffer.from(INSTRUMENT_PREFIX),
                  exchangeAddress.toBuffer(),
-                 //dateToAnchorTimestampBuffer(expiryDate),
-                 Buffer.from(
-                     (optifiAssetToNumber(asset).toString()) +
-                     (instrumentType as number).toString() +
-                     (expiryType as number).toString() +
-                     expiryDateStr +
-                     idx.toString())
+                 Uint8Array.of(optifiAssetToNumber(asset)),
+                 Uint8Array.of(instrumentTypeToNumber(instrumentType)),
+                 Uint8Array.of(expiryTypeToNumber(expiryType)),
+                 dateToAnchorTimestampBuffer(expiryDate),
+                 Uint8Array.of(idx)
              ]).then((res) => resolve(res)).catch((err) => reject(err))
          })
      })

@@ -84,6 +84,9 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
             .catch((err) => {
                 console.error(err);
                 reject(err);
-            })
+            }).catch((err) => {
+                console.error(err);
+                reject(err);
+        })
     })
 }

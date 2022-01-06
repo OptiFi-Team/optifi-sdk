@@ -1,8 +1,14 @@
 import fs from "fs";
-import { WalletProvider } from "../types/solanaTypes";
+import {WalletProvider} from "../types/solanaTypes";
 import * as anchor from "@project-serum/anchor";
 import Asset from "../types/asset";
-import { Asset as OptifiAsset } from '../types/optifi-exchange-types';
+import {
+    Asset as OptifiAsset,
+    ExpiryType as OptifiExpiryType,
+    InstrumentType as OptifiInstrumentType
+} from '../types/optifi-exchange-types';
+import InstrumentType from "../types/instrumentType";
+import ExpiryType from "../types/expiryType";
 
 /**
  * Small helper function to read a JSON file as a type from a filepath
@@ -58,5 +64,50 @@ export function optifiAssetToNumber(asset: OptifiAsset): number {
             return 2;
         default:
             return -1;
+    }
+}
+
+
+export function expiryTypeToNumber(expiryType: OptifiExpiryType): number {
+    switch (expiryType) {
+        case OptifiExpiryType.Standard:
+            return 0;
+        case OptifiExpiryType.Perpetual:
+            return 1;
+        default:
+            return -1;
+    }
+}
+
+export function instrumentTypeToNumber(instrumentType: OptifiInstrumentType): number {
+    switch (instrumentType) {
+        case OptifiInstrumentType.Put:
+            return 0;
+        case OptifiInstrumentType.Call:
+            return 1;
+        case OptifiInstrumentType.Future:
+            return 2;
+        default:
+            return -1;
+    }
+}
+
+export function instrumentTypeToOptifiInstrumentType(instrumentType: InstrumentType): OptifiInstrumentType {
+    switch (instrumentType) {
+        case InstrumentType.Call:
+            return OptifiInstrumentType.Call;
+        case InstrumentType.Put:
+            return OptifiInstrumentType.Put;
+        case InstrumentType.Future:
+            return OptifiInstrumentType.Future;
+    }
+}
+
+export function expiryTypeToOptifiExpiryType(expiryType: ExpiryType): OptifiExpiryType {
+    switch (expiryType) {
+        case ExpiryType.Perpetual:
+            return OptifiExpiryType.Perpetual;
+        case ExpiryType.Standard:
+            return OptifiExpiryType.Standard;
     }
 }
