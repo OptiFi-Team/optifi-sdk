@@ -63,46 +63,6 @@
           "isSigner": false
         },
         {
-          "name": "instrument1",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument2",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument3",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument4",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument5",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument6",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument7",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument8",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -2083,15 +2043,11 @@
         "fields": [
           {
             "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
+            "type": "u8"
           },
           {
             "name": "instrumentType",
-            "type": {
-              "defined": "InstrumentType"
-            }
+            "type": "u8"
           },
           {
             "name": "expiryDate",
@@ -2107,17 +2063,11 @@
           },
           {
             "name": "expiryType",
-            "type": {
-              "defined": "ExpiryType"
-            }
+            "type": "u8"
           },
           {
             "name": "authority",
             "type": "publicKey"
-          },
-          {
-            "name": "isListedOnMarket",
-            "type": "bool"
           },
           {
             "name": "contractSizePercent",

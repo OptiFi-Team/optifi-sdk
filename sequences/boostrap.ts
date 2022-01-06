@@ -14,6 +14,7 @@ import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {PublicKey} from "@solana/web3.js";
 import {createInstruments} from "./createInstruments";
 import {createNextOptifiMarket} from "../instructions/createOptifiMarket";
+import {readJsonFile} from "../utils/generic";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -114,12 +115,25 @@ async function createSerumMarkets(context: Context): Promise<PublicKey[]> {
     return createdMarkets;
 }
 
+function createOrRetreiveSerumMarkets(context: Context): Promise<PublicKey[]> {
+    return new Promise((resolve, reject) => {
+        if (process.env.SERUM_KEYS !== undefined) {
+            console.log("Using debug keys ", process.env.SERUM_KEYS);
+            let serumKeys: PublicKey[] = readJsonFile<PublicKey[]>(process.env.SERUM_KEYS);
+            resolve(serumKeys);
+        } else {
+            createSerumMarkets(context).then((res) => resolve(res)).catch((err) => reject(err));
+        }
+    })
+}
+
 /**
  * Bootstrap the optifi exchange entirely, creating new instruments, etc.
  *
  * @param context The program context
  */
 export default function boostrap(context: Context): Promise<InstructionResult<BootstrapResult>> {
+    console.log("Exchange ID is ", context.exchangeUUID);
     return new Promise((resolve, reject) => {
         // Find or create the addresses of both the exchange and user accounts,
         // and make sure that our user is an authority
@@ -134,9 +148,10 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                         console.debug("Creating serum markets")
                         // Now that we have both addresses, create as many new serum markets
                         // as are specified in the constants
-                        createSerumMarkets(context).then((marketKeys) => {
+                        createOrRetreiveSerumMarkets(context).then((marketKeys) => {
+                            console.log("Serum market keys are", JSON.stringify(marketKeys));
                             console.debug("Created serum markets ", marketKeys);
-                            createInstruments(context).then((res) => {
+                            /*createInstruments(context).then((res) => {
                                 console.debug("Created instruments ", res);
                                 let marketPromises: Promise<any>[] = [];
                                 // Create the optifi markets
@@ -153,14 +168,20 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                                                 resolve(marketCreationRes);
                                         }).catch((err) => {
                                             console.error(err);
+                                            console.log("Rejecting, serum market keys are ", JSON.stringify(marketKeys))
                                             reject(err);
                                         })
                                     }))
                                 }
                                 Promise.all(marketPromises).then(() => {
                                     console.log("Finished market promises")
-                                }).catch((err) => reject(err));
+                                }).catch((err) => {
+                                    console.log("Rejecting, serum market keys are ", JSON.stringify(marketKeys))
+                                    reject(err);
+                                });
                             })
+
+                             */
 
                         }).catch((err) => {
                             console.error("Got error creating serum markets ", err);

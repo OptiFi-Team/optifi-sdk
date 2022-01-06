@@ -14,7 +14,7 @@ import Asset from "../types/asset";
 import {Asset as OptifiAsset} from "../types/optifi-exchange-types";
 import InstrumentType from "../types/instrumentType";
 import ExpiryType from "../types/expiryType";
-import {dateToAnchorTimestampBuffer} from "./generic";
+import {dateToAnchorTimestamp, dateToAnchorTimestampBuffer, optifiAssetToNumber} from "./generic";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 /**
@@ -23,7 +23,7 @@ import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
  * @param context Program context
  * @param seeds The seeds to look for the account with
  */
-export function findAccountWithSeeds(context: Context, seeds: Buffer[]): Promise<[PublicKey, number]> {
+export function findAccountWithSeeds(context: Context, seeds: (Buffer | Uint8Array)[]): Promise<[PublicKey, number]> {
     return anchor.web3.PublicKey.findProgramAddress(
         seeds,
         context.program.programId
@@ -171,20 +171,28 @@ export function oracleAccountsWrapper(context: Context, accounts: { [name: strin
 }
 
 export function findInstrument(context: Context,
-                               asset: Asset,
+                               asset: OptifiAsset,
                                instrumentType: InstrumentType,
                                expiryType: ExpiryType,
                                idx: number,
                                expiryDate?: Date,
                                ): Promise<[PublicKey, number]> {
-     return findAccountWithSeeds(context, [
-         Buffer.from(INSTRUMENT_PREFIX),
-         Buffer.from(Uint8Array.of(asset as number)),
-         Buffer.from(Uint8Array.of(instrumentType as number)),
-         Buffer.from(Uint8Array.of(expiryType as number)),
-         dateToAnchorTimestampBuffer(expiryDate),
-         Buffer.from(Uint8Array.of(idx))
-     ])
+     return new Promise((resolve, reject) => {
+         let expiryDateStr: string = dateToAnchorTimestamp(expiryDate).toNumber().toString()
+         findExchangeAccount(context).then(([exchangeAddress, _]) => {
+             findAccountWithSeeds(context, [
+                 Buffer.from(INSTRUMENT_PREFIX),
+                 exchangeAddress.toBuffer(),
+                 //dateToAnchorTimestampBuffer(expiryDate),
+                 Buffer.from(
+                     (optifiAssetToNumber(asset).toString()) +
+                     (instrumentType as number).toString() +
+                     (expiryType as number).toString() +
+                     expiryDateStr +
+                     idx.toString())
+             ]).then((res) => resolve(res)).catch((err) => reject(err))
+         })
+     })
 }
 
 export enum OracleAccountType {
@@ -195,7 +203,7 @@ export enum OracleAccountType {
 export function findOracleAccountFromAsset(context: Context,
                                            asset: OptifiAsset,
                                            oracleAccountType: OracleAccountType = OracleAccountType.Spot): PublicKey {
-    switch (asset.asset) {
+    switch (asset) {
         case OptifiAsset.Bitcoin:
             if (oracleAccountType === OracleAccountType.Spot) {
                 return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
@@ -214,6 +222,7 @@ export function findOracleAccountFromAsset(context: Context,
             }
             return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USDC)
         default:
+            console.log("Asset is ", asset);
             throw new Error(`Unsupported asset ${asset}`);
     }
 

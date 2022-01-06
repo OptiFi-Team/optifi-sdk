@@ -32,7 +32,7 @@ export function generateUuid(): string {
 export function dateToAnchorTimestamp(date?: Date): anchor.BN {
     return date ?
         new anchor.BN(date.getTime() / 1000)
-        : new anchor.BN(0)
+        : new anchor.BN(1)
 }
 
 export function dateToAnchorTimestampBuffer(date?: Date): Buffer {
@@ -45,5 +45,18 @@ export function assetToOptifiAsset(asset: Asset): OptifiAsset {
             return OptifiAsset.Bitcoin;
         case Asset.Ethereum:
             return OptifiAsset.Ethereum;
+    }
+}
+
+export function optifiAssetToNumber(asset: OptifiAsset): number {
+    switch (asset) {
+        case OptifiAsset.Bitcoin:
+            return 0;
+        case OptifiAsset.Ethereum:
+            return 1;
+        case OptifiAsset.USDC:
+            return 2;
+        default:
+            return -1;
     }
 }

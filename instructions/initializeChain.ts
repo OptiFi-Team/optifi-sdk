@@ -1,16 +1,15 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import {PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, TransactionSignature} from "@solana/web3.js";
-import {findExchangeAccount, findInstrument} from "../utils/accounts";
+import {PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY} from "@solana/web3.js";
+import {findExchangeAccount, findInstrument, findOracleAccountFromAsset, OracleAccountType} from "../utils/accounts";
 import Asset from "../types/asset";
 import InstrumentType from "../types/instrumentType";
 import {STRIKE_LADDER_SIZE, SWITCHBOARD} from "../constants";
-import expiryType from "../types/expiryType";
-import {dateToAnchorTimestamp} from "../utils/generic";
+import ExpiryType from "../types/expiryType";
+import {assetToOptifiAsset, dateToAnchorTimestamp, optifiAssetToNumber} from "../utils/generic";
 import * as anchor from "@project-serum/anchor";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import ExpiryType from "../types/expiryType";
 
 export interface InstrumentContext {
     asset: Asset,
@@ -31,7 +30,7 @@ export function initializeChain(context: Context,
             for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                 instrumentPromises.push(findInstrument(
                         context,
-                        instrumentContext.asset,
+                        assetToOptifiAsset(instrumentContext.asset),
                         instrumentContext.instrumentType,
                         instrumentContext.expiryType,
                         i,
@@ -46,7 +45,6 @@ export function initializeChain(context: Context,
                         })
                 )
             }
-            console.log("Instrument promises are", instrumentPromises);
             Promise.all(instrumentPromises).then(() => {
                 let accounts: any = {};
                 let bumps: any = {};
@@ -60,11 +58,7 @@ export function initializeChain(context: Context,
                 accounts['rent'] = SYSVAR_RENT_PUBKEY;
                 accounts['assetSpotPriceOracleFeed'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
                 accounts['assetIvOracleFeed'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV);
-                console.log("Accounts are ", accounts, "bumps are ", bumps);
-                let newInstrumentTx = context.program.transaction.createNewInstrument(
-                    // @ts-ignore
-                    bumps,
-                    {
+                let chainData = {
                         asset: new anchor.BN(instrumentContext.asset as number),
                         instrumentType: new anchor.BN(instrumentContext.instrumentType as number),
                         expiryDate: dateToAnchorTimestamp(instrumentContext.expirationDate),
@@ -72,22 +66,67 @@ export function initializeChain(context: Context,
                         duration: new anchor.BN(instrumentContext.duration),
                         start: dateToAnchorTimestamp(instrumentContext.start),
                         authority: context.provider.wallet.publicKey,
+                        isListedOnMarket: true,
+                        contractSizePercent: new anchor.BN(10)
+                };
+                let assetNumber = optifiAssetToNumber(assetToOptifiAsset(instrumentContext.asset));
+                let optifiAsset = assetToOptifiAsset(instrumentContext.asset);
+                let newInstrumentTx = context.program.transaction.createNewInstrument(
+                    {
+                        instrument0: foundInstruments[0][1],
+                        instrument1: foundInstruments[1][1],
+                        instrument2: foundInstruments[2][1],
+                        instrument3: foundInstruments[3][1],
+                        instrument4: foundInstruments[4][1],
+                        instrument5: foundInstruments[5][1],
+                        instrument6: foundInstruments[6][1],
+                        instrument7: foundInstruments[7][1],
+                        instrument8: foundInstruments[8][1]
                     },
                     {
-                        accounts: accounts
+                        asset: optifiAssetToNumber(optifiAsset),
+                        instrumentType: instrumentContext.instrumentType as number,
+                        expiryDate: dateToAnchorTimestamp(instrumentContext.expirationDate),
+                        duration: new anchor.BN(instrumentContext.duration),
+                        start: dateToAnchorTimestamp(instrumentContext.start),
+                        authority: context.provider.wallet.publicKey,
+                        contractSizePercent: new anchor.BN(10),
+                        expiryType: instrumentContext.expiryType as number,
+                    },
+                    {
+                        accounts: {
+                            optifiExchange: exchangeAddress,
+                            instrument0: foundInstruments[0][0],
+                            /*
+                            instrument1: foundInstruments[1][0],
+                            instrument2: foundInstruments[2][0],
+                            instrument3: foundInstruments[3][0],
+                            instrument4: foundInstruments[4][0],
+                            instrument5: foundInstruments[5][0],
+                            instrument6: foundInstruments[6][0],
+                            instrument7: foundInstruments[7][0],
+                            instrument8: foundInstruments[8][0],
+                             */
+                            payer: context.provider.wallet.publicKey,
+                            systemProgram: SystemProgram.programId,
+                            rent: SYSVAR_RENT_PUBKEY,
+                            assetSpotPriceOracleFeed: findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Spot),
+                            assetIvOracleFeed: findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Iv)
+                        },
                     }
-                );
-                signAndSendTransaction(context, newInstrumentTx)
+                )
+               signAndSendTransaction(context, newInstrumentTx)
                     .then((res) => {
+                        console.log("SUCCEEDED-----\n\n");
                         console.log(res);
-                        console.log("Created new instrument -",
-                            formatExplorerAddress(
-                                context,
-                                res.txId as string,
-                                SolanaEntityType.Transaction,
-                            )
-                        )
                         if (res.resultType === TransactionResultType.Successful) {
+                            console.log("Created new instrument -",
+                                formatExplorerAddress(
+                                    context,
+                                    res.txId as string,
+                                    SolanaEntityType.Transaction,
+                                )
+                            )
                             resolve({
                                 successful: true,
                                 data: foundInstruments.map((i: [PublicKey, number]) => i[0])
@@ -96,6 +135,7 @@ export function initializeChain(context: Context,
                             console.error(res);
                             reject(res);
                         }
+
                     })
                     .catch((err) => {
                         console.error("Got error trying to sign and send chain instruction ", err);
