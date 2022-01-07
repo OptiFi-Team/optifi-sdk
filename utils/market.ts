@@ -3,8 +3,9 @@ import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Market } from "@project-serum/serum";
 import {Chain, OptifiMarket} from "../types/optifi-exchange-types";
-import {findAccountWithSeeds, findAssociatedTokenAccount, findExchangeAccount, findUserAccount} from "./accounts";
+import {findAccountWithSeeds, findExchangeAccount, findUserAccount} from "./accounts";
 import {OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID} from "../constants";
+import {findAssociatedTokenAccount} from "./token";
 
 
 export function findOptifiMarketWithIdx(context: Context,
@@ -141,8 +142,8 @@ export function findMarketInstrumentContext(context: Context, marketAddress: Pub
         context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {
             let optifiMarket = marketRes as OptifiMarket;
             findUserAccount(context).then(([userAccountAddress, _]) => {
-                findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken).then(([longSPLTokenVault, _]) => {
-                    findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken).then(([shortSPLTokenVault, _]) => {
+                findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then(([longSPLTokenVault, _]) => {
+                    findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then(([shortSPLTokenVault, _]) => {
                         resolve({
                             longSPLTokenVault: longSPLTokenVault,
                             shortSPLTokenVault: shortSPLTokenVault,
