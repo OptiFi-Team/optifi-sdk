@@ -13,8 +13,7 @@ import {findAssociatedTokenAccount} from "../utils/token";
 
 export default function recordPnl(context: Context,
                                   userToSettle: PublicKey,
-                                  market: PublicKey,
-                                  instrument: PublicKey): Promise<InstructionResult<TransactionSignature>> {
+                                  market: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findUserAccount(context).then(([userAccountAddress, _]) => {
             context.program.account.userAccount.fetch(userAccountAddress).then((userAcctRaw) => {
@@ -37,7 +36,7 @@ export default function recordPnl(context: Context,
                                                                 optifiMarket: market,
                                                                 serumMarket: marketContext.optifiMarket.serumMarket,
                                                                 userSerumOpenOrders: openOrdersAccount,
-                                                                instrument: instrument,
+                                                                instrument: marketContext.optifiMarket.instrument,
                                                                 bids: serumMarket.bidsAddress,
                                                                 asks: serumMarket.asksAddress,
                                                                 eventQueue: serumMarket.decoded.eventQueue,

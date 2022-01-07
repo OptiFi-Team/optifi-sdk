@@ -75,7 +75,8 @@ export function createNextOptifiMarket(context: Context,
                                        initialInstrument: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         getSerumMarket(context, serumMarketAddress).then((serumMarket) => {
-            findOptifiMarkets(context).then((markets) => {
+            findOptifiMarkets(context).then((marketRes) => {
+                let markets = marketRes.map((i) => i[0]);
                 let marketLen = markets.length;
                 createOptifiMarket(context,
                     serumMarketAddress,

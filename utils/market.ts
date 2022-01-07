@@ -20,9 +20,9 @@ export function findOptifiMarketWithIdx(context: Context,
 
 function iterateFindMarkets(context: Context,
                             exchangeAddress: PublicKey,
-                            idx: number = 0): Promise<OptifiMarket[]> {
+                            idx: number = 0): Promise<[OptifiMarket, PublicKey][]> {
     return new Promise((resolve, reject) => {
-        let optifiMarkets: OptifiMarket[] = [];
+        let optifiMarkets: [OptifiMarket, PublicKey][] = [];
         findOptifiMarketWithIdx(
             context,
             exchangeAddress,
@@ -30,7 +30,7 @@ function iterateFindMarkets(context: Context,
             context.program.account.optifiMarket.fetch(
                 address
             ).then((res) => {
-                optifiMarkets.push(res as OptifiMarket);
+                optifiMarkets.push([res as OptifiMarket, address]);
                 iterateFindMarkets(context, exchangeAddress, idx+1).then((res) => {
                     optifiMarkets.push(...res);
                     resolve(optifiMarkets)
@@ -43,7 +43,7 @@ function iterateFindMarkets(context: Context,
     })
 }
 
-export function findOptifiMarkets(context: Context): Promise<OptifiMarket[]> {
+export function findOptifiMarkets(context: Context): Promise<[OptifiMarket, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             iterateFindMarkets(
@@ -59,7 +59,8 @@ export function findOptifiMarkets(context: Context): Promise<OptifiMarket[]> {
 
 export function findOptifiInstruments(context: Context): Promise<Chain[]> {
     return new Promise((resolve, reject) => {
-        findOptifiMarkets(context).then((markets) => {
+        findOptifiMarkets(context).then((marketRes) => {
+            let markets = marketRes.map((i) => i[0]);
             let instruments: Chain[] = []
             Promise.all([
                 markets.map((m) =>
@@ -75,13 +76,13 @@ export function findOptifiInstruments(context: Context): Promise<Chain[]> {
     })
 }
 
-export function findExpiredMarkets(context: Context): Promise<OptifiMarket[]> {
+export function findExpiredMarkets(context: Context): Promise<[OptifiMarket, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findOptifiMarkets(context).then((markets) => {
-            let expiredMarkets: OptifiMarket[] = [];
+            let expiredMarkets: [OptifiMarket, PublicKey][] = [];
             let now = new anchor.BN(Date.now());
             Promise.all(markets.map((m) => new Promise((chainRes) => {
-                context.program.account.chain.fetch(m.instrument).then((res) => {
+                context.program.account.chain.fetch(m[0].instrument).then((res) => {
                     // @ts-ignore
                     let chain = res as Chain;
                     if (chain.expiryDate >= now) {
