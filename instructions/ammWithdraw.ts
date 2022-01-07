@@ -2,10 +2,11 @@ import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
-import {findAssociatedTokenAccount, findExchangeAccount, findUserAccount} from "../utils/accounts";
+import {findExchangeAccount, findUserAccount} from "../utils/accounts";
 import {Amm} from "../types/optifi-exchange-types";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import {findAssociatedTokenAccount} from "../utils/token";
 
 export default function ammWithdraw(context: Context,
                                     ammAddress: PublicKey,

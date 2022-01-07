@@ -1,19 +1,11 @@
 import Context from "../types/context";
-import {PublicKey} from "@solana/web3.js";
+import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Market } from "@project-serum/serum";
 import {Chain, OptifiMarket} from "../types/optifi-exchange-types";
-import {findAccountWithSeeds, findAssociatedTokenAccount, findExchangeAccount, findOptifiExchange} from "./accounts";
+import {findAccountWithSeeds, findAssociatedTokenAccount, findExchangeAccount, findUserAccount} from "./accounts";
 import {OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID} from "../constants";
 
-export function getMarketInfo (context: Context): Promise<Market> {
-    return Market.load(
-        context.connection,
-        /* marketAddress serumMarket */new PublicKey("DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"),
-        undefined,
-        new PublicKey("DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY")
-      );
-}
 
 export function findOptifiMarketWithIdx(context: Context,
                                          exchangeAddress: PublicKey,
@@ -148,15 +140,17 @@ export function findMarketInstrumentContext(context: Context, marketAddress: Pub
     return new Promise((resolve, reject) => {
         context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {
             let optifiMarket = marketRes as OptifiMarket;
-            findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken).then(([longSPLTokenVault, _]) => {
-                findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken).then(([shortSPLTokenVault, _]) => {
-                    resolve({
-                        longSPLTokenVault: longSPLTokenVault,
-                        shortSPLTokenVault: shortSPLTokenVault,
-                        optifiMarket: optifiMarket
-                    })
+            findUserAccount(context).then(([userAccountAddress, _]) => {
+                findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken).then(([longSPLTokenVault, _]) => {
+                    findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken).then(([shortSPLTokenVault, _]) => {
+                        resolve({
+                            longSPLTokenVault: longSPLTokenVault,
+                            shortSPLTokenVault: shortSPLTokenVault,
+                            optifiMarket: optifiMarket
+                        })
+                    }).catch((err) => reject(err))
                 }).catch((err) => reject(err))
-            }).catch((err) => reject(err))
+            })
         }).catch((err) => reject(err))
     })
 }

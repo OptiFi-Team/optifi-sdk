@@ -60,7 +60,6 @@ export default function initialize(context: Context): Promise<InstructionResult<
 
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, bump]) => {
-            console.debug("Derived exchange address ", exchangeAddress);
             findOptifiUSDCPoolAuthPDA(context).then(([poolAuthPDAAddress, poolBump]) => {
                 const usdcCentralPoolWallet = anchor.web3.Keypair.generate();
                     createUSDCPoolAccount(context, poolAuthPDAAddress, usdcCentralPoolWallet).then((res) => {

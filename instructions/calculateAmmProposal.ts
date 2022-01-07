@@ -14,8 +14,6 @@ export default function calculateAmmProposal(context: Context,
                 // @ts-ignore
                 let amm = ammRes as Amm;
 
-                let spotOracle = findOracleAccountFromAsset(context, amm.asset);
-                let ivOracle = findOracleAccountFromAsset(context, amm.asset, OracleAccountType.Iv);
 
                 let calculateProposalTx = context.program.transaction.ammCalculateProposal({
                     accounts: {
@@ -24,8 +22,6 @@ export default function calculateAmmProposal(context: Context,
                         quoteTokenVault: amm.quoteTokenVault,
                         tokenProgram: TOKEN_PROGRAM_ID,
                         clock: SYSVAR_CLOCK_PUBKEY,
-                        spotOracle: spotOracle,
-                        ivOracle: ivOracle
                     }
                 });
                 signAndSendTransaction(context, calculateProposalTx).then((calculateRes) => {

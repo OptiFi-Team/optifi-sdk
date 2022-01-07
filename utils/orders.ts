@@ -1,7 +1,6 @@
 import Context from "../types/context";
 import {PublicKey, SYSVAR_RENT_PUBKEY} from "@solana/web3.js";
 import {
-    findAssociatedTokenAccount,
     findExchangeAccount,
     findUserAccount,
     getDexOpenOrders,
@@ -12,6 +11,7 @@ import {deriveVaultNonce, getSerumMarket} from "./market";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findOptifiMarketMintAuthPDA} from "./pda";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {findAssociatedTokenAccount} from "./token";
 
 export interface OrderAccountContext {
     exchange: PublicKey,
