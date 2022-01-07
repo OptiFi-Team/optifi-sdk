@@ -18,15 +18,15 @@ export function findAMMWithIdx(context: Context,
 function iterateFindAMM(context: Context,
                         exchangeAddress: PublicKey,
                         idx: number = 0
-                        ): Promise<Amm[]> {
+                        ): Promise<[Amm, PublicKey][]> {
     return new Promise((resolve, reject) => {
-        let ammAccounts: Amm[] = [];
+        let ammAccounts: [Amm, PublicKey][] = [];
         findAMMWithIdx(context,
             exchangeAddress,
             idx).then(([address, bump]) => {
                 context.program.account.amm.fetch(address).then((res) => {
                     // @ts-ignore
-                    ammAccounts.push(res as Amm);
+                    ammAccounts.push([res as Amm, address]);
                     iterateFindAMM(context,
                         exchangeAddress,
                         idx+1).then((remainingRes) => {
@@ -40,7 +40,7 @@ function iterateFindAMM(context: Context,
     })
 }
 
-export function findAMMAccounts(context: Context): Promise<Amm[]> {
+export function findAMMAccounts(context: Context): Promise<[Amm, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             iterateFindAMM(context, exchangeAddress).then((accts) => {
