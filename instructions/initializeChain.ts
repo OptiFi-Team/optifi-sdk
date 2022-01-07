@@ -17,7 +17,6 @@ import {
 import * as anchor from "@project-serum/anchor";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {Chain} from "../types/optifi-exchange-types";
 
 export interface InstrumentContext {
     asset: Asset,
@@ -54,32 +53,7 @@ export function initializeChain(context: Context,
                 )
             }
             Promise.all(instrumentPromises).then(() => {
-                let accounts: any = {};
-                let bumps: any = {};
-                for (let i=0; i < STRIKE_LADDER_SIZE; i++) {
-                   accounts[`instrument${i}`] = foundInstruments[i][0];
-                   bumps[`instrument${i}`] = foundInstruments[i][1];
-                }
-                accounts['optifiExchange'] = exchangeAddress;
-                accounts['payer'] = context.provider.wallet.publicKey;
-                accounts['systemProgram'] = SystemProgram.programId;
-                accounts['rent'] = SYSVAR_RENT_PUBKEY;
-                accounts['assetSpotPriceOracleFeed'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
-                accounts['assetIvOracleFeed'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV);
-                let chainData = {
-                        asset: new anchor.BN(instrumentContext.asset as number),
-                        instrumentType: new anchor.BN(instrumentContext.instrumentType as number),
-                        expiryDate: dateToAnchorTimestamp(instrumentContext.expirationDate),
-                        expiryType: new anchor.BN(instrumentContext.expiryType as number),
-                        duration: new anchor.BN(instrumentContext.duration),
-                        start: dateToAnchorTimestamp(instrumentContext.start),
-                        authority: context.provider.wallet.publicKey,
-                        isListedOnMarket: true,
-                        contractSizePercent: new anchor.BN(10)
-                };
-                let assetNumber = optifiAssetToNumber(assetToOptifiAsset(instrumentContext.asset));
                 let optifiAsset = assetToOptifiAsset(instrumentContext.asset);
-                console.log("Instrument 8 is ", foundInstruments[8][0].toString());
                 let newInstrumentTx = context.program.transaction.createNewInstrument(
                     {
                         instrument0: foundInstruments[0][1],
@@ -133,7 +107,6 @@ export function initializeChain(context: Context,
                 )
                signAndSendTransaction(context, newInstrumentTx)
                     .then((res) => {
-                        console.log("SUCCEEDED-----\n\n");
                         console.log(res);
                         if (res.resultType === TransactionResultType.Successful) {
                             console.log("Created new instrument -",

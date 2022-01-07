@@ -98,6 +98,11 @@
           "isSigner": false
         },
         {
+          "name": "instrument8",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
