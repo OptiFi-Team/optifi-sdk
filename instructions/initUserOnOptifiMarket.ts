@@ -8,6 +8,7 @@ import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {OptifiMarket} from "../types/optifi-exchange-types";
 import {findSerumAuthorityPDA} from "../utils/pda";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import {findOrCreateAssociatedTokenAccount} from "../utils/token";
 
 /**
  * Initialize a new open orders account for user to place order on the optifi marketAddress
@@ -30,41 +31,58 @@ import {signAndSendTransaction, TransactionResultType} from "../utils/transactio
                         findOptifiExchange(context).then(([exchangeAddress, _]) => {
                             findUserAccount(context).then(([userAccountAddress, _]) => {
                                 getDexOpenOrders(context, marketAddress, userAccountAddress).then(([dexOpenOrders, bump]) => {
-                                    let initUserTx = context.program.transaction.initUserOnOptifiMarket(bump, {
-                                        accounts: {
-                                            optifiExchange: exchangeAddress,
-                                            user: context.provider.wallet.publicKey,
-                                            serumMarketAuthority: serumAuthority,
-                                            userAccount: userAccountAddress,
-                                            serumOpenOrders: dexOpenOrders,
-                                            optifiMarket: marketAddress,
-                                            serumMarket: optifiMarket.serumMarket,
-                                            serumDexProgramId: serumId,
-                                            payer: context.provider.wallet.publicKey,
-                                            systemProgram: anchor.web3.SystemProgram.programId,
-                                            rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-                                        },
-                                        instructions: [],
-                                    })
-                                    signAndSendTransaction(context, initUserTx).then((tx) => {
-                                        if (tx.resultType === TransactionResultType.Successful) {
-                                            let txUrl = formatExplorerAddress(context, tx.txId as string, SolanaEntityType.Transaction);
-                                            console.log("Successfully initialized user on Optifi Market, ", txUrl);
-                                            resolve({
-                                                successful: true,
-                                                data: txUrl,
+                                    // Create or find the users associated token accounts for both of the instrument
+                                    findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then(() => {
+                                        findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then(() => {
+                                            let initUserTx = context.program.transaction.initUserOnOptifiMarket(bump, {
+                                                accounts: {
+                                                    optifiExchange: exchangeAddress,
+                                                    user: context.provider.wallet.publicKey,
+                                                    serumMarketAuthority: serumAuthority,
+                                                    userAccount: userAccountAddress,
+                                                    serumOpenOrders: dexOpenOrders,
+                                                    optifiMarket: marketAddress,
+                                                    serumMarket: optifiMarket.serumMarket,
+                                                    serumDexProgramId: serumId,
+                                                    payer: context.provider.wallet.publicKey,
+                                                    systemProgram: anchor.web3.SystemProgram.programId,
+                                                    rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+                                                },
+                                                instructions: [],
                                             })
-                                        } else {
-                                            console.error(tx);
-                                            reject(tx);
-                                        }
+                                            signAndSendTransaction(context, initUserTx).then((tx) => {
+                                                if (tx.resultType === TransactionResultType.Successful) {
+                                                    let txUrl = formatExplorerAddress(context, tx.txId as string, SolanaEntityType.Transaction);
+                                                    console.log("Successfully initialized user on Optifi Market, ", txUrl);
+                                                    resolve({
+                                                        successful: true,
+                                                        data: txUrl,
+                                                    })
+                                                } else {
+                                                    console.error(tx);
+                                                    reject(tx);
+                                                }
+                                            }).catch((err) => {
+                                                console.error("Got error trying to initialize User on Optifi Market", err);
+                                                reject(err);
+                                            })
+                                        }).catch((err) => {
+                                            console.error(err);
+                                            reject(err);
+                                        })
                                     }).catch((err) => {
-                                        console.error("Got error trying to initialize User on Optifi Market", err);
+                                        console.error(err);
                                         reject(err);
                                     })
+                                }).catch((err) => {
+                                    console.error(err);
+                                    reject(err);
                                 })
+                            }).catch((err) => {
+                                console.error(err);
+                                reject(err);
                             })
-                        })
+                        }).catch((err) => reject(err))
                     })
                 })
             });

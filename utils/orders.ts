@@ -51,8 +51,8 @@ export function formOrderContext(context: Context,
                         if (acctExists && userAccount !== undefined) {
                             context.program.account.market.fetch(marketAddress).then((marketRes) => {
                                 let optifiMarket = marketRes as OptifiMarket;
-                                findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken).then(([longSPLTokenVault, _]) => {
-                                    findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken).then(([shortSPLTokenVault, _]) => {
+                                findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then(([longSPLTokenVault, _]) => {
+                                    findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then(([shortSPLTokenVault, _]) => {
                                         deriveVaultNonce(optifiMarket.serumMarket, serumId).then(([vaultOwner, _]) => {
                                             findOptifiMarketMintAuthPDA(context).then(([mintAuthAddress, _]) => {
                                                 getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {
