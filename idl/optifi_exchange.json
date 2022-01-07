@@ -2083,15 +2083,11 @@
         "fields": [
           {
             "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
+            "type": "u8"
           },
           {
             "name": "instrumentType",
-            "type": {
-              "defined": "InstrumentType"
-            }
+            "type": "u8"
           },
           {
             "name": "expiryDate",
@@ -2107,21 +2103,51 @@
           },
           {
             "name": "expiryType",
-            "type": {
-              "defined": "ExpiryType"
-            }
+            "type": "u8"
           },
           {
             "name": "authority",
             "type": "publicKey"
           },
           {
-            "name": "isListedOnMarket",
-            "type": "bool"
-          },
-          {
             "name": "contractSizePercent",
             "type": "u64"
+          },
+          {
+            "name": "instrument0Seed",
+            "type": "string"
+          },
+          {
+            "name": "instrument1Seed",
+            "type": "string"
+          },
+          {
+            "name": "instrument2Seed",
+            "type": "string"
+          },
+          {
+            "name": "instrument3Seed",
+            "type": "string"
+          },
+          {
+            "name": "instrument4Seed",
+            "type": "string"
+          },
+          {
+            "name": "instrument5Seed",
+            "type": "string"
+          },
+          {
+            "name": "instrument6Seed",
+            "type": "string"
+          },
+          {
+            "name": "instrument7Seed",
+            "type": "string"
+          },
+          {
+            "name": "instrument8Seed",
+            "type": "string"
           }
         ]
       }

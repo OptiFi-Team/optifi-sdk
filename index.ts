@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import {Connection, Keypair} from "@solana/web3.js";
+import {Connection, Keypair, PublicKey} from "@solana/web3.js";
 import Context from "./types/context";
 import {OPTIFI_EXCHANGE_ID, SolanaEndpoint} from "./constants";
 import {isWalletProvider, readJsonFile} from './utils/generic';

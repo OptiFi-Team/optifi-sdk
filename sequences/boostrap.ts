@@ -1,3 +1,4 @@
+import BN from 'bn.js';
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {Exchange, OptifiMarket} from "../types/optifi-exchange-types";
@@ -11,15 +12,16 @@ import {
 } from "../utils/accounts";
 import {SERUM_MARKETS} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {PublicKey} from "@solana/web3.js";
+import {PublicKey, PublicKeyInitData} from "@solana/web3.js";
 import {createInstruments} from "./createInstruments";
 import {createNextOptifiMarket} from "../instructions/createOptifiMarket";
+import {readJsonFile} from "../utils/generic";
+import base58 = require("bs58");
 
 export interface BootstrapResult {
     exchange: Exchange,
     markets: OptifiMarket[]
 }
-
 
 /**
  * Helper function to either create or fetch an exchange, validating that the user
@@ -114,12 +116,25 @@ async function createSerumMarkets(context: Context): Promise<PublicKey[]> {
     return createdMarkets;
 }
 
+function createOrRetreiveSerumMarkets(context: Context): Promise<PublicKey[]> {
+    return new Promise((resolve, reject) => {
+        if (process.env.SERUM_KEYS !== undefined) {
+            console.log("Using debug keys ", process.env.SERUM_KEYS);
+            let serumKeysInit: string[] = readJsonFile<string[]>(process.env.SERUM_KEYS);
+            resolve(serumKeysInit.map((i) => new PublicKey(i)));
+        } else {
+            createSerumMarkets(context).then((res) => resolve(res)).catch((err) => reject(err));
+        }
+    })
+}
+
 /**
  * Bootstrap the optifi exchange entirely, creating new instruments, etc.
  *
  * @param context The program context
  */
 export default function boostrap(context: Context): Promise<InstructionResult<BootstrapResult>> {
+    console.log("Exchange ID is ", context.exchangeUUID);
     return new Promise((resolve, reject) => {
         // Find or create the addresses of both the exchange and user accounts,
         // and make sure that our user is an authority
@@ -134,8 +149,8 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                         console.debug("Creating serum markets")
                         // Now that we have both addresses, create as many new serum markets
                         // as are specified in the constants
-                        createSerumMarkets(context).then((marketKeys) => {
-                            console.debug("Created serum markets ", marketKeys);
+                        createOrRetreiveSerumMarkets(context).then((marketKeys) => {
+                            console.log("String serum market keys are, ", marketKeys.map((i) => i.toString()))
                             createInstruments(context).then((res) => {
                                 console.debug("Created instruments ", res);
                                 let marketPromises: Promise<any>[] = [];
@@ -153,15 +168,18 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                                                 resolve(marketCreationRes);
                                         }).catch((err) => {
                                             console.error(err);
+                                            console.log("Rejecting, serum market keys are ", JSON.stringify(marketKeys))
                                             reject(err);
                                         })
                                     }))
                                 }
                                 Promise.all(marketPromises).then(() => {
                                     console.log("Finished market promises")
-                                }).catch((err) => reject(err));
+                                }).catch((err) => {
+                                    console.log("Rejecting, serum market keys are ", JSON.stringify(marketKeys))
+                                    reject(err);
+                                });
                             })
-
                         }).catch((err) => {
                             console.error("Got error creating serum markets ", err);
 

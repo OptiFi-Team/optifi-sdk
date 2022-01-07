@@ -65,6 +65,7 @@ export default function initialize(context: Context): Promise<InstructionResult<
                 const usdcCentralPoolWallet = anchor.web3.Keypair.generate();
                     createUSDCPoolAccount(context, poolAuthPDAAddress, usdcCentralPoolWallet).then((res) => {
                         try {
+                            console.log(formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction));
                             let initializeTx = context.program.transaction.initialize(
                                 bump,
                                 {
