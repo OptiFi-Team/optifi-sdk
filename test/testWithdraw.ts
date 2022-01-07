@@ -13,7 +13,7 @@ describe('Withdraw', () => {
 
     it('Withdraw', async () => {
         console.log("Trying withdraw");
-        withdraw(await context, new anchor.BN(1)).then((tx: any) => {
+        withdraw(await context, 1).then((tx: any) => {
             console.log('Withdraw made', tx)
             assert.ok("Finished withdraw");
         }).catch((err) => {

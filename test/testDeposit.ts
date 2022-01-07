@@ -10,7 +10,7 @@ describe('Deposit', () => {
     let context = initializeContext();
 
     it('Deposit', async () => {
-        deposit(await context, new anchor.BN(1)).then((tx: any) => {
+        deposit(await context, 1).then((tx: any) => {
             console.log('Deposit made', tx)
             assert.ok("Finished deposit");
         }).catch((err) => {

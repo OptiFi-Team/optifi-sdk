@@ -2,7 +2,7 @@
  * Derive commonly used program addresses from the current context, and log them, for debugging and info purposes
  */
 
-import {initializeContext} from "../lib";
+import {initializeContext} from "../index";
 import {findExchangeAccount, findUserAccount, userAccountExists} from "../utils/accounts";
 import {logFormatted} from "../utils/debug";
 

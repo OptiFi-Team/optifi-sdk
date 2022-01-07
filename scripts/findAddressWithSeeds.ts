@@ -2,7 +2,7 @@
  * Stub for quickly checking program addresses for different seeds
  */
 
-import {initializeContext} from "../lib";
+import {initializeContext} from "../index";
 import {findAccountWithSeeds, findExchangeAccount, findInstrument} from "../utils/accounts";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import Context from "../types/context";

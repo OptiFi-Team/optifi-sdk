@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import {initializeContext} from "../lib";
+import {initializeContext} from "../index";
 import boostrap from "../sequences/boostrap";
 import Context from "../types/context";
 
