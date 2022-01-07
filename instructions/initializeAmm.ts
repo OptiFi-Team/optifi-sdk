@@ -2,6 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {
+    Connection,
     Keypair,
     PublicKey,
     SystemProgram,

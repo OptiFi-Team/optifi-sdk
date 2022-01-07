@@ -2,7 +2,7 @@ import Context from "../types/context";
 import {OptifiMarket} from "../types/optifi-exchange-types";
 import InstructionResult from "../types/instructionResult";
 import {OPTIFI_EXCHANGE_ID, SERUM_DEX_PROGRAM_ID} from "../constants";
-import {findAssociatedTokenAccount, findExchangeAccount} from "../utils/accounts";
+import {findExchangeAccount} from "../utils/accounts";
 import {PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, TransactionSignature} from "@solana/web3.js";
 import {findOptifiMarkets, findOptifiMarketWithIdx, getSerumMarket} from "../utils/market";
 import * as anchor from "@project-serum/anchor";

@@ -1,12 +1,13 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
-import {findAssociatedTokenAccount, findExchangeAccount, findUserAccount} from "../utils/accounts";
+import {findExchangeAccount, findUserAccount} from "../utils/accounts";
 import {Amm} from "../types/optifi-exchange-types";
 import {getAmmLiquidityAuthPDA} from "../utils/pda";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 import InstructionResult from "../types/instructionResult";
+import {findAssociatedTokenAccount} from "../utils/token";
 
 export default function ammDeposit(context: Context,
                            ammAddress: PublicKey,

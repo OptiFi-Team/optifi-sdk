@@ -2,6 +2,7 @@ import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import {
+    ASSOCIATED_TOKEN_PROGRAM_ID,
     EXCHANGE_PREFIX,
     INSTRUMENT_PREFIX, MARKET_MAKER_PREFIX,
     SERUM_OPEN_ORDERS_PREFIX,
@@ -23,6 +24,7 @@ import {
     optifiAssetToNumber
 } from "./generic";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {findAssociatedTokenAccount} from "./token";
 
 /**
  * Helper function for finding an account with a list of seeds
@@ -82,19 +84,6 @@ export function getDexOpenOrders(context: Context,
     })
 }
 
-export function findAssociatedTokenAccount(context: Context,
-                                           tokenMintAddress: PublicKey,
-                                           owner?: PublicKey): Promise<[PublicKey, number]> {
-    let accountOwner = owner || context.provider.wallet.publicKey;
-    return anchor.web3.PublicKey.findProgramAddress(
-        [
-            accountOwner.toBuffer(),
-            TOKEN_PROGRAM_ID.toBuffer(),
-            tokenMintAddress.toBuffer(),
-        ],
-        context.program.programId
-    )
-}
 
 export function findUserUSDCAddress(context: Context): Promise<[PublicKey, number]> {
     return findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint]))
