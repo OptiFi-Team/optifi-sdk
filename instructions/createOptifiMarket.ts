@@ -1,14 +1,14 @@
 import Context from "../types/context";
-import {OptifiMarket} from "../types/optifi-exchange-types";
 import InstructionResult from "../types/instructionResult";
-import {OPTIFI_EXCHANGE_ID, SERUM_DEX_PROGRAM_ID} from "../constants";
+import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findExchangeAccount} from "../utils/accounts";
-import {PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, TransactionSignature} from "@solana/web3.js";
+import {PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, Transaction, TransactionSignature} from "@solana/web3.js";
 import {findOptifiMarkets, findOptifiMarketWithIdx, getSerumMarket} from "../utils/market";
 import * as anchor from "@project-serum/anchor";
 import {findOptifiMarketMintAuthPDA} from "../utils/pda";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
-import {Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {MintLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 
 export function createOptifiMarket(context: Context,
                                    serumMarket: PublicKey,
@@ -26,44 +26,64 @@ export function createOptifiMarket(context: Context,
            ).then(([derivedMarketAddress, bump]) => {
                // Find the PDA authority
                findOptifiMarketMintAuthPDA(context).then(([mintAuthPDAAddress, _]) => {
-                    let shortSplTokenMint = anchor.web3.Keypair.generate();
-                    let createMarketTx = context.program.transaction.createOptifiMarket(
-                        bump,
-                        {
-                            accounts: {
-                                optifiMarket: derivedMarketAddress,
-                                exchange: exchangeAddress,
-                                serumMarket: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
-                                instrument: initialInstrument,
-                                longSplTokenMint: coinMintPk,
-                                shortSplTokenMint: shortSplTokenMint.publicKey,
-                                systemProgram: SystemProgram.programId,
-                                payer: context.provider.wallet.publicKey,
-                                clock: SYSVAR_CLOCK_PUBKEY
-                            },
-                            instructions: [
-                                Token.createInitMintInstruction(
-                                    TOKEN_PROGRAM_ID,
-                                    shortSplTokenMint.publicKey,
-                                    0,
-                                    mintAuthPDAAddress,
-                                    mintAuthPDAAddress
-                                )
-                            ]
-                        },
-                    );
+                   context.connection.getMinimumBalanceForRentExemption(MintLayout.span).then((min) => {
+                       let shortSplTokenMint = anchor.web3.Keypair.generate();
+                       let createMintTx = new Transaction();
+                       createMintTx.add(
+                           SystemProgram.createAccount({
+                               fromPubkey: context.provider.wallet.publicKey,
+                               newAccountPubkey: shortSplTokenMint.publicKey,
+                               lamports: min,
+                               space: MintLayout.span,
+                               programId: TOKEN_PROGRAM_ID
+                           }),
+                           Token.createInitMintInstruction(
+                               TOKEN_PROGRAM_ID,
+                               shortSplTokenMint.publicKey,
+                               0,
+                               mintAuthPDAAddress,
+                               mintAuthPDAAddress
+                           )
+                       );
+                       signAndSendTransaction(context, createMintTx, [shortSplTokenMint]).then((createMintRes) => {
+                           if (createMintRes.resultType === TransactionResultType.Successful) {
+                               console.debug("Created mint, ", formatExplorerAddress(context,
+                                   createMintRes.txId as TransactionSignature,
+                                   SolanaEntityType.Transaction));
+                               let createMarketTx = context.program.transaction.createOptifiMarket(
+                                   bump,
+                                   {
+                                       accounts: {
+                                           optifiMarket: derivedMarketAddress,
+                                           exchange: exchangeAddress,
+                                           serumMarket: serumMarket,
+                                           instrument: initialInstrument,
+                                           longSplTokenMint: coinMintPk,
+                                           shortSplTokenMint: shortSplTokenMint.publicKey,
+                                           systemProgram: SystemProgram.programId,
+                                           payer: context.provider.wallet.publicKey,
+                                           clock: SYSVAR_CLOCK_PUBKEY
+                                       },
+                                   },
+                               );
+                               signAndSendTransaction(context, createMarketTx).then((txResult) => {
+                                   if (txResult.resultType === TransactionResultType.Successful) {
+                                       resolve({
+                                           successful: true,
+                                           data: txResult.txId as TransactionSignature,
+                                       })
+                                   } else {
+                                       console.error(txResult);
+                                       reject(txResult);
+                                   }
+                               })
+                           } else {
+                               reject(createMintRes);
+                           }
+                       })
 
-                    signAndSendTransaction(context, createMarketTx).then((txResult) => {
-                        if (txResult.resultType === TransactionResultType.Successful) {
-                            resolve({
-                                successful: true,
-                                data: txResult.txId as TransactionSignature,
-                            })
-                        } else {
-                            console.error(txResult);
-                            reject(txResult);
-                        }
-                    })
+                   })
+
                }).catch((err) => reject(err))
            })
        }).catch((err) => reject(err))

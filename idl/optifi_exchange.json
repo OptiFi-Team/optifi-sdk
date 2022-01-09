@@ -58,47 +58,7 @@
           "isSigner": false
         },
         {
-          "name": "instrument0",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument1",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument2",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument3",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument4",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument5",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument6",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument7",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrument8",
+          "name": "instrument",
           "isMut": true,
           "isSigner": false
         },
@@ -109,11 +69,6 @@
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         },
@@ -131,9 +86,7 @@
       "args": [
         {
           "name": "bump",
-          "type": {
-            "defined": "InitChainBumpSeeds"
-          }
+          "type": "u8"
         },
         {
           "name": "data",
@@ -1269,11 +1222,6 @@
           "isSigner": false
         },
         {
-          "name": "ammQuoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "ammQuoteTokenVault",
           "isMut": true,
           "isSigner": false
@@ -1286,6 +1234,11 @@
         {
           "name": "lpTokenMint",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammLiquidityAuth",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -2028,6 +1981,10 @@
             }
           },
           {
+            "name": "isInLiquidation",
+            "type": "bool"
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -2114,83 +2071,7 @@
             "type": "u64"
           },
           {
-            "name": "instrument0Seed",
-            "type": "string"
-          },
-          {
-            "name": "instrument1Seed",
-            "type": "string"
-          },
-          {
-            "name": "instrument2Seed",
-            "type": "string"
-          },
-          {
-            "name": "instrument3Seed",
-            "type": "string"
-          },
-          {
-            "name": "instrument4Seed",
-            "type": "string"
-          },
-          {
-            "name": "instrument5Seed",
-            "type": "string"
-          },
-          {
-            "name": "instrument6Seed",
-            "type": "string"
-          },
-          {
-            "name": "instrument7Seed",
-            "type": "string"
-          },
-          {
-            "name": "instrument8Seed",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "InitChainBumpSeeds",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "instrument0",
-            "type": "u8"
-          },
-          {
-            "name": "instrument1",
-            "type": "u8"
-          },
-          {
-            "name": "instrument2",
-            "type": "u8"
-          },
-          {
-            "name": "instrument3",
-            "type": "u8"
-          },
-          {
-            "name": "instrument4",
-            "type": "u8"
-          },
-          {
-            "name": "instrument5",
-            "type": "u8"
-          },
-          {
-            "name": "instrument6",
-            "type": "u8"
-          },
-          {
-            "name": "instrument7",
-            "type": "u8"
-          },
-          {
-            "name": "instrument8",
+            "name": "instrumentIdx",
             "type": "u8"
           }
         ]
@@ -2336,6 +2217,22 @@
           {
             "name": "numInstruments",
             "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializeLiquidationData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "relevantMarkets",
+            "type": {
+              "vec": {
+                "defined": "OptifiMarket"
+              }
+            }
           }
         ]
       }
@@ -2789,6 +2686,11 @@
       "code": 6017,
       "name": "DuplicateInstrumentForAMM",
       "msg": "can add the instrument for amm due to duplication"
+    },
+    {
+      "code": 6018,
+      "name": "UserNotInLiquidation",
+      "msg": "User is not in liquidation"
     }
   ]
 }

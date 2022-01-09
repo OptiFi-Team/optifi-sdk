@@ -61,24 +61,27 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                 }
             }
         }
-        let instrumentPromises: Promise<any>[] = [];
 
-        for (let instrument of instrumentsToCreate) {
-            console.log("Creating instrument ", instrument);
-            instrumentPromises.push(initializeChain(context, instrument)
-                .then((chainRes) => {
-                    if (chainRes.successful) {
-                        console.debug("Successfully created chain ", chainRes);
-                        instrumentKeys.push(...chainRes.data as PublicKey[]);
-                    } else {
-                        console.error("Couldn't create instrument", chainRes);
-                    }
-                }).catch((err) => {
-                    console.error("Got error trying to create instrument", err);
-            }))
+        const createAllChains = async () => {
+            for (let instrument of instrumentsToCreate) {
+                console.log("Creating instrument ", instrument);
+                await initializeChain(context, instrument)
+                    .then((chainRes) => {
+                        if (chainRes.successful) {
+                            console.debug("Successfully created chain ", chainRes);
+                            instrumentKeys.push(...chainRes.data as PublicKey[]);
+                        } else {
+                            console.error("Couldn't create instrument", chainRes);
+                        }
+                    }).catch((err) => {
+                        console.error("Got error trying to create instrument", err);
+                })
+            }
         }
 
-        Promise.all(instrumentPromises)
+
+
+        createAllChains()
             .then(() => resolve(instrumentKeys))
             .catch((err) => {
                 console.error(err);

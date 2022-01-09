@@ -16,6 +16,9 @@ import ExpiryType from "../types/expiryType";
  * @param filePath The path to read the data from
  */
 export function readJsonFile<T>(filePath: string): T {
+    console.log("File path is ", filePath);
+    let strData = fs.readFileSync(filePath);
+    console.log("strData is ", strData);
     return JSON.parse(
         fs.readFileSync(
             filePath,

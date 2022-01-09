@@ -155,25 +155,23 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                                 console.debug("Created instruments ", res);
                                 let marketPromises: Promise<any>[] = [];
                                 // Create the optifi markets
-                                for (let i = 0; i < marketKeys.length; i++) {
-                                    let serumMarketKey = marketKeys[i];
-                                    let initialInstrumentAddress = res[i];
-                                    console.log(`Creating Optifi market with serum market key 
-                                    ${serumMarketKey.toString()}, instrument ${initialInstrumentAddress.toString()}`);
-                                    marketPromises.push(new Promise((resolve, reject) => {
-                                        createNextOptifiMarket(context,
+                                const createAllMarkets = async () => {
+                                    for (let i = 0; i < marketKeys.length; i++) {
+                                        let serumMarketKey = marketKeys[i];
+                                        let initialInstrumentAddress = res[i];
+                                        console.log(`Creating Optifi market with serum market key ${serumMarketKey.toString()}, instrument ${initialInstrumentAddress.toString()}`);
+                                        await createNextOptifiMarket(context,
                                             serumMarketKey,
                                             initialInstrumentAddress).then((marketCreationRes) => {
-                                                console.log("Got market creation res", marketCreationRes);
-                                                resolve(marketCreationRes);
+                                            console.log("Got market creation res", marketCreationRes);
                                         }).catch((err) => {
                                             console.error(err);
                                             console.log("Rejecting, serum market keys are ", JSON.stringify(marketKeys))
                                             reject(err);
                                         })
-                                    }))
+                                    }
                                 }
-                                Promise.all(marketPromises).then(() => {
+                                createAllMarkets().then(() => {
                                     console.log("Finished market promises")
                                 }).catch((err) => {
                                     console.log("Rejecting, serum market keys are ", JSON.stringify(marketKeys))

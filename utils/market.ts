@@ -14,7 +14,7 @@ export function findOptifiMarketWithIdx(context: Context,
     return findAccountWithSeeds(context, [
         Buffer.from(OPTIFI_MARKET_PREFIX),
         exchangeAddress.toBuffer(),
-        Buffer.from(new Uint8Array([idx]))
+        new anchor.BN(idx).toArrayLike(Buffer, "be", 8)
     ])
 }
 
