@@ -11,31 +11,36 @@ export function findAMMWithIdx(context: Context,
     return findAccountWithSeeds(context, [
         Buffer.from(AMM_PREFIX),
         exchangeAddress.toBuffer(),
-        Buffer.from(new Uint8Array([idx]))
+        Uint8Array.of(idx)
     ])
 }
 
 function iterateFindAMM(context: Context,
                         exchangeAddress: PublicKey,
-                        idx: number = 0
+                        idx: number = 1
                         ): Promise<[Amm, PublicKey][]> {
     return new Promise((resolve, reject) => {
         let ammAccounts: [Amm, PublicKey][] = [];
         findAMMWithIdx(context,
             exchangeAddress,
             idx).then(([address, bump]) => {
+                console.debug("Looking for amm at", address.toString());
                 context.program.account.amm.fetch(address).then((res) => {
                     // @ts-ignore
                     ammAccounts.push([res as Amm, address]);
                     iterateFindAMM(context,
                         exchangeAddress,
                         idx+1).then((remainingRes) => {
-                            ammAccounts.push(...remainingRes);
-                            resolve(ammAccounts);
-                    }).catch((err) => reject(err))
+                        ammAccounts.push(...remainingRes);
+                        resolve(ammAccounts);
+                    }).catch((err) => resolve(ammAccounts))
+                }).catch((err) => {
+                    console.error(err)
+                    resolve(ammAccounts)
                 })
-        }).catch(() => {
-            console.debug("Stopped finding AMM accounts at idx ", idx);
+        }).catch((err) => {
+            console.error(err)
+            resolve(ammAccounts);
         })
     })
 }

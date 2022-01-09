@@ -155,7 +155,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 // The wallet was provided as a path
                 keypair = Keypair.fromSecretKey(new Uint8Array(readJsonFile<any>(wallet)));
             }
-            const idl = readJsonFile<OptifiExchangeIDL>("idl/optifi_exchange.json");
+            const idl = optifiExchange as OptifiExchangeIDL;
             const connection = new Connection(endpoint);
             const walletWrapper = new anchor.Wallet(keypair);
             const provider = new anchor.Provider(connection, walletWrapper, anchor.Provider.defaultOptions());

@@ -25,8 +25,10 @@ import {findOrCreateAssociatedTokenAccount} from "../utils/token";
                     successful: false,
                     error: "User account does not exist"
                 } as InstructionResult<any>)
+                console.log("Fetching optifi market");
                 context.program.account.market.fetch(marketAddress).then((marketRes) => {
                     let optifiMarket = marketRes as OptifiMarket;
+                    console.log("Fetched optifi market ", optifiMarket);
                     findSerumAuthorityPDA(context).then(([serumAuthority, _]) => {
                         findOptifiExchange(context).then(([exchangeAddress, _]) => {
                             findUserAccount(context).then(([userAccountAddress, _]) => {
