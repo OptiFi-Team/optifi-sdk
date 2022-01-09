@@ -3,4 +3,4 @@ node_modules
 .env
 lib
 lib/*
-serum_debug.json
+*_debug.json

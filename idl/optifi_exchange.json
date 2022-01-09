@@ -202,6 +202,57 @@
       ]
     },
     {
+      "name": "debugCreateOptifiMarket",
+      "accounts": [
+        {
+          "name": "optifiMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "exchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "instrument",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "longSplTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "shortSplTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "createOptifiMarket",
       "accounts": [
         {

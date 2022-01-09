@@ -12,11 +12,12 @@ import {
 } from "../utils/accounts";
 import {SERUM_MARKETS} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {PublicKey, PublicKeyInitData} from "@solana/web3.js";
+import {PublicKey, PublicKeyInitData, TransactionSignature} from "@solana/web3.js";
 import {createInstruments} from "./createInstruments";
-import {createNextOptifiMarket} from "../instructions/createOptifiMarket";
+import {createNextOptifiMarket, createOptifiMarketWithIdx} from "../instructions/createOptifiMarket";
 import {readJsonFile} from "../utils/generic";
 import base58 = require("bs58");
+import {findOptifiMarkets} from "../utils/market";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -90,6 +91,18 @@ function createUserAccountIfNotExist(context: Context): Promise<void> {
     )
 }
 
+function createOrFetchInstruments(context: Context): Promise<PublicKey[]> {
+    return new Promise((resolve, reject) => {
+        if (process.env.INSTRUMENT_KEYS !== undefined) {
+            console.log("Using debug keys ", process.env.INSTRUMENT_KEYS);
+            let instrumentKeysInit: string[] = readJsonFile<string[]>(process.env.INSTRUMENT_KEYS);
+            resolve(instrumentKeysInit.map((i) => new PublicKey(i)));
+        } else {
+            createInstruments(context).then((res) => resolve(res)).catch((err) => reject(err));
+        }
+    })
+}
+
 /**
  * Helper function to create as many serum markets as the SERUM_MARKETS constant specifies
  *
@@ -150,34 +163,73 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                         // Now that we have both addresses, create as many new serum markets
                         // as are specified in the constants
                         createOrRetreiveSerumMarkets(context).then((marketKeys) => {
-                            console.log("String serum market keys are, ", marketKeys.map((i) => i.toString()))
-                            createInstruments(context).then((res) => {
-                                console.debug("Created instruments ", res);
-                                let marketPromises: Promise<any>[] = [];
+                            //console.log("String serum market keys are, ", marketKeys.map((i) => i.toString()))
+
+                            createOrFetchInstruments(context).then((res) => {
+                                //console.log("Created instruments ", JSON.stringify(res.map((i) => i.toString())));
+                                //process.stdout.write(JSON.stringify(res.map((i) => i.toString())));
+
                                 // Create the optifi markets
                                 const createAllMarkets = async () => {
+                                    let existingMarkets = await findOptifiMarkets(context);
+                                    let inUseInstruments: Set<string> = new Set(existingMarkets.map((m) => m[0].instrument.toString()));
+                                    let inUseSerumMarkets: Set<string> = new Set(existingMarkets.map((m) => m[0].serumMarket.toString()));
+                                    let currIdx: number = 0;
                                     for (let i = 0; i < marketKeys.length; i++) {
                                         let serumMarketKey = marketKeys[i];
                                         let initialInstrumentAddress = res[i];
-                                        console.log(`Creating Optifi market with serum market key ${serumMarketKey.toString()}, instrument ${initialInstrumentAddress.toString()}`);
-                                        await createNextOptifiMarket(context,
+                                        let marketInUse = inUseSerumMarkets.has(serumMarketKey.toString());
+                                        let instrumentInUse = inUseInstruments.has(initialInstrumentAddress.toString());
+                                        if (marketInUse || instrumentInUse) {
+                                            if (marketInUse && instrumentInUse) {
+                                                console.debug(`Market ${serumMarketKey.toString()} and instrument ${initialInstrumentAddress.toString()} have already been used - skipping...`);
+                                                continue;
+                                            } else {
+                                                throw new Error(`Either market ${serumMarketKey.toString()} or instrument 
+                                                ${initialInstrumentAddress.toString()} has already been used, but not together - most likely cause is debug env variables are out of sync with exchange state. 
+                                                If possible, recommended to use new exchange UUID.`);
+                                            }
+                                        }
+                                        if (currIdx !== 0) {
+                                            // Wait to create subsequent markets, beacuse the data is depent on previous markets,
+                                            // and there are validation delays
+                                            console.log("Waiting 3 seconds before next market...");
+                                            await new Promise((resolve) => {
+                                                setTimeout(() => {
+                                                    resolve(true)
+                                                }, 3 * 1000)
+                                            })
+                                            console.log("Finished, waiting, continuing market creation...");
+                                        }
+                                        let marketCreationFunction = (currIdx === 0 ? createNextOptifiMarket(context,
                                             serumMarketKey,
-                                            initialInstrumentAddress).then((marketCreationRes) => {
-                                            console.log("Got market creation res", marketCreationRes);
-                                        }).catch((err) => {
-                                            console.error(err);
-                                            console.log("Rejecting, serum market keys are ", JSON.stringify(marketKeys))
-                                            reject(err);
-                                        })
+                                            initialInstrumentAddress) :
+                                            createOptifiMarketWithIdx(
+                                                context,
+                                                serumMarketKey,
+                                                initialInstrumentAddress,
+                                                currIdx+1
+                                            ))
+                                        let creationRes = await marketCreationFunction;
+                                        if (creationRes.successful) {
+                                            let [txSig, createdIdx] = creationRes.data as [TransactionSignature, number];
+                                            console.log("Successfully created market with idx ", createdIdx, txSig);
+                                            currIdx = createdIdx;
+                                        } else {
+                                            console.error(creationRes);
+                                            throw new Error(`Couldn't create market with serum key ${serumMarketKey.toString()}, 
+                                                instrument address ${initialInstrumentAddress.toString()}`);
+                                        }
                                     }
                                 }
                                 createAllMarkets().then(() => {
                                     console.log("Finished market promises")
                                 }).catch((err) => {
-                                    console.log("Rejecting, serum market keys are ", JSON.stringify(marketKeys))
+                                    console.error(err);
                                     reject(err);
                                 });
                             })
+
                         }).catch((err) => {
                             console.error("Got error creating serum markets ", err);
 

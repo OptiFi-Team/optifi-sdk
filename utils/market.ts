@@ -2,10 +2,11 @@ import Context from "../types/context";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Market } from "@project-serum/serum";
-import {Chain, OptifiMarket} from "../types/optifi-exchange-types";
+import {Chain, Exchange, OptifiMarket} from "../types/optifi-exchange-types";
 import {findAccountWithSeeds, findExchangeAccount, findUserAccount} from "./accounts";
 import {OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findAssociatedTokenAccount} from "./token";
+import ExchangeMarket from "../types/exchangeMarket";
 
 
 export function findOptifiMarketWithIdx(context: Context,
@@ -18,40 +19,27 @@ export function findOptifiMarketWithIdx(context: Context,
     ])
 }
 
-function iterateFindMarkets(context: Context,
-                            exchangeAddress: PublicKey,
-                            idx: number = 0): Promise<[OptifiMarket, PublicKey][]> {
-    return new Promise((resolve, reject) => {
-        let optifiMarkets: [OptifiMarket, PublicKey][] = [];
-        findOptifiMarketWithIdx(
-            context,
-            exchangeAddress,
-            idx).then(([address, bump]) => {
-            context.program.account.optifiMarket.fetch(
-                address
-            ).then((res) => {
-                optifiMarkets.push([res as OptifiMarket, address]);
-                iterateFindMarkets(context, exchangeAddress, idx+1).then((res) => {
-                    optifiMarkets.push(...res);
-                    resolve(optifiMarkets)
-                })
-            }).catch(() => {
-                console.debug("Stopped finding markets at idx ", idx);
-                resolve(optifiMarkets);
-            })
-        })
-    })
-}
 
 export function findOptifiMarkets(context: Context): Promise<[OptifiMarket, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            iterateFindMarkets(
-                context,
-                exchangeAddress
-            ).then((markets) => {
-                console.debug(`Found ${markets.length} markets`);
-                resolve(markets);
+            context.program.account.exchange.fetch(exchangeAddress).then((exchangeRes) => {
+                let exchange = exchangeRes as Exchange;
+                let markets = exchange.markets as ExchangeMarket[];
+                let marketsWithKeys: [OptifiMarket, PublicKey][] = [];
+                const retrieveMarket = async () => {
+                    for (let market of markets) {
+                        let marketRes = await context.program.account.optifiMarket.fetch(market.optifiMarketPubkey);
+                        let optifiMarket = marketRes as OptifiMarket;
+                        marketsWithKeys.push([optifiMarket, market.optifiMarketPubkey])
+                    }
+                }
+                retrieveMarket().then(() => {
+                    resolve(marketsWithKeys)
+                }).catch((err) => {
+                    console.error(err);
+                    reject(err);
+                })
             })
         })
     })
