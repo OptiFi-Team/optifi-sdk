@@ -4,3 +4,4 @@ node_modules
 lib
 lib/*
 *_debug.json
+.DS_Store
