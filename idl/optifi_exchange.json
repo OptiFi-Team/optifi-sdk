@@ -799,6 +799,11 @@
           "isSigner": false
         },
         {
+          "name": "liquidationAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "userMarginAccountUsdc",
           "isMut": true,
           "isSigner": false
@@ -832,7 +837,9 @@
       "args": [
         {
           "name": "bump",
-          "type": "u8"
+          "type": {
+            "defined": "InitUserAccountBumpSeeds"
+          }
         }
       ]
     },
@@ -1660,6 +1667,198 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "initLiquidation",
+      "accounts": [
+        {
+          "name": "userAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "liquidationState",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "registerLiquidationMarket",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "liquidationState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "market",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersOwner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "liquidatePosition",
+      "accounts": [
+        {
+          "name": "exchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liquidationState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "requestQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersOwner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "liquidator",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "maxCoinQty",
+          "type": "u64"
+        },
+        {
+          "name": "maxPcQty",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1862,6 +2061,36 @@
               "vec": {
                 "defined": "InstrumentKeyData"
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LiquidationState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "userAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": "LiquidationStatus"
+            }
+          },
+          {
+            "name": "registeredPositions",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "collectedPositions",
+            "type": {
+              "defined": "HashMap<u64,Pubkey>"
             }
           }
         ]
@@ -2218,17 +2447,17 @@
       }
     },
     {
-      "name": "InitializeLiquidationData",
+      "name": "InitUserAccountBumpSeeds",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "relevantMarkets",
-            "type": {
-              "vec": {
-                "defined": "OptifiMarket"
-              }
-            }
+            "name": "userAccount",
+            "type": "u8"
+          },
+          {
+            "name": "liquidationAccount",
+            "type": "u8"
           }
         ]
       }
@@ -2519,6 +2748,20 @@
       }
     },
     {
+      "name": "LiquidationStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Liquidating"
+          },
+          {
+            "name": "Dormant"
+          }
+        ]
+      }
+    },
+    {
       "name": "OracleDataType",
       "type": {
         "kind": "enum",
@@ -2687,6 +2930,21 @@
       "code": 6018,
       "name": "UserNotInLiquidation",
       "msg": "User is not in liquidation"
+    },
+    {
+      "code": 6019,
+      "name": "UserAlreadyInLiquidation",
+      "msg": "User was already in liquidation"
+    },
+    {
+      "code": 6020,
+      "name": "InstrumentAlreadyRegisteredForLiquidation",
+      "msg": "Instrument was already registered for liquidation"
+    },
+    {
+      "code": 6021,
+      "name": "CannotPlaceOrdersInLiquidation",
+      "msg": "Users cannot place manual orders while their accounts are in liquidation"
     }
   ]
 }
