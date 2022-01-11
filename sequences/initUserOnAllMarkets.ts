@@ -16,6 +16,7 @@ export default async function initUserOnAllMarkets(context: Context): Promise<Tr
                 console.log("Initialized")
                 sigs.push(res.data as TransactionSignature)
             } else {
+                console.log("Initialization was unsuccessful");
                 console.error(res);
             }
         } catch (e) {

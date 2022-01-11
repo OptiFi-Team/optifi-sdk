@@ -112,3 +112,16 @@ export function expiryTypeToOptifiExpiryType(expiryType: ExpiryType): OptifiExpi
             return OptifiExpiryType.Standard;
     }
 }
+
+export function numberToOptifiAsset(asset: number): OptifiAsset {
+    switch (asset) {
+        case 0:
+            return OptifiAsset.Bitcoin;
+        case 1:
+            return OptifiAsset.Ethereum;
+        case 2:
+            return OptifiAsset.USDC;
+        default:
+            throw new Error(`Unrecognized asset number ${asset}`)
+    }
+}

@@ -5,6 +5,7 @@ import {findExchangeAccount, findOracleAccountFromAsset, OracleAccountType} from
 import {Amm, Asset as OptifiAsset} from "../types/optifi-exchange-types";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import {numberToOptifiAsset} from "../utils/generic";
 
 export default function calculateAmmDelta(context: Context,
                                           ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
@@ -13,8 +14,8 @@ export default function calculateAmmDelta(context: Context,
             context.program.account.amm.fetch(ammAddress).then((ammRes) => {
                 // @ts-ignore
                 let amm = ammRes as Amm;
-                let spotOracle = findOracleAccountFromAsset(context, amm.asset);
-                let ivOracle = findOracleAccountFromAsset(context, amm.asset, OracleAccountType.Iv);
+                let spotOracle = findOracleAccountFromAsset(context, numberToOptifiAsset(amm.asset));
+                let ivOracle = findOracleAccountFromAsset(context, numberToOptifiAsset(amm.asset), OracleAccountType.Iv);
                 let usdcSpotOracle = findOracleAccountFromAsset(context, OptifiAsset.USDC, OracleAccountType.Spot);
 
                 let calculateDeltaTx = context.program.transaction.ammCalculateDelta({

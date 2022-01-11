@@ -11,7 +11,7 @@ import {deriveVaultNonce, getSerumMarket} from "./market";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findOptifiMarketMintAuthPDA} from "./pda";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
-import {findAssociatedTokenAccount} from "./token";
+import {findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount} from "./token";
 
 export interface OrderAccountContext {
     exchange: PublicKey,
@@ -51,8 +51,8 @@ export function formOrderContext(context: Context,
                         if (acctExists && userAccount !== undefined) {
                             context.program.account.market.fetch(marketAddress).then((marketRes) => {
                                 let optifiMarket = marketRes as OptifiMarket;
-                                findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then(([longSPLTokenVault, _]) => {
-                                    findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then(([shortSPLTokenVault, _]) => {
+                                findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then((longSPLTokenVault) => {
+                                    findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then((shortSPLTokenVault) => {
                                         deriveVaultNonce(optifiMarket.serumMarket, serumId).then(([vaultOwner, _]) => {
                                             findOptifiMarketMintAuthPDA(context).then(([mintAuthAddress, _]) => {
                                                 getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {
