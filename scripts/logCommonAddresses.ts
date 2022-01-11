@@ -4,8 +4,7 @@
 
 import {initializeContext} from "../index";
 import {findExchangeAccount, findUserAccount, userAccountExists} from "../utils/accounts";
-import {logFormatted} from "../utils/debug";
-
+import {formatExplorerAddress, logFormatted, SolanaEntityType} from "../utils/debug";
 
 
 initializeContext().then((context) => {
@@ -21,6 +20,7 @@ initializeContext().then((context) => {
                     logFormatted({
                         'Exchange UUID': context.exchangeUUID,
                         'Exchange Address': exchangeAddress.toString(),
+                        'Exchange URL': formatExplorerAddress(context, exchangeAddress.toString(), SolanaEntityType.Account),
                         'Exchange Exists': exchangeExists,
                         'User Wallet Address': context.provider.wallet.publicKey.toString(),
                         'Optifi Program ID': context.program.programId.toString(),
