@@ -79,7 +79,7 @@ export function getDexOpenOrders(context: Context,
                 exchangeAddress.toBuffer(),
                 marketAddress.toBuffer(),
                 userAccountAddress.toBuffer()
-            ]).catch((err) => reject(err))
+            ]).then((res) => resolve(res)).catch((err) => reject(err))
         }).catch((err) => reject(err))
     })
 }
