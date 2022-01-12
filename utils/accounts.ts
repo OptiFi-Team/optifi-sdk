@@ -4,7 +4,7 @@ import * as anchor from "@project-serum/anchor";
 import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
     EXCHANGE_PREFIX,
-    INSTRUMENT_PREFIX, MARKET_MAKER_PREFIX, SERUM_DEX_PROGRAM_ID,
+    INSTRUMENT_PREFIX, LIQUIDATION_STATE_PREFIX, MARKET_MAKER_PREFIX,
     SERUM_OPEN_ORDERS_PREFIX,
     SWITCHBOARD, USDC_TOKEN_MINT,
     USER_ACCOUNT_PREFIX,
@@ -79,7 +79,7 @@ export function getDexOpenOrders(context: Context,
                 exchangeAddress.toBuffer(),
                 marketAddress.toBuffer(),
                 userAccountAddress.toBuffer()
-            ]).then((res) => resolve(res)).catch((err) => reject(err))
+            ]).catch((err) => reject(err))
         }).catch((err) => reject(err))
     })
 }
@@ -174,7 +174,6 @@ export function findInstrument(context: Context,
                                idx: number,
                                expiryDate?: Date,
 ): Promise<[PublicKey, number, string]> {
-     context.connection.getTokenAccountBalance()
     return new Promise((resolve, reject) => {
         let expiryDateStr: string = dateToAnchorTimestamp(expiryDate).toNumber().toString()
         let seedStr: string =   (optifiAssetToNumber(asset).toString()) +
@@ -262,4 +261,18 @@ export function findMarketMakerAccount(context: Context): Promise<[PublicKey, nu
              })
          })
      })
+}
+
+export function findLiquidationState(context: Context, userAccount: PublicKey): Promise<[PublicKey, number]> {
+        return new Promise((resolve, reject) => {
+            findExchangeAccount(context).then(([exchangeAddress, _]) => {
+                findAccountWithSeeds(context, [
+                    Buffer.from(LIQUIDATION_STATE_PREFIX),
+                    exchangeAddress.toBuffer(),
+                    userAccount.toBuffer(),
+                ])
+                    .then((res) => resolve(res))
+                    .catch((err) => reject(err))
+            })
+        })
 }

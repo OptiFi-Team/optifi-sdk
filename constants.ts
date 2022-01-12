@@ -25,6 +25,7 @@ export const SERUM_PRUNE_AUTHORITY: string = "serum_prune_auth";
 export const AMM_PREFIX: string = "amm";
 export const AMM_LIQUIDITY_AUTH_PREFIX: string = "amm_liquidity_auth";
 export const MARKET_MAKER_PREFIX: string = "market_maker";
+export const LIQUIDATION_STATE_PREFIX: string = "liquidation_state";
 
 // Size of the strike ladder
 export const STRIKE_LADDER_SIZE: number = 9;
