@@ -107,7 +107,12 @@ export function createNextOptifiMarket(context: Context,
         findOptifiMarkets(context).then((marketRes) => {
             let markets = marketRes.map((i) => i[0]);
             let marketLen = markets.length;
-            let maxMarketIdx = Math.max(...markets.map((i) => i.optifiMarketId));
+            let maxMarketIdx: number;
+            if (marketLen === 0) {
+                maxMarketIdx = 0;
+            } else {
+                maxMarketIdx = Math.max(...markets.map((i) => i.optifiMarketId));
+            }
             console.log(`Found ${marketLen} markets, max IDX is ${maxMarketIdx}, creating ${maxMarketIdx+1}`)
             createOptifiMarketWithIdx(
                 context,

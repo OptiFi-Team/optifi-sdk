@@ -30,7 +30,7 @@ import {findOrCreateAssociatedTokenAccount} from "../utils/token";
                     findSerumAuthorityPDA(context).then(([serumAuthority, _]) => {
                         findOptifiExchange(context).then(([exchangeAddress, _]) => {
                             findUserAccount(context).then(([userAccountAddress, _]) => {
-                                getDexOpenOrders(context, marketAddress, userAccountAddress).then(([dexOpenOrders, bump]) => {
+                                getDexOpenOrders(context, optifiMarket.serumMarket, userAccountAddress).then(([dexOpenOrders, bump]) => {
                                     // Create or find the users associated token accounts for both of the instrument
                                     findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then(() => {
                                         findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then(() => {

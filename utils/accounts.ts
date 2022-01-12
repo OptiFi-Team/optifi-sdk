@@ -4,7 +4,7 @@ import * as anchor from "@project-serum/anchor";
 import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
     EXCHANGE_PREFIX,
-    INSTRUMENT_PREFIX, MARKET_MAKER_PREFIX,
+    INSTRUMENT_PREFIX, MARKET_MAKER_PREFIX, SERUM_DEX_PROGRAM_ID,
     SERUM_OPEN_ORDERS_PREFIX,
     SWITCHBOARD, USDC_TOKEN_MINT,
     USER_ACCOUNT_PREFIX,
@@ -174,6 +174,7 @@ export function findInstrument(context: Context,
                                idx: number,
                                expiryDate?: Date,
 ): Promise<[PublicKey, number, string]> {
+     context.connection.getTokenAccountBalance()
     return new Promise((resolve, reject) => {
         let expiryDateStr: string = dateToAnchorTimestamp(expiryDate).toNumber().toString()
         let seedStr: string =   (optifiAssetToNumber(asset).toString()) +

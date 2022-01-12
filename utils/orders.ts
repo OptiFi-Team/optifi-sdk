@@ -47,14 +47,14 @@ export function formOrderContext(context: Context,
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findUserAccount(context).then(([userAccountAddress, _]) => {
                 userAccountExists(context).then(([acctExists, userAccount]) => {
-                    getDexOpenOrders(context, marketAddress, userAccountAddress).then(([openOrdersAccount, _]) => {
+                    findOptifiMarketMintAuthPDA(context).then(([mintAuthAddress, _]) => {
                         if (acctExists && userAccount !== undefined) {
-                            context.program.account.market.fetch(marketAddress).then((marketRes) => {
+                            context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {
                                 let optifiMarket = marketRes as OptifiMarket;
                                 findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then((longSPLTokenVault) => {
                                     findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then((shortSPLTokenVault) => {
                                         deriveVaultNonce(optifiMarket.serumMarket, serumId).then(([vaultOwner, _]) => {
-                                            findOptifiMarketMintAuthPDA(context).then(([mintAuthAddress, _]) => {
+                                            getDexOpenOrders(context, optifiMarket.serumMarket, userAccountAddress).then(([openOrdersAccount, _]) => {
                                                 getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {
                                                     resolve({
                                                         exchange: exchangeAddress,
@@ -66,16 +66,16 @@ export function formOrderContext(context: Context,
                                                         optifiMarket: marketAddress,
                                                         serumMarket: optifiMarket.serumMarket,
                                                         openOrders: openOrdersAccount,
-                                                        openOrdersOwner: context.provider.wallet.publicKey,
+                                                        openOrdersOwner: userAccountAddress,
                                                         requestQueue: serumMarket.decoded.requestQueue,
                                                         eventQueue: serumMarket.decoded.eventQueue,
                                                         bids: serumMarket.bidsAddress,
                                                         asks: serumMarket.asksAddress,
-                                                        coinMint: serumMarket.baseMintAddress,
+                                                        coinMint: serumMarket.decoded.baseMint,
                                                         coinVault: serumMarket.decoded.baseVault,
                                                         pcVault: serumMarket.decoded.quoteVault,
                                                         vaultSigner: vaultOwner,
-                                                        orderPayerTokenAccount: longSPLTokenVault,
+                                                        orderPayerTokenAccount: userAccount.userMarginAccountUsdc,
                                                         instrumentTokenMintAuthorityPda: mintAuthAddress,
                                                         instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
                                                         serumDexProgramId: serumId,
