@@ -6,7 +6,7 @@ import {
     getDexOpenOrders,
     userAccountExists
 } from "./accounts";
-import {OptifiMarket, UserAccount} from "../types/optifi-exchange-types";
+import {Exchange, OptifiMarket, UserAccount} from "../types/optifi-exchange-types";
 import {deriveVaultNonce, getSerumMarket} from "./market";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findOptifiMarketMintAuthPDA} from "./pda";
@@ -33,6 +33,7 @@ export interface OrderAccountContext {
     pcVault: PublicKey,
     vaultSigner: PublicKey,
     orderPayerTokenAccount: PublicKey,
+    usdcCentralPool: PublicKey,
     instrumentTokenMintAuthorityPda: PublicKey,
     instrumentShortSplTokenMint: PublicKey,
     serumDexProgramId: PublicKey,
@@ -56,31 +57,38 @@ export function formOrderContext(context: Context,
                                         deriveVaultNonce(optifiMarket.serumMarket, serumId).then(([vaultOwner, _]) => {
                                             getDexOpenOrders(context, optifiMarket.serumMarket, userAccountAddress).then(([openOrdersAccount, _]) => {
                                                 getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {
-                                                    resolve({
-                                                        exchange: exchangeAddress,
-                                                        user: context.provider.wallet.publicKey,
-                                                        userAccount: userAccountAddress,
-                                                        userMarginAccount: userAccount.userMarginAccountUsdc,
-                                                        userInstrumentLongTokenVault: longSPLTokenVault,
-                                                        userInstrumentShortTokenVault: shortSPLTokenVault,
-                                                        optifiMarket: marketAddress,
-                                                        serumMarket: optifiMarket.serumMarket,
-                                                        openOrders: openOrdersAccount,
-                                                        openOrdersOwner: userAccountAddress,
-                                                        requestQueue: serumMarket.decoded.requestQueue,
-                                                        eventQueue: serumMarket.decoded.eventQueue,
-                                                        bids: serumMarket.bidsAddress,
-                                                        asks: serumMarket.asksAddress,
-                                                        coinMint: serumMarket.decoded.baseMint,
-                                                        coinVault: serumMarket.decoded.baseVault,
-                                                        pcVault: serumMarket.decoded.quoteVault,
-                                                        vaultSigner: vaultOwner,
-                                                        orderPayerTokenAccount: userAccount.userMarginAccountUsdc,
-                                                        instrumentTokenMintAuthorityPda: mintAuthAddress,
-                                                        instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
-                                                        serumDexProgramId: serumId,
-                                                        tokenProgram: TOKEN_PROGRAM_ID,
-                                                        rent: SYSVAR_RENT_PUBKEY
+                                                    context.program.account.exchange.fetch(exchangeAddress).then((exchangeRes) => {
+                                                        let exchange = exchangeRes as Exchange;
+                                                        resolve({
+                                                            exchange: exchangeAddress,
+                                                            user: context.provider.wallet.publicKey,
+                                                            userAccount: userAccountAddress,
+                                                            userMarginAccount: userAccount.userMarginAccountUsdc,
+                                                            userInstrumentLongTokenVault: longSPLTokenVault,
+                                                            userInstrumentShortTokenVault: shortSPLTokenVault,
+                                                            optifiMarket: marketAddress,
+                                                            serumMarket: optifiMarket.serumMarket,
+                                                            openOrders: openOrdersAccount,
+                                                            openOrdersOwner: userAccountAddress,
+                                                            requestQueue: serumMarket.decoded.requestQueue,
+                                                            eventQueue: serumMarket.decoded.eventQueue,
+                                                            bids: serumMarket.bidsAddress,
+                                                            asks: serumMarket.asksAddress,
+                                                            coinMint: serumMarket.decoded.baseMint,
+                                                            coinVault: serumMarket.decoded.baseVault,
+                                                            pcVault: serumMarket.decoded.quoteVault,
+                                                            usdcCentralPool: exchange.usdcCentralPool,
+                                                            vaultSigner: vaultOwner,
+                                                            orderPayerTokenAccount: userAccount.userMarginAccountUsdc,
+                                                            instrumentTokenMintAuthorityPda: mintAuthAddress,
+                                                            instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
+                                                            serumDexProgramId: serumId,
+                                                            tokenProgram: TOKEN_PROGRAM_ID,
+                                                            rent: SYSVAR_RENT_PUBKEY
+                                                        })
+                                                    }).catch((err) => {
+                                                        console.error(err);
+                                                        reject(err);
                                                     })
                                                 }).catch((err) => {
                                                     console.error("Got error trying to load serum market info from ",

@@ -458,6 +458,11 @@
           "isSigner": false
         },
         {
+          "name": "usdcCentralPool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "instrumentShortSplTokenMint",
           "isMut": true,
           "isSigner": false
@@ -599,6 +604,11 @@
         },
         {
           "name": "instrumentTokenMintAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcCentralPool",
           "isMut": false,
           "isSigner": false
         },
@@ -748,6 +758,11 @@
         },
         {
           "name": "instrumentTokenMintAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcCentralPool",
           "isMut": false,
           "isSigner": false
         },
@@ -2090,7 +2105,9 @@
           {
             "name": "collectedPositions",
             "type": {
-              "defined": "HashMap<u64,Pubkey>"
+              "vec": {
+                "defined": "PositionSizeContainer"
+              }
             }
           }
         ]
@@ -2470,6 +2487,22 @@
           {
             "name": "size",
             "type": "i32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PositionSizeContainer",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "size",
+            "type": "u64"
+          },
+          {
+            "name": "address",
+            "type": "publicKey"
           }
         ]
       }
@@ -2945,6 +2978,16 @@
       "code": 6021,
       "name": "CannotPlaceOrdersInLiquidation",
       "msg": "Users cannot place manual orders while their accounts are in liquidation"
+    },
+    {
+      "code": 6022,
+      "name": "PoolNotCentralUSDCPool",
+      "msg": "Provided USDC pool is not central pool"
+    },
+    {
+      "code": 6023,
+      "name": "InvalidSerumAuthority",
+      "msg": "Invalid open orders market authority"
     }
   ]
 }

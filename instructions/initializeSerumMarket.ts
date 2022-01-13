@@ -190,8 +190,8 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
                                     vaultOwner
                                 ).then((res) => {
                                     let tx = context.program.transaction.initializeSerumOrderbook(
-                                        context.provider.wallet.publicKey, // Authority PK
-                                        context.provider.wallet.publicKey, // Prune authority PK
+                                        authorityAddress, // Authority PK
+                                        pruneAuthorityAddress, // Prune authority PK
                                         new anchor.BN(COIN_LOT_SIZE),
                                         new anchor.BN(PC_LOT_SIZE),
                                         vaultSignerNonce,

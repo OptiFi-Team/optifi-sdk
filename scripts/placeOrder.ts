@@ -6,11 +6,13 @@ import {OrderSide} from "../types/optifi-exchange-types";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 
 const limit = 1;
-let market = new PublicKey("5r4xPp34BJJxbQE67xyCU62sp2FaKi4d68AFZbJmwd8h");
+let market = new PublicKey("7qsPrAov6iryrUsAnjd4XpvBhJXyLFfg4GqeUQNmQYNg");
 
 initializeContext().then((context) => {
     formOrderContext(context, market).then((orderContext) => {
-        console.log("Serum market is ", formatExplorerAddress(context, orderContext.serumMarket.toString(), SolanaEntityType.Account))
+        console.log("Depositing...");
+        console.log("Serum market is ", formatExplorerAddress(context, orderContext.serumMarket.toString(), SolanaEntityType.Account));
+        console.log("Open orders account is ", formatExplorerAddress(context, orderContext.openOrders.toString(), SolanaEntityType.Account))
         placeOrder(context, market, OrderSide.Bid, limit).then((res) => {
             console.log("Placed order ", res);
             if (res.successful) {

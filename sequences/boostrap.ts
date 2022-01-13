@@ -193,11 +193,11 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                                         if (currIdx !== 0) {
                                             // Wait to create subsequent markets, beacuse the data is depent on previous markets,
                                             // and there are validation delays
-                                            console.log("Waiting 3 seconds before next market...");
+                                            console.log("Waiting 5 seconds before next market...");
                                             await new Promise((resolve) => {
                                                 setTimeout(() => {
                                                     resolve(true)
-                                                }, 3 * 1000)
+                                                }, 5 * 1000)
                                             })
                                             console.log("Finished, waiting, continuing market creation...");
                                         }
