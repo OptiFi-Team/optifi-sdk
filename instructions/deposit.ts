@@ -13,6 +13,7 @@ export default function deposit(context: Context, amount: number): Promise<Instr
             userAccountExists(context).then(([acctExists, acct]) => {
                 if (acctExists && acct !== undefined) {
                     findUserUSDCAddress(context).then(([userUSDCAddress, _]) => {
+                        console.log("User USDC address is", userUSDCAddress.toString());
                         let depositTx = context.program.transaction.deposit(new anchor.BN(amount),
                             {
                                 accounts: {
