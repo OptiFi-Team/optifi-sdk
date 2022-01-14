@@ -6,7 +6,7 @@ import {OrderSide} from "../types/optifi-exchange-types";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 
 const limit = 1;
-let market = new PublicKey("7qsPrAov6iryrUsAnjd4XpvBhJXyLFfg4GqeUQNmQYNg");
+let market = new PublicKey("6NU7hMvvDzxBwgdTYQkEsHFr1c5AxyQBFUPjVsszmUFv");
 
 initializeContext().then((context) => {
     formOrderContext(context, market).then((orderContext) => {
