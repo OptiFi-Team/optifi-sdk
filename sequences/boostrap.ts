@@ -4,6 +4,7 @@ import InstructionResult from "../types/instructionResult";
 import {Exchange, OptifiMarket} from "../types/optifi-exchange-types";
 import {initialize, initializeSerumMarket, initializeUserAccount} from "../index";
 import {
+    createUserAccountIfNotExist,
     exchangeAccountExists,
     findExchangeAccount,
     findInstrument,
@@ -70,26 +71,6 @@ function createOrFetchExchange(context: Context): Promise<void> {
     })
 }
 
-/**
- * Helper function to either fetch the user's account on this exchange, or create it if it doesn't already exist
- *
- */
-function createUserAccountIfNotExist(context: Context): Promise<void> {
-    return new Promise((resolve, reject) => {
-            userAccountExists(context).then(([exists, _]) => {
-                if (exists) {
-                    console.debug("User account already exists");
-                    resolve()
-                } else {
-                    console.debug("User account does not already exist, creating...");
-                    initializeUserAccount(context).then((_) => {
-                        resolve()
-                    }).catch((err) => reject(err))
-                }
-            }).catch((err) => reject(err))
-        }
-    )
-}
 
 function createOrFetchInstruments(context: Context): Promise<PublicKey[]> {
     return new Promise((resolve, reject) => {

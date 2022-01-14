@@ -25,6 +25,7 @@ import {
 } from "./generic";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {findAssociatedTokenAccount} from "./token";
+import {initializeUserAccount} from "../index";
 
 /**
  * Helper function for finding an account with a list of seeds
@@ -275,4 +276,25 @@ export function findLiquidationState(context: Context, userAccount: PublicKey): 
                     .catch((err) => reject(err))
             })
         })
+}
+
+/**
+ * Helper function to either fetch the user's account on this exchange, or create it if it doesn't already exist
+ *
+ */
+export function createUserAccountIfNotExist(context: Context): Promise<void> {
+    return new Promise((resolve, reject) => {
+            userAccountExists(context).then(([exists, _]) => {
+                if (exists) {
+                    console.debug("User account already exists");
+                    resolve()
+                } else {
+                    console.debug("User account does not already exist, creating...");
+                    initializeUserAccount(context).then((_) => {
+                        resolve()
+                    }).catch((err) => reject(err))
+                }
+            }).catch((err) => reject(err))
+        }
+    )
 }
