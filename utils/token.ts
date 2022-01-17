@@ -18,7 +18,7 @@ import {formatExplorerAddress, SolanaEntityType} from "./debug";
  * couldn't use the interface from the library without providing a signer, and we want to make all functionality work in
  * a browser context (without having direct Private key access), so pull it out
  */
-function createAssociatedTokenAccountInstruction(
+export function createAssociatedTokenAccountInstruction(
     payer: PublicKey,
     associatedToken: PublicKey,
     owner: PublicKey,

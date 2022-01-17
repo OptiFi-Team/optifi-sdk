@@ -1640,12 +1640,22 @@
           "isSigner": false
         },
         {
+          "name": "liquidityPool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "owner",
           "isMut": false,
           "isSigner": true
         },
         {
           "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
           "isMut": false,
           "isSigner": false
         }
@@ -2147,6 +2157,34 @@
           {
             "name": "active",
             "type": "bool"
+          },
+          {
+            "name": "liquidityPool",
+            "type": "publicKey"
+          },
+          {
+            "name": "withdrawTs",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawalAmount",
+            "type": "u64"
+          },
+          {
+            "name": "outstandingPenalty",
+            "type": "u64"
+          },
+          {
+            "name": "ethData",
+            "type": {
+              "defined": "MarketMakerData"
+            }
+          },
+          {
+            "name": "btcData",
+            "type": {
+              "defined": "MarketMakerData"
+            }
           }
         ]
       }
@@ -2503,6 +2541,40 @@
           {
             "name": "address",
             "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketMakerData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "volume",
+            "type": "u64"
+          },
+          {
+            "name": "totalIndicator",
+            "type": "u64"
+          },
+          {
+            "name": "timeWeightedIndicator",
+            "type": "u64"
+          },
+          {
+            "name": "dfmAsk",
+            "type": "u64"
           }
         ]
       }
@@ -2988,6 +3060,21 @@
       "code": 6023,
       "name": "InvalidSerumAuthority",
       "msg": "Invalid open orders market authority"
+    },
+    {
+      "code": 6024,
+      "name": "WithdrawRequestInvalid",
+      "msg": "Only one withdraw request allowed at one time"
+    },
+    {
+      "code": 6025,
+      "name": "MMWithdrawNotInWindow",
+      "msg": "Market maker withdraw outside of valid window"
+    },
+    {
+      "code": 6026,
+      "name": "WrongAsset",
+      "msg": "Wrong asset"
     }
   ]
 }
