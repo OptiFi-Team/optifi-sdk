@@ -6,7 +6,7 @@ import {
     getDexOpenOrders,
     userAccountExists
 } from "./accounts";
-import {Exchange, OptifiMarket, UserAccount} from "../types/optifi-exchange-types";
+import {Exchange, OptifiMarket, OrderSide, UserAccount} from "../types/optifi-exchange-types";
 import {deriveVaultNonce, getSerumMarket} from "./market";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findOptifiMarketMintAuthPDA} from "./pda";
@@ -42,7 +42,8 @@ export interface OrderAccountContext {
 }
 
 export function formOrderContext(context: Context,
-                                 marketAddress: PublicKey): Promise<OrderAccountContext> {
+                                 marketAddress: PublicKey,
+                                 side: OrderSide): Promise<OrderAccountContext> {
     let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
@@ -79,7 +80,7 @@ export function formOrderContext(context: Context,
                                                             pcVault: serumMarket.decoded.quoteVault,
                                                             usdcCentralPool: exchange.usdcCentralPool,
                                                             vaultSigner: vaultOwner,
-                                                            orderPayerTokenAccount: userAccount.userMarginAccountUsdc,
+                                                            orderPayerTokenAccount: (side === OrderSide.Bid ? userAccount.userMarginAccountUsdc : longSPLTokenVault),
                                                             instrumentTokenMintAuthorityPda: mintAuthAddress,
                                                             instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
                                                             serumDexProgramId: serumId,

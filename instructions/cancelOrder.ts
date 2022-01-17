@@ -11,7 +11,7 @@ export default function cancelOrder(context: Context,
                                     side: OrderSide,
                                     orderId: anchor.BN): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
-        formOrderContext(context, marketAddress).then((orderContext) => {
+        formOrderContext(context, marketAddress, side).then((orderContext) => {
             let cancelTx = context.program.transaction.cancelOrder(side,
                 orderId,
                 {

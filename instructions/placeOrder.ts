@@ -13,7 +13,7 @@ export default function placeOrder(context: Context,
                            side: OrderSide,
                            limit: number): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
-        formOrderContext(context, marketAddress).then((orderContext) => {
+        formOrderContext(context, marketAddress, side).then((orderContext) => {
             let maxCoinQty = new anchor.BN(MAX_COIN_QTY);
             let maxPcQty = new anchor.BN(MAX_PC_QTY);
             let placeOrderTx = context.program.transaction.placeOrder(

@@ -14,7 +14,7 @@ export default function updateOrder(context: Context,
                                     orderId: anchor.BN,
                                     ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
-        formOrderContext(context, marketAddress).then((orderContext) => {
+        formOrderContext(context, marketAddress, side).then((orderContext) => {
             let updateTx = context.program.transaction.updateOrder(
                 side,
                 new anchor.BN(limit),
