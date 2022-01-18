@@ -4,7 +4,7 @@ import MaturityType from "../types/maturityType";
 function endOfMonthExpiration(offset: number,
                               startDate?: Date): Date {
     let expiration = startDate || new Date();
-    expiration.setUTCMonth(expiration.getUTCMonth() + (offset-1));
+    expiration.setUTCMonth(expiration.getUTCMonth() + offset);
     let targetMonth = expiration.getMonth();
     // We want expirations to be on Wednesdays - get to the last wednesday of this month
     while (expiration.getUTCDay() !== EXPIRATION_WEEKDAY) {
