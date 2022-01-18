@@ -1,12 +1,14 @@
 import Context from "../types/context";
-import {PublicKey, TransactionSignature} from "@solana/web3.js";
+import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import { Market } from "@project-serum/serum";
+import {Market} from "@project-serum/serum";
 import {Chain, Exchange, OptifiMarket} from "../types/optifi-exchange-types";
-import {findAccountWithSeeds, findExchangeAccount, findUserAccount} from "./accounts";
+import {findAccountWithSeeds, findExchangeAccount, findUserAccount, getDexOpenOrders} from "./accounts";
 import {OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findAssociatedTokenAccount} from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
+import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
+import {formatExplorerAddress, SolanaEntityType} from "./debug";
 
 
 export function findOptifiMarketWithIdx(context: Context,
@@ -142,5 +144,50 @@ export function findMarketInstrumentContext(context: Context, marketAddress: Pub
                 }).catch((err) => reject(err))
             })
         }).catch((err) => reject(err))
+    })
+}
+
+export function isUserInitializedOnMarket(context: Context, marketAddress: PublicKey): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+        findUserAccount(context).then(([userAccountAddress, _]) => {
+            findMarketInstrumentContext(context, marketAddress).then((marketInstrumentContext) => {
+                context.connection.getAccountInfo(marketInstrumentContext.longSPLTokenVault).then((acctInfo) => {
+                    if (acctInfo === null) {
+                        resolve(false)
+                    } else {
+                        resolve(true)
+                    }
+                }).catch((err) => resolve(false));
+            })
+        })
+
+    })
+}
+
+export function initializeUserIfNotInitializedOnMarket(context: Context,
+                                                       marketAddress: PublicKey): Promise<void> {
+    return new Promise((resolve, reject) => {
+        isUserInitializedOnMarket(context, marketAddress).then((userInitialized) => {
+            if (userInitialized) {
+                console.debug("User was already initialized on market");
+                resolve()
+            } else {
+                console.debug("User was not initialized on market, initializing them...");
+                initUserOnOptifiMarket(context, marketAddress).then((res) => {
+                    if (res.successful) {
+                        console.debug("Initialized user on market ", formatExplorerAddress(context,
+                            res.data as string,
+                            SolanaEntityType.Transaction)
+                        );
+                    } else {
+                        console.error(res);
+                        reject(res)
+                    }
+                }).catch((err) => {
+                    console.error(err);
+                    reject(err);
+                })
+            }
+        })
     })
 }
