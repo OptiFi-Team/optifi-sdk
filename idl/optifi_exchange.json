@@ -1884,6 +1884,42 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "scheduleMarketMakerWidthdrawal",
+      "accounts": [
+        {
+          "name": "userAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marketMakerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liquidityPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
