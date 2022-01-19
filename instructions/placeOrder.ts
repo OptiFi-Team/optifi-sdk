@@ -35,7 +35,7 @@ export default function placeOrder(context: Context,
                     console.error(res);
                     reject(res);
                 }
-            })
-        })
+            }).catch((err) => reject(err))
+        }).catch((err) => reject(err))
     })
 }
