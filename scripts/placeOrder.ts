@@ -7,7 +7,7 @@ import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {watchSettleSerumFunds} from "../utils/serum";
 
 const limit = 1;
-let market = new PublicKey("FJmiyFJTFC4DG1MYzEXBjjk1MoWTzoQk3BR7BNDqXf1J");
+let market = new PublicKey("2DJ1xKco6yHsicufqemBjGYn7yKaCf68kFBqFjt26YRs");
 
 initializeContext().then((context) => {
     formOrderContext(context, market, OrderSide.Ask).then((orderContext) => {

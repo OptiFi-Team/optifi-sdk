@@ -2,12 +2,12 @@ import Context from "../types/context";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import {Market, OpenOrders} from "@project-serum/serum";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
-import {DexInstructions} from '@project-serum/serum';
-import {formOrderContext} from "./orders";
-import {OptifiMarket, OrderSide, UserAccount} from "../types/optifi-exchange-types";
+import {OptifiMarket, UserAccount} from "../types/optifi-exchange-types";
 import {findOrCreateAssociatedTokenAccount} from "./token";
 import {findUserAccount} from "./accounts";
 import {signAndSendTransaction, TransactionResultType} from "./transactions";
+import settleFunds from "../instructions/settleFunds";
+import {formatExplorerAddress, SolanaEntityType} from "./debug";
 
 export function getSerumMarket(context: Context, marketAddress: PublicKey): Promise<Market> {
     return Market.load(context.connection, marketAddress, {}, new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]))
@@ -99,8 +99,17 @@ export function settleSerumFundsIfAnyUnsettled(context: Context,
                                     if (openOrders.baseTokenFree.toNumber() > 0 || openOrders.quoteTokenFree.toNumber() > 0) {
                                         console.log("Settling open orders, ", openOrders);
                                         try {
-                                            let txSig = await settleSerumFunds(context, marketAddress, openOrders);
-                                            txSigs.push(txSig)
+                                            await settleFunds(context, userAccountAddress).then((res) => {
+                                                if (res.successful) {
+                                                    console.log("Successful settlement ", formatExplorerAddress(context, res.data as string, SolanaEntityType.Transaction));
+                                                    txSigs.push(res.data as TransactionSignature);
+                                                } else {
+                                                    console.error(res);
+                                                }
+                                            }).catch((err) => {
+                                                console.error(err);
+                                                reject(err);
+                                            })
                                         }
                                         catch (e) {
                                             console.error(e);
