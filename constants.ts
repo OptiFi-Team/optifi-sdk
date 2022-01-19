@@ -110,7 +110,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com" : "111161",
+    "https://api.devnet.solana.com" : "111162",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
@@ -153,5 +153,5 @@ export const COIN_LOT_SIZE: number = 1; // let's set 1 as one instrument spl tok
 export const PC_LOT_SIZE: number = 1;
 export const PC_DUST_THRESHOLD: number = 2;
 
-export const MAX_COIN_QTY = 2000 * COIN_LOT_SIZE;
+export const MAX_COIN_QTY = 500 * COIN_LOT_SIZE;
 export const MAX_PC_QTY = 1000 * PC_LOT_SIZE;
