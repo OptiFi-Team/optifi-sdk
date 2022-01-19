@@ -1,7 +1,8 @@
 import {initializeContext} from "../index";
-import {findOptifiMarkets, getSerumMarketPrice} from "../utils/market";
+import {findOptifiMarkets} from "../utils/market";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {Chain} from "../types/optifi-exchange-types";
+import {getSerumMarketPrice} from "../utils/serum";
 
 
 initializeContext().then((context) => {
@@ -17,6 +18,7 @@ initializeContext().then((context) => {
             }).catch((err) => console.error(err));
 
             await context.program.account.chain.fetch(market[0].instrument).then((instrumentRes) => {
+                console.log("Instruemnt res asset ", instrumentRes.asset);
                 // @ts-ignore
                 let chain = instrumentRes as Chain;
                 console.log("Chain ", chain);

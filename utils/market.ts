@@ -1,16 +1,13 @@
 import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import {Market} from "@project-serum/serum";
 import {Chain, Exchange, OptifiMarket} from "../types/optifi-exchange-types";
-import {findAccountWithSeeds, findExchangeAccount, findUserAccount, getDexOpenOrders} from "./accounts";
-import {OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID} from "../constants";
+import {findAccountWithSeeds, findExchangeAccount, findUserAccount} from "./accounts";
+import {OPTIFI_MARKET_PREFIX} from "../constants";
 import {findAssociatedTokenAccount} from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
 import {formatExplorerAddress, SolanaEntityType} from "./debug";
-import markdown = Mocha.reporters.markdown;
-import {Order} from "@project-serum/serum/lib/market";
 
 
 export function findOptifiMarketWithIdx(context: Context,
@@ -87,10 +84,6 @@ export function findExpiredMarkets(context: Context): Promise<[OptifiMarket, Pub
             )).catch((err) => reject(err));
         })
     })
-}
-
-export function getSerumMarket(context: Context, marketAddress: PublicKey): Promise<Market> {
-    return Market.load(context.connection, marketAddress, {}, new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]))
 }
 
 export function deriveVaultNonce(marketKey: PublicKey,
@@ -194,29 +187,3 @@ export function initializeUserIfNotInitializedOnMarket(context: Context,
     })
 }
 
-export function getSerumMarketPrice(context: Context, serumMarketAddress: PublicKey): Promise<number> {
-    return new Promise((resolve, reject) => {
-        getSerumMarket(context, serumMarketAddress).then((market) => {
-            market.loadBids(context.connection).then((bids) => {
-                market.loadAsks(context.connection).then((asks) => {
-                    let bidOrders: number[] = [];
-                    let askOrders: number[] = [];
-                    for (let item of bids.items()) {
-                      bidOrders.push(item.price);
-                    }
-                    for (let item of asks.items()) {
-                        askOrders.push(item.price)
-                    }
-                    let maxBid = Math.max(...bidOrders);
-                    let minAsk = Math.min(...askOrders);
-                    if (maxBid === Infinity || minAsk === Infinity || maxBid === -Infinity || minAsk === -Infinity) {
-                        resolve(0);
-                    } else {
-                        let diff = Math.abs(minAsk - maxBid) / 2;
-                        resolve(minAsk + diff);
-                    }
-                }).catch((err) => reject(err))
-            }).catch((err) => reject(err))
-        }).catch((err) => reject(err))
-    })
-}

@@ -2,12 +2,13 @@ import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {findExchangeAccount} from "../utils/accounts";
 import {PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, TransactionSignature} from "@solana/web3.js";
-import {findOptifiMarkets, findOptifiMarketWithIdx, getSerumMarket} from "../utils/market";
+import {findOptifiMarkets, findOptifiMarketWithIdx} from "../utils/market";
 import * as anchor from "@project-serum/anchor";
 import {findOptifiMarketMintAuthPDA} from "../utils/pda";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 import {MintLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
+import {getSerumMarket} from "../utils/serum";
 
 export function createOptifiMarket(context: Context,
                                    serumMarket: PublicKey,

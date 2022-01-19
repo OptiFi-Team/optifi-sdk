@@ -5,8 +5,8 @@ import {findExchangeAccount, findLiquidationState, getDexOpenOrders} from "../ut
 import {OptifiMarket} from "../types/optifi-exchange-types";
 import {findAssociatedTokenAccount} from "../utils/token";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
-import {getSerumMarket} from "../utils/market";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import {getSerumMarket} from "../utils/serum";
 
 export default function registerLiquidationMarket(context: Context,
                                                   userAccountAddress: PublicKey,
