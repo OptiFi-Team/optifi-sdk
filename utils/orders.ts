@@ -7,11 +7,12 @@ import {
     userAccountExists
 } from "./accounts";
 import {Exchange, OptifiMarket, OrderSide, UserAccount} from "../types/optifi-exchange-types";
-import {deriveVaultNonce, getSerumMarket} from "./market";
+import {deriveVaultNonce} from "./market";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findOptifiMarketMintAuthPDA} from "./pda";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount} from "./token";
+import {getSerumMarket} from "./serum";
 
 export interface OrderAccountContext {
     exchange: PublicKey,

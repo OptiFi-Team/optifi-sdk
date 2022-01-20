@@ -3,13 +3,14 @@ import {PublicKey, SYSVAR_RENT_PUBKEY, TransactionSignature} from "@solana/web3.
 import InstructionResult from "../types/instructionResult";
 import {Amm, OptifiMarket} from "../types/optifi-exchange-types";
 import {findExchangeAccount, findUserAccount, getDexOpenOrders} from "../utils/accounts";
-import {deriveVaultNonce, getSerumMarket} from "../utils/market";
+import {deriveVaultNonce} from "../utils/market";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findOptifiMarketMintAuthPDA, findSerumPruneAuthorityPDA} from "../utils/pda";
 import {findInstrumentIndexFromAMM} from "../utils/amm";
 import {findAssociatedTokenAccount} from "../utils/token";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import {getSerumMarket} from "../utils/serum";
 
 export function ammUpdateOrders(context: Context,
                                 orderLimit: number,

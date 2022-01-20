@@ -34,6 +34,8 @@ export function initializeChain(context: Context,
             console.log("Found exchange account ", exchangeAddress);
             let foundInstruments: { [idx: number]: [PublicKey, number, string] } = {};
             let instrumentPromises: Promise<any>[] = [];
+            let a = assetToOptifiAsset(instrumentContext.asset);
+            console.log("Asset optifi is ", a);
             for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                 instrumentPromises.push(findInstrument(
                         context,

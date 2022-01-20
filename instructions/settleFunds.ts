@@ -2,12 +2,13 @@ import Context from "../types/context";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import {findExchangeAccount, findOracleAccountFromInstrument, findUserAccount} from "../utils/accounts";
-import {deriveVaultNonce, findMarketInstrumentContext, getSerumMarket} from "../utils/market";
+import {deriveVaultNonce, findMarketInstrumentContext} from "../utils/market";
 import {findOptifiUSDCPoolAuthPDA, findSerumPruneAuthorityPDA} from "../utils/pda";
 import {SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT} from "../constants";
 import {Exchange, UserAccount} from "../types/optifi-exchange-types";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import {getSerumMarket} from "../utils/serum";
 
 export default function settleFunds(context: Context,
                                     userToSettle: PublicKey): Promise<InstructionResult<TransactionSignature>> {
