@@ -99,12 +99,10 @@ export function findOrCreateAssociatedTokenAccount(context: Context,
                 context.connection.getAccountInfo(associatedTokenAddress)
                     .then((res) => {
                         if (res) {
-                            console.debug("Account already exists");
                             resolve(associatedTokenAddress);
                         } else {
                             console.debug()
                             // Account doesn't exist
-                            console.debug("Account doesn't already exist, creating");
                             createAssociatedTokenAccount(context, tokenMint, owner).then((createRes) => {
                                 resolve(associatedTokenAddress);
                             }).catch((err) => {

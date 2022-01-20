@@ -8,6 +8,7 @@ import {findUserAccount} from "./accounts";
 import {signAndSendTransaction, TransactionResultType} from "./transactions";
 import settleFunds from "../instructions/settleFunds";
 import {formatExplorerAddress, SolanaEntityType} from "./debug";
+import settleOrderFunds from "../instructions/settleOrderFunds";
 
 export function getSerumMarket(context: Context, marketAddress: PublicKey): Promise<Market> {
     return Market.load(context.connection, marketAddress, {}, new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]))
@@ -40,54 +41,9 @@ export function getSerumMarketPrice(context: Context, serumMarketAddress: Public
     })
 }
 
-export function settleSerumFunds(context: Context,
-                                 marketAddress: PublicKey,
-                                 openOrdersAccount: OpenOrders): Promise<TransactionSignature> {
-    return new Promise((resolve, reject) => {
-        context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {
-            let optifiMarket = marketRes as OptifiMarket;
-            getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {
-               findUserAccount(context).then(([userAccountAddress, _]) => {
-                   context.program.account.userAccount.fetch(userAccountAddress).then((userAccountRes) => {
-                       // @ts-ignore
-                       let userAccount = userAccountRes as UserAccount;
-                       findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then((longTokenAccount) => {
-                               serumMarket.makeSettleFundsTransaction(
-                                   context.connection,
-                                   openOrdersAccount,
-                                   longTokenAccount,
-                                   userAccount.userMarginAccountUsdc
-                               ).then((settleTx) => {
-                                   signAndSendTransaction(context, settleTx.transaction).then((settleRes) => {
-                                       if (settleRes.resultType === TransactionResultType.Successful) {
-                                           resolve(settleRes.txId as TransactionSignature);
-                                       } else {
-                                           console.error(settleRes);
-                                           reject(settleRes);
-                                       }
-                                   }).catch((err) => {
-                                       console.error(err);
-                                       reject(err);
-                                   })
-                               }).catch((err) => {
-                                   console.error(err);
-                                   reject(err);
-                               });
-                           }).catch((err) => {
-                               console.error(err);
-                               reject(err);
-                           })
-                       }).catch((err) => reject(err))
-                   }).catch((err) => reject(err))
-               }).catch((err) => reject(err))
-            }).catch((err) => reject(err))
-    })
-}
-
 export function settleSerumFundsIfAnyUnsettled(context: Context,
-                                               marketAddress: PublicKey): Promise<TransactionSignature[]> {
+                                               marketAddress: PublicKey): Promise<TransactionSignature | null> {
     return new Promise((resolve, reject) => {
-        let txSigs: TransactionSignature[] = [];
         context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {
             let optifiMarket = marketRes as OptifiMarket;
             getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {
@@ -95,31 +51,22 @@ export function settleSerumFundsIfAnyUnsettled(context: Context,
                     serumMarket.findOpenOrdersAccountsForOwner(context.connection, userAccountAddress)
                         .then((openOrdersAccounts) => {
                             const doOpenOrdersSettle = async () => {
+                                console.debug("In open orders settle for market ", marketAddress.toString(), openOrdersAccounts.length, "open orders accounts");
                                 for (let openOrders of openOrdersAccounts) {
                                     if (openOrders.baseTokenFree.toNumber() > 0 || openOrders.quoteTokenFree.toNumber() > 0) {
-                                        console.log("Settling open orders, ", openOrders);
-                                        try {
-                                            await settleFunds(context, userAccountAddress).then((res) => {
-                                                if (res.successful) {
-                                                    console.log("Successful settlement ", formatExplorerAddress(context, res.data as string, SolanaEntityType.Transaction));
-                                                    txSigs.push(res.data as TransactionSignature);
-                                                } else {
-                                                    console.error(res);
-                                                }
-                                            }).catch((err) => {
-                                                console.error(err);
-                                                reject(err);
-                                            })
-                                        }
-                                        catch (e) {
-                                            console.error(e);
-                                            reject(e);
-                                        }
+                                        settleOrderFunds(context, marketAddress).then((res) => {
+                                            console.debug(res);
+                                            // If any of them were successful, we only need to settle once.
+                                            resolve(res.data as TransactionSignature);
+                                        }).catch((err) => {
+                                            console.error(err);
+                                            reject(err);
+                                        })
                                     }
                                 }
                             }
                             doOpenOrdersSettle().then(() => {
-                                resolve(txSigs)
+                                resolve(null)
                             }).catch((err) => reject(err))
                         })
                 })
@@ -133,17 +80,17 @@ export function settleSerumFundsIfAnyUnsettled(context: Context,
  * To be called after an order - watch for open orders changes, and then once it's changed, do settlement
  */
 export function watchSettleSerumFunds(context: Context,
-                                      marketAddress: PublicKey): Promise<TransactionSignature[]> {
+                                      marketAddress: PublicKey): Promise<void> {
     return new Promise((resolve, reject) => {
         const waitSerumSettle = async () => {
             try {
-                let txSigs = await settleSerumFundsIfAnyUnsettled(context, marketAddress);
-                if (txSigs.length === 0) {
+                let res = await settleSerumFundsIfAnyUnsettled(context, marketAddress);
+                if (res) {
+                    console.log("Settled serum funds!");
+                    resolve();
+                } else {
                     console.log("Waiting 1 second for serum settlement");
                     setTimeout(waitSerumSettle, 1000);
-                } else {
-                    console.log("Settled serum funds!");
-                    resolve(txSigs)
                 }
             } catch (e) {
                 console.error(e);

@@ -5,9 +5,10 @@ import {settleSerumFundsIfAnyUnsettled} from "../utils/serum";
 initializeContext().then((context) => {
     findOptifiMarkets(context).then(async (markets) => {
         for (let market of markets) {
-            console.log("Settling ", market);
-            let sigs = await settleSerumFundsIfAnyUnsettled(context, market[1]);
-            console.log(sigs);
+            let res = await settleSerumFundsIfAnyUnsettled(context, market[1]);
+            if (res) {
+                console.log(res);
+            }
         }
     })
 })
