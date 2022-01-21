@@ -28,6 +28,7 @@ export function initializeAmm(context: Context,
                 context.connection.getMinimumBalanceForRentExemption(MintLayout.span).then((mintMin) => {
                     findExchangeAccount(context).then(([exchangeAddress, _]) => {
                         findAMMWithIdx(context, exchangeAddress, idx).then(([ammAddress, bump]) => {
+                            console.log("Initializing AMM with idx ", idx, "bump ", bump, "asset", optifiAssetToNumber(optifiAsset));
                             let initializeAmmTx = context.program.transaction.initializeAmm(bump, {
                                 ammIdx: idx,
                                 ammCapacity: new anchor.BN(AMM_TRADE_CAPACITY),

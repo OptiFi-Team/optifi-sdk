@@ -70,7 +70,6 @@ export function signTransaction(context: Context,
                                 transaction: Transaction,
                                 signers?: Signer[]): Promise<Transaction> {
     if (signers && signers.length > 0) {
-        console.debug("Signing partial with ", signers);
         transaction.partialSign(...signers);
     }
     // Sign the transaction before sending it
