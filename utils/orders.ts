@@ -13,6 +13,7 @@ import {findOptifiMarketMintAuthPDA} from "./pda";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount} from "./token";
 import {getSerumMarket} from "./serum";
+import { BN } from "@project-serum/anchor";
 
 export interface OrderAccountContext {
     exchange: PublicKey,
