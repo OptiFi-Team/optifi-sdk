@@ -1,6 +1,6 @@
 import Context from "../types/context";
 import {PublicKey} from "@solana/web3.js";
-import {Amm} from "../types/optifi-exchange-types";
+import {AmmAccount} from "../types/optifi-exchange-types";
 import {findAccountWithSeeds, findExchangeAccount} from "./accounts";
 import {AMM_PREFIX} from "../constants";
 import Position from "../types/position";
@@ -18,14 +18,14 @@ export function findAMMWithIdx(context: Context,
 function iterateFindAMM(context: Context,
                         exchangeAddress: PublicKey,
                         idx: number = 1
-                        ): Promise<[Amm, PublicKey][]> {
+                        ): Promise<[AmmAccount, PublicKey][]> {
     return new Promise((resolve, reject) => {
-        let ammAccounts: [Amm, PublicKey][] = [];
+        let ammAccounts: [AmmAccount, PublicKey][] = [];
         findAMMWithIdx(context,
             exchangeAddress,
             idx).then(([address, bump]) => {
                 console.debug("Looking for amm at", address.toString());
-                context.program.account.amm.fetch(address).then((res) => {
+                context.program.account.ammAccount.fetch(address).then((res) => {
                     // @ts-ignore
                     ammAccounts.push([res as Amm, address]);
                     iterateFindAMM(context,
@@ -45,7 +45,7 @@ function iterateFindAMM(context: Context,
     })
 }
 
-export function findAMMAccounts(context: Context): Promise<[Amm, PublicKey][]> {
+export function findAMMAccounts(context: Context): Promise<[AmmAccount, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             iterateFindAMM(context, exchangeAddress).then((accts) => {
@@ -57,7 +57,7 @@ export function findAMMAccounts(context: Context): Promise<[Amm, PublicKey][]> {
 }
 
 export function findInstrumentIndexFromAMM(context: Context,
-                                           amm: Amm,
+                                           amm: AmmAccount,
                                            instrumentAddress: PublicKey): [Position, number] {
     let ammPositions = amm.positions as Position[];
     for (let i = 0; i < ammPositions.length; i++) {

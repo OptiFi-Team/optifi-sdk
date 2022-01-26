@@ -152,11 +152,11 @@ function createOptifiMarkets(context: Context,
                 if (currIdx !== 0) {
                     // Wait to create subsequent markets, beacuse the data is depent on previous markets,
                     // and there are validation delays
-                    console.log("Waiting 5 seconds before next market...");
+                    console.log("Waiting 7 seconds before next market...");
                     await new Promise((resolve) => {
                         setTimeout(() => {
                             resolve(true)
-                        }, 5 * 1000)
+                        }, 7 * 1000)
                     })
                     console.log("Finished, waiting, continuing market creation...");
                 }

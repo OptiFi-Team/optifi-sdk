@@ -3,7 +3,7 @@ import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import {findExchangeAccount, findUserAccount} from "../utils/accounts";
-import {Amm} from "../types/optifi-exchange-types";
+import {AmmAccount} from "../types/optifi-exchange-types";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 import {findAssociatedTokenAccount} from "../utils/token";
@@ -16,7 +16,7 @@ export default function ammWithdraw(context: Context,
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findUserAccount(context).then(([userAccountAddress, _]) => {
                 getAmmLiquidityAuthPDA(context).then(([liquidityAuthPDA, _]) => {
-                    context.program.account.amm.fetch(ammAddress).then((ammRes) => {
+                    context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                         // @ts-ignore
                         let amm = ammRes as Amm;
                         findAssociatedTokenAccount(context, amm.quoteTokenMint).then(([userQuoteTokenVault, _]) => {

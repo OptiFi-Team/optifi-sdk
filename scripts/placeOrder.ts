@@ -16,7 +16,7 @@ initializeContext().then((context) => {
         console.log("Depositing...");
         console.log("Serum market is ", formatExplorerAddress(context, orderContext.serumMarket.toString(), SolanaEntityType.Account));
         console.log("Open orders account is ", formatExplorerAddress(context, orderContext.openOrders.toString(), SolanaEntityType.Account))
-        placeOrder(context, market, OrderSide.Ask, limit).then(async (res) => {
+        placeOrder(context, market, OrderSide.Ask, limit, 500, 1000).then(async (res) => {
             console.log("Placed order ", res);
             if (res.successful) {
                 console.log(formatExplorerAddress(context, res.data as TransactionSignature, SolanaEntityType.Transaction));

@@ -19,7 +19,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "tsc && ts-mocha test/test*.ts",
-    "clean": "rm *.js instructions/*.js scripts/*.js sequences/*.js test/*.js types/*.js utils/*.js",
+    "clean": "rm -rf lib && rm *.js instructions/*.js scripts/*.js sequences/*.js test/*.js types/*.js utils/*.js",
     "build": "rm -rf lib && tsc",
     "prepare": "npm run build",
     "preversion": "npm run lint",

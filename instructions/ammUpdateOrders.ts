@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import {PublicKey, SYSVAR_RENT_PUBKEY, TransactionSignature} from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
-import {Amm, OptifiMarket} from "../types/optifi-exchange-types";
+import {AmmAccount, OptifiMarket} from "../types/optifi-exchange-types";
 import {findExchangeAccount, findUserAccount, getDexOpenOrders} from "../utils/accounts";
 import {deriveVaultNonce} from "../utils/market";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
@@ -20,7 +20,7 @@ export function ammUpdateOrders(context: Context,
         let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findUserAccount(context).then(([userAccountAddress, _]) => {
-                context.program.account.amm.fetch(ammAddress).then((ammRes) => {
+                context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                     // @ts-ignore
                     let amm = ammRes as Amm;
                     context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {

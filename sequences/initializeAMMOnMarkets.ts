@@ -30,8 +30,8 @@ export default function initializeAmmOnMarkets(context: Context): Promise<Transa
                 let ammAccounts = await findAMMAccounts(context);
                 for (let ammAccount of ammAccounts) {
                     let relevantMarkets = marketContexts.filter((m) => m.instrument.asset === ammAccount[0].asset);
-                    console.log("Initializing AMM account ", ammAccount, "on markets ", relevantMarkets);
                     for (let marketContext of relevantMarkets) {
+                        console.log(`Initializing AMM ${ammAccount[1].toString()} on market ${marketContext.marketAddress.toString()}`)
                         let ammAddRes = await addInstrumentToAmm(context, ammAccount[1], marketContext.marketAddress);
                         if (ammAddRes.successful) {
                             console.log("Successfully added!");
