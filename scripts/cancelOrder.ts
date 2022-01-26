@@ -10,8 +10,11 @@ import * as anchor from "@project-serum/anchor";
 
 let market = new PublicKey("BzpWij8iXh3t6VFaJ5NWLi6yCNkT24gVTax141LNLGnL");
 
-let orderId = new anchor.BN("36893488147419103233");
-let side = OrderSide.Ask;
+let orderId = new anchor.BN("18446744092156295689709551612");
+
+// If buy -> Bid, sell -> ask
+let side = OrderSide.Bid;
+
 
 // I think there should be somewhere to save the open orders for user, and
 // the user can click button to cancel it. (refer to getOrderOnMarket)
