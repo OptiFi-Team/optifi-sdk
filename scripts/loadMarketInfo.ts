@@ -12,7 +12,10 @@ initializeContext().then((context) => {
         getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {
             console.log("Got serum market ", serumMarket);
             serumMarket.loadBids(context.connection).then((bids) => {
-                console.log("Serum bids are - ", bids);
+                console.log("bids: ", bids.getL2(10));
+            })
+            serumMarket.loadAsks(context.connection).then((asks) => {
+                console.log("asks: ", asks.getL2(10));
             })
         })
     })

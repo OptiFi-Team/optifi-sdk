@@ -9,11 +9,12 @@ import {signAndSendTransaction, TransactionResultType} from "../utils/transactio
 import {getSerumMarket} from "../utils/serum";
 
 export default function placeOrder(context: Context,
-                           marketAddress: PublicKey,
-                           side: OrderSide,
-                           limit: number,
-                           maxCoinQty: number,
-                           maxPcQty: number): Promise<InstructionResult<TransactionSignature>> {
+    marketAddress: PublicKey,
+    side: OrderSide,
+    limit: number,
+    maxCoinQty: number,
+    maxPcQty: number
+): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         formOrderContext(context, marketAddress, side).then((orderContext) => {
             let placeOrderTx = context.program.transaction.placeOrder(

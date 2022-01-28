@@ -13,6 +13,7 @@ import {findOptifiMarketMintAuthPDA} from "./pda";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount} from "./token";
 import {getSerumMarket} from "./serum";
+import { BN } from "@project-serum/anchor";
 
 export interface OrderAccountContext {
     exchange: PublicKey,
@@ -111,6 +112,36 @@ export function formOrderContext(context: Context,
                         }
                     }).catch((err) => reject(err));
                 }).catch((err) => reject(err));
+            }).catch((err) => reject(err));
+        }).catch((err) => reject(err));
+    })
+}
+
+
+interface Order {
+    orderId: BN;
+    openOrdersAddress: PublicKey;
+    openOrdersSlot: number;
+    price: number;
+    priceLots: BN;
+    size: number;
+    feeTier: number;
+    sizeLots: BN;
+    side: 'buy' | 'sell';
+    clientId?: BN;
+}
+
+export function getOrdersOnMarket(context: Context,
+    marketId: PublicKey): Promise<Order[]> {
+    return new Promise((resolve, reject) => {
+        findUserAccount(context).then(([userAccount, _]) => {
+            context.program.account.optifiMarket.fetch(marketId).then((marketRes) => {
+                let optifiMarket = marketRes as OptifiMarket;
+                getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {
+                    serumMarket.loadOrdersForOwner(context.connection, userAccount).then(orders => {
+                        resolve(orders);
+                    });
+                });
             }).catch((err) => reject(err));
         }).catch((err) => reject(err));
     })
