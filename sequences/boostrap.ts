@@ -1,24 +1,22 @@
-import BN from 'bn.js';
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {Exchange, OptifiMarket} from "../types/optifi-exchange-types";
-import {initialize, initializeSerumMarket, initializeUserAccount} from "../index";
+import {initialize, initializeSerumMarket} from "../index";
 import {
     createUserAccountIfNotExist,
     exchangeAccountExists,
     findExchangeAccount,
-    findInstrument,
     findUserAccount,
-    userAccountExists
 } from "../utils/accounts";
 import {SERUM_MARKETS} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {PublicKey, PublicKeyInitData, TransactionSignature} from "@solana/web3.js";
+import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import {createInstruments} from "./createInstruments";
 import {createNextOptifiMarket, createOptifiMarketWithIdx} from "../instructions/createOptifiMarket";
-import {readJsonFile} from "../utils/generic";
-import base58 = require("bs58");
+import {readJsonFile, sleep} from "../utils/generic";
 import {findOptifiMarkets} from "../utils/market";
+import createAMMAccounts from "./createAMMAccounts";
+import initializeAmmOnMarkets from "./initializeAMMOnMarkets";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -122,6 +120,73 @@ function createOrRetreiveSerumMarkets(context: Context): Promise<PublicKey[]> {
     })
 }
 
+function createOptifiMarkets(context: Context,
+                             marketKeys: PublicKey[],
+                             instrumentKeys: PublicKey[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+        // Create the optifi markets
+        const createAllMarkets = async () => {
+            let existingMarkets = await findOptifiMarkets(context);
+            let inUseInstruments: Set<string> = new Set(existingMarkets.map((m) => m[0].instrument.toString()));
+            let inUseSerumMarkets: Set<string> = new Set(existingMarkets.map((m) => m[0].serumMarket.toString()));
+            let currIdx: number = 0;
+            for (let i = 0; i < marketKeys.length; i++) {
+                let serumMarketKey = marketKeys[i];
+                let initialInstrumentAddress = instrumentKeys[i];
+                let marketInUse = inUseSerumMarkets.has(serumMarketKey.toString());
+                let instrumentInUse = inUseInstruments.has(initialInstrumentAddress.toString());
+                if (marketInUse || instrumentInUse) {
+                    if (marketInUse && instrumentInUse) {
+                        console.debug(`Market ${serumMarketKey.toString()} and instrument ${initialInstrumentAddress.toString()} have already been used - skipping...`);
+                        continue;
+                    } else {
+                        throw new Error(`Either market ${serumMarketKey.toString()} or instrument 
+                                                ${initialInstrumentAddress.toString()} has already been used, but not together - most likely cause is debug env variables are out of sync with exchange state. 
+                                                If possible, recommended to use new exchange UUID.`);
+                    }
+                }
+                if (currIdx !== 0) {
+                    // Wait to create subsequent markets, beacuse the data is depent on previous markets,
+                    // and there are validation delays
+                    console.log("Waiting 7 seconds before next market...");
+                    await new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve(true)
+                        }, 7 * 1000)
+                    })
+                    console.log("Finished, waiting, continuing market creation...");
+                }
+                let marketCreationFunction = (currIdx === 0 ? createNextOptifiMarket(context,
+                        serumMarketKey,
+                        initialInstrumentAddress) :
+                    createOptifiMarketWithIdx(
+                        context,
+                        serumMarketKey,
+                        initialInstrumentAddress,
+                        currIdx+1
+                    ))
+                let creationRes = await marketCreationFunction;
+                if (creationRes.successful) {
+                    let [txSig, createdIdx] = creationRes.data as [TransactionSignature, number];
+                    console.log("Successfully created market with idx ", createdIdx, txSig);
+                    currIdx = createdIdx;
+                } else {
+                    console.error(creationRes);
+                    throw new Error(`Couldn't create market with serum key ${serumMarketKey.toString()}, 
+                                                instrument address ${initialInstrumentAddress.toString()}`);
+                }
+            }
+        }
+        createAllMarkets().then(() => {
+            console.log("Finished market promises");
+            resolve();
+        }).catch((err) => {
+            console.error(err);
+            reject(err);
+        });
+    })
+}
+
 /**
  * Bootstrap the optifi exchange entirely, creating new instruments, etc.
  *
@@ -145,70 +210,32 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                         // as are specified in the constants
                         createOrRetreiveSerumMarkets(context).then((marketKeys) => {
                             //console.log("String serum market keys are, ", marketKeys.map((i) => i.toString()))
-
-                            createOrFetchInstruments(context).then((res) => {
+                            console.log("Creating instruments")
+                            createOrFetchInstruments(context).then((instrumentKeys) => {
+                                console.log("Creating markets");
                                 //console.log("Created instruments ", JSON.stringify(res.map((i) => i.toString())));
                                 //process.stdout.write(JSON.stringify(res.map((i) => i.toString())));
-
-                                // Create the optifi markets
-                                const createAllMarkets = async () => {
-                                    let existingMarkets = await findOptifiMarkets(context);
-                                    let inUseInstruments: Set<string> = new Set(existingMarkets.map((m) => m[0].instrument.toString()));
-                                    let inUseSerumMarkets: Set<string> = new Set(existingMarkets.map((m) => m[0].serumMarket.toString()));
-                                    let currIdx: number = 0;
-                                    for (let i = 0; i < marketKeys.length; i++) {
-                                        let serumMarketKey = marketKeys[i];
-                                        let initialInstrumentAddress = res[i];
-                                        let marketInUse = inUseSerumMarkets.has(serumMarketKey.toString());
-                                        let instrumentInUse = inUseInstruments.has(initialInstrumentAddress.toString());
-                                        if (marketInUse || instrumentInUse) {
-                                            if (marketInUse && instrumentInUse) {
-                                                console.debug(`Market ${serumMarketKey.toString()} and instrument ${initialInstrumentAddress.toString()} have already been used - skipping...`);
-                                                continue;
-                                            } else {
-                                                throw new Error(`Either market ${serumMarketKey.toString()} or instrument 
-                                                ${initialInstrumentAddress.toString()} has already been used, but not together - most likely cause is debug env variables are out of sync with exchange state. 
-                                                If possible, recommended to use new exchange UUID.`);
-                                            }
-                                        }
-                                        if (currIdx !== 0) {
-                                            // Wait to create subsequent markets, beacuse the data is depent on previous markets,
-                                            // and there are validation delays
-                                            console.log("Waiting 5 seconds before next market...");
-                                            await new Promise((resolve) => {
-                                                setTimeout(() => {
-                                                    resolve(true)
-                                                }, 5 * 1000)
-                                            })
-                                            console.log("Finished, waiting, continuing market creation...");
-                                        }
-                                        let marketCreationFunction = (currIdx === 0 ? createNextOptifiMarket(context,
-                                            serumMarketKey,
-                                            initialInstrumentAddress) :
-                                            createOptifiMarketWithIdx(
-                                                context,
-                                                serumMarketKey,
-                                                initialInstrumentAddress,
-                                                currIdx+1
-                                            ))
-                                        let creationRes = await marketCreationFunction;
-                                        if (creationRes.successful) {
-                                            let [txSig, createdIdx] = creationRes.data as [TransactionSignature, number];
-                                            console.log("Successfully created market with idx ", createdIdx, txSig);
-                                            currIdx = createdIdx;
-                                        } else {
-                                            console.error(creationRes);
-                                            throw new Error(`Couldn't create market with serum key ${serumMarketKey.toString()}, 
-                                                instrument address ${initialInstrumentAddress.toString()}`);
-                                        }
-                                    }
-                                }
-                                createAllMarkets().then(() => {
-                                    console.log("Finished market promises")
+                                createOptifiMarkets(context,
+                                    marketKeys,
+                                    instrumentKeys
+                                ).then(async () => {
+                                    console.log("Waiting 5 seconds to create amm accounts");
+                                    await sleep(5000);
+                                    console.log("Creating AMM accounts");
+                                    createAMMAccounts(context).then(async () => {
+                                        console.log("Created AMM accounts, waiting 10 seconds before initializing them on the markets");
+                                        await sleep(10 * 1000);
+                                        initializeAmmOnMarkets(context).then((res) => {
+                                            console.log("Initialized AMM on markets! Bootstrapping complete");
+                                        }).catch((err) => {
+                                            console.error(err);
+                                            reject(err);
+                                        })
+                                    })
                                 }).catch((err) => {
                                     console.error(err);
                                     reject(err);
-                                });
+                                })
                             })
 
                         }).catch((err) => {

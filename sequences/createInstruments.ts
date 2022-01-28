@@ -23,7 +23,6 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
     let start = new Date();
 
     return new Promise((resolve, reject) => {
-        let signatures: TransactionSignature[] = [];
         let instrumentsToCreate: InstrumentContext[] = [];
         let instrumentKeys: PublicKey[] = [];
 

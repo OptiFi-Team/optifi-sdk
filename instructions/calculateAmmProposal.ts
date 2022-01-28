@@ -2,7 +2,7 @@ import Context from "../types/context";
 import {PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature} from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import {findExchangeAccount, findOracleAccountFromAsset, OracleAccountType} from "../utils/accounts";
-import {Amm} from "../types/optifi-exchange-types";
+import {AmmAccount} from "../types/optifi-exchange-types";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 
@@ -10,7 +10,7 @@ export default function calculateAmmProposal(context: Context,
                                              ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            context.program.account.amm.fetch(ammAddress).then((ammRes) => {
+            context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                 // @ts-ignore
                 let amm = ammRes as Amm;
 

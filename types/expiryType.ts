@@ -1,5 +1,5 @@
 enum ExpiryType {
-    Standard = 1,
+    Standard = 0,
     Perpetual = 1
 }
 

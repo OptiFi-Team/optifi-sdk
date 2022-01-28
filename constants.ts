@@ -54,7 +54,7 @@ export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
     ],
     // Futures
     2: [
-        ExpiryType.Perpetual
+        //ExpiryType.Perpetual
     ]
 }
 

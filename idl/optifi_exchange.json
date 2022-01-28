@@ -1990,7 +1990,7 @@
   ],
   "accounts": [
     {
-      "name": "AMM",
+      "name": "AmmAccount",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2082,9 +2082,7 @@
         "fields": [
           {
             "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
+            "type": "u8"
           },
           {
             "name": "instrumentType",

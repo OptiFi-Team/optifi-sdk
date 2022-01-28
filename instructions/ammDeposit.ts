@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import {findExchangeAccount, findUserAccount} from "../utils/accounts";
-import {Amm} from "../types/optifi-exchange-types";
+import {AmmAccount} from "../types/optifi-exchange-types";
 import {getAmmLiquidityAuthPDA} from "../utils/pda";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
@@ -15,9 +15,9 @@ export default function ammDeposit(context: Context,
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findUserAccount(context).then(([userAccountAddress, _]) => {
-                context.program.account.amm.fetch(ammAddress).then((ammRes) => {
+                context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                     // @ts-ignore
-                    let amm = ammRes as Amm;
+                    let amm = ammRes as AmmAccount;
                     findAssociatedTokenAccount(context, amm.quoteTokenMint).then(([userQuoteTokenVault, _]) => {
                         findAssociatedTokenAccount(context, amm.lpTokenMint).then(([userLpTokenVault, _]) => {
                             getAmmLiquidityAuthPDA(context).then(([liquidityAuthPDA, _]) => {

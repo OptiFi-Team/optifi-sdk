@@ -54,7 +54,6 @@ export function initializeChain(context: Context,
                         })
                 )
             }
-            let txPromises: Promise<void>[] = [];
             let doCreate = async () => {
                 for (let i = 0; i < STRIKE_LADDER_SIZE; i ++) {
                     console.log("Creating instrument ", i);

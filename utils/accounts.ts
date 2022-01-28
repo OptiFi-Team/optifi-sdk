@@ -20,7 +20,7 @@ import {ExpiryType as OptifiExpiryType} from '../types/optifi-exchange-types';
 import {
     dateToAnchorTimestamp,
     dateToAnchorTimestampBuffer, expiryTypeToNumber,
-    instrumentTypeToNumber,
+    instrumentTypeToNumber, numberToOptifiAsset,
     optifiAssetToNumber
 } from "./generic";
 import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
@@ -239,7 +239,7 @@ export function findOracleAccountFromInstrument(context: Context,
              // @ts-ignore
              let chain = chainRes as Chain;
              try {
-                 resolve(findOracleAccountFromAsset(context, chain.asset, oracleAccountType))
+                 resolve(findOracleAccountFromAsset(context, numberToOptifiAsset(chain.asset), oracleAccountType))
              } catch (e) {
                  console.error(e);
                  reject(e);

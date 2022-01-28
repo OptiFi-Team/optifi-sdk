@@ -2,7 +2,7 @@ import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import {findExchangeAccount, getDexOpenOrders} from "../utils/accounts";
-import {Amm, OptifiMarket} from "../types/optifi-exchange-types";
+import {AmmAccount, OptifiMarket} from "../types/optifi-exchange-types";
 import {SERUM_DEX_PROGRAM_ID} from "../constants";
 import {findInstrumentIndexFromAMM} from "../utils/amm";
 import {findAssociatedTokenAccount} from "../utils/token";
@@ -17,9 +17,9 @@ export default function syncPositions(context: Context,
             context.program.account.market.fetch(marketAddress)
                 .then((marketRes) => {
                     let optifiMarket = marketRes as OptifiMarket;
-                    context.program.account.amm.fetch(ammAddress).then((ammRes) => {
+                    context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                         // @ts-ignore
-                        let amm = ammRes as Amm;
+                        let amm = ammRes as AmmAccount;
                         findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, ammAddress).then(([ammLongTokenVault, _]) => {
                             findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammAddress).then(([ammShortTokenVault, _]) => {
                                 getDexOpenOrders(context, optifiMarket.serumMarket, ammAddress).then(([ammOpenOrders, _]) => {

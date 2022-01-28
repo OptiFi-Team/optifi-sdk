@@ -125,3 +125,16 @@ export function numberToOptifiAsset(asset: number): OptifiAsset {
             throw new Error(`Unrecognized asset number ${asset}`)
     }
 }
+
+/**
+ * Small helper function to wait for `time` milliseconds - useful because often the on chain data needs to be validated before it's available
+ *
+ * @param time Amount of time to sleep for, in milliseconds
+ */
+export function sleep(time: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, time)
+    })
+}

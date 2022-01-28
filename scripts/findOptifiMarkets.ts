@@ -5,6 +5,8 @@ import {Chain} from "../types/optifi-exchange-types";
 import {getSerumMarketPrice} from "../utils/serum";
 
 
+let seenAssets = new Set();
+
 initializeContext().then((context) => {
     findOptifiMarkets(context).then(async (res) => {
         console.log(`Found ${res.length} optifi markets - `);
@@ -13,18 +15,20 @@ initializeContext().then((context) => {
                 context, market[1].toString(),
                 SolanaEntityType.Account)
             );
+            console.log("Instrument address is ", market[0].instrument.toString());
             await getSerumMarketPrice(context, market[0].serumMarket).then((marketPrice) => {
                 console.log("Market price is ", marketPrice);
             }).catch((err) => console.error(err));
 
             await context.program.account.chain.fetch(market[0].instrument).then((instrumentRes) => {
-                console.log("Instruemnt res asset ", instrumentRes.asset);
                 // @ts-ignore
                 let chain = instrumentRes as Chain;
+                seenAssets.add(instrumentRes.asset);
                 console.log("Chain ", chain);
                 console.log(new Date(chain.expiryDate.toNumber() * 1000).toLocaleDateString());
             })
         }
+        console.log("Seen assets - ", seenAssets);
     }).catch((err) => {
         console.error(err);
     })
