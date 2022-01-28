@@ -1,23 +1,19 @@
-import BN from 'bn.js';
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import {Exchange, OptifiMarket} from "../types/optifi-exchange-types";
-import {initialize, initializeSerumMarket, initializeUserAccount} from "../index";
+import {initialize, initializeSerumMarket} from "../index";
 import {
     createUserAccountIfNotExist,
     exchangeAccountExists,
     findExchangeAccount,
-    findInstrument,
     findUserAccount,
-    userAccountExists
 } from "../utils/accounts";
 import {SERUM_MARKETS} from "../constants";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {PublicKey, PublicKeyInitData, TransactionSignature} from "@solana/web3.js";
+import {PublicKey, TransactionSignature} from "@solana/web3.js";
 import {createInstruments} from "./createInstruments";
 import {createNextOptifiMarket, createOptifiMarketWithIdx} from "../instructions/createOptifiMarket";
 import {readJsonFile, sleep} from "../utils/generic";
-import base58 = require("bs58");
 import {findOptifiMarkets} from "../utils/market";
 import createAMMAccounts from "./createAMMAccounts";
 import initializeAmmOnMarkets from "./initializeAMMOnMarkets";
@@ -227,8 +223,8 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                                     await sleep(5000);
                                     console.log("Creating AMM accounts");
                                     createAMMAccounts(context).then(async () => {
-                                        console.log("Created AMM accounts, waiting 5 seconds before initializing them on the markets");
-                                        await sleep(5000);
+                                        console.log("Created AMM accounts, waiting 10 seconds before initializing them on the markets");
+                                        await sleep(10 * 1000);
                                         initializeAmmOnMarkets(context).then((res) => {
                                             console.log("Initialized AMM on markets! Bootstrapping complete");
                                         }).catch((err) => {

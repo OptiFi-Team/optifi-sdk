@@ -4,14 +4,6 @@ import initializeAmmOnMarkets from "../sequences/initializeAMMOnMarkets";
 import {initializeContext} from "../index";
 
 initializeContext().then((context) => {
-    /*
-    initializeAmmOnMarkets(context).then((res) => {
-        console.log("Initialized AMM on markets! Bootstrapping complete");
-    }).catch((err) => {
-        console.error(err);
-    })
-
-     */
 
     createAMMAccounts(context).then(async () => {
         console.log("Created AMM accounts, waiting 10 seconds before initializing them on the markets");
@@ -22,6 +14,7 @@ initializeContext().then((context) => {
             console.error(err);
         })
     })
+
 
 
 })

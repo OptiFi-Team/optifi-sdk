@@ -54,7 +54,7 @@ export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
     ],
     // Futures
     2: [
-        ExpiryType.Perpetual
+        //ExpiryType.Perpetual
     ]
 }
 
@@ -110,7 +110,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com" : "111132",
+    "https://api.devnet.solana.com" : "111166",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
