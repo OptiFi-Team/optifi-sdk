@@ -174,6 +174,7 @@ export function initializeUserIfNotInitializedOnMarket(context: Context,
                             res.data as string,
                             SolanaEntityType.Transaction)
                         );
+                        resolve()
                     } else {
                         console.error(res);
                         reject(res)
