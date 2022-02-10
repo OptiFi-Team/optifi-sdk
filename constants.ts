@@ -2,6 +2,7 @@ import Asset from "./types/asset";
 import InstrumentType from "./types/instrumentType";
 import ExpiryType from "./types/expiryType";
 import MaturityType from "./types/maturityType";
+import { Duration } from "./types/optifi-exchange-types";
 
 export enum SolanaEndpoint {
     Mainnet = "https://api.mainnet-beta.solana.com",
@@ -34,6 +35,9 @@ export const AMM_TRADE_CAPACITY = 25;
 
 // How many assets are supported
 export const SUPPORTED_ASSETS: Asset[] = [Asset.Ethereum, Asset.Bitcoin];
+
+// How many duration are supported
+export const SUPPORTED_DURATION: Duration[] = [Duration.Weekly, Duration.Monthly];
 
 //How many instrument types are supported
 export const SUPPORTED_INSTRUMENTS: InstrumentType[] = [InstrumentType.Put, InstrumentType.Call, InstrumentType.Future];
@@ -109,14 +113,14 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com" : "111167",
+    "https://api.devnet.solana.com": "111170",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
 
 export const SWITCHBOARD: EndpointConstant = {
     "https://api.mainnet-beta.solana.com": {
-        SWITCHBOARD_BTC_USD:  "74YzQPGUT9VnjrBz8MuyDLKgKpbDqGot5xZJvTtMi6Ng",
+        SWITCHBOARD_BTC_USD: "74YzQPGUT9VnjrBz8MuyDLKgKpbDqGot5xZJvTtMi6Ng",
         SWITCHBOARD_BTC_IV: "CX1PvW4qUDy4PPq8egnMVCbVJt8TcPCt7WCZuwmvCfo7",
         SWITCHBOARD_ETH_USD: "QJc2HgGhdtW4e7zjvLB1TGRuwEpTre2agU5Lap2UqYz",
         SWITCHBOARD_ETH_IV: "4AGPMUEfBCSNqVd4Y6veHAep6VPtrkMa89rBhPqMYegz",

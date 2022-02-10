@@ -1,6 +1,6 @@
 import Context from "../types/context";
-import {PublicKey, TransactionSignature} from "@solana/web3.js";
-import {generateExpirations} from "../utils/chains";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { generateExpirations } from "../utils/chains";
 import {
     SECONDS_IN_YEAR,
     SUPPORTED_ASSETS,
@@ -9,8 +9,9 @@ import {
 } from "../constants";
 import InstrumentType from "../types/instrumentType";
 import ExpiryType from "../types/expiryType";
-import {initializeChain, InstrumentContext} from "../instructions/initializeChain";
-import {findInstrument} from "../utils/accounts";
+import { initializeChain, InstrumentContext } from "../instructions/initializeChain";
+import { findInstrument } from "../utils/accounts";
+import { Duration } from "../types/optifi-exchange-types";
 
 
 /**
@@ -36,7 +37,7 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                         case ExpiryType.Standard:
                             for (let maturity of SUPPORTED_MATURITIES) {
                                 let expirationDate = expirations[maturity];
-                                let duration = (expirationDate.getTime() - new Date().getTime());
+                                let duration = Duration.Weekly; // TODO
                                 instrumentsToCreate.push({
                                     asset: asset,
                                     instrumentType: instrumentType,
@@ -48,10 +49,12 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                             }
                             break;
                         case ExpiryType.Perpetual:
+                            let duration = Duration.Weekly; // TODO
+
                             instrumentsToCreate.push({
                                 asset: asset,
                                 instrumentType: instrumentType,
-                                duration: SECONDS_IN_YEAR,
+                                duration: duration,
                                 start: start,
                                 expiryType: expiryType
                             })
@@ -74,7 +77,7 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                         }
                     }).catch((err) => {
                         console.error("Got error trying to create instrument", err);
-                })
+                    })
             }
         }
 
@@ -88,6 +91,6 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
             }).catch((err) => {
                 console.error(err);
                 reject(err);
-        })
+            })
     })
 }

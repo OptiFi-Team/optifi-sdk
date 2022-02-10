@@ -1,11 +1,11 @@
 import * as anchor from "@project-serum/anchor";
-import {Connection, Keypair, PublicKey} from "@solana/web3.js";
+import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import Context from "./types/context";
-import {OPTIFI_EXCHANGE_ID, SolanaEndpoint} from "./constants";
-import {isWalletProvider, readJsonFile} from './utils/generic';
-import {OptifiExchangeIDL} from './types/optifi-exchange-types';
+import { OPTIFI_EXCHANGE_ID, SolanaEndpoint } from "./constants";
+import { isWalletProvider, readJsonFile } from './utils/generic';
+import { OptifiExchangeIDL } from './types/optifi-exchange-types';
 import optifiExchange from './idl/optifi_exchange.json';
-import {MathWallet, SlopeWallet, SolongWallet, SolWindow, WalletProvider} from './types/solanaTypes';
+import { MathWallet, SlopeWallet, SolongWallet, SolWindow, WalletProvider } from './types/solanaTypes';
 import WalletType from "./types/walletType";
 
 //instructions
@@ -35,10 +35,10 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
         let walletWrapper: anchor.Wallet | SolongWallet | MathWallet | SlopeWallet = solWindow.solana as unknown as anchor.Wallet;
 
         // Wallet adapter or injected wallet setup
-        if(wallet.name === 'Slope' && !!solWindow.Slope) {
+        if (wallet.name === 'Slope' && !!solWindow.Slope) {
             walletType = WalletType.Slope;
             walletWrapper = new solWindow.Slope() as unknown as SlopeWallet;
-            walletWrapper.connect().then(({data}) => {
+            walletWrapper.connect().then(({ data }) => {
                 if (data.publicKey) {
                     // @ts-ignore
                     (walletWrapper as SlopeWallet).publicKey = new anchor.web3.PublicKey(data.publicKey);
@@ -58,9 +58,9 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
             solWindow.solong.selectAccount().then((key) => {
                 (walletWrapper as SolongWallet).publicKey = new anchor.web3.PublicKey(key);
                 // @ts-ignore
-                walletWrapper.on = (action: string, callback: Function) => {if (callback) callback()};
+                walletWrapper.on = (action: string, callback: Function) => { if (callback) callback() };
                 // @ts-ignore
-                walletWrapper.connect = (action: string, callback: Function) => {if (callback) callback()};
+                walletWrapper.connect = (action: string, callback: Function) => { if (callback) callback() };
                 resolve({
                     walletType: walletType,
                     anchorWallet: walletWrapper as unknown as anchor.Wallet
@@ -72,9 +72,9 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
             solWindow.solana.getAccount().then((key) => {
                 (walletWrapper as MathWallet).publicKey = new anchor.web3.PublicKey(key);
                 // @ts-ignore
-                walletWrapper.on = (action: string, callback: any) => {if (callback) callback()};
+                walletWrapper.on = (action: string, callback: any) => { if (callback) callback() };
                 // @ts-ignore
-                walletWrapper.connect = (action: string, callback: any) => {if (callback) callback()};
+                walletWrapper.connect = (action: string, callback: any) => { if (callback) callback() };
                 resolve({
                     walletType: walletType,
                     anchorWallet: walletWrapper as unknown as anchor.Wallet
@@ -117,9 +117,9 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
  * @param endpoint The Solana cluster to connect to. Devnet by default
  */
 function initializeContext(wallet?: string | WalletProvider,
-                           optifiProgramId?: string,
-                           customExchangeUUID?: string,
-                           endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<Context> {
+    optifiProgramId?: string,
+    customExchangeUUID?: string,
+    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<Context> {
     let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
     return new Promise((resolve, reject) => {
 
@@ -132,7 +132,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 const provider = new anchor.Provider(connection,
                     walletRes.anchorWallet,
                     anchor.Provider.defaultOptions());
-                const program = new anchor.Program(optifiExchange as OptifiExchangeIDL,
+                const program = new anchor.Program(optifiExchange as unknown as OptifiExchangeIDL,
                     (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)),
                     provider)
                 resolve({
@@ -145,7 +145,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 })
             }).catch((err) => reject(err))
 
-        // Otherwise, try to read in a keypair from an environment variable, or a specified string
+            // Otherwise, try to read in a keypair from an environment variable, or a specified string
         } else {
             let keypair: Keypair;
             if (wallet === undefined) {
@@ -155,7 +155,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 // The wallet was provided as a path
                 keypair = Keypair.fromSecretKey(new Uint8Array(readJsonFile<any>(wallet)));
             }
-            const idl = optifiExchange as OptifiExchangeIDL;
+            const idl = optifiExchange as unknown as OptifiExchangeIDL;
             const connection = new Connection(endpoint);
             const walletWrapper = new anchor.Wallet(keypair);
             const provider = new anchor.Provider(connection, walletWrapper, anchor.Provider.defaultOptions());
@@ -173,7 +173,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 exchangeUUID: uuid
             })
         }
-    })   
+    })
 }
 
-export {initializeContext, deposit, withdraw, initialize, initializeSerumMarket, initializeUserAccount }
+export { initializeContext, deposit, withdraw, initialize, initializeSerumMarket, initializeUserAccount }

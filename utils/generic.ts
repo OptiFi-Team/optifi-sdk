@@ -1,9 +1,10 @@
 import fs from "fs";
-import {WalletProvider} from "../types/solanaTypes";
+import { WalletProvider } from "../types/solanaTypes";
 import * as anchor from "@project-serum/anchor";
 import Asset from "../types/asset";
 import {
     Asset as OptifiAsset,
+    Duration,
     ExpiryType as OptifiExpiryType,
     InstrumentType as OptifiInstrumentType
 } from '../types/optifi-exchange-types';
@@ -63,6 +64,17 @@ export function optifiAssetToNumber(asset: OptifiAsset): number {
             return 1;
         case OptifiAsset.USDC:
             return 2;
+        default:
+            return -1;
+    }
+}
+
+export function optifiDurationToNumber(duration: Duration): number {
+    switch (duration) {
+        case Duration.Weekly:
+            return 0;
+        case Duration.Monthly:
+            return 1;
         default:
             return -1;
     }
