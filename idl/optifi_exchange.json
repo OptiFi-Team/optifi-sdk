@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.0.0",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -324,6 +324,67 @@
       ]
     },
     {
+      "name": "initAmmOnOptifiMarket",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumOpenOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarketAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "updateOptifiMarket",
       "accounts": [
         {
@@ -365,7 +426,7 @@
         {
           "name": "user",
           "isMut": false,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "userAccount",
@@ -515,7 +576,7 @@
         {
           "name": "user",
           "isMut": false,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "userAccount",
@@ -669,7 +730,7 @@
         {
           "name": "user",
           "isMut": false,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "userAccount",
@@ -1454,12 +1515,7 @@
         },
         {
           "name": "amm",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "quoteTokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1489,13 +1545,13 @@
           "isSigner": false
         },
         {
-          "name": "quoteTokenVault",
-          "isMut": false,
+          "name": "ammUsdcVault",
+          "isMut": true,
           "isSigner": false
         },
         {
-          "name": "ammUsdcVault",
-          "isMut": true,
+          "name": "ammAuthority",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1564,11 +1620,6 @@
           "isSigner": false
         },
         {
-          "name": "orderPayerTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "instrumentTokenMintAuthorityPda",
           "isMut": false,
           "isSigner": false
@@ -1607,6 +1658,10 @@
         {
           "name": "instrumentIndex",
           "type": "u16"
+        },
+        {
+          "name": "ammAuthorityBump",
+          "type": "u8"
         }
       ]
     },
@@ -1995,6 +2050,10 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "optifiExchange",
+            "type": "publicKey"
+          },
+          {
             "name": "ammIdx",
             "type": "u8"
           },
@@ -2071,6 +2130,20 @@
           {
             "name": "totalLiquidity",
             "type": "u64"
+          },
+          {
+            "name": "duration",
+            "type": {
+              "defined": "Duration"
+            }
+          },
+          {
+            "name": "expiryDate",
+            "type": "u64"
+          },
+          {
+            "name": "contractSize",
+            "type": "u64"
           }
         ]
       }
@@ -2100,7 +2173,9 @@
           },
           {
             "name": "duration",
-            "type": "u64"
+            "type": {
+              "defined": "Duration"
+            }
           },
           {
             "name": "start",
@@ -2121,7 +2196,7 @@
             "type": "bool"
           },
           {
-            "name": "contractSizePercent",
+            "name": "contractSize",
             "type": "u64"
           }
         ]
@@ -2331,6 +2406,10 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "optifiExchange",
+            "type": "publicKey"
+          },
+          {
             "name": "owner",
             "type": "publicKey"
           },
@@ -2434,7 +2513,7 @@
           },
           {
             "name": "duration",
-            "type": "u64"
+            "type": "u8"
           },
           {
             "name": "start",
@@ -2449,7 +2528,7 @@
             "type": "publicKey"
           },
           {
-            "name": "contractSizePercent",
+            "name": "contractSize",
             "type": "u64"
           },
           {
@@ -2597,6 +2676,14 @@
           {
             "name": "numInstruments",
             "type": "u8"
+          },
+          {
+            "name": "duration",
+            "type": "u8"
+          },
+          {
+            "name": "contractSize",
+            "type": "u64"
           }
         ]
       }
@@ -2901,6 +2988,20 @@
       }
     },
     {
+      "name": "Duration",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Weekly"
+          },
+          {
+            "name": "Monthly"
+          }
+        ]
+      }
+    },
+    {
       "name": "InstrumentType",
       "type": {
         "kind": "enum",
@@ -3042,137 +3143,137 @@
   ],
   "errors": [
     {
-      "code": 6000,
+      "code": 300,
       "name": "AccountCannotInit",
       "msg": "the user account cannot be initialized"
     },
     {
-      "code": 6001,
+      "code": 301,
       "name": "InvalidAccount",
       "msg": "the user account is invalid"
     },
     {
-      "code": 6002,
+      "code": 302,
       "name": "UnauthorizedAccount",
       "msg": "the account is not owned by the payer"
     },
     {
-      "code": 6003,
+      "code": 303,
       "name": "InsufficientFund",
       "msg": "the account balance is insufficient"
     },
     {
-      "code": 6004,
+      "code": 304,
       "name": "TokenTransferFailed",
       "msg": "Token transfer failed"
     },
     {
-      "code": 6005,
+      "code": 305,
       "name": "UnauthorizedTokenVault",
       "msg": "the token vault is not owned by the payer"
     },
     {
-      "code": 6006,
+      "code": 306,
       "name": "InvalidPDA",
       "msg": "the provided pda is invalid"
     },
     {
-      "code": 6007,
+      "code": 307,
       "name": "UuidMustBeExactly6Length",
       "msg": "Uuid must be exactly of 6 length"
     },
     {
-      "code": 6008,
+      "code": 308,
       "name": "NumericalOverflowError",
       "msg": "Numerical overflow error!"
     },
     {
-      "code": 6009,
+      "code": 309,
       "name": "InsufficientMargin",
       "msg": "Insufficient Margin!"
     },
     {
-      "code": 6010,
+      "code": 310,
       "name": "IncorrectCoinMint",
       "msg": "Incorrect coin mint!"
     },
     {
-      "code": 6011,
+      "code": 311,
       "name": "CannotSettleFundBeforeMarketsStopped",
       "msg": "Cannot settle fund befor markets have been stopped!"
     },
     {
-      "code": 6012,
+      "code": 312,
       "name": "IncorrectOracleAccount",
       "msg": "Incorrect oracle account"
     },
     {
-      "code": 6013,
+      "code": 313,
       "name": "WrongState",
       "msg": "the amm state is wrong"
     },
     {
-      "code": 6014,
+      "code": 314,
       "name": "WrongInstrument",
       "msg": "the instrument has already been done"
     },
     {
-      "code": 6015,
+      "code": 315,
       "name": "NoEnoughOrdersInProposal",
       "msg": "no enough orders in proposal to execute"
     },
     {
-      "code": 6016,
+      "code": 316,
       "name": "CannotRemoveInstrumentForAMM",
-      "msg": "can remove the instrument for amm"
+      "msg": "cannot remove the instrument for amm"
     },
     {
-      "code": 6017,
+      "code": 317,
       "name": "DuplicateInstrumentForAMM",
-      "msg": "can add the instrument for amm due to duplication"
+      "msg": "cannot add the instrument for amm due to duplication"
     },
     {
-      "code": 6018,
+      "code": 318,
       "name": "UserNotInLiquidation",
       "msg": "User is not in liquidation"
     },
     {
-      "code": 6019,
+      "code": 319,
       "name": "UserAlreadyInLiquidation",
       "msg": "User was already in liquidation"
     },
     {
-      "code": 6020,
+      "code": 320,
       "name": "InstrumentAlreadyRegisteredForLiquidation",
       "msg": "Instrument was already registered for liquidation"
     },
     {
-      "code": 6021,
+      "code": 321,
       "name": "CannotPlaceOrdersInLiquidation",
       "msg": "Users cannot place manual orders while their accounts are in liquidation"
     },
     {
-      "code": 6022,
+      "code": 322,
       "name": "PoolNotCentralUSDCPool",
       "msg": "Provided USDC pool is not central pool"
     },
     {
-      "code": 6023,
+      "code": 323,
       "name": "InvalidSerumAuthority",
       "msg": "Invalid open orders market authority"
     },
     {
-      "code": 6024,
+      "code": 324,
       "name": "WithdrawRequestInvalid",
       "msg": "Only one withdraw request allowed at one time"
     },
     {
-      "code": 6025,
+      "code": 325,
       "name": "MMWithdrawNotInWindow",
       "msg": "Market maker withdraw outside of valid window"
     },
     {
-      "code": 6026,
+      "code": 326,
       "name": "WrongAsset",
       "msg": "Wrong asset"
     }

@@ -1,10 +1,10 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import {PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY} from "@solana/web3.js";
-import {findExchangeAccount, findInstrument, findOracleAccountFromAsset, OracleAccountType} from "../utils/accounts";
+import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
+import { findExchangeAccount, findInstrument, findOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
 import Asset from "../types/asset";
 import InstrumentType from "../types/instrumentType";
-import {STRIKE_LADDER_SIZE, SWITCHBOARD} from "../constants";
+import { STRIKE_LADDER_SIZE, SWITCHBOARD } from "../constants";
 import ExpiryType from "../types/expiryType";
 import {
     assetToOptifiAsset,
@@ -12,23 +12,25 @@ import {
     instrumentTypeToOptifiInstrumentType,
     optifiAssetToNumber,
     instrumentTypeToNumber,
-    expiryTypeToNumber
+    expiryTypeToNumber,
+    optifiDurationToNumber
 } from "../utils/generic";
 import * as anchor from "@project-serum/anchor";
-import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
-import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
+import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
+import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import { Duration } from "../types/optifi-exchange-types";
 
 export interface InstrumentContext {
     asset: Asset,
     instrumentType: InstrumentType,
-    duration: number,
+    duration: Duration,
     start: Date,
     expiryType: ExpiryType,
     expirationDate?: Date
 }
 
 export function initializeChain(context: Context,
-                                instrumentContext: InstrumentContext): Promise<InstructionResult<PublicKey[]>> {
+    instrumentContext: InstrumentContext): Promise<InstructionResult<PublicKey[]>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             console.log("Found exchange account ", exchangeAddress);
@@ -38,24 +40,24 @@ export function initializeChain(context: Context,
             console.log("Asset optifi is ", a);
             for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                 instrumentPromises.push(findInstrument(
-                        context,
-                        assetToOptifiAsset(instrumentContext.asset),
-                        instrumentTypeToOptifiInstrumentType(instrumentContext.instrumentType),
-                        expiryTypeToOptifiExpiryType(instrumentContext.expiryType),
-                        i,
-                        instrumentContext.expirationDate
-                    )
-                        .then((res) => {
-                            foundInstruments[i] = res
-                        })
-                        .catch((err) => {
-                            console.error("Got error trying to derive instrument address");
-                            reject(err);
-                        })
+                    context,
+                    assetToOptifiAsset(instrumentContext.asset),
+                    instrumentTypeToOptifiInstrumentType(instrumentContext.instrumentType),
+                    expiryTypeToOptifiExpiryType(instrumentContext.expiryType),
+                    i,
+                    instrumentContext.expirationDate
+                )
+                    .then((res) => {
+                        foundInstruments[i] = res
+                    })
+                    .catch((err) => {
+                        console.error("Got error trying to derive instrument address");
+                        reject(err);
+                    })
                 )
             }
             let doCreate = async () => {
-                for (let i = 0; i < STRIKE_LADDER_SIZE; i ++) {
+                for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                     console.log("Creating instrument ", i);
                     let instrument = foundInstruments[i];
                     let optifiAsset = assetToOptifiAsset(instrumentContext.asset);
@@ -65,11 +67,11 @@ export function initializeChain(context: Context,
                             asset: optifiAssetToNumber(optifiAsset),
                             instrumentType: instrumentTypeToNumber(instrumentTypeToOptifiInstrumentType(instrumentContext.instrumentType)),
                             expiryDate: dateToAnchorTimestamp(instrumentContext.expirationDate),
-                            duration: new anchor.BN(instrumentContext.duration),
+                            duration: optifiDurationToNumber(instrumentContext.duration),
                             start: dateToAnchorTimestamp(instrumentContext.start),
-                            authority: context.provider.wallet.publicKey,
-                            contractSizePercent: new anchor.BN(10),
                             expiryType: expiryTypeToNumber(expiryTypeToOptifiExpiryType(instrumentContext.expiryType)),
+                            authority: context.provider.wallet.publicKey,
+                            contractSize: new anchor.BN(0.01 * 10000),
                             instrumentIdx: i
                         },
                         {
@@ -104,7 +106,7 @@ export function initializeChain(context: Context,
                             console.error("Got error trying to sign and send chain instruction ", err);
                             reject(err);
                         })
-                    }
+                }
             }
             Promise.all(instrumentPromises).then(() => {
                 doCreate().then(() => {
