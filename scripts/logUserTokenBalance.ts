@@ -13,7 +13,7 @@ initializeContext().then((context) => {
             let userAccount = userAccountRes as UserAccount;
             // Get the token balance
             context.connection.getTokenAccountBalance(userAccount.userMarginAccountUsdc).then((tokAmount) => {
-                console.log(`User account balance - $${tokAmount.value.amount}`)
+                console.log(`User account balance - $${tokAmount.value.uiAmount}`)
             })
         })
     })
