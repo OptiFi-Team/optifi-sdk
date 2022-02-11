@@ -1,18 +1,18 @@
 import Context from "../types/context";
-import {PublicKey} from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import {Chain, Exchange, OptifiMarket} from "../types/optifi-exchange-types";
-import {findAccountWithSeeds, findExchangeAccount, findUserAccount} from "./accounts";
-import {OPTIFI_MARKET_PREFIX} from "../constants";
-import {findAssociatedTokenAccount} from "./token";
+import { Chain, Exchange, OptifiMarket } from "../types/optifi-exchange-types";
+import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
+import { OPTIFI_MARKET_PREFIX } from "../constants";
+import { findAssociatedTokenAccount } from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
-import {formatExplorerAddress, SolanaEntityType} from "./debug";
+import { formatExplorerAddress, SolanaEntityType } from "./debug";
 
 
 export function findOptifiMarketWithIdx(context: Context,
-                                         exchangeAddress: PublicKey,
-                                         idx: number): Promise<[PublicKey, number]> {
+    exchangeAddress: PublicKey,
+    idx: number): Promise<[PublicKey, number]> {
     return findAccountWithSeeds(context, [
         Buffer.from(OPTIFI_MARKET_PREFIX),
         exchangeAddress.toBuffer(),
@@ -74,7 +74,7 @@ export function findExpiredMarkets(context: Context): Promise<[OptifiMarket, Pub
                 context.program.account.chain.fetch(m[0].instrument).then((res) => {
                     // @ts-ignore
                     let chain = res as Chain;
-                    if (chain.expiryDate >= now) {
+                    if (chain.expiryDate <= now) {
                         expiredMarkets.push(m);
                     }
                     chainRes(chain);
@@ -86,9 +86,30 @@ export function findExpiredMarkets(context: Context): Promise<[OptifiMarket, Pub
     })
 }
 
+export function findValidMarkets(context: Context): Promise<[OptifiMarket, PublicKey][]> {
+    return new Promise((resolve, reject) => {
+        findOptifiMarkets(context).then((markets) => {
+            let ValidMarkets: [OptifiMarket, PublicKey][] = [];
+            let now = new anchor.BN(Date.now());
+            Promise.all(markets.map((m) => new Promise((chainRes) => {
+                context.program.account.chain.fetch(m[0].instrument).then((res) => {
+                    // @ts-ignore
+                    let chain = res as Chain;
+                    if (chain.expiryDate > now) {
+                        ValidMarkets.push(m);
+                    }
+                    chainRes(chain);
+                }).catch((err) => reject(err));
+            }))).then(() => resolve(
+                ValidMarkets
+            )).catch((err) => reject(err));
+        })
+    })
+}
+
 export function deriveVaultNonce(marketKey: PublicKey,
-                          dexProgramId: PublicKey,
-                          nonceS: number = 0): Promise<[anchor.web3.PublicKey, anchor.BN]> {
+    dexProgramId: PublicKey,
+    nonceS: number = 0): Promise<[anchor.web3.PublicKey, anchor.BN]> {
     return new Promise((resolve, reject) => {
         const nonce = new anchor.BN(nonceS);
         if (nonceS > 255) {
@@ -98,7 +119,7 @@ export function deriveVaultNonce(marketKey: PublicKey,
             deriveVaultNonce(
                 marketKey,
                 dexProgramId,
-                nonceS+1
+                nonceS + 1
             )
                 .then((res) => resolve(res))
                 .catch((err) => reject(err))
@@ -106,11 +127,11 @@ export function deriveVaultNonce(marketKey: PublicKey,
         try {
             PublicKey.createProgramAddress([marketKey.toBuffer(), nonce.toArrayLike(Buffer, "le", 8)],
                 dexProgramId).then((vaultOwner) => {
-                console.log("Returning vault ", vaultOwner, nonce);
-                resolve([vaultOwner, nonce])
-            }).catch((err) => {
-                tryNext();
-            })
+                    console.log("Returning vault ", vaultOwner, nonce);
+                    resolve([vaultOwner, nonce])
+                }).catch((err) => {
+                    tryNext();
+                })
         } catch (e) {
             tryNext();
         }
@@ -160,7 +181,7 @@ export function isUserInitializedOnMarket(context: Context, marketAddress: Publi
 }
 
 export function initializeUserIfNotInitializedOnMarket(context: Context,
-                                                       marketAddress: PublicKey): Promise<void> {
+    marketAddress: PublicKey): Promise<void> {
     return new Promise((resolve, reject) => {
         isUserInitializedOnMarket(context, marketAddress).then((userInitialized) => {
             if (userInitialized) {
