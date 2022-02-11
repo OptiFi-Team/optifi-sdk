@@ -81,6 +81,11 @@
           "name": "assetIvOracleFeed",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [

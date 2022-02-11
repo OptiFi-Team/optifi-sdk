@@ -1,6 +1,6 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
+import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
 import { findExchangeAccount, findInstrument, findOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
 import Asset from "../types/asset";
 import InstrumentType from "../types/instrumentType";
@@ -81,7 +81,8 @@ export function initializeChain(context: Context,
                                 payer: context.provider.wallet.publicKey,
                                 systemProgram: SystemProgram.programId,
                                 assetSpotPriceOracleFeed: findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Spot),
-                                assetIvOracleFeed: findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Iv)
+                                assetIvOracleFeed: findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Iv),
+                                clock: SYSVAR_CLOCK_PUBKEY
                             },
                         }
                     )
