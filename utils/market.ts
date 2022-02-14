@@ -8,6 +8,7 @@ import { findAssociatedTokenAccount } from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";
+import { findOrCreateAssociatedTokenAccount } from "../lib/utils/token";
 
 
 export function findOptifiMarketWithIdx(context: Context,
@@ -209,3 +210,68 @@ export function initializeUserIfNotInitializedOnMarket(context: Context,
     })
 }
 
+
+/**
+ * To get the user token amount on the market
+ */
+export function getTokenAmount(
+    context: Context,
+    instrumentSplToken: PublicKey,
+    userAccountAddress: PublicKey
+): Promise<number> {
+    return new Promise((resolve, reject) => {
+        findAssociatedTokenAccount(context, instrumentSplToken, userAccountAddress).then(
+            (Account) => {
+                context.connection.getTokenAccountBalance(Account[0]).then((amount) => {
+                    if (amount.value.uiAmount !== null) {
+                        resolve(amount.value.uiAmount);
+                    }
+                    else {
+                        resolve(0);
+                    }
+                }).catch((err) => {
+                    console.error(err);
+                    reject(err)
+                })
+            }).catch((err) => {
+                console.error(err);
+                reject(err)
+            })
+    })
+}
+
+export function watchGetTokenAmount(
+    context: Context,
+    instrumentSplToken: PublicKey,
+    userAccountAddress: PublicKey
+): Promise<number> {
+    return new Promise((resolve, reject) => {
+        const waitGetTokenAmount = async () => {
+            try {
+                let res = await getTokenAmount(context, instrumentSplToken, userAccountAddress);
+                resolve(res);
+            } catch (e) {
+                console.error(e);
+                console.log("Waiting 1 second for serum settlement");
+                setTimeout(waitGetTokenAmount, 1000);
+            }
+        }
+        waitGetTokenAmount();
+    })
+}
+
+
+/**
+ * To get the user token amount on the market
+ */
+export function getPosition(
+    context: Context,
+    market: [OptifiMarket, PublicKey],
+    userAccountAddress: PublicKey,
+): Promise<[number, number]> {
+    return new Promise(async (resolve, reject) => {
+        let longAmount = await watchGetTokenAmount(context, market[0].instrumentLongSplToken, userAccountAddress);
+        let shortAmount = await watchGetTokenAmount(context, market[0].instrumentShortSplToken, userAccountAddress);
+        resolve([longAmount, shortAmount])
+    })
+}
