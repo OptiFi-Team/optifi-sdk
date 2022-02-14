@@ -8,7 +8,6 @@ import { findAssociatedTokenAccount } from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";
-import { findOrCreateAssociatedTokenAccount } from "../lib/utils/token";
 
 
 export function findOptifiMarketWithIdx(context: Context,
