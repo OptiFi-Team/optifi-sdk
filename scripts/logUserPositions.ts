@@ -9,7 +9,7 @@ initializeContext().then((context) => {
             Promise.all(
                 markets.map(async (market) => {
                     let [longAmount, shortAmount] = await getPosition(context,
-                        market,
+                        market[0],
                         userAccountAddress,
                     );
                     console.log(`market: ${market[1]}\n`);

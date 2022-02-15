@@ -1,16 +1,17 @@
-import {PublicKey, TransactionSignature} from "@solana/web3.js";
-import {initializeContext} from "../index";
-import {formOrderContext} from "../utils/orders";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { initializeContext } from "../index";
+import { formOrderContext } from "../utils/orders";
 import placeOrder from "../instructions/placeOrder";
-import {OrderSide} from "../types/optifi-exchange-types";
-import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {settleSerumFundsIfAnyUnsettled, watchSettleSerumFunds} from "../utils/serum";
+import { OrderSide } from "../types/optifi-exchange-types";
+import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import { settleSerumFundsIfAnyUnsettled, watchSettleSerumFunds } from "../utils/serum";
+import { sleep } from "../utils/generic";
 
-let market = new PublicKey("BzpWij8iXh3t6VFaJ5NWLi6yCNkT24gVTax141LNLGnL");
-let limit = 1;
+let market = new PublicKey("HgRRCp5Dt18GFW8Gc9bp8hvYct37GrXnWzNUEAgetxMS");
+let limit = 0.5;
 let maxCoinQty = 1; // should be integer
 
-let side = OrderSide.Bid;
+let side = OrderSide.Ask;
 
 initializeContext().then((context) => {
     formOrderContext(context, market, side).then((orderContext) => {
@@ -24,14 +25,12 @@ initializeContext().then((context) => {
                 console.log("Placed order ", res);
                 if (res.successful) {
                     console.log(formatExplorerAddress(context, res.data as TransactionSignature, SolanaEntityType.Transaction));
-                    // @ts-ignore
-                    if (side === OrderSide.Bid) {
-                        await watchSettleSerumFunds(context, market).then((res) => {
-                            console.log("Got res!");
-                        }).catch((err) => {
-                            console.error(err);
-                        })
-                    }
+                    sleep(5000);
+                    await watchSettleSerumFunds(context, market).then((res) => {
+                        console.log("Got res!");
+                    }).catch((err) => {
+                        console.error(err);
+                    });
                 } else {
                     console.error(res);
                 }

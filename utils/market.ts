@@ -265,12 +265,12 @@ export function watchGetTokenAmount(
  */
 export function getPosition(
     context: Context,
-    market: [OptifiMarket, PublicKey],
+    market: OptifiMarket,
     userAccountAddress: PublicKey,
 ): Promise<[number, number]> {
     return new Promise(async (resolve, reject) => {
-        let longAmount = await watchGetTokenAmount(context, market[0].instrumentLongSplToken, userAccountAddress);
-        let shortAmount = await watchGetTokenAmount(context, market[0].instrumentShortSplToken, userAccountAddress);
+        let longAmount = await watchGetTokenAmount(context, market.instrumentLongSplToken, userAccountAddress);
+        let shortAmount = await watchGetTokenAmount(context, market.instrumentShortSplToken, userAccountAddress);
         resolve([longAmount, shortAmount])
     })
 }
