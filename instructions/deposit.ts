@@ -39,7 +39,7 @@ export default function deposit(context: Context, amount: number): Promise<Instr
                                     console.error(res);
                                     reject(res);
                                 }
-                            })
+                            }).catch((err) => reject(err));
                         }).catch((err) => reject(err));
                     }).catch((err) => reject(err));
                 } else {
