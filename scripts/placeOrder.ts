@@ -4,11 +4,9 @@ import { formOrderContext } from "../utils/orders";
 import placeOrder from "../instructions/placeOrder";
 import { OrderSide } from "../types/optifi-exchange-types";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
-import { settleSerumFundsIfAnyUnsettled, watchSettleSerumFunds } from "../utils/serum";
-import { sleep } from "../utils/generic";
 
 let market = new PublicKey("HgRRCp5Dt18GFW8Gc9bp8hvYct37GrXnWzNUEAgetxMS");
-let limit = 0.5;
+let limit = 2.2;
 let maxCoinQty = 1; // should be integer
 
 let side = OrderSide.Ask;
@@ -25,12 +23,6 @@ initializeContext().then((context) => {
                 console.log("Placed order ", res);
                 if (res.successful) {
                     console.log(formatExplorerAddress(context, res.data as TransactionSignature, SolanaEntityType.Transaction));
-                    sleep(5000);
-                    await watchSettleSerumFunds(context, market).then((res) => {
-                        console.log("Got res!");
-                    }).catch((err) => {
-                        console.error(err);
-                    });
                 } else {
                     console.error(res);
                 }

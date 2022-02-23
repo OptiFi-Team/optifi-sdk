@@ -1,13 +1,13 @@
 import Context from "../types/context";
-import {PublicKey, TransactionSignature} from "@solana/web3.js";
-import {Market, OpenOrders} from "@project-serum/serum";
-import {SERUM_DEX_PROGRAM_ID} from "../constants";
-import {OptifiMarket, UserAccount} from "../types/optifi-exchange-types";
-import {findOrCreateAssociatedTokenAccount} from "./token";
-import {findUserAccount} from "./accounts";
-import {signAndSendTransaction, TransactionResultType} from "./transactions";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { Market, OpenOrders } from "@project-serum/serum";
+import { SERUM_DEX_PROGRAM_ID } from "../constants";
+import { OptifiMarket, UserAccount } from "../types/optifi-exchange-types";
+import { findOrCreateAssociatedTokenAccount } from "./token";
+import { findUserAccount } from "./accounts";
+import { signAndSendTransaction, TransactionResultType } from "./transactions";
 import settleFunds from "../instructions/settleFunds";
-import {formatExplorerAddress, SolanaEntityType} from "./debug";
+import { formatExplorerAddress, SolanaEntityType } from "./debug";
 import settleOrderFunds from "../instructions/settleOrderFunds";
 
 export function getSerumMarket(context: Context, marketAddress: PublicKey): Promise<Market> {
@@ -42,7 +42,7 @@ export function getSerumMarketPrice(context: Context, serumMarketAddress: Public
 }
 
 export function settleSerumFundsIfAnyUnsettled(context: Context,
-                                               marketAddress: PublicKey): Promise<TransactionSignature | null> {
+    marketAddress: PublicKey): Promise<TransactionSignature | null> {
     return new Promise((resolve, reject) => {
         context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {
             let optifiMarket = marketRes as OptifiMarket;
@@ -53,8 +53,11 @@ export function settleSerumFundsIfAnyUnsettled(context: Context,
                             const doOpenOrdersSettle = async () => {
                                 console.debug("In open orders settle for market ", marketAddress.toString(), openOrdersAccounts.length, "open orders accounts");
                                 for (let openOrders of openOrdersAccounts) {
+                                    console.log("openOrders.baseTokenFree.toNumber() ", openOrders.baseTokenFree.toNumber());
+                                    console.log("openOrders.quoteTokenFree.toNumber() ", openOrders.quoteTokenFree.toNumber());
                                     if (openOrders.baseTokenFree.toNumber() > 0 || openOrders.quoteTokenFree.toNumber() > 0) {
-                                        settleOrderFunds(context, marketAddress).then((res) => {
+                                        // console.log("openOrders ", openOrders);
+                                        settleOrderFunds(context, [marketAddress]).then((res) => {
                                             console.debug(res);
                                             // If any of them were successful, we only need to settle once.
                                             resolve(res.data as TransactionSignature);
@@ -65,9 +68,7 @@ export function settleSerumFundsIfAnyUnsettled(context: Context,
                                     }
                                 }
                             }
-                            doOpenOrdersSettle().then(() => {
-                                resolve(null)
-                            }).catch((err) => reject(err))
+                            doOpenOrdersSettle();
                         })
                 })
             })
@@ -80,7 +81,7 @@ export function settleSerumFundsIfAnyUnsettled(context: Context,
  * To be called after an order - watch for open orders changes, and then once it's changed, do settlement
  */
 export function watchSettleSerumFunds(context: Context,
-                                      marketAddress: PublicKey): Promise<void> {
+    marketAddress: PublicKey): Promise<void> {
     return new Promise((resolve, reject) => {
         const waitSerumSettle = async () => {
             try {
