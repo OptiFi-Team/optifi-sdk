@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
-import { formOrderContext } from "../utils/orders";
+import { formPlaceOrderContext } from "../utils/orders";
 import { OrderSide } from "../types/optifi-exchange-types";
 import { COIN_LOT_SIZE, MAX_COIN_QTY, MAX_PC_QTY, PC_LOT_SIZE } from "../constants";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
@@ -16,7 +16,7 @@ export default function placeOrder(context: Context,
     maxPcQty: number
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
-        formOrderContext(context, marketAddress, side).then((orderContext) => {
+        formPlaceOrderContext(context, marketAddress).then((orderContext) => {
             console.log("side: ", side);
             console.log("limit: ", limit);
             console.log("maxCoinQty: ", maxCoinQty);
