@@ -40,7 +40,7 @@ export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin, Asset.Ethereum];
 export const SUPPORTED_DURATION: Duration[] = [Duration.Weekly, Duration.Monthly];
 
 //How many instrument types are supported
-export const SUPPORTED_INSTRUMENTS: InstrumentType[] = [InstrumentType.Put, InstrumentType.Call, InstrumentType.Future];
+export const SUPPORTED_INSTRUMENTS: InstrumentType[] = [InstrumentType.Put, InstrumentType.Call];
 
 type ExpirationMapping = {
     [instrumentType in InstrumentType]: ExpiryType[]
@@ -56,9 +56,9 @@ export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
         ExpiryType.Standard
     ],
     // Futures
-    2: [
-        //ExpiryType.Perpetual
-    ]
+    // 2: [
+    //     ExpiryType.Perpetual
+    // ]
 }
 
 // We want our maturities to end on Wednesdays, 2:00PM UTC
@@ -69,8 +69,8 @@ export const SECONDS_IN_YEAR: number = (60 * 60) * 24 * 365;
 
 // The expiration durations we're supporting for standard expiries
 export const SUPPORTED_MATURITIES = [
-    MaturityType.Monthly,
-    MaturityType.SixMonth
+    MaturityType.Weekly,
+    MaturityType.Monthly
 ]
 
 
@@ -108,7 +108,7 @@ export type EndpointConstant = {
 
 export const USDC_TOKEN_MINT: EndpointConstant = {
     "https://api.mainnet-beta.solana.com": "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9",
-    "https://api.devnet.solana.com": "71bkrU4PprY2vf8yodAJpaVAdwoiTcTGpTARpKfLDumf",
+    "https://api.devnet.solana.com": "6H2zescZeVfaJwBkM2jKiKWrAG5yfDAfb3CyJFDXDZE5",
     "https://api.testnet.solana.com": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 }
 
@@ -138,7 +138,7 @@ export const SWITCHBOARD: EndpointConstant = {
         SWITCHBOARD_BTC_IV: "CX1PvW4qUDy4PPq8egnMVCbVJt8TcPCt7WCZuwmvCfo7",
         SWITCHBOARD_ETH_USD: "QJc2HgGhdtW4e7zjvLB1TGRuwEpTre2agU5Lap2UqYz",
         SWITCHBOARD_ETH_IV: "4AGPMUEfBCSNqVd4Y6veHAep6VPtrkMa89rBhPqMYegz",
-        SWITCHBOARD_USDC_USDC: "CZx29wKMUxaJDq6aLVQTdViPL754tTR64NAgQBUGxxHb"
+        SWITCHBOARD_USDC_USD: "CZx29wKMUxaJDq6aLVQTdViPL754tTR64NAgQBUGxxHb"
     }
 }
 

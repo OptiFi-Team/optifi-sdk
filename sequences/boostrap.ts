@@ -1,22 +1,24 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import {Exchange, OptifiMarket} from "../types/optifi-exchange-types";
-import {initialize, initializeSerumMarket} from "../index";
+import { Exchange, OptifiMarket } from "../types/optifi-exchange-types";
+import { initialize, initializeSerumMarket } from "../index";
 import {
     createUserAccountIfNotExist,
     exchangeAccountExists,
     findExchangeAccount,
     findUserAccount,
 } from "../utils/accounts";
-import {SERUM_MARKETS} from "../constants";
-import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {PublicKey, TransactionSignature} from "@solana/web3.js";
-import {createInstruments} from "./createInstruments";
-import {createNextOptifiMarket, createOptifiMarketWithIdx} from "../instructions/createOptifiMarket";
-import {readJsonFile, sleep} from "../utils/generic";
-import {findOptifiMarkets} from "../utils/market";
+import { SERUM_MARKETS } from "../constants";
+import { debugAnchorAccount, formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import { PublicKey, SystemProgram, Transaction, TransactionSignature } from "@solana/web3.js";
+import { createInstruments } from "./createInstruments";
+import { createNextOptifiMarket, createOptifiMarketWithIdx } from "../instructions/createOptifiMarket";
+import { readJsonFile, sleep } from "../utils/generic";
+import { findOptifiMarkets } from "../utils/market";
 import createAMMAccounts from "./createAMMAccounts";
 import initializeAmmOnMarkets from "./initializeAMMOnMarkets";
+import { connect } from "http2";
+import { connection } from "@project-serum/common";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -121,8 +123,8 @@ function createOrRetreiveSerumMarkets(context: Context): Promise<PublicKey[]> {
 }
 
 function createOptifiMarkets(context: Context,
-                             marketKeys: PublicKey[],
-                             instrumentKeys: PublicKey[]): Promise<void> {
+    marketKeys: PublicKey[],
+    instrumentKeys: PublicKey[]): Promise<void> {
     return new Promise((resolve, reject) => {
         // Create the optifi markets
         const createAllMarkets = async () => {
@@ -157,13 +159,13 @@ function createOptifiMarkets(context: Context,
                     console.log("Finished, waiting, continuing market creation...");
                 }
                 let marketCreationFunction = (currIdx === 0 ? createNextOptifiMarket(context,
-                        serumMarketKey,
-                        initialInstrumentAddress) :
+                    serumMarketKey,
+                    initialInstrumentAddress) :
                     createOptifiMarketWithIdx(
                         context,
                         serumMarketKey,
                         initialInstrumentAddress,
-                        currIdx+1
+                        currIdx + 1
                     ))
                 let creationRes = await marketCreationFunction;
                 if (creationRes.successful) {
