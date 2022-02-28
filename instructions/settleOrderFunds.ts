@@ -15,14 +15,17 @@ export function getSettleOrderTx(
         formOrderContext(context, marketAddress, OrderSide.Bid).then((orderContext) => {
             let tx = context.program.transaction.settleOrderFunds({
                 accounts: {
-                    optifiExchange: orderContext.exchange,
+                    optifiExchange: orderContext.optifiExchange,
                     userAccount: orderContext.userAccount,
                     optifiMarket: marketAddress,
                     serumMarket: orderContext.serumMarket,
                     userSerumOpenOrders: orderContext.openOrders,
                     coinVault: orderContext.coinVault,
                     pcVault: orderContext.pcVault,
+                    instrumentLongSplTokenMint: orderContext.coinMint,
+                    instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
                     userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
+                    userInstrumentShortTokenVault: orderContext.userInstrumentShortTokenVault,
                     userMarginAccount: orderContext.userMarginAccount,
                     vaultSigner: orderContext.vaultSigner,
                     tokenProgram: TOKEN_PROGRAM_ID,

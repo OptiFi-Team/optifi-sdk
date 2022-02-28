@@ -1,6 +1,6 @@
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { initializeContext } from "../index";
-import { formOrderContext, getOrdersOnMarket } from "../utils/orders";
+import { formCancelOrderContext, getOrdersOnMarket } from "../utils/orders";
 import { OrderSide } from "../types/optifi-exchange-types";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { getSerumMarket, watchSettleSerumFunds } from "../utils/serum";
@@ -20,7 +20,7 @@ let side = OrderSide.Bid;
 // the user can click button to cancel it. (refer to getOrderOnMarket)
 
 initializeContext().then((context) => {
-    formOrderContext(context, market, side).then((orderContext) => {
+    formCancelOrderContext(context, market).then((orderContext) => {
         console.log("Serum market is ", formatExplorerAddress(context, orderContext.serumMarket.toString(), SolanaEntityType.Account));
         console.log("Open orders account is ", formatExplorerAddress(context, orderContext.openOrders.toString(), SolanaEntityType.Account))
 

@@ -1,20 +1,20 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import {PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature} from "@solana/web3.js";
-import {findExchangeAccount, findOracleAccountFromInstrument, findUserAccount, getDexOpenOrders} from "../utils/accounts";
-import {Asset, Chain, OptifiMarket, UserAccount} from "../types/optifi-exchange-types";
-import {deriveVaultNonce, findMarketInstrumentContext} from "../utils/market";
-import {SERUM_DEX_PROGRAM_ID, SWITCHBOARD} from "../constants";
-import {findSerumPruneAuthorityPDA} from "../utils/pda";
-import {signAndSendTransaction} from "../utils/transactions";
-import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
-import {findAssociatedTokenAccount} from "../utils/token";
-import {getSerumMarket} from "../utils/serum";
+import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { findExchangeAccount, findOracleAccountFromInstrument, findUserAccount, getDexOpenOrders } from "../utils/accounts";
+import { Asset, Chain, OptifiMarket, UserAccount } from "../types/optifi-exchange-types";
+import { deriveVaultNonce, findMarketInstrumentContext } from "../utils/market";
+import { SERUM_DEX_PROGRAM_ID, SWITCHBOARD } from "../constants";
+import { findSerumPruneAuthorityPDA } from "../utils/pda";
+import { signAndSendTransaction } from "../utils/transactions";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { findAssociatedTokenAccount } from "../utils/token";
+import { getSerumMarket } from "../utils/serum";
 
 
 export default function recordPnl(context: Context,
-                                  userToSettle: PublicKey,
-                                  market: PublicKey): Promise<InstructionResult<TransactionSignature>> {
+    userToSettle: PublicKey,
+    market: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findUserAccount(context).then(([userAccountAddress, _]) => {
             context.program.account.userAccount.fetch(userAccountAddress).then((userAcctRaw) => {
@@ -54,7 +54,7 @@ export default function recordPnl(context: Context,
                                                                 tokenProgram: TOKEN_PROGRAM_ID,
                                                                 clock: SYSVAR_CLOCK_PUBKEY,
                                                                 assetSpotPriceOracleFeed: oracleSpotAccount,
-                                                                usdcSpotPriceOracleFeed: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USDC)
+                                                                usdcSpotPriceOracleFeed: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD)
                                                             }
                                                         })
                                                         signAndSendTransaction(context, settlementTx).then((settlementRes) => {
@@ -70,12 +70,12 @@ export default function recordPnl(context: Context,
                                                 }).catch((err) => reject(err))
                                             }).catch((err) => reject(err))
                                         }).catch((err) => reject(err))
-                                })).catch((err) => reject(err))
-                            }).catch((err) => reject(err))
+                                    })).catch((err) => reject(err))
                         }).catch((err) => reject(err))
                     }).catch((err) => reject(err))
                 }).catch((err) => reject(err))
             }).catch((err) => reject(err))
-        })
+        }).catch((err) => reject(err))
+    })
 }
 

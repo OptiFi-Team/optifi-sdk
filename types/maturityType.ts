@@ -1,6 +1,6 @@
 enum MaturityType {
-    Monthly ,
-    SixMonth
+    Weekly,
+    Monthly
 }
 
 export default MaturityType;

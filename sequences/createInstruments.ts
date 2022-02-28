@@ -12,6 +12,7 @@ import ExpiryType from "../types/expiryType";
 import { initializeChain, InstrumentContext } from "../instructions/initializeChain";
 import { findInstrument } from "../utils/accounts";
 import { Duration } from "../types/optifi-exchange-types";
+import MaturityType from "../types/maturityType";
 
 
 /**
@@ -37,7 +38,11 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                         case ExpiryType.Standard:
                             for (let maturity of SUPPORTED_MATURITIES) {
                                 let expirationDate = expirations[maturity];
-                                let duration = Duration.Weekly; // TODO
+                                let duration: Duration;
+                                switch (maturity) {
+                                    case MaturityType.Weekly: duration = Duration.Weekly;
+                                    case MaturityType.Monthly: duration = Duration.Monthly;
+                                }
                                 instrumentsToCreate.push({
                                     asset: asset,
                                     instrumentType: instrumentType,
@@ -48,17 +53,17 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                                 })
                             }
                             break;
-                        case ExpiryType.Perpetual:
-                            let duration = Duration.Weekly; // TODO
+                        // case ExpiryType.Perpetual:
+                        //     let duration = Duration.Weekly; // TODO
 
-                            instrumentsToCreate.push({
-                                asset: asset,
-                                instrumentType: instrumentType,
-                                duration: duration,
-                                start: start,
-                                expiryType: expiryType
-                            })
-                            break;
+                        //     instrumentsToCreate.push({
+                        //         asset: asset,
+                        //         instrumentType: instrumentType,
+                        //         duration: duration,
+                        //         start: start,
+                        //         expiryType: expiryType
+                        //     })
+                        //     break;
                     }
                 }
             }
