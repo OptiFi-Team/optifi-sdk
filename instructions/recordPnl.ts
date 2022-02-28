@@ -76,11 +76,7 @@ export default function recordPnl(context: Context,
                     }).catch((err) => reject(err))
                 }).catch((err) => reject(err))
             }).catch((err) => reject(err))
-<<<<<<< HEAD
-        }).catch((err) => reject(err))
-=======
         // }).catch((err) => reject(err))
->>>>>>> 1091540 (fixed fund settlement bugs)
     })
 }
 

@@ -6,7 +6,7 @@ import {findOptifiMarkets, findOptifiMarketWithIdx} from "../utils/market";
 import * as anchor from "@project-serum/anchor";
 import {findOptifiMarketMintAuthPDA} from "../utils/pda";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
-import {MintLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {createInitializeMintInstruction, MintLayout, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
 import {getSerumMarket} from "../utils/serum";
 
@@ -51,12 +51,12 @@ export function createOptifiMarket(context: Context,
                                        space: MintLayout.span,
                                        programId: TOKEN_PROGRAM_ID
                                    }),
-                                   Token.createInitMintInstruction(
-                                       TOKEN_PROGRAM_ID,
+                                   createInitializeMintInstruction(
                                        shortSplTokenMint.publicKey,
                                        0,
                                        mintAuthPDAAddress,
-                                       mintAuthPDAAddress
+                                       mintAuthPDAAddress,
+                                       TOKEN_PROGRAM_ID
                                    )
                                ]
                            },
