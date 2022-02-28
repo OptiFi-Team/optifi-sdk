@@ -69,7 +69,7 @@ export function findExpiredMarkets(context: Context): Promise<[OptifiMarket, Pub
     return new Promise((resolve, reject) => {
         findOptifiMarkets(context).then((markets) => {
             let expiredMarkets: [OptifiMarket, PublicKey][] = [];
-            let now = new anchor.BN(Date.now());
+            let now = new anchor.BN(Math.floor(Date.now()/1000));
             Promise.all(markets.map((m) => new Promise((chainRes) => {
                 context.program.account.chain.fetch(m[0].instrument).then((res) => {
                     // @ts-ignore
