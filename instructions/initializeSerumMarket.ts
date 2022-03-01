@@ -3,7 +3,7 @@ import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import * as anchor from "@project-serum/anchor";
 import {MARKET_STATE_LAYOUT_V3} from "@project-serum/serum";
-import {AccountLayout, MintLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {AccountLayout, createInitializeAccountInstruction, createInitializeMintInstruction, MintLayout, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {
     annotateAndSignTransaction,
     annotateTransactionWithBlockhash,
@@ -105,24 +105,22 @@ function initializeAccountsWithLayouts(context: Context,
                     space: MINT_DATA_LENGTH,
                     programId: TOKEN_PROGRAM_ID
                 }),
-                Token.createInitMintInstruction(
-                    TOKEN_PROGRAM_ID,
+                createInitializeMintInstruction(
                     coinMintAccount.publicKey,
                     0,
                     mintAuthorityAddress,
-                    mintAuthorityAddress
+                    mintAuthorityAddress,
                 ),
-                Token.createInitAccountInstruction(
-                    TOKEN_PROGRAM_ID,
-                    coinMintAccount.publicKey,
+                createInitializeAccountInstruction(
                     coinVaultAccount.publicKey,
-                    vaultOwner
+                    coinMintAccount.publicKey,
+                    vaultOwner,
                 ),
-                Token.createInitAccountInstruction(
-                    TOKEN_PROGRAM_ID,
-                    pcMintAccount,
+                createInitializeAccountInstruction(
                     pcVaultAccount.publicKey,
-                    vaultOwner
+                    pcMintAccount,
+                    vaultOwner,
+                    TOKEN_PROGRAM_ID
                 )
             )
 

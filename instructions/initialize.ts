@@ -13,7 +13,7 @@ import {
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { signAndSendTransaction, TransactionResult, TransactionResultType } from "../utils/transactions";
 import { findOptifiUSDCPoolAuthPDA } from "../utils/pda";
-import { AccountLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { AccountLayout, createInitializeAccountInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { SWITCHBOARD, USDC_TOKEN_MINT } from "../constants";
 
 function createUSDCPoolAccount(context: Context,
@@ -30,11 +30,11 @@ function createUSDCPoolAccount(context: Context,
                     space: AccountLayout.span,
                     programId: TOKEN_PROGRAM_ID
                 }),
-                Token.createInitAccountInstruction(
-                    TOKEN_PROGRAM_ID,
-                    new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                createInitializeAccountInstruction(
                     usdcCentralPoolWallet.publicKey,
-                    poolAuthPDAAddress
+                    new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                    poolAuthPDAAddress,
+                    TOKEN_PROGRAM_ID
                 )
             )
             signAndSendTransaction(context, poolTx, [usdcCentralPoolWallet])
@@ -95,10 +95,11 @@ export default function initialize(context: Context): Promise<InstructionResult<
                                 exchangeAuthority: context.provider.wallet.publicKey,
                                 owner: context.provider.wallet.publicKey,
                                 usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD),
                                 ethSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD),
+                                usdcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD),
                                 btcIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV),
                                 ethIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV),
-                                btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD)
                             },
                             {
                                 accounts: {

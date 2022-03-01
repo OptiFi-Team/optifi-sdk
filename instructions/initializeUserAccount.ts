@@ -4,7 +4,7 @@ import {UserAccount} from "../types/optifi-exchange-types";
 import * as anchor from "@project-serum/anchor";
 import {PublicKey, SystemProgram, TransactionSignature} from "@solana/web3.js";
 import {findExchangeAccount, findLiquidationState, findUserAccount, userAccountExists} from "../utils/accounts";
-import {AccountLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import {AccountLayout, createInitializeAccountInstruction, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {USDC_TOKEN_MINT} from "../constants";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
@@ -63,11 +63,11 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                                 lamports: min,
                                                 programId: TOKEN_PROGRAM_ID,
                                             }),
-                                            Token.createInitAccountInstruction(
-                                                TOKEN_PROGRAM_ID,
-                                                new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                            createInitializeAccountInstruction(
                                                 newUserMarginAccount.publicKey,
-                                                context.provider.wallet.publicKey
+                                                new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                                context.provider.wallet.publicKey,
+                                                TOKEN_PROGRAM_ID
                                             ), // Create a new account for USDC
                                         ],
                                     },

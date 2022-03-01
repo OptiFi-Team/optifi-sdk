@@ -555,21 +555,6 @@
           "isSigner": false
         },
         {
-          "name": "assetFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ivFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "clock",
           "isMut": false,
           "isSigner": false
@@ -2120,20 +2105,12 @@
             "type": "publicKey"
           },
           {
-            "name": "btcSpotOracle",
-            "type": "publicKey"
-          },
-          {
-            "name": "ethSpotOracle",
-            "type": "publicKey"
-          },
-          {
-            "name": "btcIvOracle",
-            "type": "publicKey"
-          },
-          {
-            "name": "ethIvOracle",
-            "type": "publicKey"
+            "name": "oracle",
+            "type": {
+              "vec": {
+                "defined": "OracleData"
+              }
+            }
           },
           {
             "name": "markets",
@@ -2423,6 +2400,32 @@
       }
     },
     {
+      "name": "OracleData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "spotOracle",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "ivOracle",
+            "type": {
+              "option": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "InstrumentKeyData",
       "type": {
         "kind": "struct",
@@ -2523,6 +2526,10 @@
           },
           {
             "name": "ethSpotOracle",
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcSpotOracle",
             "type": "publicKey"
           },
           {
@@ -3180,6 +3187,6 @@
     }
   ],
   "metadata": {
-    "address": "Ah9hXT9t7B3dPtbAUB7wHwWsNDQDiTcSBAxBB4aWSf2z"
+    "address": "5dzneTfJf2oqZV5133fW1tPrbzZTyL7pSupriSJiJe9o"
   }
 }
