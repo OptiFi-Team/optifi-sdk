@@ -18,6 +18,7 @@ export function getAmountToReserve(
                     let total_margin = 0;
                     for (let x of userAccount.amountToReserve) {
                         let margin = x.toNumber();
+                        margin /= 10 ** 6; // devided with USDC decimals 6
                         if (margin > 0) {
                             total_margin += margin;
                             console.log(margin);
