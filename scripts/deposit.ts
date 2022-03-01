@@ -1,7 +1,7 @@
 import { initializeContext } from "../index";
 import deposit from "../instructions/deposit";
 
-let amount = 1000; // already including decimals
+let amount = 100000; // already including decimals
 
 initializeContext().then((context) => {
     deposit(context, amount).then((res) => {
