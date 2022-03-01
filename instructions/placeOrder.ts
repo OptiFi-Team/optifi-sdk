@@ -21,7 +21,7 @@ export default function placeOrder(context: Context,
             console.log("limit: ", limit);
             console.log("maxCoinQty: ", maxCoinQty);
             console.log("maxPcQty: ", maxPcQty);
-            let placeOrderTx = context.program.transaction.placeOrder(
+            context.program.rpc.placeOrder(
                 side,
                 new anchor.BN(limit),
                 new anchor.BN(maxCoinQty),
@@ -29,17 +29,11 @@ export default function placeOrder(context: Context,
                 {
                     accounts: orderContext
                 }
-            );
-            signAndSendTransaction(context, placeOrderTx).then((res) => {
-                if (res.resultType === TransactionResultType.Successful) {
-                    resolve({
-                        successful: true,
-                        data: res.txId as TransactionSignature
-                    })
-                } else {
-                    console.error(res);
-                    reject(res);
-                }
+            ).then((res) => {
+                resolve({
+                    successful: true,
+                    data: res as TransactionSignature
+                })
             }).catch((err) => reject(err))
         }).catch((err) => reject(err))
     })

@@ -4,19 +4,20 @@ import { formOrderContext } from "../utils/orders";
 import placeOrder from "../instructions/placeOrder";
 import { OrderSide } from "../types/optifi-exchange-types";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import { userAccountExists } from "../utils/accounts";
+import { UserAccount } from "../types/optifi-exchange-types";
 
-let market = new PublicKey("HgRRCp5Dt18GFW8Gc9bp8hvYct37GrXnWzNUEAgetxMS");
-let limit = 2.2;
+let market = new PublicKey("4qfZGYY1nAXLpmoDXLBixqkdD3HBdeDn6Bo5ACTfSHGR");
+let limit = 2;
 let maxCoinQty = 1; // should be integer
 
 let side = OrderSide.Ask;
 
 initializeContext().then((context) => {
-    formOrderContext(context, market, side).then((orderContext) => {
-        console.log("Serum market is ", formatExplorerAddress(context, orderContext.serumMarket.toString(), SolanaEntityType.Account));
-        console.log("Open orders account is ", formatExplorerAddress(context, orderContext.openOrders.toString(), SolanaEntityType.Account))
-        context.connection.getTokenAccountBalance(orderContext.userMarginAccount).then(tokenAmount => {
-            console.log("userMarginAccount: ", orderContext.userMarginAccount.toString());
+    userAccountExists(context).then(([_, res]) => {
+        let userAccount = res as UserAccount;
+        context.connection.getTokenAccountBalance(userAccount.userMarginAccountUsdc).then(tokenAmount => {
+            console.log("userMarginAccount: ", userAccount.userMarginAccountUsdc.toString());
             console.log("balance: ", tokenAmount.value.uiAmount);
             let maxPcQty = limit * (10 ** tokenAmount.value.decimals) * maxCoinQty;
             placeOrder(context, market, side, limit * (10 ** tokenAmount.value.decimals), maxCoinQty, maxPcQty).then(async (res) => {
@@ -32,6 +33,7 @@ initializeContext().then((context) => {
         }).catch((err) => {
             console.error(err)
         })
+    }).catch((err) => {
+        console.error(err)
     })
-
 });

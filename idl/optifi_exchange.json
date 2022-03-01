@@ -555,6 +555,21 @@
           "isSigner": false
         },
         {
+          "name": "assetFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ivFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "clock",
           "isMut": false,
           "isSigner": false
@@ -2121,10 +2136,20 @@
             }
           },
           {
-            "name": "instruments",
+            "name": "instrumentCommon",
             "type": {
               "vec": {
-                "defined": "InstrumentKeyData"
+                "defined": "InstrumentCommon"
+              }
+            }
+          },
+          {
+            "name": "instrumentUnique",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "InstrumentUnique"
+                }
               }
             }
           }
@@ -2309,6 +2334,15 @@
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "amountToReserve",
+            "type": {
+              "array": [
+                "u64",
+                10
+              ]
+            }
           }
         ]
       }
@@ -2426,7 +2460,7 @@
       }
     },
     {
-      "name": "InstrumentKeyData",
+      "name": "InstrumentCommon",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2437,16 +2471,6 @@
             }
           },
           {
-            "name": "instrumentType",
-            "type": {
-              "defined": "InstrumentType"
-            }
-          },
-          {
-            "name": "strike",
-            "type": "u64"
-          },
-          {
             "name": "expiryDate",
             "type": "u64"
           },
@@ -2455,10 +2479,27 @@
             "type": {
               "defined": "ExpiryType"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstrumentUnique",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strike",
+            "type": "u32"
           },
           {
-            "name": "instrumentPubkey",
-            "type": "publicKey"
+            "name": "instrumentPubkeys",
+            "type": {
+              "array": [
+                "publicKey",
+                2
+              ]
+            }
           }
         ]
       }
@@ -2470,18 +2511,6 @@
         "fields": [
           {
             "name": "optifiMarketPubkey",
-            "type": "publicKey"
-          },
-          {
-            "name": "optifiMarketId",
-            "type": "u16"
-          },
-          {
-            "name": "serumMarket",
-            "type": "publicKey"
-          },
-          {
-            "name": "instrument",
             "type": "publicKey"
           },
           {
@@ -2692,26 +2721,6 @@
         "fields": [
           {
             "name": "price",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": "f64"
-                }
-              }
-            }
-          },
-          {
-            "name": "regTMargin",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": "f64"
-                }
-              }
-            }
-          },
-          {
-            "name": "delta",
             "type": {
               "vec": {
                 "vec": {
@@ -3185,8 +3194,5 @@
       "name": "WrongAsset",
       "msg": "Wrong asset"
     }
-  ],
-  "metadata": {
-    "address": "5dzneTfJf2oqZV5133fW1tPrbzZTyL7pSupriSJiJe9o"
-  }
+  ]
 }
