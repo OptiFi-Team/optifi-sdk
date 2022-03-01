@@ -30,7 +30,7 @@ export function getAllOrdersForAccount(
       let signatures = await context.connection.getSignaturesForAddress(
         account
       );
-      console.log("signatures: ", signatures);
+      // console.log("signatures: ", signatures);
 
       // console.log("res - all txs: ", res)
       // res = res.slice(3, 4);
@@ -40,20 +40,20 @@ export function getAllOrdersForAccount(
         let res = await context.connection.getTransaction(txid);
         let tx = res!;
         let inxs = tx.transaction.message.instructions;
-        console.log("inxs: ", inxs);
+        // console.log("inxs: ", inxs);
 
         inxs.forEach((inx) => {
           if (inx.data.toString().includes("GNopggZY8Jki")) {
-            console.log(txid);
+            // console.log(txid);
             let innerInxs = tx.meta?.innerInstructions!;
             innerInxs.forEach((innerInx) => {
               innerInx.instructions.forEach((inx2) => {
                 let programId =
                   tx.transaction.message.accountKeys[inx2.programIdIndex];
-                console.log("programId:", programId.toString());
+                // console.log("programId:", programId.toString());
                 if (programId.toString() == serumId.toString()) {
                   let dataBytes = bs58.decode(inx2.data);
-                  console.log(`serum instruction for ${txid}`, innerInx);
+                  // console.log(`serum instruction for ${txid}`, innerInx);
                   try {
                     let decData = decodeInstruction(dataBytes);
                     if (decData.hasOwnProperty("newOrderV3")) {
@@ -62,7 +62,9 @@ export function getAllOrdersForAccount(
                       );
 
                       let newOrderJSON = JSON.stringify(decData);
-                      console.log("newOrderJSON: ", newOrderJSON);
+                      // console.log("newOrderJSON: ", newOrderJSON);
+                      newOrder.timestamp = new Date(tx.blockTime! * 1000);
+                      newOrder.txid = txid
                       recentOrders.push(newOrder);
                       //   resolve(recentOrders)
                     }
@@ -97,6 +99,8 @@ export class NewOrderInstruction {
   orderType: string; // "limit"
   selfTradeBehavior: string; // "decrementTake"
   side: string; // "buy" // TODO enum
+  timestamp: Date
+  txid: string
 
   constructor({
     clientId,
@@ -107,6 +111,8 @@ export class NewOrderInstruction {
     orderType,
     selfTradeBehavior,
     side,
+    timestamp,
+    txid,
   }: {
     clientId: BN;
     limit: number;
@@ -116,6 +122,8 @@ export class NewOrderInstruction {
     orderType: string;
     selfTradeBehavior: string;
     side: string;
+    timestamp: Date;
+    txid: string
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -125,9 +133,11 @@ export class NewOrderInstruction {
     this.orderType = orderType;
     this.selfTradeBehavior = selfTradeBehavior;
     this.side = side;
+    this.timestamp = timestamp;
+    this.txid = txid;
   }
 
-  public get short(): string {
+  public get shortForm(): string {
     return `${this.side} ${this.limit} @ ${this.limitPrice}`;
   }
 }
