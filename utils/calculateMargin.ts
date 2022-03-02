@@ -1,4 +1,5 @@
 import math from "mathjs";
+import erf from "math-erf";
 
 // margin_function
 export function calculateMargin(user, spot, t, price, intrinsic, stress_price_change) {
@@ -190,27 +191,27 @@ export function matmul(a, b) {
 }
 
 // stress_function
-// export function stress_function(spot, strike, iv, r, q, t, stress, isCall, step = 5) {
-//     // main values: prices, reg-t margins, delta, intrinsic values
-// 	var price = option_price(spot, strike, iv, r, q, t, isCall);
-// 	var reg_t_margin = option_reg_t_margin(spot, strike, stress, isCall);
-// 	var delta = option_delta(spot, strike, iv, r, q, t, isCall);
-// 	var intrinsic = option_intrinsic_value(spot, strike, isCall);
+export function stress_function(spot, strike, iv, r, q, t, stress, isCall, step = 5) {
+    // main values: prices, reg-t margins, delta, intrinsic values
+	var price = option_price(spot, strike, iv, r, q, t, isCall);
+	var reg_t_margin = option_reg_t_margin(spot, strike, stress, isCall);
+	var delta = option_delta(spot, strike, iv, r, q, t, isCall);
+	var intrinsic = option_intrinsic_value(spot, strike, isCall);
 	
-// 	// stresses
-// 	var stress_spot = generate_stress_spot(spot, stress, step);
-// 	var stress_price = option_price(stress_spot, strike, iv, r, q, t, isCall);
-// 	var stress_price_change = stress_price - price;
+	// stresses
+	var stress_spot = generate_stress_spot(spot, stress, step);
+	var stress_price = option_price(stress_spot, strike, iv, r, q, t, isCall);
+	var stress_price_change = stress_price - price;
 
-// 	return {
-// 		'Price': price,
-// 		'Regulation T Margin': reg_t_margin,
-// 		'Delta': delta,
-// 		'Intrinsic Value': intrinsic,
-// 		'Stress Spot': stress_spot,
-// 		'Stress Price Delta': stress_price_change
-// 		}
-// }
+	return {
+		'Price': price,
+		'Regulation T Margin': reg_t_margin,
+		'Delta': delta,
+		'Intrinsic Value': intrinsic,
+		'Stress Spot': stress_spot,
+		'Stress Price Delta': stress_price_change
+		}
+}
 
 export function d1(spot, strike, iv, r, q, t) {
     return (Math.log(spot / strike) + (r - q + iv * iv / 2) * t) / (iv * Math.sqrt(t));
@@ -244,9 +245,8 @@ export function incr(stress, step, spot) {
 }
 
 export function cdf(x) {
-    var q = math.erf(x / math.sqrt(2.0))
+    var q = erf(x / Math.sqrt(2.0))
 
-    console.log((1.0 + q) / 2.0)
     return (1.0 + q) / 2.0
 }
 
@@ -254,14 +254,14 @@ export function clip(x) {
 
 }
 
-// export function option_intrinsic_value(spot, strike, isCall) {
-//     // call = (spot - strike).clip(0)
-// 	// put = (strike - spot).clip(0)
-//     var call = ;
-//     var put = ;
+export function option_intrinsic_value(spot, strike, isCall) {
+    // call = (spot - strike).clip(0)
+	// put = (strike - spot).clip(0)
+    var call = ;
+    var put = ;
 
-//     return isCall * call + (1 - isCall) * put;
-// }
+    return isCall * call + (1 - isCall) * put;
+}
 
 export function option_price(spot, strike, iv, r, q, t, isCall) {
     var call = spot * Math.exp((-q) * t) * cdf(d1(spot, strike, iv, r, q, t)) - 
@@ -271,16 +271,14 @@ export function option_price(spot, strike, iv, r, q, t, isCall) {
     return isCall * call + (1 - isCall) * put;
 }
 
-// export function option_reg_t_margin(spot, strike, stress, isCall) {
-//     // call = (stress * spot - (strike - spot).clip(0)).clip(stress * spot / 2)
-// 	// put = (stress * spot - (spot - strike).clip(0)).clip(stress * spot / 2)
-//     var call = ;
-//     var put = ;
+export function option_reg_t_margin(spot, strike, stress, isCall) {
+    // call = (stress * spot - (strike - spot).clip(0)).clip(stress * spot / 2)
+	// put = (stress * spot - (spot - strike).clip(0)).clip(stress * spot / 2)
+    var call = ;
+    var put = ;
 
-//     return isCall * call + (1 - isCall) * put;
-// }
-
-cdf(1.96)
+    return isCall * call + (1 - isCall) * put;
+}
 
 // var user = [[1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]]
 // var stress_price_change = [[1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2]]
