@@ -158,3 +158,6 @@ export const PC_DUST_THRESHOLD: number = 2;
 
 export const MAX_COIN_QTY = 500 * COIN_LOT_SIZE;
 export const MAX_PC_QTY = 1000 * PC_LOT_SIZE;
+
+export const USDC_DECIMALS = 6;
+export const SOL_DECIMALS = 9;

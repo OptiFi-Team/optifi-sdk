@@ -4,7 +4,7 @@ import { findAMMAccounts } from "./amm";
 import Context from "../types/context";
 import { createAccountRentExempt } from "@project-serum/common";
 import { Market, decodeInstruction } from "@project-serum/serum";
-import { SERUM_DEX_PROGRAM_ID } from "../constants";
+import { SERUM_DEX_PROGRAM_ID, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
 import bs58 from "bs58";
 import { BN } from "@project-serum/anchor";
 
@@ -65,8 +65,9 @@ export function getAllOrdersForAccount(
                       // console.log("newOrderJSON: ", newOrderJSON);
                       newOrder.timestamp = new Date(tx.blockTime! * 1000);
                       newOrder.txid = txid
+                      newOrder.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
+                      newOrder.marketAddress = tx.transaction.message.accountKeys[inx.accounts[6]].toString() // market address index is 6 in the place order inx
                       recentOrders.push(newOrder);
-                      //   resolve(recentOrders)
                     }
                   } catch (e) {
                     console.log(e);
@@ -101,6 +102,8 @@ export class NewOrderInstruction {
   side: string; // "buy" // TODO enum
   timestamp: Date
   txid: string
+  gasFee: number
+  marketAddress: string
 
   constructor({
     clientId,
@@ -113,6 +116,8 @@ export class NewOrderInstruction {
     side,
     timestamp,
     txid,
+    gasFee,
+    marketAddress
   }: {
     clientId: BN;
     limit: number;
@@ -124,17 +129,21 @@ export class NewOrderInstruction {
     side: string;
     timestamp: Date;
     txid: string
+    gasFee: number
+    marketAddress: string
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
-    this.limitPrice = limitPrice.toNumber();
+    this.limitPrice = limitPrice.toNumber() / Math.pow(10, USDC_DECIMALS);
     this.maxBaseQuantity = maxBaseQuantity.toNumber();
-    this.maxQuoteQuantity = maxQuoteQuantity.toNumber();
+    this.maxQuoteQuantity = maxQuoteQuantity.toNumber() / Math.pow(10, USDC_DECIMALS);
     this.orderType = orderType;
     this.selfTradeBehavior = selfTradeBehavior;
     this.side = side;
     this.timestamp = timestamp;
     this.txid = txid;
+    this.gasFee = gasFee;
+    this.marketAddress = marketAddress
   }
 
   public get shortForm(): string {
