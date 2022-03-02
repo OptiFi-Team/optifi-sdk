@@ -1,9 +1,8 @@
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../index";
-import { InstrumentCommon, InstrumentType, InstrumentUnique } from "../lib/types/optifi-exchange-types";
-import { Exchange, OptifiMarket } from "../types/optifi-exchange-types";
+import { InstrumentCommon, InstrumentUnique } from "../types/optifi-exchange-types";
+import { Exchange } from "../types/optifi-exchange-types";
 import { findOptifiExchange } from "../utils/accounts";
-import { getSerumMarket } from "../utils/serum";
 
 let marketId = new PublicKey("4eCGYyNZpZ4XfRbQXFTADX7Xuepb23eUjMGxdWrDnFS6");
 

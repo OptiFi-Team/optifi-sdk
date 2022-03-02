@@ -39,10 +39,8 @@ export const ExpiryType = {
 }
 
 
-export type InstrumentData = Record<string, Record<string, any>>
-export const InstrumentData = {
-
-}
+export type InstrumentCommon = Record<string, Record<string, any>>
+export type InstrumentUnique = Record<string, Record<string, any>>
 
 
 export type InstrumentExpiryType = Record<string, Record<string, any>>
