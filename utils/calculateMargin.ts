@@ -1,6 +1,4 @@
-// user: array of float
-// every parameters: float
-// t seems like array of float
+// margin_function
 export function calculateMargin(user, spot, t, price, intrinsic, stress_price_change) {
     var net_qty1 = net_qty(user);
 
@@ -22,7 +20,7 @@ export function calculateMargin(user, spot, t, price, intrinsic, stress_price_ch
     var margin_11 = margin_1(stress_result1, net_intrinsic1, net_premium1);
 	var margin_21 = margin_2(maturing_liquidity1, net_intrinsic1);
 	var margin_31 = margin_3(maturing_premium1);
-	
+	         
 	// total_margin = margin_1 + margin_2 + margin_3
 	// net_leverage = net / total_margin
 	// notional_leverage = notional / total_margin
@@ -189,6 +187,96 @@ export function matmul(a, b) {
     return m;
 }
 
+// stress_function
+export function stress_function(spot, strike, iv, r, q, t, stress, isCall, step = 5) {
+    // main values: prices, reg-t margins, delta, intrinsic values
+	var price = option_price(spot, strike, iv, r, q, t, isCall);
+	var reg_t_margin = option_reg_t_margin(spot, strike, stress, isCall);
+	var delta = option_delta(spot, strike, iv, r, q, t, isCall);
+	var intrinsic = option_intrinsic_value(spot, strike, isCall);
+	
+	// stresses
+	var stress_spot = generate_stress_spot(spot, stress, step);
+	var stress_price = option_price(stress_spot, strike, iv, r, q, t, isCall);
+	var stress_price_change = stress_price - price;
+
+	return {
+		'Price': price,
+		'Regulation T Margin': reg_t_margin,
+		'Delta': delta,
+		'Intrinsic Value': intrinsic,
+		'Stress Spot': stress_spot,
+		'Stress Price Delta': stress_price_change
+		}
+}
+
+export function d1(spot, strike, iv, r, q, t) {
+    return (Math.log(spot / strike) + (r - q + iv * iv / 2) * t) / (iv * Math.sqrt(t));
+}
+
+export function d2(spot, strike, iv, r, q, t) {
+    return d1(spot, strike, iv, r, q, t) - iv * Math.sqrt(t);
+}
+
+export function option_delta(spot, strike, iv, r, q, t, isCall) {
+    var call = cdf(d1(spot, strike, iv, r, q, t));
+    var put = call - 1;
+
+    return isCall * call + (1 - isCall) * put
+}
+
+export function generate_stress_spot(spot, stress, step) {
+    // incr = (stress / step * np.arange(step * 2 + 1)).reshape(1, -1)
+	var incr = incr(stress, step, spot);
+
+	return spot * (1 - stress + incr)
+}
+
+export function incr(stress, step, spot) {
+    var result = [] as any;
+    for(let i = 0; i < (step * 2 + 1); i++) {
+        result.push([stress / step * i]);
+    }
+
+    return result;
+}
+
+export function cdf(x) {
+    return 1;
+}
+
+export function clip(x) {
+
+}
+
+export function option_intrinsic_value(spot, strike, isCall) {
+    // call = (spot - strike).clip(0)
+	// put = (strike - spot).clip(0)
+    var call = ;
+    var put = ;
+
+    return isCall * call + (1 - isCall) * put;
+}
+
+export function option_price(spot, strike, iv, r, q, t, isCall) {
+    // call = spot * np.exp(-q * t) * norm.cdf(d1(spot, strike, iv, r, q, t)) - \
+	// 	strike * np.exp(-r * t) * norm.cdf(d2(spot, strike, iv, r, q, t))		
+	// put = call + strike * np.exp(-r * t) - spot * np.exp(-q * t)
+    var call = spot * Math.exp((-q) * t) * cdf(d1(spot, strike, iv, r, q, t)) - 
+                strike * Math.exp((-r) * t) - spot * Math.exp((-q) * t);
+    var put = call + strike * Math.exp((-r) * t) - spot * Math.exp((-q) * t);
+
+    return isCall * call + (1 - isCall) * put;
+}
+
+export function option_reg_t_margin(spot, strike, stress, isCall) {
+    // call = (stress * spot - (strike - spot).clip(0)).clip(stress * spot / 2)
+	// put = (stress * spot - (spot - strike).clip(0)).clip(stress * spot / 2)
+    var call = ;
+    var put = ;
+
+    return isCall * call + (1 - isCall) * put;
+}
 
 // var user = [[1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]]
 // var stress_price_change = [[1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2]]
