@@ -1,4 +1,3 @@
-import math from "mathjs";
 import erf from "math-erf";
 
 // margin_function
@@ -257,8 +256,8 @@ export function clip(x) {
 export function option_intrinsic_value(spot, strike, isCall) {
     // call = (spot - strike).clip(0)
 	// put = (strike - spot).clip(0)
-    var call = ;
-    var put = ;
+    var call = 0;
+    var put = 0;
 
     return isCall * call + (1 - isCall) * put;
 }
@@ -274,8 +273,8 @@ export function option_price(spot, strike, iv, r, q, t, isCall) {
 export function option_reg_t_margin(spot, strike, stress, isCall) {
     // call = (stress * spot - (strike - spot).clip(0)).clip(stress * spot / 2)
 	// put = (stress * spot - (spot - strike).clip(0)).clip(stress * spot / 2)
-    var call = ;
-    var put = ;
+    var call = 0;
+    var put = 0;
 
     return isCall * call + (1 - isCall) * put;
 }
