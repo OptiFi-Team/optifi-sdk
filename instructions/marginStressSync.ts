@@ -1,6 +1,5 @@
-import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
-import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 
 import Asset from "../types/asset";
@@ -12,7 +11,7 @@ import {
 } from '../types/optifi-exchange-types';
 
 
-export default function marginStressCalculate(context: Context,
+export default function marginStressSync(context: Context,
     asset: Asset
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {

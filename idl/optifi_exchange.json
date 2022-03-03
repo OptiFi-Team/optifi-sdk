@@ -2378,6 +2378,82 @@
       }
     },
     {
+      "name": "MarginStressAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "optifiExchange",
+            "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "spotPrice",
+            "type": "u64"
+          },
+          {
+            "name": "iv",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "u64"
+          },
+          {
+            "name": "state",
+            "type": {
+              "defined": "MarginStressState"
+            }
+          },
+          {
+            "name": "flags",
+            "type": {
+              "vec": "bool"
+            }
+          },
+          {
+            "name": "instruments",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "optionPrice",
+            "type": {
+              "vec": {
+                "vec": "u64"
+              }
+            }
+          },
+          {
+            "name": "intrinsicValue",
+            "type": {
+              "vec": {
+                "vec": "u64"
+              }
+            }
+          },
+          {
+            "name": "optionPriceDeltaInStressPrice",
+            "type": {
+              "vec": {
+                "vec": "u64"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "UserAccount",
       "type": {
         "kind": "struct",
@@ -3123,6 +3199,23 @@
                 }
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarginStressState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Sync"
+          },
+          {
+            "name": "Calculate"
+          },
+          {
+            "name": "Available"
           }
         ]
       }
