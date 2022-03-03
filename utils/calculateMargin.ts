@@ -270,8 +270,8 @@ export function minus (a, b) {
         }
     }
     else {
-        for(let i = 0; i < b.length; i++) {
-            result[i] = b[i] - a; 
+        for(let i = 0; i < a.length; i++) {
+            result[i] = a[i] - b; 
         }
     }
 
@@ -286,8 +286,8 @@ export function plus (a, b) {
         }
     }
     else {
-        for(let i = 0; i < b.length; i++) {
-            result[i] = b[i] + a; 
+        for(let i = 0; i < a.length; i++) {
+            result[i] = a[i] + b; 
         }
     }
 
