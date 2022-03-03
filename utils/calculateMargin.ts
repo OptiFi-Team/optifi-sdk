@@ -320,10 +320,7 @@ export function option_intrinsic_value(spot, strike, isCall) {
     var call = clip(minus(spot, strike), 0);
     var put = clip(minus(strike, spot), 0);
 
-    // what does + mean here
-    var result = plus(matmul(isCall, call), minus(1, isCall));
-
-    return result;
+    return arrplusarr(matmul(isCall, call), matmul(minus(1, isCall), put));
 }
 
 export function option_price(spot, strike, iv, r, q, t, isCall) {
