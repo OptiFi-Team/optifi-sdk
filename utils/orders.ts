@@ -283,27 +283,6 @@ export function formPlaceOrderContext(
                                                     .then((exchangeRes) => {
                                                       let exchange =
                                                         exchangeRes as Exchange;
-                                                      let spotOracle =
-                                                        findOracleAccountFromAsset(
-                                                          context,
-                                                          numberToOptifiAsset(
-                                                            chain.asset
-                                                          )
-                                                        );
-                                                      let ivOracle =
-                                                        findOracleAccountFromAsset(
-                                                          context,
-                                                          numberToOptifiAsset(
-                                                            chain.asset
-                                                          ),
-                                                          OracleAccountType.Iv
-                                                        );
-                                                      let usdcSpotOracle =
-                                                        findOracleAccountFromAsset(
-                                                          context,
-                                                          OptifiAsset.USDC,
-                                                          OracleAccountType.Spot
-                                                        );
 
                                                       let result: PlaceOrderContext =
                                                       {

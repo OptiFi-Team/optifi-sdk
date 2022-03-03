@@ -26,6 +26,7 @@ export const AMM_PREFIX: string = "amm";
 export const AMM_LIQUIDITY_AUTH_PREFIX: string = "amm_liquidity_auth";
 export const MARKET_MAKER_PREFIX: string = "market_maker";
 export const LIQUIDATION_STATE_PREFIX: string = "liquidation_state";
+export const PREFIX_MARGIN_STRESS: string = "margin_stress";
 
 // Size of the strike ladder
 export const STRIKE_LADDER_SIZE: number = 9;
