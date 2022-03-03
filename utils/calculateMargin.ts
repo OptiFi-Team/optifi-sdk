@@ -200,7 +200,7 @@ export function stress_function(spot, strike, iv, r, q, t, stress, isCall, step 
 	// stresses
 	var stress_spot = generate_stress_spot(spot, stress, step);
 	var stress_price = option_price(stress_spot, strike, iv, r, q, t, isCall);
-	var stress_price_change = stress_price - price;
+	var stress_price_change = arrminusarr(stress_price, price);
 
 	return {
 		'Price': price,
@@ -313,6 +313,17 @@ export function arrplusarr(a, b) {
 
     return result;
 }
+
+export function arrminusarr(a, b) {
+    var result = [] as any;
+
+    for(let i = 0; i < a.length; i++) {
+        result.push(a[i] - b[i]);
+    }
+
+    return result;
+}
+
 
 export function option_intrinsic_value(spot, strike, isCall) {
     // call = (spot - strike).clip(0)
