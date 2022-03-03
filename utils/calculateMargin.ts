@@ -317,8 +317,13 @@ export function arrplusarr(a, b) {
 export function option_intrinsic_value(spot, strike, isCall) {
     // call = (spot - strike).clip(0)
 	// put = (strike - spot).clip(0)
+<<<<<<< HEAD
     var call = clip(minus(spot, strike), 0);
     var put = clip(minus(strike, spot), 0);
+=======
+    var call = 0;
+    var put = 0;
+>>>>>>> 147e1971c2887d315e5fa66e2dc4147dd6bc7f15
 
     // what does + mean here
     var result = plus(matmul(isCall, call), minus(1, isCall));
@@ -336,8 +341,13 @@ export function option_price(spot, strike, iv, r, q, t, isCall) {
 export function option_reg_t_margin(spot, strike, stress, isCall) {
     // call = (stress * spot - (strike - spot).clip(0)).clip(stress * spot / 2)
 	// put = (stress * spot - (spot - strike).clip(0)).clip(stress * spot / 2)
+<<<<<<< HEAD
     var call = clip(minus((stress * spot), clip(minus(strike, spot), 0)) ,(stress * spot / 2));
     var put = clip(minus((stress * spot), clip(minus(spot, strike), 0)) ,(stress * spot / 2));
+=======
+    var call = 0;
+    var put = 0;
+>>>>>>> 147e1971c2887d315e5fa66e2dc4147dd6bc7f15
 
     return arrplusarr(matmul(isCall, call), matmul(minus(1, isCall), put));
 }
