@@ -1,4 +1,3 @@
-import math from "mathjs";
 import erf from "math-erf";
 
 // margin_function
@@ -225,14 +224,14 @@ export function option_delta(spot, strike, iv, r, q, t, isCall) {
     var call = cdf(d1(spot, strike, iv, r, q, t));
     var put = call - 1;
 
-    return isCall * call + (1 - isCall) * put
+    return arrplusarr(arrmul(call, isCall), arrmul(minus(1, isCall), put));
 }
 
 export function generate_stress_spot(spot, stress, step) {
     // incr = (stress / step * np.arange(step * 2 + 1)).reshape(1, -1)
-	var incr = incr(stress, step, spot);
+	var incr1 = incr(stress, step, spot);
 
-	return spot * (1 - stress + incr)
+	return spot * (1 - stress + incr1)
 }
 
 export function incr(stress, step, spot) {
@@ -250,34 +249,97 @@ export function cdf(x) {
     return (1.0 + q) / 2.0
 }
 
-export function clip(x) {
+export function clip(arr, x) {
+    var result = [] as any;
+    for(let i = 0; i < arr.length; i++) {
+        if(arr[i] < x) {
+            result.push(x);
+        }
+        else{
+            result.push(arr[i]);
+        }
+    }
+    return result;
+}
 
+export function minus (a, b) {
+    var result = [] as any;
+    if(typeof a == "number") {
+        for(let i = 0; i < b.length; i++) {
+            result[i] = a - b[i]; 
+        }
+    }
+    else {
+        for(let i = 0; i < b.length; i++) {
+            result[i] = b[i] - a; 
+        }
+    }
+
+    return result;
+}
+
+export function plus (a, b) {
+    var result = [] as any;
+    if(typeof a == "number") {
+        for(let i = 0; i < b.length; i++) {
+            result[i] = a + b[i]; 
+        }
+    }
+    else {
+        for(let i = 0; i < b.length; i++) {
+            result[i] = b[i] + a; 
+        }
+    }
+
+    return result;
+}
+
+export function arrmul(a, b) {
+    var result = [] as any;
+
+    for(let i = 0; i < b.length; i++) {
+        result.push(b[i] * a);
+    }
+
+    return result;
+}
+
+export function arrplusarr(a, b) {
+    var result = [] as any;
+
+    for(let i = 0; i < a.length; i++) {
+        result.push(a[i] + b[i]);
+    }
+
+    return result;
 }
 
 export function option_intrinsic_value(spot, strike, isCall) {
     // call = (spot - strike).clip(0)
 	// put = (strike - spot).clip(0)
-    var call = ;
-    var put = ;
+    var call = clip(minus(spot, strike), 0);
+    var put = clip(minus(strike, spot), 0);
 
-    return isCall * call + (1 - isCall) * put;
+    // what does + mean here
+    var result = plus(matmul(isCall, call), minus(1, isCall));
+
+    return result;
 }
 
 export function option_price(spot, strike, iv, r, q, t, isCall) {
-    var call = spot * Math.exp((-q) * t) * cdf(d1(spot, strike, iv, r, q, t)) - 
-                strike * Math.exp((-r) * t) * cdf(d2(spot, strike, iv, r, q, t));
-    var put = call + strike * Math.exp((-r) * t) - spot * Math.exp((-q) * t);
+    var call = minus((spot * Math.exp((-q) * t) * cdf(d1(spot, strike, iv, r, q, t))), arrmul((Math.exp((-r) * t) * cdf(d2(spot, strike, iv, r, q, t))) ,strike));
+    var put = arrplusarr(call, arrmul((Math.exp((-r) * t) - spot * Math.exp((-q) * t)) ,strike));
 
-    return isCall * call + (1 - isCall) * put;
+    return arrplusarr(matmul(isCall, call), matmul(minus(1, isCall), put));
 }
 
 export function option_reg_t_margin(spot, strike, stress, isCall) {
     // call = (stress * spot - (strike - spot).clip(0)).clip(stress * spot / 2)
 	// put = (stress * spot - (spot - strike).clip(0)).clip(stress * spot / 2)
-    var call = ;
-    var put = ;
+    var call = clip(minus((stress * spot), clip(minus(strike, spot), 0)) ,(stress * spot / 2));
+    var put = clip(minus((stress * spot), clip(minus(spot, strike), 0)) ,(stress * spot / 2));
 
-    return isCall * call + (1 - isCall) * put;
+    return arrplusarr(matmul(isCall, call), matmul(minus(1, isCall), put));
 }
 
 // var user = [[1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]]
