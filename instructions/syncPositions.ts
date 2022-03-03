@@ -1,16 +1,16 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import {PublicKey, TransactionSignature} from "@solana/web3.js";
-import {findExchangeAccount, getDexOpenOrders} from "../utils/accounts";
-import {AmmAccount, OptifiMarket} from "../types/optifi-exchange-types";
-import {SERUM_DEX_PROGRAM_ID} from "../constants";
-import {findInstrumentIndexFromAMM} from "../utils/amm";
-import {findAssociatedTokenAccount} from "../utils/token";
-import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { findExchangeAccount, getDexOpenOrders } from "../utils/accounts";
+import { AmmAccount, OptifiMarket } from "../types/optifi-exchange-types";
+import { SERUM_DEX_PROGRAM_ID } from "../constants";
+import { findInstrumentIndexFromAMM } from "../utils/amm";
+import { findAssociatedTokenAccount } from "../utils/token";
+import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 
 export default function syncPositions(context: Context,
-                                      marketAddress: PublicKey,
-                                      ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
+    marketAddress: PublicKey,
+    ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
@@ -31,6 +31,7 @@ export default function syncPositions(context: Context,
                                         instrumentIdx,
                                         {
                                             accounts: {
+                                                optifiExchange: exchangeAddress,
                                                 amm: ammAddress,
                                                 optifiMarket: marketAddress,
                                                 longTokenVault: ammLongTokenVault,

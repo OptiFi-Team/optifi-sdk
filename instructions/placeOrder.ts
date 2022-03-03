@@ -4,9 +4,6 @@ import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import { formPlaceOrderContext } from "../utils/orders";
 import { OrderSide } from "../types/optifi-exchange-types";
-import { COIN_LOT_SIZE, MAX_COIN_QTY, MAX_PC_QTY, PC_LOT_SIZE } from "../constants";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
-import { getSerumMarket } from "../utils/serum";
 
 export default function placeOrder(context: Context,
     marketAddress: PublicKey,

@@ -555,17 +555,7 @@
           "isSigner": false
         },
         {
-          "name": "assetFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ivFeed",
+          "name": "marginStressAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -1189,7 +1179,7 @@
         },
         {
           "name": "amm",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1250,7 +1240,7 @@
         },
         {
           "name": "amm",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1304,6 +1294,11 @@
     {
       "name": "ammSyncPositions",
       "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "amm",
           "isMut": true,
@@ -1929,6 +1924,98 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "marginStressInit",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "asset",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "marginStressSync",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "assetFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ivFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "marginStressCalculate",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -2653,68 +2740,6 @@
       }
     },
     {
-      "name": "MarketMakerData",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
-          },
-          {
-            "name": "epoch",
-            "type": "u64"
-          },
-          {
-            "name": "volume",
-            "type": "u64"
-          },
-          {
-            "name": "totalIndicator",
-            "type": "u64"
-          },
-          {
-            "name": "timeWeightedIndicator",
-            "type": "u64"
-          },
-          {
-            "name": "dfmAsk",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Position",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "instruments",
-            "type": "publicKey"
-          },
-          {
-            "name": "longTokenVault",
-            "type": "publicKey"
-          },
-          {
-            "name": "shortTokenVault",
-            "type": "publicKey"
-          },
-          {
-            "name": "latestPosition",
-            "type": "u64"
-          },
-          {
-            "name": "usdcBalance",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
       "name": "StressFunctionResult",
       "type": {
         "kind": "struct",
@@ -2830,6 +2855,68 @@
             "type": {
               "defined": "f64"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketMakerData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "volume",
+            "type": "u64"
+          },
+          {
+            "name": "totalIndicator",
+            "type": "u64"
+          },
+          {
+            "name": "timeWeightedIndicator",
+            "type": "u64"
+          },
+          {
+            "name": "dfmAsk",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Position",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "instruments",
+            "type": "publicKey"
+          },
+          {
+            "name": "longTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "shortTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "latestPosition",
+            "type": "u64"
+          },
+          {
+            "name": "usdcBalance",
+            "type": "u64"
           }
         ]
       }
@@ -3127,7 +3214,7 @@
     {
       "code": 313,
       "name": "WrongState",
-      "msg": "the amm state is wrong"
+      "msg": "the working state is wrong"
     },
     {
       "code": 314,
@@ -3194,5 +3281,8 @@
       "name": "WrongAsset",
       "msg": "Wrong asset"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "3HF2LdWFV6pR8kDK4Qn4UjSEH71K2juVowBFntGkjChK"
+  }
 }
