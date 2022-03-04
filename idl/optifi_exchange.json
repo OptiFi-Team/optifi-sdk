@@ -2429,24 +2429,20 @@
           {
             "name": "optionPrice",
             "type": {
-              "vec": {
-                "vec": "u64"
-              }
+              "vec": "u64"
             }
           },
           {
             "name": "intrinsicValue",
             "type": {
-              "vec": {
-                "vec": "u64"
-              }
+              "vec": "u64"
             }
           },
           {
             "name": "optionPriceDeltaInStressPrice",
             "type": {
               "vec": {
-                "vec": "u64"
+                "vec": "i64"
               }
             }
           }

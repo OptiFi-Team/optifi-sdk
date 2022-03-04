@@ -33,6 +33,7 @@ import { Asset as OptifiAsset } from "../types/optifi-exchange-types";
 import { numberToOptifiAsset } from "../utils/generic";
 import { Chain } from "../types/optifi-exchange-types";
 import { findMarginStressWithAsset } from "./margin";
+import Asset from "../types/asset";
 
 export enum TxType {
   PlaceOrder = 0,
@@ -228,7 +229,7 @@ export function formOrderContext(
 export function formPlaceOrderContext(
   context: Context,
   marketAddress: PublicKey
-): Promise<PlaceOrderContext> {
+): Promise<[PlaceOrderContext, number]> {
   let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
   return new Promise((resolve, reject) => {
     findExchangeAccount(context)
@@ -340,7 +341,7 @@ export function formPlaceOrderContext(
                                                             SYSVAR_CLOCK_PUBKEY,
                                                           marginStressAccount: marginStressAddress,
                                                         };
-                                                        resolve(result);
+                                                        resolve([result, chain.asset]);
                                                       })
                                                         .catch((err) => {
                                                           console.error(err);

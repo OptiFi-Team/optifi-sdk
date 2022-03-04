@@ -9,16 +9,13 @@ import {
     findUserAccount,
 } from "../utils/accounts";
 import { SERUM_MARKETS } from "../constants";
-import { debugAnchorAccount, formatExplorerAddress, SolanaEntityType } from "../utils/debug";
-import { PublicKey, SystemProgram, Transaction, TransactionSignature } from "@solana/web3.js";
+import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { createInstruments } from "./createInstruments";
 import { createNextOptifiMarket, createOptifiMarketWithIdx } from "../instructions/createOptifiMarket";
 import { readJsonFile, sleep } from "../utils/generic";
 import { findOptifiMarkets } from "../utils/market";
-import createAMMAccounts from "./createAMMAccounts";
-import initializeAmmOnMarkets from "./initializeAMMOnMarkets";
-import { connect } from "http2";
-import { connection } from "@project-serum/common";
+import { createMarginStress } from "./createMarginStress";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -221,19 +218,10 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                                     marketKeys,
                                     instrumentKeys
                                 ).then(async () => {
-                                    console.log("Waiting 5 seconds to create amm accounts");
+                                    console.log("Waiting 5 seconds to create MarginStress accounts");
                                     await sleep(5000);
-                                    console.log("Creating AMM accounts");
-                                    createAMMAccounts(context).then(async () => {
-                                        console.log("Created AMM accounts, waiting 10 seconds before initializing them on the markets");
-                                        await sleep(10 * 1000);
-                                        initializeAmmOnMarkets(context).then((res) => {
-                                            console.log("Initialized AMM on markets! Bootstrapping complete");
-                                        }).catch((err) => {
-                                            console.error(err);
-                                            reject(err);
-                                        })
-                                    })
+                                    console.log("Creating MarginStress accounts");
+                                    await createMarginStress(context);
                                 }).catch((err) => {
                                     console.error(err);
                                     reject(err);
