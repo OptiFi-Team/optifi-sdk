@@ -26,6 +26,7 @@ export const AMM_PREFIX: string = "amm";
 export const AMM_LIQUIDITY_AUTH_PREFIX: string = "amm_liquidity_auth";
 export const MARKET_MAKER_PREFIX: string = "market_maker";
 export const LIQUIDATION_STATE_PREFIX: string = "liquidation_state";
+export const PREFIX_MARGIN_STRESS: string = "margin_stress";
 
 // Size of the strike ladder
 export const STRIKE_LADDER_SIZE: number = 9;
@@ -38,6 +39,11 @@ export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin, Asset.Ethereum];
 
 // How many duration are supported
 export const SUPPORTED_DURATION: Duration[] = [Duration.Weekly, Duration.Monthly];
+
+// The expiration durations we're supporting for standard expiries
+export const SUPPORTED_MATURITIES = [
+    MaturityType.Weekly
+]
 
 //How many instrument types are supported
 export const SUPPORTED_INSTRUMENTS: InstrumentType[] = [InstrumentType.Put, InstrumentType.Call];
@@ -66,13 +72,6 @@ export const EXPIRATION_WEEKDAY: number = 3;
 export const EXPIRATION_TIME: number = 14;
 
 export const SECONDS_IN_YEAR: number = (60 * 60) * 24 * 365;
-
-// The expiration durations we're supporting for standard expiries
-export const SUPPORTED_MATURITIES = [
-    MaturityType.Weekly,
-    MaturityType.Monthly
-]
-
 
 export function calculateSerumMarketsCount(): number {
     let totalMarkets = 0;
@@ -113,7 +112,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111177",
+    "https://api.devnet.solana.com": "111180",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
