@@ -9,35 +9,38 @@ import {
   TransactionResultType,
 } from "../utils/transactions";
 
-function cancelOrder(
-  context: Context,
-  marketAddress: PublicKey,
-  side: OrderSide,
-  orderId: anchor.BN
-): Promise<InstructionResult<TransactionSignature>> {
-  return new Promise((resolve, reject) => {
-    formCancelOrderContext(context, marketAddress)
-      .then((orderContext) => {
-        let cancelTx = context.program.transaction.cancelOrder(side, orderId, {
-          accounts: orderContext,
-        });
-        signAndSendTransaction(context, cancelTx)
-          .then((cancelRes) => {
-            if (cancelRes.resultType === TransactionResultType.Successful) {
-              resolve({
-                successful: true,
-                data: cancelRes.txId as TransactionSignature,
-              });
-            } else {
-              console.error(cancelRes);
-              reject(cancelRes);
-            }
-          })
-          .catch((err) => reject(err));
-      })
-      .catch((err) => reject(err));
-  });
-}
+// =========================================================================================
+//  the cancelOrder in Optifi program is deprecated, use cancelOrderByClientOrderId instead
+// =========================================================================================
+// function cancelOrder(
+//   context: Context,
+//   marketAddress: PublicKey,
+//   side: OrderSide,
+//   orderId: anchor.BN
+// ): Promise<InstructionResult<TransactionSignature>> {
+//   return new Promise((resolve, reject) => {
+//     formCancelOrderContext(context, marketAddress)
+//       .then((orderContext) => {
+//         let cancelTx = context.program.transaction.cancelOrder(side, orderId, {
+//           accounts: orderContext,
+//         });
+//         signAndSendTransaction(context, cancelTx)
+//           .then((cancelRes) => {
+//             if (cancelRes.resultType === TransactionResultType.Successful) {
+//               resolve({
+//                 successful: true,
+//                 data: cancelRes.txId as TransactionSignature,
+//               });
+//             } else {
+//               console.error(cancelRes);
+//               reject(cancelRes);
+//             }
+//           })
+//           .catch((err) => reject(err));
+//       })
+//       .catch((err) => reject(err));
+//   });
+// }
 
 export default  function cancelOrderByClientOrderId(
   context: Context,

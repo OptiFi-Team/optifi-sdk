@@ -69,7 +69,7 @@ export interface PlaceOrderContext extends OrderAccountContext {
   instrumentTokenMintAuthorityPda: PublicKey;
   marginStressAccount: PublicKey
   rent: PublicKey;
-  // clock: PublicKey;
+  clock: PublicKey;
 }
 
 export interface CancelOrderContext extends OrderAccountContext {
@@ -337,8 +337,8 @@ export function formPlaceOrderContext(
                                                           tokenProgram:
                                                             TOKEN_PROGRAM_ID,
                                                           rent: SYSVAR_RENT_PUBKEY,
-                                                          // clock:
-                                                          //   SYSVAR_CLOCK_PUBKEY,
+                                                          clock:
+                                                            SYSVAR_CLOCK_PUBKEY,
                                                           marginStressAccount: marginStressAddress,
                                                         };
                                                         resolve([result, chain.asset]);
