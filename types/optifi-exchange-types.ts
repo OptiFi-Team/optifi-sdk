@@ -8,7 +8,7 @@ export const AmmState = {
   CalculateProposal: { calculateproposal: {} },
   Execute: { execute: {} }
 }
-
+    
 
 export type Asset = Record<string, Record<string, any>>
 export const Asset = {
@@ -16,21 +16,21 @@ export const Asset = {
   Ethereum: { ethereum: {} },
   USDC: { usdc: {} }
 }
-
+    
 
 export type Duration = Record<string, Record<string, any>>
 export const Duration = {
   Weekly: { weekly: {} },
   Monthly: { monthly: {} }
 }
-
+    
 
 export type InstrumentType = Record<string, Record<string, any>>
 export const InstrumentType = {
   Put: { put: {} },
   Call: { call: {} }
 }
-
+    
 
 export type ExpiryType = Record<string, Record<string, any>>
 export const ExpiryType = {
@@ -55,28 +55,28 @@ export const LiquidationStatus = {
   Liquidating: { liquidating: {} },
   Dormant: { dormant: {} }
 }
-
+    
 
 export type OracleDataType = Record<string, Record<string, any>>
 export const OracleDataType = {
   Spot: { spot: {} },
   IV: { iv: {} }
 }
-
+    
 
 export type OrderSide = Record<string, Record<string, any>>
 export const OrderSide = {
   Bid: { bid: {} },
   Ask: { ask: {} }
 }
-
+    
 
 export type SpotInputOption = Record<string, Record<string, any>>
 export const SpotInputOption = {
   SingleSpot: { singlespot: {} },
   MultiSpots: { multispots: {} }
 }
-
+    
 
 export type MarginStressState = Record<string, Record<string, any>>
 export const MarginStressState = {
@@ -92,9 +92,9 @@ export const AccountState = {
   Initialized: { initialized: {} },
   Frozen: { frozen: {} }
 }
+    
 
-
-
+  
 
 export type AmmAccount = IdlAccounts<OptifiExchangeIDL>["ammAccount"]
 
@@ -113,4 +113,5 @@ export type OptifiMarket = IdlAccounts<OptifiExchangeIDL>["optifiMarket"]
 export type MarginStressAccount = IdlAccounts<OptifiExchangeIDL>["marginStressAccount"]
 
 export type UserAccount = IdlAccounts<OptifiExchangeIDL>["userAccount"]
-
+  
+          

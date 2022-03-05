@@ -29,6 +29,7 @@ export default function placeOrder(context: Context,
                 new anchor.BN(limit),
                 new anchor.BN(maxCoinQty),
                 new anchor.BN(maxPcQty),
+                new anchor.BN(new Date().getTime() / 1000), // use current timestamp as client defined order id
                 {
                     accounts: orderContext
                 }
