@@ -4,13 +4,13 @@ import { formCancelOrderContext, getOrdersOnMarket } from "../utils/orders";
 import { OrderSide } from "../types/optifi-exchange-types";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { getSerumMarket, watchSettleSerumFunds } from "../utils/serum";
-import cancelOrder from "../instructions/cancelOrder";
+import cancelOrderByClientOrderId from "../instructions/cancelOrder";
 import { dateToAnchorTimestamp, sleep } from "../utils/generic";
 import * as anchor from "@project-serum/anchor";
 
-let market = new PublicKey("BzpWij8iXh3t6VFaJ5NWLi6yCNkT24gVTax141LNLGnL");
+let market = new PublicKey("5QCyCgJb6W1wzdtFN53RKpDmuVRoJuGrsh4BAb6tUZJ6");
 
-let orderId = new anchor.BN("18446744092156295689709551612");
+let orderId = new anchor.BN("1646469898");
 
 // If buy -> Bid, sell -> ask
 let side = OrderSide.Bid;
@@ -24,7 +24,7 @@ initializeContext().then((context) => {
         console.log("Serum market is ", formatExplorerAddress(context, orderContext.serumMarket.toString(), SolanaEntityType.Account));
         console.log("Open orders account is ", formatExplorerAddress(context, orderContext.openOrders.toString(), SolanaEntityType.Account))
 
-        cancelOrder(context, market, side, orderId).then(async (res) => {
+        cancelOrderByClientOrderId(context, market, side, orderId).then(async (res) => {
             console.log("Cancel order ", res);
             if (res.successful) {
                 console.log(formatExplorerAddress(context, res.data as TransactionSignature, SolanaEntityType.Transaction));

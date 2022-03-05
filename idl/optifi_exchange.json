@@ -593,6 +593,10 @@
         {
           "name": "maxPcQty",
           "type": "u64"
+        },
+        {
+          "name": "clientOrderId",
+          "type": "u64"
         }
       ]
     },
@@ -715,6 +719,128 @@
         {
           "name": "orderId",
           "type": "u128"
+        }
+      ]
+    },
+    {
+      "name": "cancelOrderByClientOrderId",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "requestQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcCentralPool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": {
+            "defined": "OrderSide"
+          }
+        },
+        {
+          "name": "clientOrderId",
+          "type": "u64"
         }
       ]
     },
@@ -2460,51 +2586,6 @@
       }
     },
     {
-      "name": "InstrumentCommon",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
-          },
-          {
-            "name": "expiryDate",
-            "type": "u64"
-          },
-          {
-            "name": "expiryType",
-            "type": {
-              "defined": "ExpiryType"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "InstrumentUnique",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "strike",
-            "type": "u32"
-          },
-          {
-            "name": "instrumentPubkeys",
-            "type": {
-              "array": [
-                "publicKey",
-                2
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "OptifiMarketKeyData",
       "type": {
         "kind": "struct",
@@ -2730,6 +2811,26 @@
             }
           },
           {
+            "name": "regTMargin",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "f64"
+                }
+              }
+            }
+          },
+          {
+            "name": "delta",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "f64"
+                }
+              }
+            }
+          },
+          {
             "name": "intrinsicValue",
             "type": {
               "vec": {
@@ -2829,6 +2930,51 @@
             "name": "notionalLeverage",
             "type": {
               "defined": "f64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstrumentCommon",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "expiryDate",
+            "type": "u64"
+          },
+          {
+            "name": "expiryType",
+            "type": {
+              "defined": "ExpiryType"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstrumentUnique",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strike",
+            "type": "u32"
+          },
+          {
+            "name": "instrumentPubkeys",
+            "type": {
+              "array": [
+                "publicKey",
+                2
+              ]
             }
           }
         ]
