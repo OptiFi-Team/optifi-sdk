@@ -2745,6 +2745,51 @@
       }
     },
     {
+      "name": "InstrumentCommon",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "expiryDate",
+            "type": "u64"
+          },
+          {
+            "name": "expiryType",
+            "type": {
+              "defined": "ExpiryType"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstrumentUnique",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strike",
+            "type": "u32"
+          },
+          {
+            "name": "instrumentPubkeys",
+            "type": {
+              "array": [
+                "publicKey",
+                2
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "OptifiMarketKeyData",
       "type": {
         "kind": "struct",
@@ -2899,26 +2944,6 @@
         "fields": [
           {
             "name": "price",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": "f64"
-                }
-              }
-            }
-          },
-          {
-            "name": "regTMargin",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": "f64"
-                }
-              }
-            }
-          },
-          {
-            "name": "delta",
             "type": {
               "vec": {
                 "vec": {
@@ -3473,6 +3498,6 @@
     }
   ],
   "metadata": {
-    "address": "3HF2LdWFV6pR8kDK4Qn4UjSEH71K2juVowBFntGkjChK"
+    "address": "FVWhLLPYPPPVtmrAwSgsy4cF84z888hamnyXYdtFN2jT"
   }
 }
