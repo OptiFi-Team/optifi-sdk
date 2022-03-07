@@ -8,7 +8,7 @@ import { TOKEN_PROGRAM_ID, getAccount, createAssociatedTokenAccountInstruction }
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import InstructionResult from "../types/instructionResult";
 import { findAssociatedTokenAccount } from "../utils/token";
-import { USDC_TOKEN_MINT } from "../lib/constants";
+import { USDC_TOKEN_MINT } from "../constants";
 
 export default function ammDeposit(context: Context,
     ammAddress: PublicKey,

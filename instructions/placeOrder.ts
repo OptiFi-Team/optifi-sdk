@@ -22,33 +22,24 @@ export default function placeOrder(context: Context,
             console.log("maxPcQty: ", maxPcQty);
 
 
-            let Tx = await marginStress(context, asset);
+            let ix = await marginStress(context, asset);
 
-            let tx3 = context.program.transaction.placeOrder(
+            context.program.rpc.placeOrder(
                 side,
                 new anchor.BN(limit),
                 new anchor.BN(maxCoinQty),
                 new anchor.BN(maxPcQty),
                 new anchor.BN(new Date().getTime() / 1000), // use current timestamp as client defined order id
                 {
-                    accounts: orderContext
+                    accounts: orderContext,
+                    instructions: ix
                 }
-            );
-
-            Tx.add(tx3);
-
-            signAndSendTransaction(context, Tx).then((res) => {
-                if (res.resultType === TransactionResultType.Successful) {
-                    resolve({
-                        successful: true,
-                        data: res.txId as TransactionSignature
-                    })
-                } else {
-                    console.error(res);
-                    reject(res);
-                }
+            ).then((res) => {
+                resolve({
+                    successful: true,
+                    data: res as TransactionSignature
+                })
             }).catch((err) => reject(err))
-
 
         }).catch((err) => reject(err))
     })

@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { SYSVAR_CLOCK_PUBKEY, Transaction, TransactionSignature } from "@solana/web3.js";
+import { SYSVAR_CLOCK_PUBKEY, Transaction, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 
 import Asset from "../types/asset";
@@ -9,11 +9,12 @@ import { assetToOptifiAsset, numberToOptifiAsset, optifiAssetToNumber } from "..
 import {
     Asset as OptifiAsset,
 } from '../types/optifi-exchange-types';
+import { debugAnchorAccount } from "../utils/debug";
 
 
 export default function marginStress(context: Context,
     asset: number
-): Promise<Transaction> {
+): Promise<TransactionInstruction[]> {
     return new Promise(async (resolve, reject) => {
 
         try {
@@ -43,7 +44,7 @@ export default function marginStress(context: Context,
                     OracleAccountType.Spot
                 );
 
-            let tx1 = context.program.transaction.marginStressSync(
+            let ix1 = context.program.instruction.marginStressSync(
                 {
                     accounts: {
                         optifiExchange: exchangeAddress,
@@ -56,7 +57,7 @@ export default function marginStress(context: Context,
                 }
             );
 
-            let tx2 = context.program.transaction.marginStressCalculate(
+            let ix2 = context.program.instruction.marginStressCalculate(
                 {
                     accounts: {
                         optifiExchange: exchangeAddress,
@@ -65,15 +66,15 @@ export default function marginStress(context: Context,
                 }
             );
 
-            let Tx = new Transaction();
+            let instructions: TransactionInstruction[] = []
 
-            Tx.add(tx1);
+            instructions.push(ix1);
 
             for (let i = 0; i < 9; i++) {
-                Tx.add(tx2);
+                instructions.push(ix2);
             }
 
-            resolve(Tx)
+            resolve(instructions)
         } catch (e) {
             console.error(e);
             reject(e)
