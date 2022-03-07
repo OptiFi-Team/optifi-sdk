@@ -13,7 +13,7 @@ const cancelOrderSignature = "fRxJkFxjTpaL"
 const cancelOrderByClientOrderIdSignature = "264TKrGFGtaFb"
 
 // get recent tx  - 1000 tx by default
-const retrievRecentTxs = async (context: Context,
+export const retrievRecentTxs = async (context: Context,
   account: PublicKey): Promise<TransactionResponse[]> => {
   let result: TransactionResponse[] = []
   let signatures = await context.connection.getSignaturesForAddress(
