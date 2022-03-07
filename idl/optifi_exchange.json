@@ -3369,5 +3369,8 @@
       "name": "WrongAsset",
       "msg": "Wrong asset"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "7JJ4Ecfy4dwnpdyEd8oraFM6xnJk545RrkGPgjFyePpF"
+  }
 }
