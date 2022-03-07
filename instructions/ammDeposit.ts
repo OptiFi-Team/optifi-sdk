@@ -8,6 +8,7 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import InstructionResult from "../types/instructionResult";
 import { findAssociatedTokenAccount } from "../utils/token";
+import { USDC_TOKEN_MINT } from "../lib/constants";
 
 export default function ammDeposit(context: Context,
     ammAddress: PublicKey,
@@ -18,10 +19,10 @@ export default function ammDeposit(context: Context,
                 context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                     // @ts-ignore
                     let amm = ammRes as AmmAccount;
-                    findAssociatedTokenAccount(context, amm.quoteTokenMint).then(([userQuoteTokenVault, _]) => {
+                    findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
                         findAssociatedTokenAccount(context, amm.lpTokenMint).then(([userLpTokenVault, _]) => {
                             getAmmLiquidityAuthPDA(context).then(([liquidityAuthPDA, _]) => {
-                                context.connection.getTokenAccountBalance(userAccountAddress).then(tokenAmount => {
+                                context.connection.getTokenAccountBalance(userQuoteTokenVault).then(tokenAmount => {
                                     context.program.rpc.ammDeposit(
                                         new anchor.BN(amount * (10 ** tokenAmount.value.decimals)),
                                         {
