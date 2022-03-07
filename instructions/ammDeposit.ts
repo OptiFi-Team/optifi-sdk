@@ -1,10 +1,10 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { Account, PublicKey, SystemProgram, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findUserAccount } from "../utils/accounts";
 import { AmmAccount } from "../types/optifi-exchange-types";
 import { getAmmLiquidityAuthPDA } from "../utils/pda";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, getAccount, createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import InstructionResult from "../types/instructionResult";
 import { findAssociatedTokenAccount } from "../utils/token";
@@ -20,7 +20,27 @@ export default function ammDeposit(context: Context,
                     // @ts-ignore
                     let amm = ammRes as AmmAccount;
                     findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
-                        findAssociatedTokenAccount(context, amm.lpTokenMint).then(([userLpTokenVault, _]) => {
+                        findAssociatedTokenAccount(context, amm.lpTokenMint).then(async ([userLpTokenVault, _]) => {
+                            let instructions: TransactionInstruction[] = []
+                            try {
+                                let accountInfo = await getAccount(context.connection, userLpTokenVault)
+                                console.log("user lp token accountInfo: ", accountInfo)
+                            } catch (err) {
+                                // console.log("err: ", err)
+                                if (`${err}`.includes("TokenAccountNotFoundError")) {
+                                    console.log("adding init lp token account inx")
+                                    instructions.push(
+                                        createAssociatedTokenAccountInstruction(
+                                            context.provider.wallet.publicKey,
+                                            userLpTokenVault,
+                                            context.provider.wallet.publicKey,
+                                            ammRes.lpTokenMint,
+                                        )
+                                    )
+                                } else {
+                                    reject(err)
+                                }
+                            }
                             getAmmLiquidityAuthPDA(context).then(([liquidityAuthPDA, _]) => {
                                 context.connection.getTokenAccountBalance(userQuoteTokenVault).then(tokenAmount => {
                                     context.program.rpc.ammDeposit(
@@ -37,7 +57,8 @@ export default function ammDeposit(context: Context,
                                                 userLpTokenVault: userLpTokenVault,
                                                 user: context.provider.wallet.publicKey,
                                                 tokenProgram: TOKEN_PROGRAM_ID
-                                            }
+                                            },
+                                            instructions: instructions
                                         }
                                     ).then((res) => {
                                         resolve({
