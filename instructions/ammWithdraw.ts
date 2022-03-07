@@ -4,10 +4,11 @@ import InstructionResult from "../types/instructionResult";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findUserAccount } from "../utils/accounts";
 import { AmmAccount } from "../types/optifi-exchange-types";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getMint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { findAssociatedTokenAccount } from "../utils/token";
 import { getAmmLiquidityAuthPDA } from "../utils/pda";
+import { USDC_TOKEN_MINT } from "../constants";
 
 export default function ammWithdraw(context: Context,
     ammAddress: PublicKey,
@@ -19,11 +20,12 @@ export default function ammWithdraw(context: Context,
                     context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                         // @ts-ignore
                         let amm = ammRes as Amm;
-                        findAssociatedTokenAccount(context, amm.quoteTokenMint).then(([userQuoteTokenVault, _]) => {
+                        findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
                             findAssociatedTokenAccount(context, amm.lpTokenMint).then(([userLpTokenVault, _]) => {
-                                context.connection.getTokenAccountBalance(userAccountAddress).then(tokenAmount => {
+
+                                getMint(context.connection, amm.lpTokenMint).then(tokenMintInfo => {
                                     context.program.rpc.ammWithdraw(
-                                        new anchor.BN(amount * (10 ** tokenAmount.value.decimals)),
+                                        new anchor.BN(amount * (10 ** tokenMintInfo.decimals)),
                                         {
                                             accounts: {
                                                 optifiExchange: exchangeAddress,
