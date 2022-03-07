@@ -1,16 +1,15 @@
 import { initializeContext } from "../index";
 import { getAmountToReserve, getUserBalance } from "../utils/user";
 
-initializeContext().then((context) => {
-    getAmountToReserve(context).then((res) => {
-        console.log("Got AmountToReserve", res);
-    }).catch((err) => {
-        console.error(err);
-    })
+initializeContext().then(async (context) => {
+    let amount_to_reserve = await getAmountToReserve(context);
+    let user_balance = await getUserBalance(context);
+    let available_balance = user_balance - amount_to_reserve;
+    let liquidation = available_balance * 0.9;
 
-    getUserBalance(context).then((res) => {
-        console.log("Got Balance", res);
-    }).catch((err) => {
-        console.error(err);
-    })
+
+    console.log("amount_to_reserve: ", amount_to_reserve);
+    console.log("user_balance: ", user_balance);
+    console.log("available_balance: ", available_balance);
+    console.log("liquidation: ", liquidation);
 })
