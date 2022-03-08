@@ -1,5 +1,5 @@
-import {initializeContext} from "../index";
-import {createUserAccountIfNotExist} from "../utils/accounts";
+import { initializeContext } from "../../index";
+import { createUserAccountIfNotExist } from "../../utils/accounts";
 
 initializeContext().then((context) => {
     createUserAccountIfNotExist(context).then((res) => {

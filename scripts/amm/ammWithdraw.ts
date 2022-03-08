@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
-import { initializeContext } from "../index";
-import ammWithdraw from "../instructions/ammWithdraw";
+import { initializeContext } from "../../index";
+import ammWithdraw from "../../instructions/ammWithdraw";
 
 let amount = 100; // already including decimals
 

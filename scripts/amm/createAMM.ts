@@ -1,7 +1,7 @@
-import createAMMAccounts from "../sequences/createAMMAccounts";
-import {sleep} from "../utils/generic";
-import initializeAmmOnMarkets from "../sequences/initializeAMMOnMarkets";
-import {initializeContext} from "../index";
+import createAMMAccounts from "../../sequences/createAMMAccounts";
+import { sleep } from "../../utils/generic";
+import initializeAmmOnMarkets from "../../sequences/initializeAMMOnMarkets";
+import { initializeContext } from "../../index";
 
 initializeContext().then((context) => {
 

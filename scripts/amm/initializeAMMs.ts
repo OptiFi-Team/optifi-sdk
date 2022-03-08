@@ -1,9 +1,9 @@
-import { initializeContext } from "../index";
-import { SUPPORTED_ASSETS } from "../constants";
-import Context from "../types/context";
-import { initializeAmm } from "../instructions/initializeAmm";
-import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
-import { Duration } from "../types/optifi-exchange-types";
+import { initializeContext } from "../../index";
+import { SUPPORTED_ASSETS } from "../../constants";
+import Context from "../../types/context";
+import { initializeAmm } from "../../instructions/initializeAmm";
+import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
+import { Duration } from "../../types/optifi-exchange-types";
 
 async function initializeAMMOnSupportedAssets(context: Context) {
     let i = 1;

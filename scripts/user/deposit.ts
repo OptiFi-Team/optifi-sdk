@@ -1,5 +1,5 @@
-import { initializeContext } from "../index";
-import deposit from "../instructions/deposit";
+import { initializeContext } from "../../index";
+import deposit from "../../instructions/deposit";
 
 let amount = 100000; // already including decimals
 

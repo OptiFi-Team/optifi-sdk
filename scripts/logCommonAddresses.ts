@@ -2,13 +2,13 @@
  * Derive commonly used program addresses from the current context, and log them, for debugging and info purposes
  */
 
-import {initializeContext} from "../index";
-import {findExchangeAccount, findUserAccount, userAccountExists} from "../utils/accounts";
-import {formatExplorerAddress, logFormatted, SolanaEntityType} from "../utils/debug";
+import { initializeContext } from "../index";
+import { findExchangeAccount, findUserAccount, userAccountExists } from "../utils/accounts";
+import { formatExplorerAddress, logFormatted, SolanaEntityType } from "../utils/debug";
 
 
 initializeContext().then((context) => {
-    findExchangeAccount(context).then(([exchangeAddress, _]) => { 
+    findExchangeAccount(context).then(([exchangeAddress, _]) => {
         findUserAccount(context).then(([userAccount, _]) => {
             userAccountExists(context).then(([acctExists, _]) => {
                 let exchangeExists: boolean;

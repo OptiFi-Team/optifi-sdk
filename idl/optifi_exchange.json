@@ -445,6 +445,11 @@
           "isSigner": false
         },
         {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "user",
           "isMut": false,
           "isSigner": true
@@ -551,11 +556,6 @@
         },
         {
           "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "marginStressAccount",
           "isMut": false,
           "isSigner": false
         }
@@ -851,6 +851,32 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "userMarginCalculate",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "recordPnlForOneUser",
@@ -1700,13 +1726,23 @@
       "name": "initLiquidation",
       "accounts": [
         {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccountUsdc",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "liquidationState",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1737,7 +1773,7 @@
         },
         {
           "name": "serumMarket",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1792,13 +1828,18 @@
       "name": "liquidatePosition",
       "accounts": [
         {
-          "name": "exchange",
+          "name": "optifiExchange",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "userAccount",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccountUsdc",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -2800,8 +2841,8 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "size",
-            "type": "u64"
+            "name": "value",
+            "type": "i64"
           },
           {
             "name": "address",
@@ -2820,7 +2861,7 @@
             "type": {
               "vec": {
                 "vec": {
-                  "defined": "f64"
+                  "defined": "f32"
                 }
               }
             }
@@ -2830,7 +2871,7 @@
             "type": {
               "vec": {
                 "vec": {
-                  "defined": "f64"
+                  "defined": "f32"
                 }
               }
             }
@@ -2840,7 +2881,7 @@
             "type": {
               "vec": {
                 "vec": {
-                  "defined": "f64"
+                  "defined": "f32"
                 }
               }
             }
@@ -2864,67 +2905,67 @@
           {
             "name": "net",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "notional",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "stressResult",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "netIntrinsic",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "netPremium",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "maturingNetIntrinsic",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "maturingPremium",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "maturingLiquidity",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "totalMargin",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "netLeverage",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           },
           {
             "name": "notionalLeverage",
             "type": {
-              "defined": "f64"
+              "defined": "f32"
             }
           }
         ]
@@ -3179,7 +3220,7 @@
             "name": "SingleSpot",
             "fields": [
               {
-                "defined": "f64"
+                "defined": "f32"
               }
             ]
           },
@@ -3189,7 +3230,7 @@
               {
                 "vec": {
                   "vec": {
-                    "defined": "f64"
+                    "defined": "f32"
                   }
                 }
               }
@@ -3371,6 +3412,6 @@
     }
   ],
   "metadata": {
-    "address": "7JJ4Ecfy4dwnpdyEd8oraFM6xnJk545RrkGPgjFyePpF"
+    "address": "GqqAv9kNs37XD4Dcn5WDZiFHD6nJSBYKgWBDJ3tiVpuN"
   }
 }

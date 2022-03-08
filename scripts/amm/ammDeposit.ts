@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
-import { initializeContext } from "../index";
-import ammDeposit from "../instructions/ammDeposit";
+import { initializeContext } from "../../index";
+import ammDeposit from "../../instructions/ammDeposit";
 
 let amount = 100000; // already including decimals
 
