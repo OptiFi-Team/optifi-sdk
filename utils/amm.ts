@@ -125,9 +125,11 @@ export function getUserTxsOnAllAMM(context: Context): Promise<AmmTx[]> {
 }
 
 interface UserEquity {
-    lpTokenBalance: number,
-    lpToeknValueInUsdc: number,
-    earnedValueInUsdc: number
+    lpTokenBalance: number, // user's lp token balance
+    lpToeknValueInUsdc: number, // user's lp token value in usdc
+    earnedValueInUsdc: number, // user's earned value in usdc
+    ammUsdcVaultBalance: number, // each amm's usdc vault balance
+    ammLpTokenSupply: number // each amm's lp token total supply
 }
 
 // return a user's equity on each AMM
@@ -185,7 +187,9 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
                 equity.set(asset, {
                     lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                     lpToeknValueInUsdc: actualBalance,
-                    earnedValueInUsdc: new Decimal(actualBalance).add(new Decimal(notionalBalance.get(asset)!)).toNumber()
+                    earnedValueInUsdc: new Decimal(actualBalance).add(new Decimal(notionalBalance.get(asset)!)).toNumber(),
+                    ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** usdcMintInfo.decimals).toNumber(),
+                    ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber()
                 })
             }
             resolve(equity)
