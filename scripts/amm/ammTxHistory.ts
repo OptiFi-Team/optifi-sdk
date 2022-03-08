@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
-import { initializeContext } from "../index";
-import ammWithdraw from "../instructions/ammWithdraw";
-import { getAllUsersTxsOnAllAMM, getUserEquity, getUserTxsOnAllAMM } from "../utils/amm";
+import { initializeContext } from "../../index";
+import ammWithdraw from "../../instructions/ammWithdraw";
+import { getAllUsersTxsOnAllAMM, getUserEquity, getUserTxsOnAllAMM } from "../../utils/amm";
 
 let amount = 100; // already including decimals
 

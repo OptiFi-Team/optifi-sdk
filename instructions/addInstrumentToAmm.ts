@@ -8,7 +8,7 @@ import { signAndSendTransaction, TransactionResultType } from "../utils/transact
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { findSerumAuthorityPDA, getAmmLiquidityAuthPDA } from "../utils/pda";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
-import { findAssociatedTokenAccount } from "../lib/utils/token";
+import { findAssociatedTokenAccount } from "../utils/token";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 
 export default function addInstrumentToAmm(context: Context,
@@ -21,12 +21,12 @@ export default function addInstrumentToAmm(context: Context,
             //     findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammAddress).then((ammShortTokenVault) => {
             findOptifiExchange(context).then(async ([exchangeAddress, _]) => {
                 try {
-                    let [ammLiquidityAuth, _bump] = await getAmmLiquidityAuthPDA(context);
+                    let [ammLiquidityAuth,] = await getAmmLiquidityAuthPDA(context);
                     let [dexOpenOrders, bump2] = await getDexOpenOrders(
                         context,
                         optifiMarket.serumMarket,
                         ammLiquidityAuth)
-                    let [serumMarketAuthority, _bump3] = await findSerumAuthorityPDA(context);
+                    let [serumMarketAuthority,] = await findSerumAuthorityPDA(context);
                     let initAmmOnOptifiMarketInx = context.program.instruction.initAmmOnOptifiMarket(bump2, {
                         accounts: {
                             optifiExchange: exchangeAddress,
