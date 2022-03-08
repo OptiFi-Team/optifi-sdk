@@ -6,6 +6,8 @@ import { OrderSide } from "../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import userMarginCalculate from "./userMarginCalculate";
+import { sleep } from "../utils/generic";
 
 export function getSettleOrderTx(
     context: Context,
@@ -52,13 +54,15 @@ export default function settleOrderFunds(context: Context,
             settleOrderTx.add(await getSettleOrderTx(context, marketAddress));
         };
 
-        signAndSendTransaction(context, settleOrderTx).then((res) => {
+        signAndSendTransaction(context, settleOrderTx).then(async (res) => {
             if (res.resultType === TransactionResultType.Successful) {
                 console.debug("Settled order funds", formatExplorerAddress(
                     context,
                     res.txId as string,
                     SolanaEntityType.Transaction
                 ))
+                await sleep(1000);
+                await userMarginCalculate(context);
                 resolve({
                     successful: true,
                     data: res.txId as TransactionSignature

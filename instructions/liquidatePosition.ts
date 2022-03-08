@@ -25,7 +25,7 @@ export default function liquidatePosition(context: Context,
                                         context.program.rpc.liquidatePosition(
                                             {
                                                 accounts: {
-                                                    exchange: exchangeAddress,
+                                                    optifiExchange: exchangeAddress,
                                                     userAccount: userAccountAddress,
                                                     userMarginAccountUsdc: userAccount.userMarginAccountUsdc,
                                                     liquidationState: liquidationStateAddress,

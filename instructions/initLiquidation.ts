@@ -9,7 +9,7 @@ export default function initLiquidation(context: Context, userToLiquidate: Publi
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findLiquidationState(context, userToLiquidate).then(([liquidationStateAddress, _]) => {
-                context.program.account.userAccount.fetch(userToLiquidate).then((userAccount) => {
+                context.program.account.userAccount.fetch(userToLiquidate).then(async (userAccount) => {
                     context.program.rpc.initLiquidation({
                         accounts: {
                             optifiExchange: exchangeAddress,

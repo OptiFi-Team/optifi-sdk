@@ -1,6 +1,6 @@
-import { initializeContext } from "../index";
-import marginStressCalculate from "../instructions/marginStressCalculate";
-import Asset from "../types/asset";
+import { initializeContext } from "../../index";
+import marginStressCalculate from "../../instructions/marginStressCalculate";
+import Asset from "../../types/asset";
 
 let asset = Asset.Bitcoin;
 

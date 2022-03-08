@@ -1,12 +1,12 @@
-import { initializeContext } from "../index";
-import marginStress from "../instructions/marginStress";
-import marginStressCalculate from "../instructions/marginStressCalculate";
-import marginStressSync from "../instructions/marginStressSync";
-import Asset from "../types/asset";
-import { MarginStressState } from "../types/optifi-exchange-types";
-import { findExchangeAccount } from "../utils/accounts";
-import { assetToOptifiAsset, optifiAssetToNumber, sleep } from "../utils/generic";
-import { findMarginStressWithAsset } from "../utils/margin";
+import { initializeContext } from "../../index";
+import marginStress from "../../instructions/marginStress";
+import marginStressCalculate from "../../instructions/marginStressCalculate";
+import marginStressSync from "../../instructions/marginStressSync";
+import Asset from "../../types/asset";
+import { MarginStressState } from "../../types/optifi-exchange-types";
+import { findExchangeAccount } from "../../utils/accounts";
+import { assetToOptifiAsset, optifiAssetToNumber, sleep } from "../../utils/generic";
+import { findMarginStressWithAsset } from "../../utils/margin";
 
 let asset = Asset.Bitcoin;
 

@@ -1,6 +1,6 @@
-import {initializeContext} from "../index";
-import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {findAMMAccounts} from "../utils/amm";
+import { initializeContext } from "../../index";
+import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
+import { findAMMAccounts } from "../../utils/amm";
 
 initializeContext().then((context) => {
     findAMMAccounts(context).then((res) => {

@@ -1742,7 +1742,7 @@
         },
         {
           "name": "liquidationState",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1773,7 +1773,7 @@
         },
         {
           "name": "serumMarket",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1828,7 +1828,7 @@
       "name": "liquidatePosition",
       "accounts": [
         {
-          "name": "exchange",
+          "name": "optifiExchange",
           "isMut": false,
           "isSigner": false
         },
@@ -2842,7 +2842,7 @@
         "fields": [
           {
             "name": "value",
-            "type": "u64"
+            "type": "i64"
           },
           {
             "name": "address",

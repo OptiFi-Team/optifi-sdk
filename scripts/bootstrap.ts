@@ -1,5 +1,5 @@
 // @ts-ignore
-import {initializeContext} from "../lib";
+import { initializeContext } from "../lib";
 import Context from "../types/context";
 import boostrap from "../sequences/boostrap";
 
