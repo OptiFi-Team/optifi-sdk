@@ -1,7 +1,7 @@
 import * as assert from "assert";
 import erf from "math-erf";
 import * as config from "./calcMarginTestData"
-import { calculateMargin, stress_function, generate_stress_spot, option_price } from "./calculateMargin"
+import { calculateMargin, stress_function, generate_stress_spot, option_price, option_reg_t_margin, option_delta, option_intrinsic_value } from "./calculateMargin"
 
 function reshap(arr: number[]) {
 
@@ -57,6 +57,20 @@ let user3 = reshap(config.USER_POSITION_3)
 // ##
 // ## WORKER
 // ##
+let reg_t_margin = option_reg_t_margin(spot, strike, stress, isCall);
+// console.log('reg_t_margin', reg_t_margin)
+
+let delta = option_delta(spot, strike, iv, r, q, t, isCall);
+// console.log('delta', delta)
+
+let intrinsic = option_intrinsic_value(spot, strike, isCall);
+// console.log('intrinsic', intrinsic)
+
+let stress_spot = generate_stress_spot(spot, stress, 5);
+console.log(`stress_spot`, stress_spot)
+
+let stress_price = option_price(stress_spot, strike, iv, r, q, t, isCall);
+console.log(`stress_price`, stress_price)
 
 let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall)
 // console.log('option_price: ', option_price(spot, strike, iv, r, q, t, isCall))
@@ -64,16 +78,13 @@ let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall)
 
 let generated_stress_spot = generate_stress_spot(10, 0.3, 8)
 let price = stress_results['Price']
-let intrinsic = stress_results['Intrinsic Value']
+// console.log('price', price)
+//let intrinsic = stress_results['Intrinsic Value']
 let stress_price_change = stress_results['Stress Price Delta']
 
 let margin_results_user1 = calculateMargin(user1, spot, t, price, intrinsic, stress_price_change)
 //let margin_results_user2 = calculateMargin(user2, spot, t, price, intrinsic, stress_price_change)
 //let margin_results_user3 = calculateMargin(user3, spot, t, price, intrinsic, stress_price_change)
-
- console.log("margin_results_user1: ", margin_results_user1)
-
-
 
 // the following results are from phyton
 let expected_margin_results_user1 = {
