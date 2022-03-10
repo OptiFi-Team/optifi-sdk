@@ -29,11 +29,17 @@ initializeContext().then(async (context) => {
             // @ts-ignore
             let proposalsForOneInstrument = ammInfo.proposals[i]
             console.log("ammInfo.quoteTokenVault: ", ammInfo.quoteTokenVault.toString())
+            console.log(`proposalsForOneInstrument for instrument: ${proposalsForOneInstrument.instrument.toString()} with flag ${i}`,)
             console.log(proposalsForOneInstrument)
+            proposalsForOneInstrument.askOrdersPrice.forEach((e, i) => {
+                console.log("askOrdersPrice", e.toString())
+                console.log("askOrdersSize: ", proposalsForOneInstrument.askOrdersSize[i].toString())
+            });
             proposalsForOneInstrument.bidOrdersPrice.forEach((e, i) => {
                 console.log("bidOrdersPrice", e.toString())
                 console.log("bidOrdersSize: ", proposalsForOneInstrument.bidOrdersSize[i].toString())
             });
+
             // for (let proposal of proposalsForOneInstrument) {
             let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
             console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
@@ -43,9 +49,12 @@ initializeContext().then(async (context) => {
                 console.log(`successfully cancelled orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                 console.log(res)
             } else {
-                let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
-                console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
-                console.log(res)
+                // execute all the proposal orders
+                for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length; j++) {
+                    let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
+                    console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
+                    console.log(res)
+                }
             }
             // }
         };
