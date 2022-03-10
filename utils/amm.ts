@@ -1,4 +1,4 @@
-import Context from "../types/context";
+import Context, { ContextWithoutWallets } from "../types/context";
 import { PublicKey, TransactionResponse } from "@solana/web3.js";
 import { AmmAccount } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount } from "./accounts";
@@ -16,7 +16,7 @@ import Decimal from "decimal.js";
 import { findAssociatedTokenAccount } from "./token";
 import { getAccount, getMint } from "@solana/spl-token";
 
-export function findAMMWithIdx(context: Context,
+export function findAMMWithIdx(context: Context | ContextWithoutWallets,
     exchangeAddress: PublicKey,
     idx: number): Promise<[PublicKey, number]> {
     return findAccountWithSeeds(context, [
@@ -26,7 +26,7 @@ export function findAMMWithIdx(context: Context,
     ])
 }
 
-function iterateFindAMM(context: Context,
+function iterateFindAMM(context: Context | ContextWithoutWallets,
     exchangeAddress: PublicKey,
     idx: number = 1
 ): Promise<[AmmAccount, PublicKey][]> {
@@ -56,7 +56,7 @@ function iterateFindAMM(context: Context,
     })
 }
 
-export function findAMMAccounts(context: Context): Promise<[AmmAccount, PublicKey][]> {
+export function findAMMAccounts(context: Context | ContextWithoutWallets): Promise<[AmmAccount, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             iterateFindAMM(context, exchangeAddress).then((accts) => {
@@ -128,8 +128,6 @@ interface UserEquity {
     lpTokenBalance: number, // user's lp token balance
     lpToeknValueInUsdc: number, // user's lp token value in usdc
     earnedValueInUsdc: number, // user's earned value in usdc
-    ammUsdcVaultBalance: number, // each amm's usdc vault balance
-    ammLpTokenSupply: number // each amm's lp token total supply
 }
 
 // return a user's equity on each AMM
@@ -180,7 +178,6 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
                 let ammUsdcVaultBalance = ammUsdcVaultInfo.amount
                 let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint)
 
-
                 let actualBalance = new Decimal(userLpTokenBalance.toString())
                     .dividedBy(new Decimal(lpSupply.toString()))
                     .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
@@ -188,8 +185,44 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
                     lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                     lpToeknValueInUsdc: actualBalance,
                     earnedValueInUsdc: new Decimal(actualBalance).add(new Decimal(notionalBalance.get(asset)!)).toNumber(),
+                })
+            }
+            resolve(equity)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+interface AmmEquity {
+    ammUsdcVaultBalance: number, // each amm's usdc vault balance
+    ammLpTokenSupply: number // each amm's lp token total supply
+}
+
+export function getAmmEquity(context: Context | ContextWithoutWallets): Promise<Map<number, AmmEquity>> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let allAmm = await findAMMAccounts(context)
+            let assets: number[] = []
+            let tradedAmmLpMints: PublicKey[] = []
+            let tradedAmmUsdcVaults: PublicKey[] = []
+
+            for (let amm of allAmm) {
+                assets.push(amm[0].asset)
+                tradedAmmLpMints.push(amm[0].lpTokenMint)
+                tradedAmmUsdcVaults.push(amm[0].quoteTokenVault)
+            }
+            let equity = new Map<number, AmmEquity>()
+
+            for (let asset of assets) {
+                let lpTokenMintInfo = await getMint(context.connection, tradedAmmLpMints[assets.indexOf(asset)]);
+                let lpSupply = lpTokenMintInfo.supply;
+                let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)]);
+                let ammUsdcVaultBalance = ammUsdcVaultInfo.amount;
+                let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint);
+
+                equity.set(asset, {
                     ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** usdcMintInfo.decimals).toNumber(),
-                    ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber()
+                    ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                 })
             }
             resolve(equity)

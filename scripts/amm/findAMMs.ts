@@ -1,8 +1,8 @@
-import { initializeContext } from "../../index";
+import { initializeContextWithoutWallet } from "../../index";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
-import { findAMMAccounts } from "../../utils/amm";
+import { findAMMAccounts, getAmmEquity } from "../../utils/amm";
 
-initializeContext().then((context) => {
+initializeContextWithoutWallet().then((context) => {
     findAMMAccounts(context).then((res) => {
         console.log(`Found ${res.length} amm accounts - `);
         for (let amm of res) {
@@ -11,6 +11,11 @@ initializeContext().then((context) => {
                 SolanaEntityType.Account)
             )
         }
+    }).catch((err) => {
+        console.error(err);
+    })
+    getAmmEquity(context).then((res) => {
+        console.log(res);
     }).catch((err) => {
         console.error(err);
     })

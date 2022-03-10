@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import Context from "./types/context";
+import Context, { ContextWithoutWallets } from "./types/context";
 import { OPTIFI_EXCHANGE_ID, SolanaEndpoint } from "./constants";
 import { isWalletProvider, readJsonFile } from './utils/generic';
 import { OptifiExchangeIDL } from './types/optifi-exchange-types';
@@ -176,4 +176,26 @@ function initializeContext(wallet?: string | WalletProvider,
     })
 }
 
-export { initializeContext, deposit, withdraw, initialize, initializeSerumMarket, initializeUserAccount }
+function initializeContextWithoutWallet(
+    optifiProgramId?: string,
+    customExchangeUUID?: string,
+    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<ContextWithoutWallets> {
+    let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
+    return new Promise((resolve, reject) => {
+        const idl = optifiExchange as unknown as OptifiExchangeIDL;
+        const connection = new Connection(endpoint);
+        const keypair = Keypair.generate(); // use a temp key
+        const walletWrapper = new anchor.Wallet(keypair);
+        const provider = new anchor.Provider(connection, walletWrapper, anchor.Provider.defaultOptions());
+        const program = new anchor.Program(idl,
+            (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)), provider)
+        resolve({
+            program: program,
+            endpoint: endpoint,
+            connection: connection,
+            exchangeUUID: uuid
+        })
+    })
+}
+
+export { initializeContext, deposit, withdraw, initialize, initializeSerumMarket, initializeUserAccount, initializeContextWithoutWallet }
