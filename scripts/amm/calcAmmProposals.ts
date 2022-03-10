@@ -15,7 +15,7 @@ import calculateAmmProposal from "../../instructions/calculateAmmProposal";
 
 async function calculateAmmProposals(context: Context) {
     try {
-        let ammIndex = 3;
+        let ammIndex = 1;
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         console.log(`to calc proposals for amm: ${ammAddress.toString()} with id ${ammIndex}`)

@@ -14,7 +14,7 @@ let ammAddress = new PublicKey("5YkaBQyPuhj1dXs4NL6YmxJNTL6ytYNS94K4bGyv5DaC");
 initializeContext().then(async (context) => {
 
     try {
-        let ammIndex = 3;
+        let ammIndex = 1;
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         let ammInfo = await context.program.account.ammAccount.fetch(ammAddress)

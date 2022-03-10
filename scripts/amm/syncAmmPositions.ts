@@ -13,7 +13,7 @@ import syncPositions from "../../instructions/syncPositions";
 
 async function syncAmmPositions(context: Context) {
     try {
-        let ammIndex = 3;
+        let ammIndex = 1;
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         let ammInfo = await context.program.account.ammAccount.fetch(ammAddress)
