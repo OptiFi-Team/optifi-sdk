@@ -1,7 +1,7 @@
 import erf from "math-erf";
 
 // margin_function
-export function calculateMargin(user, spot, t, price, intrinsic, stress_price_change) {
+export function calculateMargin(user, spot, t, price, intrinsic, stress_price_change2) {
     var net_qty1 = net_qty(user);
 
     var notional_qty1 = notional_qty(user);
@@ -9,7 +9,7 @@ export function calculateMargin(user, spot, t, price, intrinsic, stress_price_ch
     var net = net_qty1 * spot;
     var notional = notional_qty1 * spot;
 
-    var stress_result1 = stress_result(user, stress_price_change);
+    var stress_result1 = stress_result(user, stress_price_change2);
     var net_intrinsic1 = net_intrinsic(user, intrinsic);
     var net_premium1 = net_premium(user, price);
 
@@ -27,6 +27,11 @@ export function calculateMargin(user, spot, t, price, intrinsic, stress_price_ch
 	// net_leverage = net / total_margin
 	// notional_leverage = notional / total_margin
 
+    // console.log('stress_result1', stress_result1)
+    // console.log('net_intrinsic1', net_intrinsic1)
+    // console.log('net_premium1', net_premium1)
+    // console.log('maturing_liquidity1', maturing_liquidity1)
+    // console.log('maturing_premium1', maturing_premium1)
     // console.log('margin_11', margin_11)
     // console.log('margin_21', margin_21)
     // console.log('margin_31', margin_31)
@@ -73,25 +78,17 @@ export function notional_qty(user) {
 }
 
 // stress_result = np.min(np.matmul(np.transpose(user), stress_price_change))
-export function stress_result(user, stress_price_change) {
+export function stress_result(user, stress_price_change1) {
     // console.log('transpose(user)', transpose(user)) // 1x28 array
-    // console.log('stress_price_change', stress_price_change) // 10*28
-    if(stress_price_change[0].constructor === Array) {
-        var val1 = [] as any;
-        for(let i = 0; i < stress_price_change.length; i++) {
-            var val2 = arrmularr(transpose(user)[0], stress_price_change[i]);
+    // console.log('stress_price_change', stress_price_change1) // 10*28
+    // console.log('user', transpose(user))
+    // console.log('stress_price_change1', stress_price_change1)
 
-            val1.push(Math.min(...val2));
-        }
-
-        // console.log('val1', val1)
-
-        return val1;
-    }
-    else {
-        var val = matmul(transpose(user), stress_price_change);
-        return Math.min.apply(null, val[0]);
-    }
+    // console.log('matmul',matmul(transpose(user), stress_price_change1))
+    // console.log('min', Math.min(...matmul(transpose(user), stress_price_change1)[0]))
+    // console.log('matmul(transpose(user), stress_price_change1)', matmul(transpose(user), stress_price_change1))
+    // console.log('minimum', Math.min(...matmul(transpose(user), stress_price_change1)[0]))
+    return Math.min(...matmul(transpose(user), stress_price_change1)[0]);
 }
 
 // net_intrinsic = np.matmul(np.transpose(user), intrinsic).item()
@@ -118,8 +115,16 @@ export function net_premium(user, price) {
 // min_t = t == np.min(t[t > 0])
 export function min_t(t) {
     var result = [] as any;
+    var minimum = 100000;
+
     for(let i = 0; i < t.length; i++) {
-        if(t[i][0] > 0) {
+        if(t[i][0] < minimum) {
+            minimum = t[i][0]
+        }
+    }
+
+    for(let i = 0; i < t.length; i++) {
+        if(t[i][0] > 0 && t[i][0] === minimum) {
             result.push([true]);
         }
         else {
@@ -131,32 +136,19 @@ export function min_t(t) {
 
 // maturing_net_intrinsic = np.matmul(np.transpose(user * min_t), intrinsic * min_t).item()
 export function maturing_net_intrinsic(user, intrinsic, min_t) {
-    var val = matmul(transpose(matmul(user, min_t)), matmul(intrinsic, min_t));
-    // console.log('maturing_net_intrinsic user',user)
-    // console.log('maturing_net_intrinsic intrinsic',intrinsic)
-    // console.log('maturing_net_intrinsic min_t',min_t)
-    // console.log('maturing_net_intrinsic val',val)
+    var val = matmul(transpose(arrmularr2(user, min_t)), arrmularr2(intrinsic, min_t));
     return val[0][0];
 }
 
 // maturing_premium = np.matmul(np.transpose((2 / (365 * t + 1)) * user * min_t), price * min_t).item()
 export function maturing_premium(t, user, price, min_t) {
-    // console.log('maturing_premium t', t)
-    // console.log('maturing_premium user', user)
-    // console.log('maturing_premium price', price)
-    // console.log('maturing_premium min_t', min_t)
-
-    // confirm formula here too
-    var arr = (2 / (365 * t + 1)) * user * min_t;
-    var val = matmul(transpose(arr), matmul(price, min_t));
+    var val = matmul(transpose(arrmularr2(arrmularr(arrmul2(365, t), user), min_t)), arrmularr2(price, min_t));
     return val[0][0];
 }
 
 // maturing_liquidity = np.matmul(np.transpose((2 / (365 * t + 1)) * user * min_t), intrinsic * min_t).item()
 export function maturing_liquidity(t, user, intrinsic, min_t) {
-    var arr = (2 / (365 * t + 1)) * user * min_t;
-    var val = matmul(transpose(arr), matmul(intrinsic, min_t));
-   
+    var val = matmul(transpose(arrmularr2(arrmularr(arrmul2(365, t), user), min_t)), arrmularr2(intrinsic, min_t));
     return val[0][0];
 }
 
@@ -240,7 +232,6 @@ export function stress_function(spot, strike, iv, r, q, t, stress, isCall, step 
     // should i consider the parameter can be array too?
 	var stress_spot = generate_stress_spot(spot, stress, step);
 	var stress_price = option_price(stress_spot, strike, iv, r, q, t, isCall);
-
     // stress_price_change = stress_price - price
     var stress_price_change1 = stress_price_change(stress_price, price);
 
@@ -250,14 +241,14 @@ export function stress_function(spot, strike, iv, r, q, t, stress, isCall, step 
 		'Delta': delta,
 		'Intrinsic Value': intrinsic,
 		'Stress Spot': stress_spot,
-		'Stress Price Delta': stress_price_change
+		'Stress Price Delta': stress_price_change1
 		}
 }
 
 export function stress_price_change(stress_price, price) {
     var result = [] as any;
     for(let i = 0; i < stress_price.length; i++) {
-        result.push(arrminusarr(stress_price[i], price));
+        result.push(arrminusarr1(stress_price[i], price[i][0]));
     }
 
     return result;
@@ -268,6 +259,7 @@ export function d1(spot, strike, iv, r, q, t) {
 }
 
 export function d2(spot, strike, iv, r, q, t) {
+    // d1(spot, strike, iv, r, q, t) - iv * np.sqrt(t)
     return arrminusarr(d1(spot, strike, iv, r, q, t), (arrmul(iv, arrsqrt(t))));
 }
 
@@ -305,7 +297,7 @@ export function cdf(arr) {
 }
 
 export function cdf_num(num) {
-    return Math.round((erf(num / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000;
+    return (erf(num / Math.sqrt(2.0)) + 1.0) / 2.0;
 }
 
 export function clip(arr, x) {
@@ -391,7 +383,7 @@ export function arrmul(a, b) {
     var result = [] as any;
 
     for(let i = 0; i < b.length; i++) {
-        result.push([Math.round(b[i][0] * a * 100000000) / 100000000]);
+        result.push([b[i][0] * a]);
     }
 
     return result;
@@ -401,10 +393,20 @@ export function arrmul1(a, b) {
     var result = [] as any;
 
     for(let i = 0; i < b[0].length; i++) {
-        result.push(Math.round(b[0][i] * a * 100000000) / 100000000);
+        result.push(b[0][i] * a);
     }
 
     return [result];
+}
+
+export function arrmul2(a, b) {
+    var result = [] as any;
+
+    for(let i = 0; i < b.length; i++) {
+        result.push([2 / (b[i][0] * a + 1)]);
+    }
+
+    return result;
 }
 
 export function arrmularr (a, b) {
@@ -412,6 +414,36 @@ export function arrmularr (a, b) {
 
     for(let i = 0; i < a.length; i++) {
         result.push([a[i] * b[i]]);
+    }
+
+    return result;
+}
+
+export function arrmularr2 (a, b) {
+    var result = [] as any;
+
+    for(let i = 0; i < a.length; i++) {
+        if(b[i][0]) {
+            result.push([a[i][0]]);
+        }
+        else {
+            result.push([0]);
+        }
+    }
+
+    return result;
+}
+
+export function arrmularr1 (a, b) {
+    var result = [] as any;
+
+    for(let i = 0; i < b.length; i++) {
+        var result1 = [] as any;
+        var val = b[i][0];
+        for(let j = 0; j < a[0].length; j++) {
+            result1.push(a[0][j] * val);
+        }
+        result.push(result1);
     }
 
     return result;
@@ -457,6 +489,17 @@ export function arrminusarr(a, b) {
     return result;
 }
 
+export function arrminusarr1(a, b) {
+    var result = [] as any;
+
+
+    for(let j = 0; j < a.length; j++) {
+        result.push(a[j] - b);
+    }
+    
+    return result;
+}
+
 
 export function option_intrinsic_value(spot, strike, isCall) {
     // call = (spot - strike).clip(0)
@@ -478,6 +521,8 @@ export function option_price(spot, strike, iv, r, q, t, isCall) {
     }
     else {
         // spot == stress_spot == [[ 33880,  36784,  39688,  42592,  45496,  48400,  51304, 54208,  57112,  60016,  62920]]
+        var call = [] as any;
+        var put = [] as any;
         var result = [] as any;
 
         for(let i = 0; i < strike.length; i++) {
@@ -486,25 +531,32 @@ export function option_price(spot, strike, iv, r, q, t, isCall) {
             for(let j = 0; j < spot[0].length; j++) {
                 div_stress_spot.push(Math.log(spot[0][j] / strike[i]));
             }
+            call.push(div_stress_spot);
+            put.push(div_stress_spot);
             result.push(div_stress_spot);
         }
-
 
         var val1 = arrmul((r - q + iv * iv / 2), t);
         var val2 = arrmul(iv, arrsqrt(t));
 
         // np.exp(-q * t)
         var val3 = arrexp(arrmul(((-q)), t));
+        // np.exp(-r * t)
+        var val4 = arrexp(arrmul(((-r)), t));
 
-        // spot * np.exp(-q * t) * norm.cdf(d1(spot, strike, iv, r, q, t))
-        for(let i = 0; i < result.length; i++) { // 28
-            for(let j = 0; j < result[0].length; j++) { // 11
-                result[i][j] += val1[i][0];
-                result[i][j] = spot[0][j] * val3[i][0] * cdf_num(result[i][j] / val2[i][0]); // d1 is result[i][j] / val2[i][0]
+        // get call
+        for(let i = 0; i < call.length; i++) { //28
+            for(let j = 0; j < call[0].length; j++) { // 11
+                // call value
+                call[i][j] += val1[i][0];
+                call[i][j] = spot[0][j] * val3[i][0] * cdf_num(call[i][j] / val2[i][0]) - strike[i][0] * val4[i][0] * cdf_num(call[i][j] / val2[i][0] - val2[i][0]);
+                
+                // put value
+                put[i][j] = call[i][j] + strike[i][0] * val4[i][0] - spot[0][j] * val4[i][0];
+
+                result[i][j] = isCall[i][0] * call[i][j] + (1 - isCall[i][0]) * put[i][j];
             }
         }
-
-        // strike * np.exp(-r * t) * norm.cdf(d2(spot, strike, iv, r, q, t))
 
         return result;
     }
