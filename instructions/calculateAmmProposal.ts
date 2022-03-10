@@ -18,8 +18,8 @@ export default function calculateAmmProposal(context: Context,
                 let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
                 context.program.rpc.ammCalculateProposal({
                     accounts: {
-                        optifiExchange: exchangeAddress,
-                        marginStressAccount: new PublicKey(""),
+                        // optifiExchange: exchangeAddress,
+                        marginStressAccount: marginStressAddress,
                         amm: ammAddress,
                         // clock: SYSVAR_CLOCK_PUBKEY,
                     },

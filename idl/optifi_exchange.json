@@ -1371,11 +1371,6 @@
       "name": "ammCalculateDelta",
       "accounts": [
         {
-          "name": "optifiExchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "marginStressAccount",
           "isMut": false,
           "isSigner": false
@@ -1396,11 +1391,6 @@
     {
       "name": "ammCalculateProposal",
       "accounts": [
-        {
-          "name": "optifiExchange",
-          "isMut": false,
-          "isSigner": false
-        },
         {
           "name": "marginStressAccount",
           "isMut": false,
@@ -2625,6 +2615,22 @@
             }
           },
           {
+            "name": "strikes",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "isCall",
+            "type": "bytes"
+          },
+          {
+            "name": "expiryDate",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
             "name": "optionPrice",
             "type": {
               "vec": "u64"
@@ -3573,5 +3579,8 @@
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "FVWhLLPYPPPVtmrAwSgsy4cF84z888hamnyXYdtFN2jT"
+  }
 }

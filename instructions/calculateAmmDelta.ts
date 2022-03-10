@@ -6,7 +6,6 @@ import { AmmAccount, Asset as OptifiAsset } from "../types/optifi-exchange-types
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { numberToOptifiAsset } from "../utils/generic";
-import { getAmmParamsPDA } from "../utils/pda";
 import { findMarginStressWithAsset } from "../utils/margin";
 
 export default function calculateAmmDelta(context: Context,
@@ -19,11 +18,10 @@ export default function calculateAmmDelta(context: Context,
                 let spotOracle = findOracleAccountFromAsset(context, numberToOptifiAsset(amm.asset));
                 let ivOracle = findOracleAccountFromAsset(context, numberToOptifiAsset(amm.asset), OracleAccountType.Iv);
                 let usdcSpotOracle = findOracleAccountFromAsset(context, OptifiAsset.USDC, OracleAccountType.Spot);
-                let [ammParamsPDA] = await getAmmParamsPDA(context, ammAddress)
                 let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
                 context.program.rpc.ammCalculateDelta({
                     accounts: {
-                        optifiExchange: exchangeAddress,
+                        // optifiExchange: exchangeAddress,
                         marginStressAccount: marginStressAddress,
                         amm: ammAddress,
                         quoteTokenVault: amm.quoteTokenVault,
@@ -74,7 +72,6 @@ export function initAmmParamsAccount(context: Context,
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             context.program.account.ammAccount.fetch(ammAddress).then(async (ammRes) => {
-                let [ammParamsPDA, bump] = await getAmmParamsPDA(context, ammAddress)
                 // let a = context.connection.getAccountInfo(ammParamsPDA)
                 // let inx
 

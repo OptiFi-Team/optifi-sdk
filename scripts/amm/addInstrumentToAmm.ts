@@ -47,7 +47,7 @@ async function addInstrumentsToAmm(context: Context) {
             console.log("Instrument address is ", market[0].instrument.toString());
             let instrument = await context.program.account.chain.fetch(market[0].instrument)
             if (instrument.asset == ammInfo.asset) {
-                console.log("instrument: ", instrument.expiryDate.toNumber())
+                // console.log("instrument: ", instrument.expiryDate.toNumber())
                 console.log("instrument: ", instrument)
 
                 optifiMarketsToAdd.push(market[1])
