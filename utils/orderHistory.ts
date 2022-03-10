@@ -62,7 +62,7 @@ const parseOrderTxs = async (txs: TransactionResponse[], serumId: PublicKey): Pr
                   record.timestamp = new Date(tx.blockTime! * 1000);
                   record.txid = tx.transaction.signatures[0]
                   record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
-                  record.marketAddress = tx.transaction.message.accountKeys[inx.accounts[6]].toString() // market address index is 6 in the place order inx
+                  record.marketAddress = tx.transaction.message.accountKeys[inx.accounts[7]].toString() // market address index is 7 in the place order inx
                   record.txType = "place order"
                   orderTxs.push(Object.assign({}, record));
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
