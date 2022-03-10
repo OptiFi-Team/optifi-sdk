@@ -31,8 +31,8 @@ initializeContext().then(async (context) => {
             console.log("ammInfo.quoteTokenVault: ", ammInfo.quoteTokenVault.toString())
             console.log(proposalsForOneInstrument)
             proposalsForOneInstrument.bidOrdersPrice.forEach((e, i) => {
-                console.log(e.toString())
-                console.log(proposalsForOneInstrument.bidOrdersSize[i].toString())
+                console.log("bidOrdersPrice", e.toString())
+                console.log("bidOrdersSize: ", proposalsForOneInstrument.bidOrdersSize[i].toString())
             });
             // for (let proposal of proposalsForOneInstrument) {
             let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
