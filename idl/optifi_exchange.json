@@ -1346,7 +1346,7 @@
         },
         {
           "name": "serumMarket",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1376,37 +1376,17 @@
           "isSigner": false
         },
         {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "amm",
           "isMut": true,
           "isSigner": false
         },
         {
           "name": "quoteTokenVault",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "assetFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ivFeed",
           "isMut": false,
           "isSigner": false
         }
@@ -1422,25 +1402,20 @@
           "isSigner": false
         },
         {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
           "isSigner": false
         }
       ],
       "args": []
     },
     {
-      "name": "ammUpdateOrders",
+      "name": "ammCancelOrders",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -1560,6 +1535,131 @@
       ],
       "args": [
         {
+          "name": "instrumentIndex",
+          "type": "u16"
+        },
+        {
+          "name": "ammAuthorityBump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "ammUpdateOrders",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammUsdcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "requestQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentTokenMintAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
           "name": "orderLimit",
           "type": "u16"
         },
@@ -1569,6 +1669,10 @@
         },
         {
           "name": "ammAuthorityBump",
+          "type": "u8"
+        },
+        {
+          "name": "marketAuthBump",
           "type": "u8"
         }
       ]
@@ -2159,6 +2263,60 @@
           {
             "name": "contractSize",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AmmLiquidityParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "spotPrice",
+            "type": "u32"
+          },
+          {
+            "name": "strikes",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "iv",
+            "type": "u32"
+          },
+          {
+            "name": "dt",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "isCall",
+            "type": "bytes"
+          },
+          {
+            "name": "ammPosition",
+            "type": {
+              "vec": "u32"
+            }
+          },
+          {
+            "name": "futuresPosition",
+            "type": "u32"
+          },
+          {
+            "name": "usdcBalance",
+            "type": "u32"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }
@@ -3024,7 +3182,7 @@
           },
           {
             "name": "latestPosition",
-            "type": "u64"
+            "type": "i64"
           },
           {
             "name": "usdcBalance",
@@ -3409,9 +3567,11 @@
       "code": 326,
       "name": "WrongAsset",
       "msg": "Wrong asset"
+    },
+    {
+      "code": 327,
+      "name": "TimeOut",
+      "msg": "Should update the margin stress again"
     }
-  ],
-  "metadata": {
-    "address": "GqqAv9kNs37XD4Dcn5WDZiFHD6nJSBYKgWBDJ3tiVpuN"
-  }
+  ]
 }

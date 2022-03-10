@@ -12,12 +12,10 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { getSerumMarket } from "../utils/serum";
 
-export function ammUpdateOrders(context: Context,
-    orderLimit: number,
+export function ammCancelOrders(context: Context,
+    // orderLimit: number,
     ammAddress: PublicKey,
-    instrumentIdx: number,
-    marketAddress: PublicKey,
-): Promise<InstructionResult<TransactionSignature>> {
+    marketAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
@@ -33,7 +31,7 @@ export function ammUpdateOrders(context: Context,
                             // Get the open orders account that corresponds to the actual AMM, not the user
                             getDexOpenOrders(context, optifiMarket.serumMarket, ammLiquidityAuth).then(([ammOpenOrders, _]) => {
                                 deriveVaultNonce(optifiMarket.serumMarket, serumId).then(([vaultSigner, vaultNonce]) => {
-                                    findSerumAuthorityPDA(context).then(([serumMarketAuthority, bump2]) => {
+                                    findSerumAuthorityPDA(context).then(([serumMarketAuthority]) => {
                                         findOptifiMarketMintAuthPDA(context).then(([mintAuthAddress, _]) => {
 
                                             //     findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then(([userLongTokenVault, _]) => {
@@ -41,15 +39,13 @@ export function ammUpdateOrders(context: Context,
                                             findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, ammLiquidityAuth).then(([ammLongTokenVault, _]) => {
                                                 findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammLiquidityAuth).then(([ammShortTokenVault, _]) => {
                                                     getAmmLiquidityAuthPDA(context).then(([ammLiquidityAuth, bump]) => {
-                                                        // let [position, instrumentIdx] = findInstrumentIndexFromAMM(context,
-                                                        //     amm,
-                                                        //     optifiMarket.instrument
-                                                        // );
-                                                        context.program.rpc.ammUpdateOrders(
-                                                            orderLimit,
+                                                        let [position, instrumentIdx] = findInstrumentIndexFromAMM(context,
+                                                            amm,
+                                                            optifiMarket.instrument
+                                                        );
+                                                        context.program.rpc.ammCancelOrders(
                                                             instrumentIdx,
                                                             bump,
-                                                            bump2,
                                                             {
                                                                 accounts: {
                                                                     optifiExchange: exchangeAddress,
@@ -71,7 +67,7 @@ export function ammUpdateOrders(context: Context,
                                                                     vaultSigner: vaultSigner,
                                                                     instrumentTokenMintAuthorityPda: mintAuthAddress,
                                                                     instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
-                                                                    // pruneAuthority: serumMarketAuthority,
+                                                                    pruneAuthority: serumMarketAuthority,
                                                                     serumDexProgramId: serumId,
                                                                     tokenProgram: TOKEN_PROGRAM_ID,
                                                                     rent: SYSVAR_RENT_PUBKEY
