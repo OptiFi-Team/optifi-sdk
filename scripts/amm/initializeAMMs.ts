@@ -7,7 +7,7 @@ import { Duration } from "../../types/optifi-exchange-types";
 
 async function initializeAMMOnSupportedAssets(context: Context) {
     let i = 1;
-    let duration = Duration.Weekly;
+    let duration = Duration.Monthly; // should be the same as created instruments
     let contractSize = 0.01 * 10000; // TBD
     for (let asset of SUPPORTED_ASSETS) {
         console.log("Initializing AMM for asset ", asset);

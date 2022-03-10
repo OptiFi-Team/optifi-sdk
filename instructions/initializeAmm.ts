@@ -33,7 +33,7 @@ export function initializeAmm(context: Context,
                     findExchangeAccount(context).then(([exchangeAddress, _]) => {
                         findAMMWithIdx(context, exchangeAddress, idx).then(([ammAddress, bump]) => {
                             console.log("Initializing AMM with idx ", idx, "bump ", bump, "asset", optifiAssetToNumber(optifiAsset),
-                                "with address", ammAddress);
+                                "with address", ammAddress.toString());
                             context.program.rpc.initializeAmm(
                                 bump,
                                 {
@@ -56,6 +56,7 @@ export function initializeAmm(context: Context,
                                         systemProgram: SystemProgram.programId,
                                         rent: SYSVAR_RENT_PUBKEY
                                     },
+                                    signers: [ammUSDCTokenVault, ammLPTokenMint],
                                     instructions: [
                                         SystemProgram.createAccount({
                                             fromPubkey: context.provider.wallet.publicKey,

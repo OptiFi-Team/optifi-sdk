@@ -2,9 +2,9 @@ import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import ammDeposit from "../../instructions/ammDeposit";
 
-let amount = 100000; // already including decimals
+let amount = 1000000; // already including decimals
 
-let ammAddress = new PublicKey("3i7QPGnhG9tHVdcYgr7xsMM6EwQvDYo2iW2HF1zvCxFg");
+let ammAddress = new PublicKey("ETtfLt1Vx5pdFiVh8frCz2SYF67Y6rx15ESmBami33mX");
 
 initializeContext().then((context) => {
     ammDeposit(context, ammAddress, amount).then((res) => {
