@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import Context, { ContextWithoutWallets } from "./types/context";
+import Context from "./types/context";
 import { OPTIFI_EXCHANGE_ID, SolanaEndpoint } from "./constants";
 import { isWalletProvider, readJsonFile } from './utils/generic';
 import { OptifiExchangeIDL } from './types/optifi-exchange-types';
@@ -179,7 +179,7 @@ function initializeContext(wallet?: string | WalletProvider,
 function initializeContextWithoutWallet(
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<ContextWithoutWallets> {
+    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<Context> {
     let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
     return new Promise((resolve, reject) => {
         const idl = optifiExchange as unknown as OptifiExchangeIDL;
@@ -191,8 +191,11 @@ function initializeContextWithoutWallet(
             (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)), provider)
         resolve({
             program: program,
+            provider: provider,
             endpoint: endpoint,
             connection: connection,
+            walletType: WalletType.Keypair,
+            walletKeypair: keypair,
             exchangeUUID: uuid
         })
     })

@@ -1,4 +1,4 @@
-import { initializeContextWithoutWallet } from "../../index";
+import { initializeContextWithoutWallet, initializeContext } from "../../index";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { findAMMAccounts, getAmmEquity } from "../../utils/amm";
 

@@ -1,4 +1,4 @@
-import Context, { ContextWithoutWallets } from "../types/context";
+import Context from "../types/context";
 import { PublicKey, TransactionResponse } from "@solana/web3.js";
 import { AmmAccount } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount } from "./accounts";
@@ -16,7 +16,7 @@ import Decimal from "decimal.js";
 import { findAssociatedTokenAccount } from "./token";
 import { getAccount, getMint } from "@solana/spl-token";
 
-export function findAMMWithIdx(context: Context | ContextWithoutWallets,
+export function findAMMWithIdx(context: Context,
     exchangeAddress: PublicKey,
     idx: number): Promise<[PublicKey, number]> {
     return findAccountWithSeeds(context, [
@@ -26,7 +26,7 @@ export function findAMMWithIdx(context: Context | ContextWithoutWallets,
     ])
 }
 
-function iterateFindAMM(context: Context | ContextWithoutWallets,
+function iterateFindAMM(context: Context,
     exchangeAddress: PublicKey,
     idx: number = 1
 ): Promise<[AmmAccount, PublicKey][]> {
@@ -56,7 +56,7 @@ function iterateFindAMM(context: Context | ContextWithoutWallets,
     })
 }
 
-export function findAMMAccounts(context: Context | ContextWithoutWallets): Promise<[AmmAccount, PublicKey][]> {
+export function findAMMAccounts(context: Context): Promise<[AmmAccount, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             iterateFindAMM(context, exchangeAddress).then((accts) => {
@@ -198,7 +198,7 @@ interface AmmEquity {
     ammLpTokenSupply: number // each amm's lp token total supply
 }
 
-export function getAmmEquity(context: Context | ContextWithoutWallets): Promise<Map<number, AmmEquity>> {
+export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> {
     return new Promise(async (resolve, reject) => {
         try {
             let allAmm = await findAMMAccounts(context)

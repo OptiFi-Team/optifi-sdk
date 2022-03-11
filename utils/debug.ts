@@ -1,4 +1,4 @@
-import Context, { ContextWithoutWallets } from "../types/context";
+import Context from "../types/context";
 import { SolanaEndpoint } from "../constants";
 import { findUserAccount } from "./accounts";
 import { PublicKey } from "@solana/web3.js";
@@ -18,7 +18,7 @@ export enum SolanaEntityType {
  * @param entity The entity to generate the explorer URL for
  * @param entity_type The
  */
-export function formatExplorerAddress(context: Context | ContextWithoutWallets,
+export function formatExplorerAddress(context: Context,
     entity: string,
     entity_type: SolanaEntityType): string {
     let suffix: string;

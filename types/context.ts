@@ -5,15 +5,12 @@ import { SolanaEndpoint } from "../constants";
 import WalletType from "./walletType";
 
 
-export default interface Context extends ContextWithoutWallets {
-    provider: anchor.Provider,
-    walletType: WalletType,
-    walletKeypair?: Keypair
-}
-
-export interface ContextWithoutWallets {
+export default interface Context {
     program: anchor.Program<OptifiExchangeIDL>,
     endpoint: SolanaEndpoint,
     connection: Connection,
     exchangeUUID: string,
+    provider: anchor.Provider,
+    walletType: WalletType,
+    walletKeypair?: Keypair
 }

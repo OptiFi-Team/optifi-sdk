@@ -1,4 +1,4 @@
-import Context, { ContextWithoutWallets } from "../types/context";
+import Context from "../types/context";
 import { PublicKey } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import {
@@ -33,7 +33,7 @@ import { initializeUserAccount } from "../index";
  * @param context Program context
  * @param seeds The seeds to look for the account with
  */
-export function findAccountWithSeeds(context: Context | ContextWithoutWallets, seeds: (Buffer | Uint8Array)[]): Promise<[PublicKey, number]> {
+export function findAccountWithSeeds(context: Context, seeds: (Buffer | Uint8Array)[]): Promise<[PublicKey, number]> {
     return anchor.web3.PublicKey.findProgramAddress(
         seeds,
         context.program.programId
@@ -59,7 +59,7 @@ export function findUserAccount(context: Context): Promise<[PublicKey, number]> 
 
 }
 
-export function findExchangeAccount(context: Context | ContextWithoutWallets): Promise<[PublicKey, number]> {
+export function findExchangeAccount(context: Context): Promise<[PublicKey, number]> {
     return findAccountWithSeeds(context, [
         Buffer.from(EXCHANGE_PREFIX),
         Buffer.from(context.exchangeUUID)
