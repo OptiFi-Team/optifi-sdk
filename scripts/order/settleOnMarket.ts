@@ -2,7 +2,7 @@ import { sleep } from "@project-serum/common";
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import settleOrderFunds from "../../instructions/settleOrderFunds";
-import userMarginCalculate from "../../lib/instructions/userMarginCalculate";
+import userMarginCalculate from "../../instructions/userMarginCalculate";
 
 let market = new PublicKey("HgRRCp5Dt18GFW8Gc9bp8hvYct37GrXnWzNUEAgetxMS");
 
