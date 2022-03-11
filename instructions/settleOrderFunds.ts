@@ -1,13 +1,11 @@
 import InstructionResult from "../types/instructionResult";
 import { PublicKey, Transaction, TransactionSignature } from "@solana/web3.js";
 import Context from "../types/context";
-import { formOrderContext, OrderAccountContext } from "../utils/orders";
+import { formOrderContext } from "../utils/orders";
 import { OrderSide } from "../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
-import userMarginCalculate from "./userMarginCalculate";
-import { sleep } from "../utils/generic";
 
 export function getSettleOrderTx(
     context: Context,
@@ -61,8 +59,6 @@ export default function settleOrderFunds(context: Context,
                     res.txId as string,
                     SolanaEntityType.Transaction
                 ))
-                await sleep(1000);
-                await userMarginCalculate(context);
                 resolve({
                     successful: true,
                     data: res.txId as TransactionSignature

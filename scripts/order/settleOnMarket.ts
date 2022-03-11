@@ -1,9 +1,8 @@
+import { sleep } from "@project-serum/common";
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import settleOrderFunds from "../../instructions/settleOrderFunds";
-import { findUserAccount } from "../../utils/accounts";
-import { findOptifiMarkets } from "../../utils/market";
-import { getSerumMarket, settleSerumFundsIfAnyUnsettled } from "../../utils/serum";
+import userMarginCalculate from "../../lib/instructions/userMarginCalculate";
 
 let market = new PublicKey("HgRRCp5Dt18GFW8Gc9bp8hvYct37GrXnWzNUEAgetxMS");
 
@@ -13,4 +12,7 @@ initializeContext().then(async (context) => {
     if (res) {
         console.log(res);
     }
+
+    await sleep(1000);
+    await userMarginCalculate(context);
 })
