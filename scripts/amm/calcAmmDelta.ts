@@ -12,9 +12,10 @@ import addInstrumentToAmm from "../../instructions/addInstrumentToAmm";
 import syncPositions from "../../instructions/syncPositions";
 import calculateAmmDelta from "../../instructions/calculateAmmDelta";
 
-async function syncAmmPositions(context: Context) {
+let ammIndex = 1;
+
+export async function calcAmmDelta(context: Context, ammIndex: number) {
     try {
-        let ammIndex = 1;
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         console.log(`to calc delta for amm: ${ammAddress.toString()} with id ${ammIndex}`)
@@ -27,5 +28,5 @@ async function syncAmmPositions(context: Context) {
 }
 
 initializeContext().then((context) => {
-    syncAmmPositions(context)
+    calcAmmDelta(context, ammIndex)
 })

@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import Context from "../../types/context";
 import { initializeContext } from "../../index";
 import { ammCancelOrders } from "../../instructions/ammCancelOrders";
 import ammDeposit from "../../instructions/ammDeposit";
@@ -7,14 +8,10 @@ import { findOptifiExchange } from "../../utils/accounts";
 import { findAMMWithIdx } from "../../utils/amm";
 import { findOptifiMarkets } from "../../utils/market";
 
-let amount = 500000; // already including decimals
+let ammIndex = 1;
 
-let ammAddress = new PublicKey("5YkaBQyPuhj1dXs4NL6YmxJNTL6ytYNS94K4bGyv5DaC");
-
-initializeContext().then(async (context) => {
-
+export async function executeAmmOrderProposal(context: Context, ammIndex: number) {
     try {
-        let ammIndex = 1;
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         let ammInfo = await context.program.account.ammAccount.fetch(ammAddress)
@@ -61,4 +58,8 @@ initializeContext().then(async (context) => {
     } catch (err) {
         console.error(err);
     }
+}
+
+initializeContext().then((context) => {
+    executeAmmOrderProposal(context, ammIndex)
 })

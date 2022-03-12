@@ -13,9 +13,10 @@ import syncPositions from "../../instructions/syncPositions";
 import calculateAmmDelta from "../../instructions/calculateAmmDelta";
 import calculateAmmProposal from "../../instructions/calculateAmmProposal";
 
-async function calculateAmmProposals(context: Context) {
+let ammIndex = 1
+
+export async function calculateAmmProposals(context: Context, ammIndex: number) {
     try {
-        let ammIndex = 1;
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         console.log(`to calc proposals for amm: ${ammAddress.toString()} with id ${ammIndex}`)
@@ -30,5 +31,5 @@ async function calculateAmmProposals(context: Context) {
 }
 
 initializeContext().then((context) => {
-    calculateAmmProposals(context)
+    calculateAmmProposals(context, ammIndex)
 })
