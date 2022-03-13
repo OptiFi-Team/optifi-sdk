@@ -11,7 +11,7 @@ initializeContext().then((context) => {
     findOptifiMarkets(context).then(async (res) => {
         console.log(`Found ${res.length} optifi markets - `);
         for (let market of res) {
-            console.log("Market - ", market[0], " address ", formatExplorerAddress(
+            console.log("Market - address: ",market[1].toString(), "market info: ", market[0], "Solana explorer: ", formatExplorerAddress(
                 context, market[1].toString(),
                 SolanaEntityType.Account)
             );
@@ -27,6 +27,8 @@ initializeContext().then((context) => {
                 console.log("Chain ", chain);
                 console.log(new Date(chain.expiryDate.toNumber() * 1000).toLocaleDateString());
             })
+
+            console.log("------------------------------------------------------")
         }
         console.log("Seen assets - ", seenAssets);
     }).catch((err) => {
