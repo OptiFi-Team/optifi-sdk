@@ -110,3 +110,21 @@ export function placeOrderWithInitUserOnMarket(context: Context,
 
     })
 }
+
+
+export function preCalcMarginForNewOrder(context: Context,
+    marketAddress: PublicKey,
+    side: OrderSide,
+    limit: number,
+    maxCoinQty: number,
+    maxPcQty: number
+
+): Promise<InstructionResult<TransactionSignature>> {
+    return new Promise((resolve, reject) => {
+        // Check if it is Ask Order and also get the order size
+
+        // fetch user’s all existing positions on all markets by using the getPosition function
+
+
+    })
+}

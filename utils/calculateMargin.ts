@@ -22,19 +22,6 @@ export function calculateMargin(user, spot, t, price, intrinsic, stress_price_ch
     var margin_11 = margin_1(stress_result1, net_intrinsic1, net_premium1);
 	var margin_21 = margin_2(maturing_liquidity1, net_intrinsic1);
 	var margin_31 = margin_3(maturing_premium1);
-	         
-	// total_margin = margin_1 + margin_2 + margin_3
-	// net_leverage = net / total_margin
-	// notional_leverage = notional / total_margin
-
-    // console.log('stress_result1', stress_result1)
-    // console.log('net_intrinsic1', net_intrinsic1)
-    // console.log('net_premium1', net_premium1)
-    // console.log('maturing_liquidity1', maturing_liquidity1)
-    // console.log('maturing_premium1', maturing_premium1)
-    // console.log('margin_11', margin_11)
-    // console.log('margin_21', margin_21)
-    // console.log('margin_31', margin_31)
 
     var total_margin = margin_11 + margin_31 + margin_21 ;
     var net_leverage = net / total_margin;
@@ -79,36 +66,18 @@ export function notional_qty(user) {
 
 // stress_result = np.min(np.matmul(np.transpose(user), stress_price_change))
 export function stress_result(user, stress_price_change1) {
-    // console.log('transpose(user)', transpose(user)) // 1x28 array
-    // console.log('stress_price_change', stress_price_change1) // 10*28
-    // console.log('user', transpose(user))
-    // console.log('stress_price_change1', stress_price_change1)
-
-    // console.log('matmul',matmul(transpose(user), stress_price_change1))
-    // console.log('min', Math.min(...matmul(transpose(user), stress_price_change1)[0]))
-    // console.log('matmul(transpose(user), stress_price_change1)', matmul(transpose(user), stress_price_change1))
-    // console.log('minimum', Math.min(...matmul(transpose(user), stress_price_change1)[0]))
     return Math.min(...matmul(transpose(user), stress_price_change1)[0]);
 }
 
 // net_intrinsic = np.matmul(np.transpose(user), intrinsic).item()
 export function net_intrinsic(user, intrinsic) {
-    // console.log('transpose(user)_intrinsic', transpose(user))
-    // console.log('intrinsic', intrinsic)
     var val = matmul(transpose(user), intrinsic);
-
-    // console.log('val_intrinsic', val)
-    // console.log('val[0][0]_intrinsic', val[0][0])
-
     return val[0][0];
 }
 
 // net_premium = np.matmul(np.transpose(user), price).item()
 export function net_premium(user, price) {
     var val = matmul(transpose(user), price);
-    // console.log('net_premium_transpose(user)', transpose(user))
-    // console.log('net_premium_price', price)
-    // console.log('net_premium_val[0][0]', val[0][0])
     return val[0][0];
 }
 
@@ -228,11 +197,8 @@ export function stress_function(spot, strike, iv, r, q, t, stress, isCall, step 
 	var intrinsic = option_intrinsic_value(spot, strike, isCall);
 	
 	// stresses
-    // first parameter supposed to be float but stress_spot is array of floats
-    // should i consider the parameter can be array too?
 	var stress_spot = generate_stress_spot(spot, stress, step);
 	var stress_price = option_price(stress_spot, strike, iv, r, q, t, isCall);
-    // stress_price_change = stress_price - price
     var stress_price_change1 = stress_price_change(stress_price, price);
 
 	return {
@@ -471,7 +437,6 @@ export function arrplusarr(a, b) {
 
 export function arrdivdearr(a, b ) {
     var result = [] as any;
-    // result.push([Math.round(b[i][0] * a * 100000000) / 100000000]);
     for(let i = 0; i < a.length; i++) {
         result.push([Math.round(a[i] / b[i] * 100000000) / 100000000]);
     }
@@ -563,16 +528,7 @@ export function option_price(spot, strike, iv, r, q, t, isCall) {
 }
 
 export function option_reg_t_margin(spot, strike, stress, isCall) {
-    // call = (stress * spot - (strike - spot).clip(0)).clip(stress * spot / 2)
-	// put = (stress * spot - (spot - strike).clip(0)).clip(stress * spot / 2)
     var call = clip(minus((stress * spot), clip(minus(strike, spot), 0)) ,(stress * spot / 2));
     var put = clip(minus((stress * spot), clip(minus(spot, strike), 0)) ,(stress * spot / 2));
-
     return arrplusarr(arrmularr(isCall, call), arrmularr(minus(1, isCall), put));
 }
-
-// var user = [[1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]]
-// var stress_price_change = [[1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2], [1,2]]
-// var price = [[1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]]
-// var t = [[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0254814],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594],[0.0446594]]
-// var intrinsic = [[1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]]
