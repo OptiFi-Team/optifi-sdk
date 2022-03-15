@@ -4,8 +4,6 @@ import { SolanaEndpoint, USDC_DECIMALS, USDC_TOKEN_MINT } from "../constants"
 import Context from "../types/context";
 // import testWallet from "../test_account.json";
 
-import { initializeContext } from "../index";
-
 const airdropAmount = 100000;
 
 const wallet = [50, 58, 192, 181, 214, 233, 144, 110, 173, 47, 187, 12, 192, 243, 89, 166, 82, 75, 206, 105, 28, 55, 81, 152, 46, 14, 159, 103, 128, 161, 110, 206, 31, 74, 15, 187, 75, 57, 42, 93, 133, 57, 191, 158, 48, 21, 186, 11, 73, 87, 90, 92, 31, 110, 96, 182, 208, 212, 194, 32, 234, 100, 240, 147]
