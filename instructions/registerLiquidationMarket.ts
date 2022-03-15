@@ -2,11 +2,14 @@ import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import { PublicKey, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../utils/accounts";
-import { OptifiMarket } from "../types/optifi-exchange-types";
+import { Chain, OptifiMarket } from "../types/optifi-exchange-types";
 import { findAssociatedTokenAccount } from "../utils/token";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { getSerumMarket } from "../utils/serum";
+import { findMarginStressWithAsset } from "../utils/margin";
+import { optifiAssetToNumber } from "../utils/generic";
+import { findSerumAuthorityPDA } from "../utils/pda";
 
 export default function registerLiquidationMarket(context: Context,
     userAccountAddress: PublicKey,
@@ -19,7 +22,14 @@ export default function registerLiquidationMarket(context: Context,
                     findAssociatedTokenAccount(context, market.instrumentLongSplToken, userAccountAddress).then(([userLongTokenAddress, _]) => {
                         findAssociatedTokenAccount(context, market.instrumentShortSplToken, userAccountAddress).then(([userShortTokenAddress, _]) => {
                             findLiquidationState(context, userAccountAddress).then(([liquidationStateAddress, _]) => {
-                                getSerumMarket(context, market.serumMarket).then((serumMarket) => {
+
+                                getSerumMarket(context, market.serumMarket).then(async (serumMarket) => {
+                                    let chainRes = await context.program.account.chain
+                                        .fetch(marketRes.instrument)
+                                    // @ts-ignore
+                                    let chain = chainRes as Chain;
+                                    let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, chain.asset);
+                                    let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
 
                                     console.log(openOrdersAccount.toString());
                                     context.program.rpc.registerLiquidationMarket(
@@ -27,6 +37,7 @@ export default function registerLiquidationMarket(context: Context,
                                             accounts: {
                                                 optifiExchange: exchangeAddress,
                                                 userAccount: userAccountAddress,
+                                                marginStressAccount: marginStressAddress,
                                                 liquidationState: liquidationStateAddress,
                                                 market: marketAddress,
                                                 serumMarket: market.serumMarket,
@@ -36,6 +47,7 @@ export default function registerLiquidationMarket(context: Context,
                                                 eventQueue: serumMarket.decoded.eventQueue,
                                                 openOrders: openOrdersAccount,
                                                 openOrdersOwner: userAccountAddress, // duplicate, should be removed
+                                                pruneAuthority: serumMarketAuthority,
                                                 rent: SYSVAR_RENT_PUBKEY,
                                                 userInstrumentLongTokenVault: userLongTokenAddress,
                                                 userInstrumentShortTokenVault: userShortTokenAddress
