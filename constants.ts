@@ -29,7 +29,7 @@ export const LIQUIDATION_STATE_PREFIX: string = "liquidation_state";
 export const PREFIX_MARGIN_STRESS: string = "margin_stress";
 
 // Size of the strike ladder
-export const STRIKE_LADDER_SIZE: number = 9;
+export const STRIKE_LADDER_SIZE: number = 5;
 
 // AMM Trade capacity
 export const AMM_TRADE_CAPACITY = 25;
