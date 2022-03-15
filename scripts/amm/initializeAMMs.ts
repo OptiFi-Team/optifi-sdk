@@ -4,7 +4,7 @@ import Context from "../../types/context";
 import { initializeAmm } from "../../instructions/initializeAmm";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { Duration } from "../../types/optifi-exchange-types";
-import { USDC_DECIMALS } from "../../lib/constants";
+import { USDC_DECIMALS } from "../../constants";
 
 async function initializeAMMOnSupportedAssets(context: Context) {
     let i = 1;

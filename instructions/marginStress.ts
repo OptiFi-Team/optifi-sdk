@@ -10,6 +10,7 @@ import {
     Asset as OptifiAsset,
 } from '../types/optifi-exchange-types';
 import { debugAnchorAccount } from "../utils/debug";
+import { STRIKE_LADDER_SIZE } from "../constants";
 
 
 export default function marginStress(context: Context,
@@ -70,7 +71,7 @@ export default function marginStress(context: Context,
 
             instructions.push(ix1);
 
-            for (let i = 0; i < 9; i++) {
+            for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                 instructions.push(ix2);
             }
 

@@ -13,7 +13,7 @@ let maxCoinQty = 1; // should be integer
 
 let side = OrderSide.Ask;
 
-initializeContext("test_account_2.json").then((context) => {
+initializeContext().then((context) => {
     userAccountExists(context).then(([_, res]) => {
         let userAccount = res as UserAccount;
         context.connection.getTokenAccountBalance(userAccount.userMarginAccountUsdc).then(tokenAmount => {
