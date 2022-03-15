@@ -1433,11 +1433,6 @@
           "isSigner": false
         },
         {
-          "name": "ammInstrumentShortTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "optifiMarket",
           "isMut": false,
           "isSigner": false
@@ -1453,11 +1448,6 @@
           "isSigner": false
         },
         {
-          "name": "requestQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "eventQueue",
           "isMut": true,
           "isSigner": false
@@ -1469,11 +1459,6 @@
         },
         {
           "name": "asks",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "coinMint",
           "isMut": true,
           "isSigner": false
         },
@@ -1498,11 +1483,6 @@
           "isSigner": false
         },
         {
-          "name": "instrumentShortSplTokenMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "pruneAuthority",
           "isMut": false,
           "isSigner": false
@@ -1514,11 +1494,6 @@
         },
         {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -2253,60 +2228,6 @@
           {
             "name": "contractSize",
             "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AmmLiquidityParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "spotPrice",
-            "type": "u32"
-          },
-          {
-            "name": "strikes",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "iv",
-            "type": "u32"
-          },
-          {
-            "name": "dt",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "isCall",
-            "type": "bytes"
-          },
-          {
-            "name": "ammPosition",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "futuresPosition",
-            "type": "u32"
-          },
-          {
-            "name": "usdcBalance",
-            "type": "u32"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
           }
         ]
       }

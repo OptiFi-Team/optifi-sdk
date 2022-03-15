@@ -78,7 +78,7 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         let ammInfo = await context.program.account.ammAccount.fetch(ammAddress)
-        ammInfo.proposals
+        
         let optifiMarketsToAdd: PublicKey[] = []
         let optifiMarkets = await findOptifiMarkets(context)
         console.log(`Found ${optifiMarkets.length} optifi markets in total `);
@@ -104,14 +104,15 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
 
                 // for (let proposal of proposalsForOneInstrument) {
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
-                console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
 
                 if (!proposalsForOneInstrument.isStarted) {
+                    console.log(`start to cancel previous orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                     // to prune all preivious orders 
                     let res = await ammCancelOrders(context, ammAddress, market[1])
                     console.log(`successfully cancelled orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                     console.log(res)
                 } else {
+                    console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                     // execute all the proposal orders
                     for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length; j++) {
                         let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
