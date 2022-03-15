@@ -293,7 +293,7 @@
         },
         {
           "name": "userAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1826,8 +1826,13 @@
           "isSigner": false
         },
         {
-          "name": "userAccount",
+          "name": "marginStressAccount",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1876,6 +1881,11 @@
           "isSigner": false
         },
         {
+          "name": "pruneAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "rent",
           "isMut": false,
           "isSigner": false
@@ -1907,12 +1917,22 @@
           "isSigner": false
         },
         {
-          "name": "userMarginAccountUsdc",
-          "isMut": false,
+          "name": "userMarginAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "liquidationState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1927,8 +1947,18 @@
           "isSigner": false
         },
         {
-          "name": "serumDexProgramId",
-          "isMut": false,
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "requestQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1942,31 +1972,6 @@
           "isSigner": false
         },
         {
-          "name": "eventQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "requestQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrders",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrdersOwner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "coinVault",
           "isMut": true,
           "isSigner": false
@@ -1977,7 +1982,17 @@
           "isSigner": false
         },
         {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         },
@@ -1987,16 +2002,7 @@
           "isSigner": true
         }
       ],
-      "args": [
-        {
-          "name": "maxCoinQty",
-          "type": "u64"
-        },
-        {
-          "name": "maxPcQty",
-          "type": "u64"
-        }
-      ]
+      "args": []
     },
     {
       "name": "scheduleMarketMakerWithdrawal",
@@ -2368,17 +2374,15 @@
             }
           },
           {
-            "name": "registeredPositions",
+            "name": "instruments",
             "type": {
               "vec": "publicKey"
             }
           },
           {
-            "name": "collectedPositions",
+            "name": "values",
             "type": {
-              "vec": {
-                "defined": "PositionSizeContainer"
-              }
+              "vec": "i64"
             }
           }
         ]
@@ -2626,6 +2630,18 @@
                 "u64",
                 10
               ]
+            }
+          },
+          {
+            "name": "tradingMarkets",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "liquidateFlags",
+            "type": {
+              "vec": "bool"
             }
           }
         ]
@@ -2916,22 +2932,6 @@
           {
             "name": "size",
             "type": "i32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "PositionSizeContainer",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "value",
-            "type": "i64"
-          },
-          {
-            "name": "address",
-            "type": "publicKey"
           }
         ]
       }
@@ -3260,10 +3260,13 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Liquidating"
+            "name": "Healthy"
           },
           {
-            "name": "Dormant"
+            "name": "CancelOrder"
+          },
+          {
+            "name": "ClosePositions"
           }
         ]
       }
@@ -3457,51 +3460,56 @@
     },
     {
       "code": 319,
+      "name": "UserNotInCancelOrder",
+      "msg": "User is not in cancel order status"
+    },
+    {
+      "code": 320,
       "name": "UserAlreadyInLiquidation",
       "msg": "User was already in liquidation"
     },
     {
-      "code": 320,
+      "code": 321,
       "name": "InstrumentAlreadyRegisteredForLiquidation",
       "msg": "Instrument was already registered for liquidation"
     },
     {
-      "code": 321,
+      "code": 322,
       "name": "CannotPlaceOrdersInLiquidation",
       "msg": "Users cannot place manual orders while their accounts are in liquidation"
     },
     {
-      "code": 322,
+      "code": 323,
       "name": "PoolNotCentralUSDCPool",
       "msg": "Provided USDC pool is not central pool"
     },
     {
-      "code": 323,
+      "code": 324,
       "name": "InvalidSerumAuthority",
       "msg": "Invalid open orders market authority"
     },
     {
-      "code": 324,
+      "code": 325,
       "name": "WithdrawRequestInvalid",
       "msg": "Only one withdraw request allowed at one time"
     },
     {
-      "code": 325,
+      "code": 326,
       "name": "MMWithdrawNotInWindow",
       "msg": "Market maker withdraw outside of valid window"
     },
     {
-      "code": 326,
+      "code": 327,
       "name": "WrongAsset",
       "msg": "Wrong asset"
     },
     {
-      "code": 327,
+      "code": 328,
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
     }
   ],
   "metadata": {
-    "address": "FVWhLLPYPPPVtmrAwSgsy4cF84z888hamnyXYdtFN2jT"
+    "address": "6pwtuf82WLCP9voJnQ6GvsVqStgrzH5AF8NndQM5zS31"
   }
 }

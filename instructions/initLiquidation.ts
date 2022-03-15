@@ -2,8 +2,6 @@ import Context from "../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import { findExchangeAccount, findLiquidationState } from "../utils/accounts";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
-import { UserAccount } from "../types/optifi-exchange-types";
 
 export default function initLiquidation(context: Context, userToLiquidate: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
