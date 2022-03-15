@@ -50,7 +50,3 @@ export default async function airdropUSDC(context: Context) {
     let txid = await context.provider.send(tx, [fromWallet])
     return txid;
 }
-
-initializeContext().then((context) => {
-    airdropUSDC(context).then(txid => console.log("airdropUSDC txid: ", txid))
-})
