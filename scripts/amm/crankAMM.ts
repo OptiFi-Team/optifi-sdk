@@ -5,13 +5,10 @@ import { AmmState, MarginStressState } from "../../types/optifi-exchange-types";
 import { findExchangeAccount, findOptifiExchange } from "../../utils/accounts";
 import { findAMMAccounts, findAMMWithIdx } from "../../utils/amm";
 import { sleep } from "../../utils/generic";
-import { executeAmmOrderProposal } from "./ammUpdateOrders";
-import { calcAmmDelta } from "./calcAmmDelta";
-import { calculateAmmProposals } from "./calcAmmProposals";
+import { executeAmmOrderProposal, calcAmmDelta, calculateAmmProposals, syncAmmPositions } from "./utils";
 import Context from "../../types/context";
-import { syncAmmPositions } from "./syncAmmPositions";
 
-let ammIdxs = [1]
+let ammIdxs = [1, 2]
 
 // all amm states
 let Sync = Object.keys(AmmState.Sync)[0].toLowerCase();
@@ -60,8 +57,9 @@ const ammLoop = async (context: Context, optifiExchange: PublicKey, idx: number)
 
 initializeContext().then(async (context) => {
     let [optifiExchange, _bump1] = await findOptifiExchange(context)
-    let ammAddresses: PublicKey[] = []
-    let idx = ammIdxs[0]
-    ammLoop(context, optifiExchange, idx)
-
+    // let ammAddresses: PublicKey[] = []
+    // let idx = ammIdxs[0]
+    Promise.all(
+        ammIdxs.map(idx =>  ammLoop(context, optifiExchange, idx))
+    )
 })
