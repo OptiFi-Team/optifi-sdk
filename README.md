@@ -80,7 +80,7 @@ npx ts-node scripts/loadOpenOdersAccount.ts
 npx ts-node scripts/loadMarketOrderbook.ts
 ```
 
-## How to run an AMM
+## How to run AMMs
 
 - create an AMM
 
@@ -96,10 +96,10 @@ It will create two AMMs, one for trading BTC options, another for trading ETH op
 npx ts-node scripts/amm/findAMMs.ts
 ```
 
-- to deposit USDC into an AMM, set the amm address and amount to deposit, and run:
+- to deposit USDC into an AMM, set the `amm address` and `amount to deposit`, and run:
 
 ```bash
-npx ts-node scripts/amm/addInstrumentToAmm.ts
+npx ts-node scripts/amm/deposit.ts
 ```
 
 - add the optifi markets to an AMM so that it can trade on that market
@@ -108,13 +108,15 @@ npx ts-node scripts/amm/addInstrumentToAmm.ts
 npx ts-node scripts/amm/addInstrumentToAmm.ts
 ```
 
+- make sure you have done the last two steps for BOTH BTC and ETH AMMs
+
 - now the amm is ready to work, run the following command to crank the AMM and let the AMM update orders on OptiFi markets contineously:
 
 ```bash
 npx ts-node scripts/amm/crankAMM.ts
 ```
 
-Note that in order to calculate Delta and order proposals for the AMMs, it requires the Margin Stress account to be at available status. run:
+Note that in order to calculate Delta and order proposals for the AMMs, it requires the Margin Stress account to be at `available` status. run the following and stop when the Margin Stress account becomes `available`:
 
 ```bash
 npx ts-node scripts/marginStress/marginStressLoop.ts
