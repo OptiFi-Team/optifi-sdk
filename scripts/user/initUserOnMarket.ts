@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import initUserOnOptifiMarket from "../../instructions/initUserOnOptifiMarket";
 
-let market = new PublicKey("8QwEJLGqebW1hz4SWDDjTVZYUtB4kLk5GmwnYiA7kF2G");
+let market = new PublicKey("EJpCyV6hfnQ8QsbmGweSUx6t2JchQoFgaxEiaRtV26p9");
 
 initializeContext().then((context) => {
     initUserOnOptifiMarket(context, market).then((res) => {

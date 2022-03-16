@@ -1,16 +1,11 @@
-import { BN } from "@project-serum/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
-import initLiquidation from "../../instructions/initLiquidation";
 import liquidatePosition from "../../instructions/liquidatePosition";
-import registerLiquidationMarket from "../../instructions/registerLiquidationMarket";
-import { UserAccount } from "../../types/optifi-exchange-types";
-import { findOptifiMarkets } from "../../utils/market";
 
 
-let userToLiquidate = new PublicKey("Ch6giyKAjJsLUVeE2fDHYpHyH6Z6Rpk7RkAnBmv7jh4d");
+let userToLiquidate = new PublicKey("9QEsU961hXuMQuKA1PDK17HAv1JiwxSnavGr5yrKCjZD");
 
-let marketAddress = new PublicKey("2Pa41Fqdb43NEYGvpzMavr5QpvNJLwXtKRvVCRCeTu5w");
+let marketAddress = new PublicKey("EJpCyV6hfnQ8QsbmGweSUx6t2JchQoFgaxEiaRtV26p9");
 
 initializeContext().then(async (context) => {
 

@@ -6,7 +6,7 @@ import { OptifiMarket } from "../types/optifi-exchange-types";
 import { PublicKey } from "@solana/web3.js";
 
 
-let marketId = new PublicKey("HgRRCp5Dt18GFW8Gc9bp8hvYct37GrXnWzNUEAgetxMS");
+let marketId = new PublicKey("EJpCyV6hfnQ8QsbmGweSUx6t2JchQoFgaxEiaRtV26p9");
 
 
 initializeContext().then((context) => {

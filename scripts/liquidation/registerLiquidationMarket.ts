@@ -7,9 +7,9 @@ import { UserAccount } from "../../types/optifi-exchange-types";
 import { findOptifiMarkets } from "../../utils/market";
 
 
-let userToLiquidate = new PublicKey("7yZe39mKS1jEGY3U68FcB9LDpsS8j2Vit5MSr6vqQ9FA");
+let userToLiquidate = new PublicKey("9QEsU961hXuMQuKA1PDK17HAv1JiwxSnavGr5yrKCjZD");
 
-let marketAddress = new PublicKey("Cr96pBgTtVBGV3uc7NkHcuzFU5E2Cgcr19M8p8ZP2bbW");
+let marketAddress = new PublicKey("EJpCyV6hfnQ8QsbmGweSUx6t2JchQoFgaxEiaRtV26p9");
 
 initializeContext().then(async (context) => {
 
