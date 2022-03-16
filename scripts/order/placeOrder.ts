@@ -1,13 +1,12 @@
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { initializeContext } from "../../index";
-import { formOrderContext } from "../../utils/orders";
 import placeOrder from "../../instructions/placeOrder";
 import { OrderSide } from "../../types/optifi-exchange-types";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { userAccountExists } from "../../utils/accounts";
 import { UserAccount } from "../../types/optifi-exchange-types";
 
-let market = new PublicKey("EJpCyV6hfnQ8QsbmGweSUx6t2JchQoFgaxEiaRtV26p9");
+let market = new PublicKey("21MCdK77u82zdubzaZTQHuX9UnmgYu85TZNeP1p3T3KG");
 let limit = 950;
 let maxCoinQty = 1; // should be integer
 
