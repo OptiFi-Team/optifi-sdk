@@ -41,7 +41,6 @@ let price = 34500;
 let spot = OracleDataType.Spot;
 let iv = OracleDataType.IV;
 let r = 0, q = 0, stress = 0.3;
-let user = reshap(config.USER_POSITION_1)
 
 export default function placeOrder(context: Context,
     marketAddress: PublicKey,
@@ -218,12 +217,12 @@ export function preCalcMarginForNewOrder(context: Context,
             }
         });
 
+        let user = Array.from(result.values());
         let intrinsic = option_intrinsic_value(spot, strike, isCall);
         let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall);
         let price = stress_results['Price'];
         let stress_price_change = stress_results['Stress Price Delta'];
 
-        // need user params where?
         let margin_result = calculateMargin(user, spot, t, price, intrinsic, stress_price_change);
 
         // where is getUserBalance function?
