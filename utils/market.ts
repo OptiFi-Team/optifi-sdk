@@ -165,18 +165,16 @@ export function findMarketInstrumentContext(context: Context, marketAddress: Pub
 
 export function isUserInitializedOnMarket(context: Context, marketAddress: PublicKey): Promise<boolean> {
     return new Promise((resolve, reject) => {
-        findUserAccount(context).then(([userAccountAddress, _]) => {
-            findMarketInstrumentContext(context, marketAddress).then((marketInstrumentContext) => {
-                context.connection.getAccountInfo(marketInstrumentContext.longSPLTokenVault).then((acctInfo) => {
-                    if (acctInfo === null) {
-                        resolve(false)
-                    } else {
-                        resolve(true)
-                    }
-                }).catch((err) => resolve(false));
-            })
-        })
-
+        findMarketInstrumentContext(context, marketAddress).then((marketInstrumentContext) => {
+            context.connection.getAccountInfo(marketInstrumentContext.longSPLTokenVault).then((acctInfo) => {
+                console.log(acctInfo);
+                if (acctInfo === null) {
+                    resolve(false)
+                } else {
+                    resolve(true)
+                }
+            }).catch((err) => resolve(false));
+        }).catch((err) => resolve(false));
     })
 }
 
