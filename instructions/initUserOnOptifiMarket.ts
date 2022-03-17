@@ -146,6 +146,7 @@ export function initUserOnOptifiMarketV2(context: Context,
                     systemProgram: anchor.web3.SystemProgram.programId,
                     rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                 },
+                instructions: inxs
 
             })
 
