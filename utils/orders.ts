@@ -96,18 +96,18 @@ export function formOrderContext(
                         .fetch(marketAddress)
                         .then((marketRes) => {
                           let optifiMarket = marketRes as OptifiMarket;
-                          findOrCreateAssociatedTokenAccount(
+                          findAssociatedTokenAccount(
                             context,
                             optifiMarket.instrumentLongSplToken,
                             userAccountAddress
                           )
-                            .then((longSPLTokenVault) => {
-                              findOrCreateAssociatedTokenAccount(
+                            .then(([longSPLTokenVault,]) => {
+                              findAssociatedTokenAccount(
                                 context,
                                 optifiMarket.instrumentShortSplToken,
                                 userAccountAddress
                               )
-                                .then((shortSPLTokenVault) => {
+                                .then(([shortSPLTokenVault,]) => {
                                   deriveVaultNonce(
                                     optifiMarket.serumMarket,
                                     serumId
@@ -245,18 +245,18 @@ export function formPlaceOrderContext(
                         .fetch(marketAddress)
                         .then((marketRes) => {
                           let optifiMarket = marketRes as OptifiMarket;
-                          findOrCreateAssociatedTokenAccount(
+                          findAssociatedTokenAccount(
                             context,
                             optifiMarket.instrumentLongSplToken,
                             userAccountAddress
                           )
-                            .then((longSPLTokenVault) => {
-                              findOrCreateAssociatedTokenAccount(
+                            .then(([longSPLTokenVault,]) => {
+                              findAssociatedTokenAccount(
                                 context,
                                 optifiMarket.instrumentShortSplToken,
                                 userAccountAddress
                               )
-                                .then((shortSPLTokenVault) => {
+                                .then(([shortSPLTokenVault,]) => {
                                   deriveVaultNonce(
                                     optifiMarket.serumMarket,
                                     serumId
