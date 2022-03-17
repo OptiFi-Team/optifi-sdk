@@ -2017,6 +2017,21 @@
           "isSigner": false
         },
         {
+          "name": "vaultSigner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentLongSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "serumDexProgramId",
           "isMut": false,
           "isSigner": false

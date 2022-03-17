@@ -6,8 +6,8 @@ import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { userAccountExists } from "../../utils/accounts";
 import { UserAccount } from "../../types/optifi-exchange-types";
 
-let market = new PublicKey("21MCdK77u82zdubzaZTQHuX9UnmgYu85TZNeP1p3T3KG");
-let limit = 950;
+let market = new PublicKey("3qCSVYhpkuJoNnkGtL2ddtt3LzB6B5jyx7EohFkCoZyw");
+let limit = 1500;
 let maxCoinQty = 1; // should be integer
 
 let side = OrderSide.Ask;

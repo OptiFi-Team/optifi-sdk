@@ -8,7 +8,7 @@ import { LiquidationState, UserAccount } from "../types/optifi-exchange-types";
 import liquidatePosition from "../instructions/liquidatePosition";
 import { marginCalculate } from "../instructions/userMarginCalculate";
 
-let userToLiquidate = new PublicKey("HhHKqF8rDAmdS8G6p3GrNguWjWLDxn2opcgyxDYKw3Sc");
+let userToLiquidate = new PublicKey("9wJTJhgnivUV28pk4y3teU5HAM1hfXbap3NBvTGoizVB");
 
 initializeContext().then(async (context) => {
     // initLiquidation
@@ -27,7 +27,7 @@ initializeContext().then(async (context) => {
         let userAccount = res as unknown as UserAccount;
         tradingMarkets = userAccount.tradingMarkets;
 
-        for await (let marketAddress of tradingMarkets) {
+        for (let marketAddress of tradingMarkets) {
             console.log(marketAddress.toString());
             await registerLiquidationMarket(context, userToLiquidate, marketAddress).then((res) => {
                 console.log("Got init res", res);
@@ -43,26 +43,23 @@ initializeContext().then(async (context) => {
         let liquidationState = res as unknown as LiquidationState;
         let liquidationMarkets = liquidationState.markets;
         if (liquidationMarkets.length > 0) {
-            for await (let marketAddress of liquidationMarkets) {
+            console.log("Liquidating positions...");
+            for (let marketAddress of liquidationMarkets) {
+                console.log(marketAddress.toString());
                 // Update margin requirement
                 await marginCalculate(context, userToLiquidate);
 
                 // registerLiquidationMarket
-                console.log(marketAddress.toString());
-                await liquidatePosition(context, userToLiquidate, marketAddress).then((res) => {
-                    console.log("Got init res", res);
-                }).catch((err) => {
-                    console.error(err);
-                });
+                await liquidatePosition(context, userToLiquidate, marketAddress);
             }
         } else {
+            console.log("Finish liquidation...");
             let marketAddress = tradingMarkets[0];
 
             // Update margin requirement
             await marginCalculate(context, userToLiquidate);
 
             // registerLiquidationMarket
-            console.log(marketAddress.toString());
             await liquidatePosition(context, userToLiquidate, marketAddress).then((res) => {
                 console.log("Got init res", res);
             }).catch((err) => {

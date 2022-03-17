@@ -3,9 +3,9 @@ import { initializeContext } from "../../index";
 import liquidatePosition from "../../instructions/liquidatePosition";
 
 
-let userToLiquidate = new PublicKey("9QEsU961hXuMQuKA1PDK17HAv1JiwxSnavGr5yrKCjZD");
+let userToLiquidate = new PublicKey("9wJTJhgnivUV28pk4y3teU5HAM1hfXbap3NBvTGoizVB");
 
-let marketAddress = new PublicKey("EJpCyV6hfnQ8QsbmGweSUx6t2JchQoFgaxEiaRtV26p9");
+let marketAddress = new PublicKey("3qCSVYhpkuJoNnkGtL2ddtt3LzB6B5jyx7EohFkCoZyw");
 
 initializeContext().then(async (context) => {
 
