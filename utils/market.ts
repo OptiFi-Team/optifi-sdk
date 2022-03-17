@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { PublicKey } from "@solana/web3.js";
+import { Commitment, PublicKey } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Chain, Exchange, OptifiMarket } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
@@ -163,11 +163,11 @@ export function findMarketInstrumentContext(context: Context, marketAddress: Pub
     })
 }
 
-export function isUserInitializedOnMarket(context: Context, marketAddress: PublicKey): Promise<boolean> {
+export function isUserInitializedOnMarket(context: Context, marketAddress: PublicKey, commitment: Commitment): Promise<boolean> {
     return new Promise((resolve, reject) => {
         findUserAccount(context).then(([userAccountAddress, _]) => {
             findMarketInstrumentContext(context, marketAddress).then((marketInstrumentContext) => {
-                context.connection.getAccountInfo(marketInstrumentContext.longSPLTokenVault).then((acctInfo) => {
+                context.connection.getAccountInfo(marketInstrumentContext.longSPLTokenVault, commitment).then((acctInfo) => {
                     if (acctInfo === null) {
                         resolve(false)
                     } else {
