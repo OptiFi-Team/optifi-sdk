@@ -143,7 +143,7 @@ export function preCalcMarginForNewOrder(context: Context,
             }
         });
 
-        let user = Array.from(result.values());
+        let user = [...result.values()];
         let intrinsic = option_intrinsic_value(spot, strike, isCall);
         let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall);
         let price = stress_results['Price'];
