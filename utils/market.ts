@@ -54,7 +54,7 @@ export function findOptifiInstruments(context: Context): Promise<Chain[]> {
             Promise.all([
                 markets.map((m) =>
                     context.program.account.chain.fetch(m.instrument).then((res) => {
-                        // @ts-ignore
+                        // @ts-ignore   res is instruments detail info. (res.expiryDate)
                         instruments.push(res as Chain)
                     })
                 )
