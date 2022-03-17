@@ -8,7 +8,7 @@ import { LiquidationState, UserAccount } from "../types/optifi-exchange-types";
 import liquidatePosition from "../instructions/liquidatePosition";
 import { marginCalculate } from "../instructions/userMarginCalculate";
 
-let userToLiquidate = new PublicKey("9QEsU961hXuMQuKA1PDK17HAv1JiwxSnavGr5yrKCjZD");
+let userToLiquidate = new PublicKey("HhHKqF8rDAmdS8G6p3GrNguWjWLDxn2opcgyxDYKw3Sc");
 
 initializeContext().then(async (context) => {
     // initLiquidation
@@ -17,12 +17,15 @@ initializeContext().then(async (context) => {
     }).catch((err) => {
         console.error(err);
     });
+
+    let tradingMarkets: PublicKey[];
+
     // registerLiquidationMarket
     let register = async () => {
 
         let res = await context.program.account.userAccount.fetch(userToLiquidate);
         let userAccount = res as unknown as UserAccount;
-        let tradingMarkets = userAccount.tradingMarkets;
+        tradingMarkets = userAccount.tradingMarkets;
 
         for await (let marketAddress of tradingMarkets) {
             console.log(marketAddress.toString());
@@ -39,7 +42,22 @@ initializeContext().then(async (context) => {
         let res = await context.program.account.liquidationState.fetch(liquidationStateAddress);
         let liquidationState = res as unknown as LiquidationState;
         let liquidationMarkets = liquidationState.markets;
-        for await (let marketAddress of liquidationMarkets) {
+        if (liquidationMarkets.length > 0) {
+            for await (let marketAddress of liquidationMarkets) {
+                // Update margin requirement
+                await marginCalculate(context, userToLiquidate);
+
+                // registerLiquidationMarket
+                console.log(marketAddress.toString());
+                await liquidatePosition(context, userToLiquidate, marketAddress).then((res) => {
+                    console.log("Got init res", res);
+                }).catch((err) => {
+                    console.error(err);
+                });
+            }
+        } else {
+            let marketAddress = tradingMarkets[0];
+
             // Update margin requirement
             await marginCalculate(context, userToLiquidate);
 
