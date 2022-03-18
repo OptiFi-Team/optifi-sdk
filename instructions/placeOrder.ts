@@ -7,17 +7,13 @@ import marginStress from "./marginStress";
 import { isUserInitializedOnMarket } from "../utils/market";
 import { createInitUserOnOptifiMarketInstruciton } from "./initUserOnOptifiMarket";
 import {formOrderContext} from "../utils/orders";
-import { OracleDataType, OrderSide, SpotInputOption} from "../types/optifi-exchange-types";
+import { OracleDataType, OrderSide} from "../types/optifi-exchange-types";
 import { OptifiMarket } from "../types/optifi-exchange-types";
-import {COIN_LOT_SIZE, MAX_COIN_QTY, MAX_PC_QTY, PC_LOT_SIZE} from "../constants";
 import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
 
 import { findUserAccount } from '../utils/accounts'
-import { calculateMargin, stress_function, generate_stress_spot, option_price, option_reg_t_margin, option_delta, option_intrinsic_value } from "../utils/calculateMargin";
+import { calculateMargin, stress_function, option_intrinsic_value } from "../utils/calculateMargin";
 import { getPosition, findOptifiMarkets } from "../utils/market";
-import * as config from "../utils/calcMarginTestData"
-
-import {getSerumMarket} from "../utils/serum";
 
 // t        sdk api, check the comment above
 // spot     oracle
