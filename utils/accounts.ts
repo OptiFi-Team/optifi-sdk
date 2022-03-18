@@ -342,7 +342,7 @@ export async function getAllUsersOnExchange(context: Context)
             }
         },
         {
-            dataSize: 8 + 32 + 32 + 33 + 32 + 64 + 64 + 64 + 200,
+            dataSize: 3200,
         },
     ];
 

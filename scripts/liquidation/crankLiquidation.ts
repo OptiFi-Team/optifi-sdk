@@ -9,6 +9,8 @@ const liquidationLoop = async (context) => {
 
     let Users = await getAllUsersOnExchange(context);
 
+    console.log("Find ", Users.length, " user on the exchange");
+
     Users.forEach((user) => {
         let userToLiquidate = user.publicKey;
 
