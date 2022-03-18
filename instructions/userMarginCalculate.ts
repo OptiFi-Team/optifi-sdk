@@ -50,6 +50,8 @@ export function marginCalculate(context: Context, userAccount: PublicKey
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {
 
+        console.log("marginCalculate...");
+
         let [exchangeAddress, _] = await findExchangeAccount(context);
 
         Promise.all(SUPPORTED_ASSETS.map((asset) => new Promise(async () => {

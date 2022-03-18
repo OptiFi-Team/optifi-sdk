@@ -35,6 +35,9 @@ export default function liquidatePosition(context: Context,
                                             ).then((shortSPLTokenVault) => {
                                                 let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
                                                 deriveVaultNonce(market.serumMarket, serumId).then(([vaultOwner, _]) => {
+
+                                                    console.log("liquidatePosition...");
+
                                                     context.program.rpc.liquidatePosition(
                                                         {
                                                             accounts: {
