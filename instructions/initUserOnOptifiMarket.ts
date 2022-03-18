@@ -3,13 +3,10 @@ import { PublicKey, TransactionInstruction, TransactionSignature } from "@solana
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import { findOptifiExchange, findUserAccount, getDexOpenOrders, userAccountExists } from "../utils/accounts";
-import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { OptifiMarket } from "../types/optifi-exchange-types";
 import { findSerumAuthorityPDA } from "../utils/pda";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
-import { findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount } from "../utils/token";
-import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
+import { createAssociatedTokenAccountInstruction, findAssociatedTokenAccount } from "../utils/token";
 
 /**
  * Initialize a new open orders account for user to place order on the optifi marketAddress
@@ -33,8 +30,8 @@ export default function initUserOnOptifiMarket(context: Context,
                         findUserAccount(context).then(([userAccountAddress, _]) => {
                             getDexOpenOrders(context, optifiMarket.serumMarket, userAccountAddress).then(([dexOpenOrders, bump]) => {
                                 // Create or find the users associated token accounts for both of the instrument
-                                findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then(() => {
-                                    findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then(() => {
+                                findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then(([shortAssociatedTokenAccount, _]) => {
+                                    findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, userAccountAddress).then(([longAssociatedTokenAccount, _]) => {
                                         context.program.rpc.initUserOnOptifiMarket(bump, {
                                             accounts: {
                                                 optifiExchange: exchangeAddress,
@@ -49,7 +46,20 @@ export default function initUserOnOptifiMarket(context: Context,
                                                 systemProgram: anchor.web3.SystemProgram.programId,
                                                 rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                                             },
-                                            instructions: [],
+                                            instructions: [
+                                                createAssociatedTokenAccountInstruction(
+                                                    context.provider.wallet.publicKey,
+                                                    shortAssociatedTokenAccount,
+                                                    userAccountAddress,
+                                                    optifiMarket.instrumentShortSplToken
+                                                ),
+                                                createAssociatedTokenAccountInstruction(
+                                                    context.provider.wallet.publicKey,
+                                                    longAssociatedTokenAccount,
+                                                    userAccountAddress,
+                                                    optifiMarket.instrumentLongSplToken
+                                                )
+                                            ],
                                         }).then((res) => {
                                             resolve({
                                                 successful: true,

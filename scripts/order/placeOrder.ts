@@ -1,19 +1,18 @@
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { initializeContext } from "../../index";
-import { formOrderContext } from "../../utils/orders";
 import placeOrder from "../../instructions/placeOrder";
 import { OrderSide } from "../../types/optifi-exchange-types";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { userAccountExists } from "../../utils/accounts";
 import { UserAccount } from "../../types/optifi-exchange-types";
 
-let market = new PublicKey("Cr96pBgTtVBGV3uc7NkHcuzFU5E2Cgcr19M8p8ZP2bbW");
-let limit = 950;
+let market = new PublicKey("3qCSVYhpkuJoNnkGtL2ddtt3LzB6B5jyx7EohFkCoZyw");
+let limit = 1500;
 let maxCoinQty = 1; // should be integer
 
 let side = OrderSide.Ask;
 
-initializeContext("test_account_2.json").then((context) => {
+initializeContext().then((context) => {
     userAccountExists(context).then(([_, res]) => {
         let userAccount = res as UserAccount;
         context.connection.getTokenAccountBalance(userAccount.userMarginAccountUsdc).then(tokenAmount => {

@@ -4,11 +4,12 @@ import Context from "../../types/context";
 import { initializeAmm } from "../../instructions/initializeAmm";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { Duration } from "../../types/optifi-exchange-types";
+import { USDC_DECIMALS } from "../../constants";
 
 async function initializeAMMOnSupportedAssets(context: Context) {
     let i = 1;
     let duration = Duration.Monthly; // should be the same as created instruments
-    let contractSize = 0.01 * 10000; // TBD
+    let contractSize = 0.01 * (10 ** USDC_DECIMALS); // TBD
     for (let asset of SUPPORTED_ASSETS) {
         console.log("Initializing AMM for asset ", asset);
         try {
