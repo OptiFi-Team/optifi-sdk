@@ -18,7 +18,7 @@ initializeContext().then(async (context) => {
         console.error(err);
     });
 
-    let tradingMarkets: PublicKey[];
+    let tradingMarkets: PublicKey[] = [];
 
     // registerLiquidationMarket
     let register = async () => {
@@ -57,14 +57,16 @@ initializeContext().then(async (context) => {
             let marketAddress = tradingMarkets[0];
 
             // Update margin requirement
+            console.log("start to run marginCalculate")
             await marginCalculate(context, userToLiquidate);
 
-            // registerLiquidationMarket
-            await liquidatePosition(context, userToLiquidate, marketAddress).then((res) => {
-                console.log("Got init res", res);
-            }).catch((err) => {
-                console.error(err);
-            });
+             // registerLiquidationMarket
+             console.log("start to run liquidatePosition")
+            liquidatePosition(context, userToLiquidate, marketAddress).then((res) => {
+                 console.log("Got liquidatePosition res", res);
+             }).catch((err) => {
+                 console.error(err);
+             });
         }
     }
     await liquidate();

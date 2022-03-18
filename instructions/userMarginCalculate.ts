@@ -71,6 +71,12 @@ export function marginCalculate(context: Context, userAccount: PublicKey
                     instructions: ix
                 }
             ).then((res) => {
+                resolve(
+                    {
+                        successful: true,
+                        data: res as TransactionSignature
+                    }
+                )
                 console.log({
                     successful: true,
                     data: res as TransactionSignature
