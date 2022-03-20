@@ -135,8 +135,8 @@ export function calcMarginRequirementForUser(
  */
 export function preCalcMarginForNewOrder(
     context: Context,
-    marketAddress: PublicKey,
     userAccountAddress: PublicKey,
+    marketAddress: PublicKey,
     side: OrderSide,
     maxCoinQty: number,
 ): Promise<number> {
@@ -153,28 +153,52 @@ export function preCalcMarginForNewOrder(
             let strikeETH: number[] = [];
 
             // get user's all existing positons from user account
-            let [userAccountAddress, _] = await findUserAccount(context)
+            //  let [userAccountAddress, _] = await findUserAccount(context)
             let userAccountInfo = await context.program.account.userAccount.fetch(userAccountAddress);
-            let positions = userAccountInfo.positions as UserPosition[]
+            // console.log(userAccountInfo)
+            let positions = userAccountInfo.positions
 
             // calc user's net positons for each instrument
-            let userNetPositions = positions.map(position => position.long_qty.sub(position.short_qty).toNumber())
+            // @ts-ignore
+            let userNetPositions = positions.map(position => position.longQty.sub(position.shortQty).toNumber()
+            )
 
             // take the new order into account
-            positions.forEach((e, i) => {
-                if (e.instrument.equals(marketAddress)) {
-                    // if Ask order, val - orderSize
-                    if (side === OrderSide.Ask) {
-                        userNetPositions[i] -= maxCoinQty;
-                    }
-                    // if Bid order, val + orderSize
-                    else {
-                        userNetPositions[i] += maxCoinQty;
-                    }
+            let marketAccountInfo = await context.program.account.optifiMarket.fetch(marketAddress)
+            // @ts-ignore
+            let i = positions.findIndex(e => e.instrument.toString() == marketAccountInfo.instrument.toString())
+            if (i > -1) {
+                if (side === OrderSide.Ask) {
+                    userNetPositions[i] -= maxCoinQty;
                 }
-            })
+                // if Bid order, val + orderSize
+                else {
+                    userNetPositions[i] += maxCoinQty;
+                }
+            } else {
+                if (side === OrderSide.Ask) {
+                    // @ts-ignore
+                    positions.push(
+                        {
+                            instrument: marketAccountInfo.instrument,
+                            longQty: 0,
+                            shortQty: maxCoinQty
+                        })
+                    userNetPositions.push(-maxCoinQty);
+
+                } else {
+                    // @ts-ignore
+                    positions.push(
+                        {
+                            instrument: marketAccountInfo.instrument,
+                            longQty: maxCoinQty
+                        })
+                    userNetPositions.push(maxCoinQty);
+                }
+            }
 
             // get user's trading instruments info
+            // @ts-ignore
             let userTradingInstruments = positions.map(position => position.instrument)
             let instrumentAccountInfosRaw = await context.program.account.chain.fetchMultiple(userTradingInstruments);
             let instrumentAccountInfos = instrumentAccountInfosRaw as Chain[];
@@ -185,7 +209,7 @@ export function preCalcMarginForNewOrder(
                     tBTC.push(maturity)
                     strikeBTC.push(instrument.strike.toNumber());
                     isCallBTC.push(Object.keys(instrument.instrumentType)[0] === "call" ? 1 : 0)
-                } else if (instrument.asset == 0) {
+                } else if (instrument.asset == 1) {
                     netPositionsETH.push(userNetPositions[i])
                     tETH.push(maturity)
                     strikeETH.push(instrument.strike.toNumber());
@@ -250,8 +274,6 @@ export function preCalcMarginForNewOrder(
             // get the total margin
             let res = Math.abs(marginForBTC) + Math.abs(marginForETH)
 
-
-
             resolve(res)
         } catch (err) {
             reject(err)
@@ -281,7 +303,7 @@ export function isMarginSufficientForNewOrder(
             let userAccountInfo = await context.program.account.userAccount.fetch(userAccountAddress);
             let userMarginBalance = (await context.connection.getTokenAccountBalance(userAccountInfo.userMarginAccountUsdc)).value.uiAmount!
             let marginRequirement = await preCalcMarginForNewOrder(
-                context, marketAddress, userAccountAddress, side, maxCoinQty,
+                context, userAccountAddress, marketAddress, side, maxCoinQty,
             )
 
             if (userMarginBalance < marginRequirement) {
