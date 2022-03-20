@@ -167,7 +167,6 @@ export function isUserInitializedOnMarket(context: Context, marketAddress: Publi
     return new Promise((resolve, reject) => {
         findMarketInstrumentContext(context, marketAddress).then((marketInstrumentContext) => {
             context.connection.getAccountInfo(marketInstrumentContext.longSPLTokenVault, commitment).then((acctInfo) => {
-                console.log(acctInfo);
                 if (acctInfo === null) {
                     resolve(false)
                 } else {
