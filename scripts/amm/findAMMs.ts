@@ -10,6 +10,9 @@ initializeContextWithoutWallet().then((context) => {
                 context, amm[1].toString(),
                 SolanaEntityType.Account)
             )
+            console.log("amm liquidity: ", amm[0].totalLiquidity.toString())
+            console.log("amm net delta: ", amm[0].netDelta.toString())
+
         }
     }).catch((err) => {
         console.error(err);

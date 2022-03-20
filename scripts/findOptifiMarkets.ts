@@ -25,6 +25,7 @@ initializeContext().then((context) => {
                 let chain = instrumentRes as Chain;
                 seenAssets.add(instrumentRes.asset);
                 console.log("Chain ", chain);
+                console.log("Chain asset: ", chain.asset, " strike: ", chain.strike.toString(), " instrumentType: ", chain.instrumentType);
                 console.log(new Date(chain.expiryDate.toNumber() * 1000).toLocaleDateString());
             })
 
