@@ -1,5 +1,11 @@
 import erf from "math-erf";
 
+export function reshap(arr: number[]) {
+    const newArr: number[][] = [];
+    while (arr.length) newArr.push(arr.splice(0, 1));
+    return newArr
+}
+
 // margin_function
 export function calculateMargin(user, spot, t, price, intrinsic, stress_price_change2) {
     var net_qty1 = net_qty(user);
