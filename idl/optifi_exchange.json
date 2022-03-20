@@ -2268,6 +2268,10 @@
             "type": "i64"
           },
           {
+            "name": "timestamp",
+            "type": "u64"
+          },
+          {
             "name": "totalLiquidity",
             "type": "u64"
           },
@@ -3558,8 +3562,5 @@
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
     }
-  ],
-  "metadata": {
-    "address": "6pwtuf82WLCP9voJnQ6GvsVqStgrzH5AF8NndQM5zS31"
-  }
+  ]
 }
