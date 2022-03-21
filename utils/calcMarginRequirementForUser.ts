@@ -21,7 +21,7 @@ export const stress = 0.3;
  */
 export function calcMarginRequirementForUser(
     context: Context,
-    // userAccountAddress?: PublicKey,
+    userAccountAddressInput?: PublicKey,
 ): Promise<number> {
     return new Promise(async (resolve, reject) => {
         try {
@@ -36,7 +36,7 @@ export function calcMarginRequirementForUser(
             let strikeETH: number[] = [];
 
             // get user's all existing positons from user account
-            let [userAccountAddress, _] = await findUserAccount(context)
+            let userAccountAddress = userAccountAddressInput || await findUserAccount(context)[0];
             let userAccountInfo = await context.program.account.userAccount.fetch(userAccountAddress);
             // console.log(userAccountInfo)
             let positions = userAccountInfo.positions
@@ -287,14 +287,17 @@ async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: 
     let iv = ivRes.lastRoundResult?.result! / 100
 
     let intrinsic = option_intrinsic_value(spot, strike, isCall);
+
+    // console.log("spot, strike, iv, r, q, t, stress, isCall ", spot, strike, iv, r, q, t, stress, isCall);
     let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall);
+    // console.log("stress_results", stress_results);
     let price = stress_results['Price'];
     let stress_price_change = stress_results['Stress Price Delta'];
     // console.log("strike: ", strike)
     // console.log("is call: ", isCall)
     // console.log("iv: ", iv)
 
-    console.log("calculateMargin params: ", userPositions, spot, t, price, intrinsic, stress_price_change)
+    console.log("userPositions, spot, t, price, intrinsic, stress_price_change", userPositions, spot, t, price, intrinsic, stress_price_change)
     let margin_result = calculateMargin(userPositions, spot, t, price, intrinsic, stress_price_change);
     let margin = margin_result["Total Margin"]
     return margin
