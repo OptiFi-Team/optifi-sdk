@@ -21,7 +21,7 @@ export const stress = 0.3;
  */
 export function calcMarginRequirementForUser(
     context: Context,
-    // userAccountAddress?: PublicKey,
+    userAccountAddressInput?: PublicKey,
 ): Promise<number> {
     return new Promise(async (resolve, reject) => {
         try {
@@ -36,7 +36,7 @@ export function calcMarginRequirementForUser(
             let strikeETH: number[] = [];
 
             // get user's all existing positons from user account
-            let [userAccountAddress, _] = await findUserAccount(context)
+            let userAccountAddress = userAccountAddressInput || await findUserAccount(context)[0];
             let userAccountInfo = await context.program.account.userAccount.fetch(userAccountAddress);
             // console.log(userAccountInfo)
             let positions = userAccountInfo.positions
@@ -78,45 +78,13 @@ export function calcMarginRequirementForUser(
             let marginForETH = 0
             if (netPositionsBTC.length > 0) {
                 // calc margin requriement for BTC postions
-                let strike = reshap(strikeBTC)
-                let t = reshap(tBTC)
-                let isCall = reshap(isCallBTC)
-                let userPositions = reshap(netPositionsBTC)
-
-                let btcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-                let spot = btcSpot.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
-                let btcIv = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
-                let iv = btcIv.lastRoundResult?.result!
-
-                let intrinsic = option_intrinsic_value(spot, strike, isCall);
-                let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall);
-                let price = stress_results['Price'];
-                let stress_price_change = stress_results['Stress Price Delta'];
-
-                console.log("calculateMargin params: ", userPositions, spot, t, price, intrinsic, stress_price_change)
-                let margin_result = calculateMargin(userPositions, spot, t, price, intrinsic, stress_price_change);
-                marginForBTC = margin_result["Total Margin"]
+                marginForBTC = await calcMarginForOneAsset(context, 0, usdcSpot.lastRoundResult?.result!, strikeBTC, isCallBTC, netPositionsBTC, tBTC)
                 console.log("marginForBTC: ", marginForBTC)
+
             }
             if (netPositionsETH.length > 0) {
                 // calc margin requriement for ETH postions
-                let strike = reshap(strikeETH)
-                let t = reshap(tETH)
-                let isCall = reshap(isCallETH)
-                let userPositions = reshap(netPositionsETH)
-
-                let ethSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
-                let spot = ethSpot.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
-                let ethIv = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV))
-                let iv = ethIv.lastRoundResult?.result!
-
-                let intrinsic = option_intrinsic_value(spot, strike, isCall);
-                let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall);
-                let price = stress_results['Price'];
-                let stress_price_change = stress_results['Stress Price Delta'];
-                console.log("calculateMargin params: ", userPositions, spot, t, price, intrinsic, stress_price_change)
-                let margin_result = calculateMargin(userPositions, spot, t, price, intrinsic, stress_price_change);
-                marginForETH = margin_result["Total Margin"]
+                marginForETH = await calcMarginForOneAsset(context, 1, usdcSpot.lastRoundResult?.result!, strikeETH, isCallETH, netPositionsETH, tETH)
                 console.log("marginForETH: ", marginForETH)
             }
 
@@ -229,45 +197,13 @@ export function preCalcMarginForNewOrder(
             let marginForETH = 0
             if (netPositionsBTC.length > 0) {
                 // calc margin requriement for BTC postions
-                let strike = reshap(strikeBTC)
-                let t = reshap(tBTC)
-                let isCall = reshap(isCallBTC)
-                let userPositions = reshap(netPositionsBTC)
-
-                let btcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-                let spot = btcSpot.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
-                let btcIv = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
-                let iv = btcIv.lastRoundResult?.result!
-
-                let intrinsic = option_intrinsic_value(spot, strike, isCall);
-                let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall);
-                let price = stress_results['Price'];
-                let stress_price_change = stress_results['Stress Price Delta'];
-
-                console.log("calculateMargin params: ", userPositions, spot, t, price, intrinsic, stress_price_change)
-                let margin_result = calculateMargin(userPositions, spot, t, price, intrinsic, stress_price_change);
-                marginForBTC = margin_result["Total Margin"]
+                marginForBTC = await calcMarginForOneAsset(context, 0, usdcSpot.lastRoundResult?.result!, strikeBTC, isCallBTC, netPositionsBTC, tBTC)
                 console.log("marginForBTC: ", marginForBTC)
+
             }
             if (netPositionsETH.length > 0) {
                 // calc margin requriement for ETH postions
-                let strike = reshap(strikeETH)
-                let t = reshap(tETH)
-                let isCall = reshap(isCallETH)
-                let userPositions = reshap(netPositionsETH)
-
-                let ethSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
-                let spot = ethSpot.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
-                let ethIv = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV))
-                let iv = ethIv.lastRoundResult?.result!
-
-                let intrinsic = option_intrinsic_value(spot, strike, isCall);
-                let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall);
-                let price = stress_results['Price'];
-                let stress_price_change = stress_results['Stress Price Delta'];
-                console.log("calculateMargin params: ", userPositions, spot, t, price, intrinsic, stress_price_change)
-                let margin_result = calculateMargin(userPositions, spot, t, price, intrinsic, stress_price_change);
-                marginForETH = margin_result["Total Margin"]
+                marginForETH = await calcMarginForOneAsset(context, 1, usdcSpot.lastRoundResult?.result!, strikeETH, isCallETH, netPositionsETH, tETH)
                 console.log("marginForETH: ", marginForETH)
             }
 
@@ -325,4 +261,44 @@ export function isMarginSufficientForNewOrder(
             reject(err)
         }
     })
+}
+
+async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: number, strikeRaw: number[], isCallRaw: number[], userPositionsRaw: number[], tRaw: number[]): Promise<number> {
+    let strike = reshap(strikeRaw)
+    let t = reshap(tRaw)
+    let isCall = reshap(isCallRaw)
+    let userPositions = reshap(userPositionsRaw)
+
+    let spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
+    let ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+    switch (asset) {
+        case 0:
+            spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
+            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+            break
+        case 1:
+            spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
+            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV))
+            break
+        default:
+            throw Error("unsupported asset type")
+    }
+    let spot = spotRes.lastRoundResult?.result! / usdcSpot
+    let iv = ivRes.lastRoundResult?.result! / 100
+
+    let intrinsic = option_intrinsic_value(spot, strike, isCall);
+
+    // console.log("spot, strike, iv, r, q, t, stress, isCall ", spot, strike, iv, r, q, t, stress, isCall);
+    let stress_results = stress_function(spot, strike, iv, r, q, t, stress, isCall);
+    // console.log("stress_results", stress_results);
+    let price = stress_results['Price'];
+    let stress_price_change = stress_results['Stress Price Delta'];
+    // console.log("strike: ", strike)
+    // console.log("is call: ", isCall)
+    // console.log("iv: ", iv)
+
+    console.log("userPositions, spot, t, price, intrinsic, stress_price_change", userPositions, spot, t, price, intrinsic, stress_price_change)
+    let margin_result = calculateMargin(userPositions, spot, t, price, intrinsic, stress_price_change);
+    let margin = margin_result["Total Margin"]
+    return margin
 }
