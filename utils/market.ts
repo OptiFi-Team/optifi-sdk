@@ -180,15 +180,15 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
                         let marketIdx = i / 2
                         let orderBook = Orderbook.decode(decodedSerumMarkets[marketIdx], e?.data!)
                         res[marketIdx].asks = orderBook
-                        res[marketIdx].askPrice = orderBook.getL2(1)[0][0]
-                        res[marketIdx].askSize = orderBook.getL2(1)[0][1]
+                        res[marketIdx].askPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
+                        res[marketIdx].askSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
 
                     } else {
                         let marketIdx = (i - 1) / 2
                         let orderBook = Orderbook.decode(decodedSerumMarkets[marketIdx], e?.data!)
                         res[marketIdx].bids = orderBook
-                        res[marketIdx].bidPrice = orderBook.getL2(1)[0][0]
-                        res[marketIdx].bidSize = orderBook.getL2(1)[0][1]
+                        res[marketIdx].bidPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
+                        res[marketIdx].bidSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
                     }
                 })
 
