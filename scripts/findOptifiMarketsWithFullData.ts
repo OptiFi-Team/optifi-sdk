@@ -1,8 +1,8 @@
-import { initializeContext } from "../index";
+import { initializeContextWithoutWallet } from "../index";
 import { findOptifiInstruments, findOptifiMarketsWithFullData } from "../utils/market";
 
 
-initializeContext().then((context) => {
+initializeContextWithoutWallet().then((context) => {
 
     // findOptifiInstruments(context).then(res => {
     //     console.log("findOptifiInstruments res: ", res)
