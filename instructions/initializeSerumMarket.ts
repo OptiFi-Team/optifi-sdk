@@ -1,9 +1,9 @@
-import {Keypair, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, Transaction} from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, Transaction } from "@solana/web3.js";
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import * as anchor from "@project-serum/anchor";
-import {MARKET_STATE_LAYOUT_V3} from "@project-serum/serum";
-import {AccountLayout, createInitializeAccountInstruction, createInitializeMintInstruction, MintLayout, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import { MARKET_STATE_LAYOUT_V3 } from "@project-serum/serum";
+import { AccountLayout, createInitializeAccountInstruction, createInitializeMintInstruction, MintLayout, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
     annotateAndSignTransaction,
     annotateTransactionWithBlockhash,
@@ -11,12 +11,12 @@ import {
     signTransaction,
     TransactionResultType
 } from "../utils/transactions";
-import {findExchangeAccount} from "../utils/accounts";
-import {COIN_LOT_SIZE, PC_DUST_THRESHOLD, PC_LOT_SIZE, SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT} from "../constants";
-import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {findOptifiMarketMintAuthPDA, findSerumAuthorityPDA, findSerumPruneAuthorityPDA} from "../utils/pda";
-import {deriveVaultNonce} from "../utils/market";
-import {Key} from "readline";
+import { findExchangeAccount } from "../utils/accounts";
+import { COIN_LOT_SIZE, PC_DUST_THRESHOLD, PC_LOT_SIZE, SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT } from "../constants";
+import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import { findOptifiMarketMintAuthPDA, findSerumAuthorityPDA, findSerumPruneAuthorityPDA } from "../utils/pda";
+import { deriveVaultNonce } from "../utils/market";
+import { Key } from "readline";
 
 // Data lengths for different accounts on the market
 const REQUEST_QUEUE_DATA_LENGTH = 5132;
@@ -64,13 +64,14 @@ function getMinimumRentBalances(context: Context): Promise<{ [size: string]: num
 }
 
 function initializeAccountsWithLayouts(context: Context,
-                                       rentBalances: { [space: string]: number },
-                                       marketAccount: Keypair,
-                                       coinVaultAccount: Keypair,
-                                       pcVaultAccount: Keypair,
-                                       pcMintAccount: PublicKey,
-                                       coinMintAccount: Keypair,
-                                       vaultOwner: PublicKey,
+    rentBalances: { [space: string]: number },
+    marketAccount: Keypair,
+    coinVaultAccount: Keypair,
+    pcVaultAccount: Keypair,
+    pcMintAccount: PublicKey,
+    coinMintAccount: Keypair,
+    vaultOwner: PublicKey,
+    decimal: number
 ): Promise<InstructionResult<void>> {
     return new Promise((resolve, reject) => {
         findOptifiMarketMintAuthPDA(context).then(([mintAuthorityAddress, _]) => {
@@ -107,7 +108,7 @@ function initializeAccountsWithLayouts(context: Context,
                 }),
                 createInitializeMintInstruction(
                     coinMintAccount.publicKey,
-                    0,
+                    decimal,
                     mintAuthorityAddress,
                     mintAuthorityAddress,
                 ),
@@ -144,7 +145,7 @@ function initializeAccountsWithLayouts(context: Context,
  *
  * @param context Program context
  */
-export default function initializeSerumMarket(context: Context): Promise<InstructionResult<PublicKey>> {
+export default function initializeSerumMarket(context: Context, decimal: number): Promise<InstructionResult<PublicKey>> {
 
     let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
     return new Promise((resolve, reject) => {
@@ -185,7 +186,8 @@ export default function initializeSerumMarket(context: Context): Promise<Instruc
                                     pcVaultAccount,
                                     usdcMint,
                                     coinMintAccount,
-                                    vaultOwner
+                                    vaultOwner,
+                                    decimal
                                 ).then((res) => {
                                     let tx = context.program.transaction.initializeSerumOrderbook(
                                         authorityAddress, // Authority PK

@@ -1,6 +1,6 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import { Exchange, OptifiMarket } from "../types/optifi-exchange-types";
+import { Chain, Exchange, OptifiMarket } from "../types/optifi-exchange-types";
 import { initialize, initializeSerumMarket } from "../index";
 import {
     createUserAccountIfNotExist,
@@ -13,7 +13,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { createInstruments } from "./createInstruments";
 import { createNextOptifiMarket, createOptifiMarketWithIdx } from "../instructions/createOptifiMarket";
-import { readJsonFile, sleep } from "../utils/generic";
+import { numberAssetToDecimal, readJsonFile, sleep } from "../utils/generic";
 import { findOptifiMarkets } from "../utils/market";
 import { createMarginStress } from "./createMarginStress";
 
@@ -86,13 +86,17 @@ function createOrFetchInstruments(context: Context): Promise<PublicKey[]> {
  *
  * @param context Program context
  */
-async function createSerumMarkets(context: Context): Promise<PublicKey[]> {
+async function createSerumMarkets(context: Context, instrumentKeys: PublicKey[]): Promise<PublicKey[]> {
     let createdMarkets: PublicKey[] = [];
     // Intentionally do this the slow way because creating the serum markets is a super expensive process -
     // if there's a problem, we want to know before we've committed all our capital
     for (let i = 0; i < SERUM_MARKETS; i++) {
         try {
-            let res = await initializeSerumMarket(context);
+            let initialInstrument = instrumentKeys[i];
+            let instrument_res = await context.program.account.chain.fetch(initialInstrument);
+            let instrument = instrument_res as unknown as Chain;
+            let decimal = numberAssetToDecimal(instrument.asset)!;
+            let res = await initializeSerumMarket(context, decimal);
             if (res.successful) {
                 createdMarkets.push(res.data as PublicKey);
             } else {
@@ -107,14 +111,14 @@ async function createSerumMarkets(context: Context): Promise<PublicKey[]> {
     return createdMarkets;
 }
 
-function createOrRetreiveSerumMarkets(context: Context): Promise<PublicKey[]> {
+function createOrRetreiveSerumMarkets(context: Context, instrumentKeys: PublicKey[]): Promise<PublicKey[]> {
     return new Promise((resolve, reject) => {
         if (process.env.SERUM_KEYS !== undefined) {
             console.log("Using debug keys ", process.env.SERUM_KEYS);
             let serumKeysInit: string[] = readJsonFile<string[]>(process.env.SERUM_KEYS);
             resolve(serumKeysInit.map((i) => new PublicKey(i)));
         } else {
-            createSerumMarkets(context).then((res) => resolve(res)).catch((err) => reject(err));
+            createSerumMarkets(context, instrumentKeys).then((res) => resolve(res)).catch((err) => reject(err));
         }
     })
 }
@@ -207,13 +211,15 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                         console.debug("Creating serum markets")
                         // Now that we have both addresses, create as many new serum markets
                         // as are specified in the constants
-                        createOrRetreiveSerumMarkets(context).then((marketKeys) => {
-                            //console.log("String serum market keys are, ", marketKeys.map((i) => i.toString()))
-                            console.log("Creating instruments")
-                            createOrFetchInstruments(context).then((instrumentKeys) => {
-                                console.log("Creating markets");
-                                //console.log("Created instruments ", JSON.stringify(res.map((i) => i.toString())));
-                                //process.stdout.write(JSON.stringify(res.map((i) => i.toString())));
+                        createOrFetchInstruments(context).then(async (instrumentKeys) => {
+                            console.log("Creating markets");
+                            //console.log("Created instruments ", JSON.stringify(res.map((i) => i.toString())));
+                            //process.stdout.write(JSON.stringify(res.map((i) => i.toString())));
+                            console.log("Waiting 10 seconds to create Serum Markets");
+                            await sleep(10000);
+                            createOrRetreiveSerumMarkets(context, instrumentKeys).then((marketKeys) => {
+                                //console.log("String serum market keys are, ", marketKeys.map((i) => i.toString()))
+                                console.log("Creating instruments")
                                 createOptifiMarkets(context,
                                     marketKeys,
                                     instrumentKeys
