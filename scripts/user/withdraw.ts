@@ -1,7 +1,7 @@
-import { initializeContext } from "../index";
-import withdraw from "../instructions/withdraw";
+import { initializeContext } from "../../index";
+import withdraw from "../../instructions/withdraw";
 
-let amount = 100; // already including decimals
+let amount = 2900; // already including decimals
 
 initializeContext().then((context) => {
     withdraw(context, amount).then((res) => {

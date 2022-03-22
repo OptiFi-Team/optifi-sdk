@@ -54,7 +54,7 @@
       "accounts": [
         {
           "name": "optifiExchange",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -100,6 +100,22 @@
           }
         }
       ]
+    },
+    {
+      "name": "cleanExpiredInstruments",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "initializeSerumOrderbook",
@@ -277,7 +293,7 @@
         },
         {
           "name": "userAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -424,7 +440,12 @@
       "name": "placeOrder",
       "accounts": [
         {
-          "name": "exchange",
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -435,7 +456,7 @@
         },
         {
           "name": "userAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -466,11 +487,6 @@
         {
           "name": "openOrders",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrdersOwner",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -511,161 +527,6 @@
         {
           "name": "vaultSigner",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "orderPayerTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrumentTokenMintAuthorityPda",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcCentralPool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "instrumentShortSplTokenMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "serumDexProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "side",
-          "type": {
-            "defined": "OrderSide"
-          }
-        },
-        {
-          "name": "limit",
-          "type": "u64"
-        },
-        {
-          "name": "maxCoinQty",
-          "type": "u64"
-        },
-        {
-          "name": "maxPcQty",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "updateOrder",
-      "accounts": [
-        {
-          "name": "exchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "user",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "userAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "userMarginAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userInstrumentLongTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userInstrumentShortTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "optifiMarket",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "serumMarket",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrders",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrdersOwner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "requestQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "eventQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "bids",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "asks",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "coinMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "coinVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "pcVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vaultSigner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "orderPayerTokenAccount",
-          "isMut": true,
           "isSigner": false
         },
         {
@@ -719,16 +580,16 @@
           "type": "u64"
         },
         {
-          "name": "orderId",
-          "type": "u128"
+          "name": "clientOrderId",
+          "type": "u64"
         }
       ]
     },
     {
-      "name": "cancelOrder",
+      "name": "cancelOrderByClientOrderId",
       "accounts": [
         {
-          "name": "exchange",
+          "name": "optifiExchange",
           "isMut": false,
           "isSigner": false
         },
@@ -739,7 +600,7 @@
         },
         {
           "name": "userAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -770,11 +631,6 @@
         {
           "name": "openOrders",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrdersOwner",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -818,16 +674,6 @@
           "isSigner": false
         },
         {
-          "name": "orderPayerTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrumentTokenMintAuthorityPda",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "usdcCentralPool",
           "isMut": false,
           "isSigner": false
@@ -846,11 +692,6 @@
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": [
@@ -861,8 +702,8 @@
           }
         },
         {
-          "name": "orderId",
-          "type": "u128"
+          "name": "clientOrderId",
+          "type": "u64"
         }
       ]
     },
@@ -1010,6 +851,32 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "userMarginCalculate",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "recordPnlForOneUser",
@@ -1174,6 +1041,22 @@
       "args": []
     },
     {
+      "name": "cleanExpiredInstrumentsForUser",
+      "accounts": [
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "settleOrderFunds",
       "accounts": [
         {
@@ -1212,7 +1095,22 @@
           "isSigner": false
         },
         {
+          "name": "instrumentLongSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1306,7 +1204,7 @@
         },
         {
           "name": "amm",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1367,7 +1265,7 @@
         },
         {
           "name": "amm",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1422,6 +1320,11 @@
       "name": "ammSyncPositions",
       "accounts": [
         {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "amm",
           "isMut": true,
           "isSigner": false
@@ -1443,7 +1346,7 @@
         },
         {
           "name": "serumMarket",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1468,7 +1371,7 @@
       "name": "ammCalculateDelta",
       "accounts": [
         {
-          "name": "optifiExchange",
+          "name": "marginStressAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -1481,37 +1384,28 @@
           "name": "quoteTokenVault",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "assetFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ivFeed",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
     },
     {
       "name": "ammCalculateProposal",
+      "accounts": [
+        {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "ammCancelOrders",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -1524,17 +1418,96 @@
           "isSigner": false
         },
         {
-          "name": "tokenProgram",
+          "name": "ammUsdcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammAuthority",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "clock",
+          "name": "ammInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentTokenMintAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pruneAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "instrumentIndex",
+          "type": "u16"
+        },
+        {
+          "name": "ammAuthorityBump",
+          "type": "u8"
+        }
+      ]
     },
     {
       "name": "ammUpdateOrders",
@@ -1635,11 +1608,6 @@
           "isSigner": false
         },
         {
-          "name": "pruneAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "serumDexProgramId",
           "isMut": false,
           "isSigner": false
@@ -1666,6 +1634,10 @@
         },
         {
           "name": "ammAuthorityBump",
+          "type": "u8"
+        },
+        {
+          "name": "marketAuthBump",
           "type": "u8"
         }
       ]
@@ -1823,13 +1795,23 @@
       "name": "initLiquidation",
       "accounts": [
         {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccountUsdc",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "liquidationState",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1844,8 +1826,18 @@
           "isSigner": false
         },
         {
-          "name": "userAccount",
+          "name": "marginStressAccount",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1860,7 +1852,7 @@
         },
         {
           "name": "serumMarket",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1894,88 +1886,7 @@
           "isSigner": false
         },
         {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "userInstrumentLongTokenVault",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "userInstrumentShortTokenVault",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "liquidatePosition",
-      "accounts": [
-        {
-          "name": "exchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "userAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "liquidationState",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "optifiMarket",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "serumMarket",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "serumDexProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "bids",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "asks",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "eventQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "requestQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrders",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrdersOwner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
+          "name": "pruneAuthority",
           "isMut": false,
           "isSigner": false
         },
@@ -1990,7 +1901,148 @@
           "isSigner": false
         },
         {
+          "name": "vaultSigner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentLongSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "liquidatePosition",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liquidationState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "requestQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentLongSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         },
@@ -2000,16 +2052,7 @@
           "isSigner": true
         }
       ],
-      "args": [
-        {
-          "name": "maxCoinQty",
-          "type": "u64"
-        },
-        {
-          "name": "maxPcQty",
-          "type": "u64"
-        }
-      ]
+      "args": []
     },
     {
       "name": "scheduleMarketMakerWithdrawal",
@@ -2046,6 +2089,98 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "marginStressInit",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "asset",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "marginStressSync",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "assetFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ivFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "marginStressCalculate",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -2131,6 +2266,10 @@
           {
             "name": "netDelta",
             "type": "i64"
+          },
+          {
+            "name": "timestamp",
+            "type": "u64"
           },
           {
             "name": "totalLiquidity",
@@ -2237,20 +2376,12 @@
             "type": "publicKey"
           },
           {
-            "name": "btcSpotOracle",
-            "type": "publicKey"
-          },
-          {
-            "name": "ethSpotOracle",
-            "type": "publicKey"
-          },
-          {
-            "name": "btcIvOracle",
-            "type": "publicKey"
-          },
-          {
-            "name": "ethIvOracle",
-            "type": "publicKey"
+            "name": "oracle",
+            "type": {
+              "vec": {
+                "defined": "OracleData"
+              }
+            }
           },
           {
             "name": "markets",
@@ -2261,10 +2392,20 @@
             }
           },
           {
-            "name": "instruments",
+            "name": "instrumentCommon",
             "type": {
               "vec": {
-                "defined": "InstrumentKeyData"
+                "defined": "InstrumentCommon"
+              }
+            }
+          },
+          {
+            "name": "instrumentUnique",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "InstrumentUnique"
+                }
               }
             }
           }
@@ -2287,17 +2428,15 @@
             }
           },
           {
-            "name": "registeredPositions",
+            "name": "markets",
             "type": {
               "vec": "publicKey"
             }
           },
           {
-            "name": "collectedPositions",
+            "name": "values",
             "type": {
-              "vec": {
-                "defined": "PositionSizeContainer"
-              }
+              "vec": "i64"
             }
           }
         ]
@@ -2406,6 +2545,94 @@
       }
     },
     {
+      "name": "MarginStressAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "optifiExchange",
+            "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "spotPrice",
+            "type": "u64"
+          },
+          {
+            "name": "iv",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "u64"
+          },
+          {
+            "name": "state",
+            "type": {
+              "defined": "MarginStressState"
+            }
+          },
+          {
+            "name": "flags",
+            "type": {
+              "vec": "bool"
+            }
+          },
+          {
+            "name": "instruments",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "strikes",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "isCall",
+            "type": "bytes"
+          },
+          {
+            "name": "expiryDate",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "optionPrice",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "intrinsicValue",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "optionPriceDeltaInStressPrice",
+            "type": {
+              "vec": {
+                "vec": "i64"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "UserAccount",
       "type": {
         "kind": "struct",
@@ -2435,15 +2662,11 @@
             }
           },
           {
-            "name": "instruments",
-            "type": {
-              "vec": "publicKey"
-            }
-          },
-          {
             "name": "positions",
             "type": {
-              "vec": "i32"
+              "vec": {
+                "defined": "UserPosition"
+              }
             }
           },
           {
@@ -2453,6 +2676,27 @@
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "amountToReserve",
+            "type": {
+              "array": [
+                "u64",
+                10
+              ]
+            }
+          },
+          {
+            "name": "tradingMarkets",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "liquidateFlags",
+            "type": {
+              "vec": "bool"
+            }
           }
         ]
       }
@@ -2544,7 +2788,7 @@
       }
     },
     {
-      "name": "InstrumentKeyData",
+      "name": "OracleData",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2555,14 +2799,30 @@
             }
           },
           {
-            "name": "instrumentType",
+            "name": "spotOracle",
             "type": {
-              "defined": "InstrumentType"
+              "option": "publicKey"
             }
           },
           {
-            "name": "strike",
-            "type": "u64"
+            "name": "ivOracle",
+            "type": {
+              "option": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstrumentCommon",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
           },
           {
             "name": "expiryDate",
@@ -2573,10 +2833,27 @@
             "type": {
               "defined": "ExpiryType"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstrumentUnique",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strike",
+            "type": "u32"
           },
           {
-            "name": "instrumentPubkey",
-            "type": "publicKey"
+            "name": "instrumentPubkeys",
+            "type": {
+              "array": [
+                "publicKey",
+                2
+              ]
+            }
           }
         ]
       }
@@ -2588,18 +2865,6 @@
         "fields": [
           {
             "name": "optifiMarketPubkey",
-            "type": "publicKey"
-          },
-          {
-            "name": "optifiMarketId",
-            "type": "u16"
-          },
-          {
-            "name": "serumMarket",
-            "type": "publicKey"
-          },
-          {
-            "name": "instrument",
             "type": "publicKey"
           },
           {
@@ -2644,6 +2909,10 @@
           },
           {
             "name": "ethSpotOracle",
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcSpotOracle",
             "type": "publicKey"
           },
           {
@@ -2722,17 +2991,121 @@
       }
     },
     {
-      "name": "PositionSizeContainer",
+      "name": "StressFunctionResult",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "size",
-            "type": "u64"
+            "name": "price",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "f32"
+                }
+              }
+            }
           },
           {
-            "name": "address",
-            "type": "publicKey"
+            "name": "intrinsicValue",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "f32"
+                }
+              }
+            }
+          },
+          {
+            "name": "stressPriceDelta",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "f32"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarginFunctionResult",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "netQty",
+            "type": "i64"
+          },
+          {
+            "name": "notionalQty",
+            "type": "i64"
+          },
+          {
+            "name": "net",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "notional",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "stressResult",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "netIntrinsic",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "netPremium",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "maturingNetIntrinsic",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "maturingPremium",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "maturingLiquidity",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "totalMargin",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "netLeverage",
+            "type": {
+              "defined": "f32"
+            }
+          },
+          {
+            "name": "notionalLeverage",
+            "type": {
+              "defined": "f32"
+            }
           }
         ]
       }
@@ -2790,7 +3163,7 @@
           },
           {
             "name": "latestPosition",
-            "type": "u64"
+            "type": "i64"
           },
           {
             "name": "usdcBalance",
@@ -2800,141 +3173,21 @@
       }
     },
     {
-      "name": "StressFunctionResult",
+      "name": "UserPosition",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "price",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": "f64"
-                }
-              }
-            }
+            "name": "instrument",
+            "type": "publicKey"
           },
           {
-            "name": "regTMargin",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": "f64"
-                }
-              }
-            }
+            "name": "longQty",
+            "type": "u64"
           },
           {
-            "name": "delta",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": "f64"
-                }
-              }
-            }
-          },
-          {
-            "name": "intrinsicValue",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": "f64"
-                }
-              }
-            }
-          },
-          {
-            "name": "stressPriceDelta",
-            "type": {
-              "vec": {
-                "vec": {
-                  "defined": "f64"
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "MarginFunctionResult",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "netQty",
-            "type": "i8"
-          },
-          {
-            "name": "notionalQty",
-            "type": "i8"
-          },
-          {
-            "name": "net",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "notional",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "stressResult",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "netIntrinsic",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "netPremium",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "maturingNetIntrinsic",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "maturingPremium",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "maturingLiquidity",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "totalMargin",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "netLeverage",
-            "type": {
-              "defined": "f64"
-            }
-          },
-          {
-            "name": "notionalLeverage",
-            "type": {
-              "defined": "f64"
-            }
+            "name": "shortQty",
+            "type": "u64"
           }
         ]
       }
@@ -3016,9 +3269,6 @@
           },
           {
             "name": "Call"
-          },
-          {
-            "name": "Future"
           }
         ]
       }
@@ -3064,10 +3314,13 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Liquidating"
+            "name": "Healthy"
           },
           {
-            "name": "Dormant"
+            "name": "CancelOrder"
+          },
+          {
+            "name": "ClosePositions"
           }
         ]
       }
@@ -3109,7 +3362,7 @@
             "name": "SingleSpot",
             "fields": [
               {
-                "defined": "f64"
+                "defined": "f32"
               }
             ]
           },
@@ -3119,11 +3372,28 @@
               {
                 "vec": {
                   "vec": {
-                    "defined": "f64"
+                    "defined": "f32"
                   }
                 }
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarginStressState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Sync"
+          },
+          {
+            "name": "Calculate"
+          },
+          {
+            "name": "Available"
           }
         ]
       }
@@ -3215,7 +3485,7 @@
     {
       "code": 313,
       "name": "WrongState",
-      "msg": "the amm state is wrong"
+      "msg": "the working state is wrong"
     },
     {
       "code": 314,
@@ -3244,43 +3514,53 @@
     },
     {
       "code": 319,
+      "name": "UserNotInCancelOrder",
+      "msg": "User is not in cancel order status"
+    },
+    {
+      "code": 320,
       "name": "UserAlreadyInLiquidation",
       "msg": "User was already in liquidation"
     },
     {
-      "code": 320,
+      "code": 321,
       "name": "InstrumentAlreadyRegisteredForLiquidation",
       "msg": "Instrument was already registered for liquidation"
     },
     {
-      "code": 321,
+      "code": 322,
       "name": "CannotPlaceOrdersInLiquidation",
       "msg": "Users cannot place manual orders while their accounts are in liquidation"
     },
     {
-      "code": 322,
+      "code": 323,
       "name": "PoolNotCentralUSDCPool",
       "msg": "Provided USDC pool is not central pool"
     },
     {
-      "code": 323,
+      "code": 324,
       "name": "InvalidSerumAuthority",
       "msg": "Invalid open orders market authority"
     },
     {
-      "code": 324,
+      "code": 325,
       "name": "WithdrawRequestInvalid",
       "msg": "Only one withdraw request allowed at one time"
     },
     {
-      "code": 325,
+      "code": 326,
       "name": "MMWithdrawNotInWindow",
       "msg": "Market maker withdraw outside of valid window"
     },
     {
-      "code": 326,
+      "code": 327,
       "name": "WrongAsset",
       "msg": "Wrong asset"
+    },
+    {
+      "code": 328,
+      "name": "TimeOut",
+      "msg": "Should update the margin stress again"
     }
   ]
 }

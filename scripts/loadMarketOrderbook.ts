@@ -1,9 +1,9 @@
-import {PublicKey} from "@solana/web3.js";
-import {initializeContext} from "../index";
-import {OptifiMarket} from "../types/optifi-exchange-types";
-import {getSerumMarket} from "../utils/serum";
+import { PublicKey } from "@solana/web3.js";
+import { initializeContext } from "../index";
+import { OptifiMarket } from "../types/optifi-exchange-types";
+import { getSerumMarket } from "../utils/serum";
 
-let marketId = new PublicKey("GjQiVKgUiGBm687z6isR2GqkFaQk31GKm9bBLibJmfMs");
+let marketId = new PublicKey("3qCSVYhpkuJoNnkGtL2ddtt3LzB6B5jyx7EohFkCoZyw");
 
 initializeContext().then((context) => {
     context.program.account.optifiMarket.fetch(marketId).then((marketRes) => {

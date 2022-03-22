@@ -19,7 +19,7 @@ export default function withdraw(context: Context,
                             context.connection.getTokenAccountBalance(acct.userMarginAccountUsdc).then(tokenAmount => {
                                 console.log("userMarginAccountUsdc: ", acct.userMarginAccountUsdc.toString());
                                 console.log("balance: ", tokenAmount.value.uiAmount);
-                                let withdrawTx = context.program.transaction.withdraw(
+                                context.program.rpc.withdraw(
                                     new anchor.BN(amount * (10 ** tokenAmount.value.decimals)),
                                     {
                                         accounts: {
@@ -32,18 +32,12 @@ export default function withdraw(context: Context,
                                             tokenProgram: TOKEN_PROGRAM_ID
                                         }
                                     }
-                                );
-                                signAndSendTransaction(context, withdrawTx).then((txRes) => {
-                                    if (txRes.resultType === TransactionResultType.Successful) {
-                                        resolve({
-                                            successful: true,
-                                            data: txRes.txId as TransactionSignature
-                                        })
-                                    } else {
-                                        console.error(txRes);
-                                        reject(txRes);
-                                    }
-                                }).catch((err) => reject(err));
+                                ).then((res) => {
+                                    resolve({
+                                        successful: true,
+                                        data: res as TransactionSignature
+                                    })
+                                }).catch((err) => reject(err))
                             }).catch((err) => reject(err));
                         }).catch((err) => reject(err));
                     } else {

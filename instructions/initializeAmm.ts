@@ -10,7 +10,7 @@ import {
 import { getAmmLiquidityAuthPDA } from "../utils/pda";
 import { assetToOptifiAsset, optifiAssetToNumber, optifiDurationToNumber } from "../utils/generic";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
-import { AccountLayout, MintLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { AccountLayout, createInitializeAccountInstruction, createInitializeMintInstruction, MintLayout, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { AMM_TRADE_CAPACITY, SERUM_MARKETS, USDC_TOKEN_MINT } from "../constants";
 import { findAMMAccounts, findAMMWithIdx } from "../utils/amm";
 import { findExchangeAccount } from "../utils/accounts";
@@ -33,8 +33,8 @@ export function initializeAmm(context: Context,
                     findExchangeAccount(context).then(([exchangeAddress, _]) => {
                         findAMMWithIdx(context, exchangeAddress, idx).then(([ammAddress, bump]) => {
                             console.log("Initializing AMM with idx ", idx, "bump ", bump, "asset", optifiAssetToNumber(optifiAsset),
-                                "with address", ammAddress);
-                            let initializeAmmTx = context.program.transaction.initializeAmm(
+                                "with address", ammAddress.toString());
+                            context.program.rpc.initializeAmm(
                                 bump,
                                 {
                                     ammIdx: idx,
@@ -56,6 +56,7 @@ export function initializeAmm(context: Context,
                                         systemProgram: SystemProgram.programId,
                                         rent: SYSVAR_RENT_PUBKEY
                                     },
+                                    signers: [ammUSDCTokenVault, ammLPTokenMint],
                                     instructions: [
                                         SystemProgram.createAccount({
                                             fromPubkey: context.provider.wallet.publicKey,
@@ -64,11 +65,11 @@ export function initializeAmm(context: Context,
                                             space: AccountLayout.span,
                                             programId: TOKEN_PROGRAM_ID
                                         }),
-                                        Token.createInitAccountInstruction(
-                                            TOKEN_PROGRAM_ID,
-                                            new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                        createInitializeAccountInstruction(
                                             ammUSDCTokenVault.publicKey,
-                                            ammLiquidityAuthAddress
+                                            new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                            ammLiquidityAuthAddress,
+                                            TOKEN_PROGRAM_ID
                                         ),
                                         SystemProgram.createAccount({
                                             fromPubkey: context.provider.wallet.publicKey,
@@ -77,28 +78,19 @@ export function initializeAmm(context: Context,
                                             space: MintLayout.span,
                                             programId: TOKEN_PROGRAM_ID
                                         }),
-                                        Token.createInitMintInstruction(
-                                            TOKEN_PROGRAM_ID,
+                                        createInitializeMintInstruction(
                                             ammLPTokenMint.publicKey,
-                                            0,
+                                            6,
                                             ammLiquidityAuthAddress,
-                                            ammLiquidityAuthAddress
+                                            ammLiquidityAuthAddress,
+                                            TOKEN_PROGRAM_ID
                                         )
                                     ]
-                                });
-
-                            signAndSendTransaction(context, initializeAmmTx, [
-                                ammLPTokenMint,
-                                ammUSDCTokenVault]).then((initializeAmmRes) => {
-                                    if (initializeAmmRes.resultType === TransactionResultType.Successful) {
-                                        resolve({
-                                            successful: true,
-                                            data: initializeAmmRes.txId as TransactionSignature
-                                        })
-                                    } else {
-                                        console.error(initializeAmmRes);
-                                        reject(initializeAmmRes)
-                                    }
+                                }).then((res) => {
+                                    resolve({
+                                        successful: true,
+                                        data: res as TransactionSignature
+                                    })
                                 }).catch((err) => reject(err))
                         }).catch((err) => reject(err));
                     }).catch((err) => reject(err))

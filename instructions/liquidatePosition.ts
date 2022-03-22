@@ -1,17 +1,18 @@
 import Context from "../types/context";
-import {PublicKey, SYSVAR_RENT_PUBKEY, TransactionSignature} from "@solana/web3.js";
-import {findExchangeAccount, findLiquidationState, getDexOpenOrders} from "../utils/accounts";
-import {OptifiMarket} from "../types/optifi-exchange-types";
-import {findAssociatedTokenAccount} from "../utils/token";
-import {SERUM_DEX_PROGRAM_ID} from "../constants";
-import {signAndSendTransaction, TransactionResultType} from "../utils/transactions";
-import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import { PublicKey, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../utils/accounts";
+import { OptifiMarket } from "../types/optifi-exchange-types";
+import { findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount } from "../utils/token";
+import { SERUM_DEX_PROGRAM_ID } from "../constants";
+import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import InstructionResult from "../types/instructionResult";
-import {getSerumMarket} from "../utils/serum";
+import { getSerumMarket } from "../utils/serum";
+import { deriveVaultNonce } from "../utils/market";
 
 export default function liquidatePosition(context: Context,
-                                          userAccountAddress: PublicKey,
-                                          marketAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
+    userAccountAddress: PublicKey,
+    marketAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {
@@ -21,46 +22,71 @@ export default function liquidatePosition(context: Context,
                         findAssociatedTokenAccount(context, market.instrumentShortSplToken, userAccountAddress).then(([userShortTokenAddress, _]) => {
                             findLiquidationState(context, userAccountAddress).then(([liquidationStateAddress, _]) => {
                                 getSerumMarket(context, market.serumMarket).then((serumMarket) => {
-                                    let registerLiquidateTx = context.program.transaction.liquidatePosition(
-                                        {
-                                            accounts: {
-                                                exchange: exchangeAddress,
-                                                userAccount: userAccountAddress,
-                                                liquidationState: liquidationStateAddress,
-                                                optifiMarket: marketAddress,
-                                                serumMarket: market.serumMarket,
-                                                serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
-                                                bids: serumMarket.bidsAddress,
-                                                asks: serumMarket.asksAddress,
-                                                eventQueue: serumMarket.decoded.eventQueue,
-                                                requestQueue: serumMarket.decoded.requestQueue,
-                                                openOrders: openOrdersAccount,
-                                                openOrdersOwner: userAccountAddress,
-                                                rent: SYSVAR_RENT_PUBKEY,
-                                                coinVault: serumMarket.decoded.coinVault,
-                                                pcVault: serumMarket.decoded.pcVault,
-                                                tokenProgram: TOKEN_PROGRAM_ID,
-                                                liquidator: context.provider.wallet.publicKey,
-                                            }
-                                        }
-                                    );
-                                    signAndSendTransaction(context, registerLiquidateTx).then((registerLiquidateRes) => {
-                                        if (registerLiquidateRes.resultType === TransactionResultType.Successful) {
-                                            resolve({
-                                                successful: true,
-                                                data: registerLiquidateRes.txId as TransactionSignature
-                                            })
-                                        } else {
-                                            console.error(registerLiquidateRes);
-                                            reject(registerLiquidateRes);
-                                        }
-                                    })
-                                })
-                            })
-                        })
-                    })
-                })
+                                    context.program.account.userAccount.fetch(userAccountAddress).then((userAccount) => {
+                                        findOrCreateAssociatedTokenAccount(
+                                            context,
+                                            market.instrumentLongSplToken,
+                                            userAccountAddress
+                                        ).then((longSPLTokenVault) => {
+                                            findOrCreateAssociatedTokenAccount(
+                                                context,
+                                                market.instrumentShortSplToken,
+                                                userAccountAddress
+                                            ).then((shortSPLTokenVault) => {
+                                                let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+                                                deriveVaultNonce(market.serumMarket, serumId).then(([vaultOwner, _]) => {
+
+                                                    console.log("liquidatePosition...");
+
+                                                    context.program.rpc.liquidatePosition(
+                                                        {
+                                                            accounts: {
+                                                                optifiExchange: exchangeAddress,
+                                                                userAccount: userAccountAddress,
+                                                                userMarginAccount: userAccount.userMarginAccountUsdc,
+                                                                liquidationState: liquidationStateAddress,
+                                                                userInstrumentLongTokenVault:
+                                                                    longSPLTokenVault,
+                                                                userInstrumentShortTokenVault:
+                                                                    shortSPLTokenVault,
+                                                                optifiMarket: marketAddress,
+                                                                serumMarket: market.serumMarket,
+                                                                openOrders: openOrdersAccount[0],
+                                                                requestQueue: serumMarket.decoded.requestQueue,
+                                                                eventQueue: serumMarket.decoded.eventQueue,
+                                                                bids: serumMarket.bidsAddress,
+                                                                asks: serumMarket.asksAddress,
+                                                                coinVault: serumMarket.decoded.baseVault,
+                                                                pcVault: serumMarket.decoded.quoteVault,
+                                                                vaultSigner:
+                                                                    vaultOwner,
+                                                                instrumentLongSplTokenMint:
+                                                                    serumMarket.decoded
+                                                                        .baseMint,
+                                                                instrumentShortSplTokenMint:
+                                                                    market.instrumentShortSplToken,
+                                                                serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
+                                                                tokenProgram: TOKEN_PROGRAM_ID,
+                                                                rent: SYSVAR_RENT_PUBKEY,
+                                                                liquidator: context.provider.wallet.publicKey,
+                                                            }
+                                                        }
+                                                    ).then((res) => {
+                                                        resolve({
+                                                            successful: true,
+                                                            data: res as TransactionSignature
+                                                        })
+                                                    }).catch((err) => reject(err))
+                                                }).catch((err) => reject(err))
+                                            }).catch((err) => reject(err))
+                                        }).catch((err) => reject(err))
+                                    }).catch((err) => reject(err))
+                                }).catch((err) => reject(err))
+                            }).catch((err) => reject(err))
+                        }).catch((err) => reject(err))
+                    }).catch((err) => reject(err))
+                }).catch((err) => reject(err))
             }).catch((err) => reject(err))
-        })
+        }).catch((err) => reject(err))
     })
 }

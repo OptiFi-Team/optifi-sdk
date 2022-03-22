@@ -1,9 +1,9 @@
 import Context from "../types/context";
-import {SolanaEndpoint} from "../constants";
-import {findUserAccount} from "./accounts";
-import {PublicKey} from "@solana/web3.js";
-import {IdlAccount} from "@project-serum/anchor/src/idl";
-import {AccountsCoder} from "@project-serum/anchor";
+import { SolanaEndpoint } from "../constants";
+import { findUserAccount } from "./accounts";
+import { PublicKey } from "@solana/web3.js";
+import { IdlAccount } from "@project-serum/anchor/src/idl";
+import { AccountsCoder } from "@project-serum/anchor";
 
 export enum SolanaEntityType {
     Transaction = "tx",
@@ -19,8 +19,8 @@ export enum SolanaEntityType {
  * @param entity_type The
  */
 export function formatExplorerAddress(context: Context,
-                                      entity: string,
-                                      entity_type: SolanaEntityType): string {
+    entity: string,
+    entity_type: SolanaEntityType): string {
     let suffix: string;
     switch (context.endpoint) {
         case SolanaEndpoint.Mainnet:
@@ -40,13 +40,13 @@ export function formatExplorerAddress(context: Context,
 
 export function logUserAccount(context: Context): Promise<void> {
     return new Promise(() => {
-      findUserAccount(context).then(([account, _]) => {
-        console.log(`User account: ${formatExplorerAddress(context, account.toString(), SolanaEntityType.Account)}`)
-      })
+        findUserAccount(context).then(([account, _]) => {
+            console.log(`User account: ${formatExplorerAddress(context, account.toString(), SolanaEntityType.Account)}`)
+        })
     })
 }
 
-export function logFormatted(items: { [item: string]: any}) {
+export function logFormatted(items: { [item: string]: any }) {
     let logStr = '';
     for (let item of Object.keys(items)) {
         logStr += `${item}: ${items[item]}\n`
@@ -63,11 +63,11 @@ export function logFormatted(items: { [item: string]: any}) {
  * @param account The anchor account type to debug
  */
 export function debugAnchorAccount(context: Context,
-                                   address: PublicKey,
-                                   account: IdlAccount,): Promise<void> {
+    address: PublicKey,
+    account: IdlAccount,): Promise<void> {
     return new Promise((resolve, reject) => {
-        console.log(`Loading account ${address.toString()}, ${formatExplorerAddress(context, 
-            address.toString(), 
+        console.log(`Loading account ${address.toString()}, ${formatExplorerAddress(context,
+            address.toString(),
             SolanaEntityType.Account)}...`);
         context.connection.getAccountInfo(address).then((acctInfo) => {
             if (acctInfo === null) {

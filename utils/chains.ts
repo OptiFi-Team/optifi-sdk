@@ -1,8 +1,8 @@
-import {EXPIRATION_TIME, EXPIRATION_WEEKDAY, SUPPORTED_MATURITIES} from "../constants";
+import { EXPIRATION_TIME, EXPIRATION_WEEKDAY, SUPPORTED_MATURITIES } from "../constants";
 import MaturityType from "../types/maturityType";
 
 function endOfMonthExpiration(offset: number,
-                              startDate?: Date): Date {
+    startDate?: Date): Date {
     let expiration = startDate || new Date();
     expiration.setUTCMonth(expiration.getUTCMonth() + offset);
     let targetMonth = expiration.getMonth();
@@ -23,17 +23,32 @@ function endOfMonthExpiration(offset: number,
     return expiration;
 }
 
-export function generateExpirations(): { [maturity in MaturityType]: Date }{
+function getWeekExpiration(offset: number,
+    startDate?: Date): Date {
+    let expiration = startDate || new Date();
+    expiration.setUTCMonth(expiration.getUTCMonth());
+    expiration.setUTCDate(expiration.getUTCDate() - expiration.getUTCDay() + EXPIRATION_WEEKDAY);
+    expiration.setUTCDate(expiration.getUTCDate() + 7 * offset);
+
+    // If the expiration is before now, bump it forward a month
+    if (new Date() >= expiration) {
+        return getWeekExpiration(1, expiration)
+    }
+
+    return expiration;
+}
+
+export function generateExpirations(): { [maturity in MaturityType]: Date } {
     let expirations: any = {};
 
     for (let supportedMaturity of SUPPORTED_MATURITIES) {
         let expirationDate: Date;
         switch (supportedMaturity) {
+            case MaturityType.Weekly:
+                expirationDate = getWeekExpiration(1);
+                break;
             case MaturityType.Monthly:
                 expirationDate = endOfMonthExpiration(1);
-                break;
-            case MaturityType.SixMonth:
-                expirationDate = endOfMonthExpiration(6);
                 break;
         }
         expirationDate.setUTCHours(EXPIRATION_TIME);

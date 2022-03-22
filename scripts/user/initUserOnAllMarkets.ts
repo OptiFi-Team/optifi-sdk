@@ -1,5 +1,5 @@
-import {initializeContext} from "../index";
-import initUserOnAllMarkets from "../sequences/initUserOnAllMarkets";
+import { initializeContext } from "../../index";
+import initUserOnAllMarkets from "../../sequences/initUserOnAllMarkets";
 
 initializeContext().then((context) => {
     initUserOnAllMarkets(context)

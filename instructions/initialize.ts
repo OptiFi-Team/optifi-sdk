@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import * as anchor from "@project-serum/anchor";
-import {findExchangeAccount} from "../utils/accounts";
+import { findExchangeAccount } from "../utils/accounts";
 import {
     Keypair,
     PublicKey,
@@ -10,15 +10,15 @@ import {
     Transaction,
     TransactionSignature
 } from "@solana/web3.js";
-import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {signAndSendTransaction, TransactionResult, TransactionResultType} from "../utils/transactions";
-import {findOptifiUSDCPoolAuthPDA} from "../utils/pda";
-import {AccountLayout, Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
-import {SWITCHBOARD, USDC_TOKEN_MINT} from "../constants";
+import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import { signAndSendTransaction, TransactionResult, TransactionResultType } from "../utils/transactions";
+import { findOptifiUSDCPoolAuthPDA } from "../utils/pda";
+import { AccountLayout, createInitializeAccountInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { SWITCHBOARD, USDC_TOKEN_MINT } from "../constants";
 
 function createUSDCPoolAccount(context: Context,
-                               poolAuthPDAAddress: PublicKey,
-                               usdcCentralPoolWallet: Keypair): Promise<TransactionResult> {
+    poolAuthPDAAddress: PublicKey,
+    usdcCentralPoolWallet: Keypair): Promise<TransactionResult> {
     return new Promise((resolve, reject) => {
         context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then((min) => {
             let poolTx = new Transaction();
@@ -30,11 +30,11 @@ function createUSDCPoolAccount(context: Context,
                     space: AccountLayout.span,
                     programId: TOKEN_PROGRAM_ID
                 }),
-                Token.createInitAccountInstruction(
-                    TOKEN_PROGRAM_ID,
-                    new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                createInitializeAccountInstruction(
                     usdcCentralPoolWallet.publicKey,
-                    poolAuthPDAAddress
+                    new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                    poolAuthPDAAddress,
+                    TOKEN_PROGRAM_ID
                 )
             )
             signAndSendTransaction(context, poolTx, [usdcCentralPoolWallet])
@@ -62,55 +62,78 @@ export default function initialize(context: Context): Promise<InstructionResult<
         findExchangeAccount(context).then(([exchangeAddress, bump]) => {
             findOptifiUSDCPoolAuthPDA(context).then(([poolAuthPDAAddress, poolBump]) => {
                 const usdcCentralPoolWallet = anchor.web3.Keypair.generate();
-                    createUSDCPoolAccount(context, poolAuthPDAAddress, usdcCentralPoolWallet).then((res) => {
-                        try {
-                            console.log(formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction));
-                            let initializeTx = context.program.transaction.initialize(
-                                bump,
-                                {
-                                    uuid: context.exchangeUUID,
-                                    version: 1,
-                                    exchangeAuthority: context.provider.wallet.publicKey,
-                                    owner: context.provider.wallet.publicKey,
-                                    usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
-                                    ethSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD),
-                                    btcIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV),
-                                    ethIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV),
-                                    btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD)
-                                },
-                                {
-                                    accounts: {
-                                        optifiExchange: exchangeAddress,
-                                        authority: context.provider.wallet.publicKey,
-                                        usdcCentralPool: usdcCentralPoolWallet.publicKey,
-                                        payer: context.provider.wallet.publicKey,
-                                        systemProgram: SystemProgram.programId,
-                                        rent: SYSVAR_RENT_PUBKEY
-                                    }
-                                },
-                            );
-                            console.debug("Dispatching initialization transaction");
-                            signAndSendTransaction(context, initializeTx).then((res) => {
-                                let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
-                                console.log("Successfully created exchange, ", txUrl);
-                                resolve({
-                                    successful: true,
-                                    data: context.exchangeUUID
-                                })
-                            }).catch((err) => {
-                                console.error(err);
-                                reject({
-                                    successful: false,
-                                    error: err
-                                } as InstructionResult<any>);
+                createUSDCPoolAccount(context, poolAuthPDAAddress, usdcCentralPoolWallet).then(async (res) => {
+                    // try {
+                    //     let tx = new Transaction();
+                    //     tx.add(
+                    //         SystemProgram.createAccount({
+                    //             fromPubkey: context.provider.wallet.publicKey,
+                    //             newAccountPubkey: exchangeAddress,
+                    //             lamports: await context.connection.getMinimumBalanceForRentExemption(
+                    //                 102400
+                    //             ),
+                    //             space: 102400,
+                    //             programId: context.program.programId,
+                    //         })
+                    //     );
+                    //     let res = await context.provider.wallet.signTransaction(tx);
+
+                    //     console.log("Successfully created exchange account, ", res);
+                    // }
+                    // catch (e) {
+                    //     console.error("Got error while trying to create exchange account ", e);
+                    //     reject(e)
+                    // }
+
+                    try {
+                        console.log(formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction));
+                        let initializeTx = context.program.transaction.initialize(
+                            bump,
+                            {
+                                uuid: context.exchangeUUID,
+                                version: 1,
+                                exchangeAuthority: context.provider.wallet.publicKey,
+                                owner: context.provider.wallet.publicKey,
+                                usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD),
+                                ethSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD),
+                                usdcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD),
+                                btcIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV),
+                                ethIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV),
+                            },
+                            {
+                                accounts: {
+                                    optifiExchange: exchangeAddress,
+                                    authority: context.provider.wallet.publicKey,
+                                    usdcCentralPool: usdcCentralPoolWallet.publicKey,
+                                    payer: context.provider.wallet.publicKey,
+                                    systemProgram: SystemProgram.programId,
+                                    rent: SYSVAR_RENT_PUBKEY
+                                }
+                            },
+                        );
+                        console.debug("Dispatching initialization transaction");
+                        signAndSendTransaction(context, initializeTx).then((res) => {
+                            let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
+                            console.log("Successfully created exchange, ", txUrl);
+                            resolve({
+                                successful: true,
+                                data: context.exchangeUUID
                             })
-                        }
-                        catch(e) {
-                            console.error("Got error while trying to initialize instructions ", e);
-                            reject(e)
-                        }
-                    }).catch((err) => reject(err))
-                })
+                        }).catch((err) => {
+                            console.error(err);
+                            reject({
+                                successful: false,
+                                error: err
+                            } as InstructionResult<any>);
+                        })
+                    }
+                    catch (e) {
+                        console.error("Got error while trying to initialize instructions ", e);
+                        reject(e)
+                    }
+                }).catch((err) => reject(err))
+            })
         }).catch((err) => {
             console.error(err);
             reject(err);

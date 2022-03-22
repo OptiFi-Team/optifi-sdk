@@ -176,4 +176,29 @@ function initializeContext(wallet?: string | WalletProvider,
     })
 }
 
-export { initializeContext, deposit, withdraw, initialize, initializeSerumMarket, initializeUserAccount }
+function initializeContextWithoutWallet(
+    optifiProgramId?: string,
+    customExchangeUUID?: string,
+    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<Context> {
+    let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
+    return new Promise((resolve, reject) => {
+        const idl = optifiExchange as unknown as OptifiExchangeIDL;
+        const connection = new Connection(endpoint);
+        const keypair = Keypair.generate(); // use a temp key
+        const walletWrapper = new anchor.Wallet(keypair);
+        const provider = new anchor.Provider(connection, walletWrapper, anchor.Provider.defaultOptions());
+        const program = new anchor.Program(idl,
+            (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)), provider)
+        resolve({
+            program: program,
+            provider: provider,
+            endpoint: endpoint,
+            connection: connection,
+            walletType: WalletType.Keypair,
+            walletKeypair: keypair,
+            exchangeUUID: uuid
+        })
+    })
+}
+
+export { initializeContext, deposit, withdraw, initialize, initializeSerumMarket, initializeUserAccount, initializeContextWithoutWallet }
