@@ -80,7 +80,7 @@ export function initializeAmm(context: Context,
                                         }),
                                         createInitializeMintInstruction(
                                             ammLPTokenMint.publicKey,
-                                            0,
+                                            6,
                                             ammLiquidityAuthAddress,
                                             ammLiquidityAuthAddress,
                                             TOKEN_PROGRAM_ID
