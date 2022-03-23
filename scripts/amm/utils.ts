@@ -32,7 +32,7 @@ export async function syncAmmPositions(context: Context, ammIndex: number) {
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == instrument) as [OptifiMarket, PublicKey]
                 // console.log(market)
                 let res = await syncPositions(context, market[1], ammAddress)
-                console.log(`successfully synced optifi market ${market[1].toString()} for amm ${ammAddress.toString()} with id ${ammIndex}`)
+                console.log(`successfully synced postions on optifi market ${market[1].toString()} for amm ${ammAddress.toString()} with id ${ammIndex}`)
                 console.log(res)
             } else {
                 console.log(`found flag: ${i} - instrument: ${instrument} already been done`)
