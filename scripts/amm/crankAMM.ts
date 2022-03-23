@@ -5,7 +5,7 @@ import { AmmState, MarginStressState } from "../../types/optifi-exchange-types";
 import { findExchangeAccount, findOptifiExchange } from "../../utils/accounts";
 import { findAMMAccounts, findAMMWithIdx } from "../../utils/amm";
 import { sleep } from "../../utils/generic";
-import { executeAmmOrderProposal, calcAmmDelta, calculateAmmProposals, syncAmmPositions } from "./utils";
+import { syncAmmPositions, calcAmmDelta, calculateAmmProposals, executeAmmOrderProposal, executeAmmOrderProposalV2 } from "./utils";
 import Context from "../../types/context";
 
 let ammIdxs = [1, 2]
@@ -35,7 +35,7 @@ const ammLoop = async (context: Context, optifiExchange: PublicKey, idx: number)
                 await calculateAmmProposals(context, idx);
                 break;
             case Execute:
-                await executeAmmOrderProposal(context, idx);
+                await executeAmmOrderProposalV2(context, idx);
                 break;
             default:
                 console.log("unknown state: ", state)
@@ -60,6 +60,6 @@ initializeContext().then(async (context) => {
     // let ammAddresses: PublicKey[] = []
     // let idx = ammIdxs[0]
     Promise.all(
-        ammIdxs.map(idx =>  ammLoop(context, optifiExchange, idx))
+        ammIdxs.map(idx => ammLoop(context, optifiExchange, idx))
     )
 })
