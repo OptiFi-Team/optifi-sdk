@@ -7,6 +7,7 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import * as anchor from "@project-serum/anchor";
 import { findMarginStressWithAsset } from "../utils/margin";
+import marginStress from "./marginStress";
 
 export default function calculateAmmProposal(context: Context,
     ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
@@ -16,6 +17,8 @@ export default function calculateAmmProposal(context: Context,
                 // @ts-ignore
                 let amm = ammRes as AmmAccount;
                 let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
+
+                let updateMarginStressInx = await marginStress(context, amm.asset);
                 context.program.rpc.ammCalculateProposal({
                     accounts: {
                         // optifiExchange: exchangeAddress,
@@ -23,6 +26,7 @@ export default function calculateAmmProposal(context: Context,
                         amm: ammAddress,
                         // clock: SYSVAR_CLOCK_PUBKEY,
                     },
+                    instructions: updateMarginStressInx
                 }).then((calculateRes) => {
                     resolve({
                         successful: true,

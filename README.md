@@ -116,18 +116,6 @@ npx ts-node scripts/amm/addInstrumentToAmm.ts
 npx ts-node scripts/amm/crankAMM.ts
 ```
 
-Note that in order to calculate Delta and order proposals for the AMMs, it requires the Margin Stress account to be at `available` status. run the following and stop when the Margin Stress account becomes `available`:
-
-```bash
-npx ts-node scripts/marginStress/marginStressLoop.ts
-```
-
-run the following to check the current state of the Margin Stress account
-
-```bash
-npx ts-node scripts/marginStress/marginStressLoop.ts
-```
-
 After the BTC or ETH AMM starts to run, orders should be placed on all BTC or ETH related OptiFi markets and updated contineously.
 
 ## Debug

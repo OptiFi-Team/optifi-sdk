@@ -194,7 +194,9 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
 
                 resolve(res)
 
-                // context.connection.onAccountChange(serumMarketAddresses[0], (updatedAccountInfo, context) => console.log('Updated account info: ', updatedAccountInfo),
+                // context.connection.onAccountChange(serumMarketAddresses[0], (updatedAccountInfo, context) => {
+                //     console.log('Updated account info: ', updatedAccountInfo)
+                // },
                 //     'confirmed')
                 // let instrumentInfos = instrumentRawInfos as Chain[]
                 // resolve(instrumentInfos)
@@ -267,7 +269,7 @@ export function deriveVaultNonce(marketKey: PublicKey,
         try {
             PublicKey.createProgramAddress([marketKey.toBuffer(), nonce.toArrayLike(Buffer, "le", 8)],
                 dexProgramId).then((vaultOwner) => {
-                    console.log("Returning vault ", vaultOwner, nonce);
+                    // console.log("Returning vault ", vaultOwner, nonce);
                     resolve([vaultOwner, nonce])
                 }).catch((err) => {
                     tryNext();

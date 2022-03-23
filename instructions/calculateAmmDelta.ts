@@ -7,6 +7,7 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { numberToOptifiAsset } from "../utils/generic";
 import { findMarginStressWithAsset } from "../utils/margin";
+import marginStress from "./marginStress";
 
 export default function calculateAmmDelta(context: Context,
     ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
@@ -15,10 +16,13 @@ export default function calculateAmmDelta(context: Context,
             context.program.account.ammAccount.fetch(ammAddress).then(async (ammRes) => {
                 // @ts-ignore
                 let amm = ammRes as AmmAccount;
-                let spotOracle = findOracleAccountFromAsset(context, numberToOptifiAsset(amm.asset));
-                let ivOracle = findOracleAccountFromAsset(context, numberToOptifiAsset(amm.asset), OracleAccountType.Iv);
-                let usdcSpotOracle = findOracleAccountFromAsset(context, OptifiAsset.USDC, OracleAccountType.Spot);
+                // let spotOracle = findOracleAccountFromAsset(context, numberToOptifiAsset(amm.asset));
+                // let ivOracle = findOracleAccountFromAsset(context, numberToOptifiAsset(amm.asset), OracleAccountType.Iv);
+                // let usdcSpotOracle = findOracleAccountFromAsset(context, OptifiAsset.USDC, OracleAccountType.Spot);
                 let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
+
+                let updateMarginStressInx = await marginStress(context, amm.asset);
+
                 context.program.rpc.ammCalculateDelta({
                     accounts: {
                         // optifiExchange: exchangeAddress,
@@ -30,31 +34,9 @@ export default function calculateAmmDelta(context: Context,
                         // assetFeed: spotOracle,
                         // usdcFeed: usdcSpotOracle,
                         // ivFeed: ivOracle
-                    }
+                    },
+                    instructions: updateMarginStressInx
                 })
-
-                    // let inx = context.program.instruction.ammCalculateDeltaStepA({
-                    //     accounts: {
-                    //         optifiExchange: exchangeAddress,
-                    //         amm: ammAddress,
-                    //         quoteTokenVault: amm.quoteTokenVault,
-                    //         tokenProgram: TOKEN_PROGRAM_ID,
-                    //         clock: SYSVAR_CLOCK_PUBKEY,
-                    //         assetFeed: spotOracle,
-                    //         usdcFeed: usdcSpotOracle,
-                    //         ivFeed: ivOracle,
-                    //         params: ammParamsPDA,
-                    //     }
-                    // })
-
-                    // context.program.rpc.ammCalculateDeltaStepB({
-                    //     accounts: {
-                    //         amm: ammAddress,
-                    //         clock: SYSVAR_CLOCK_PUBKEY,
-                    //         params: ammParamsPDA,
-                    //     },
-                    //     instructions: [inx]
-                    // })
                     .then((calculateRes) => {
                         resolve({
                             successful: true,
