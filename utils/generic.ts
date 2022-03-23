@@ -69,6 +69,15 @@ export function optifiAssetToNumber(asset: OptifiAsset): number {
     }
 }
 
+export function numberAssetToDecimal(asset: number): number | undefined {
+    switch (asset) {
+        case 0:
+            return 2;
+        case 1:
+            return 1;
+    }
+}
+
 export function optifiDurationToNumber(duration: Duration): number {
     switch (duration) {
         case Duration.Weekly:
