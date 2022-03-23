@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { PublicKey, TransactionResponse } from "@solana/web3.js";
+import { GetProgramAccountsFilter, PublicKey, TransactionResponse } from "@solana/web3.js";
 import { AmmAccount } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount } from "./accounts";
 import { AMM_PREFIX, SOL_DECIMALS } from "../constants";
@@ -57,13 +57,39 @@ function iterateFindAMM(context: Context,
 }
 
 export function findAMMAccounts(context: Context): Promise<[AmmAccount, PublicKey][]> {
-    return new Promise((resolve, reject) => {
-        findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            iterateFindAMM(context, exchangeAddress).then((accts) => {
-                console.debug(`Found ${accts.length} AMM accounts`);
-                resolve(accts);
+    return new Promise(async (resolve, reject) => {
+        // findExchangeAccount(context).then(([exchangeAddress, _]) => {
+        // iterateFindAMM(context, exchangeAddress).then((accts) => {
+        //     console.debug(`Found ${accts.length} AMM accounts`);
+        //     resolve(accts);
+        // })
+        // })
+        try {
+            let [exchangeAddress, _] = await findExchangeAccount(context)
+            let filters: GetProgramAccountsFilter[] = [
+                {
+                    memcmp: {
+                        /** offset into program account data to start comparison */
+                        offset: 8, // offset of optifi_exchange pubkey in AmmAccount state
+                        /** data to match, as base-58 encoded string and limited to less than 129 bytes */
+                        bytes: exchangeAddress.toBase58()
+                    }
+                }
+            ]
+
+            let ammAccountInfos = await context.program.account.ammAccount.all(filters)
+            // @ts-ignore
+            let res: [AmmAccount, PublicKey][] = ammAccountInfos.map(e => [e.account as AmmAccount, e.publicKey])
+            // sort by amm idx
+            res.sort((a, b) => {
+                if (a[0].ammIdx > b[0].ammIdx) return 1;
+                if (a[0].ammIdx < b[0].ammIdx) return -1;
+                return 0;
             })
-        })
+            resolve(res)
+        } catch (err) {
+            reject(err)
+        }
     })
 }
 
