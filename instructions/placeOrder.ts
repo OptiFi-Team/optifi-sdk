@@ -25,6 +25,10 @@ export default function placeOrder(context: Context,
 
             let maxPcQty = limit * size;
 
+            if (side == OrderSide.Bid) {
+                maxPcQty = maxPcQty * 1.0022;
+            }
+
             console.log("side: ", side);
             console.log("limit: ", limit);
             console.log("maxCoinQty: ", maxCoinQty);
