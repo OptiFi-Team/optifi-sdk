@@ -84,7 +84,131 @@ export function findOptifiInstruments(context: Context): Promise<Chain[]> {
 }
 
 
+
 interface OptifiMarketFullData {
+    asset: "BTC" | "ETH",
+    strike: number,
+    instrumentType: "Call" | "Put",
+    bidPrice: number,
+    bidSize: number,
+    bidOrderId: string,
+    askPrice: number,
+    askSize: number,
+    askOrderId: string,
+    volume: number,
+    expiryDate: Date,
+    marketAddress: PublicKey,
+    marketId: number,
+    instrumentAddress: PublicKey
+    asks: Orderbook | null,
+    bids: Orderbook | null,
+    serumMarket: Market,
+    asksPubkey: PublicKey,
+    bidsPubkey: PublicKey,
+}
+
+/**
+ * get optifi markets full data with less requests
+ */
+export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiMarketFullData[]> {
+    return new Promise((resolve, reject) => {
+        // console.log("start to fetch findOptifiMarkets")
+        findOptifiMarkets(context).then(async (marketRes) => {
+            let markets = marketRes.map((e) => e[0]) as OptifiMarket[];
+            let instrumentAddresses = markets.map(e => e.instrument)
+            let serumMarketAddresses = markets.map(e => e.serumMarket)
+
+            let res: OptifiMarketFullData[] = []
+            try {
+                // console.log("start to fetch instrumentInfos")
+                let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
+                let instrumentInfos = instrumentRawInfos as Chain[]
+
+                // console.log("start to fetch serumMarketInfos")
+                let serumMarketInfos = await context.connection.getMultipleAccountsInfo(serumMarketAddresses)
+                let asksAndBidsAddresses: PublicKey[] = []
+                let decodedSerumMarkets: Market[] = []
+                let serumDexProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
+                serumMarketInfos.forEach((e, i) => {
+                    let decoded = Market.getLayout(serumDexProgramId).decode(e?.data!)
+                    if (!decoded.accountFlags.initialized ||
+                        !decoded.accountFlags.market ||
+                        !decoded.ownAddress.equals(serumMarketAddresses[i])) {
+                        throw new Error('Invalid serum market');
+                    }
+                    // const [baseMintDecimals, quoteMintDecimals] = await Promise.all([
+                    //     getMintDecimals(connection, decoded.baseMint),
+                    //     getMintDecimals(connection, decoded.quoteMint),
+                    // ]);
+                    const [baseMintDecimals, quoteMintDecimals] = [0, 6]
+
+                    let market = new Market(decoded, baseMintDecimals, quoteMintDecimals, undefined, serumDexProgramId, null);
+
+                    // console.log("market: ", market)
+                    decodedSerumMarkets.push(market)
+
+                    // // @ts-ignore
+                    // console.log("decoded.bidsAddress: ", decoded.bids)
+                    // // @ts-ignore
+                    // console.log("decoded.asksAddress: ", decoded.asks)
+                    // @ts-ignore
+                    asksAndBidsAddresses.push(market.asksAddress, market.bidsAddress)
+                    res.push({
+                        asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
+                        strike: instrumentInfos[i].strike.toNumber(),
+                        instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
+                        bidPrice: 0,
+                        bidSize: 0,
+                        bidOrderId: "",
+                        askPrice: 0,
+                        askSize: 0,
+                        askOrderId: "",
+                        volume: 0,
+                        expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
+                        marketAddress: marketRes[i][1],
+                        marketId: marketRes[i][0].optifiMarketId,
+                        instrumentAddress: marketRes[i][0].instrument,
+                        asks: null,
+                        bids: null,
+                        serumMarket: market,
+                        asksPubkey: market.asksAddress,
+                        bidsPubkey: market.bidsAddress
+                    })
+                })
+
+                // console.log("start to fetch asksAndBidsInfos")
+                let asksAndBidsInfos = await context.connection.getMultipleAccountsInfo(asksAndBidsAddresses)
+                asksAndBidsInfos.forEach((e, i) => {
+                    // console.log(a)
+                    // console.log(instrumentInfos[marketIdx])
+                    // console.log(instrumentInfos[marketIdx].strike.toNumber())
+
+                    if (i % 2 == 0) {
+                        let marketIdx = i / 2
+                        let orderBook = Orderbook.decode(decodedSerumMarkets[marketIdx], e?.data!)
+                        res[marketIdx].asks = orderBook
+                        res[marketIdx].askPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
+                        res[marketIdx].askSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
+
+                    } else {
+                        let marketIdx = (i - 1) / 2
+                        let orderBook = Orderbook.decode(decodedSerumMarkets[marketIdx], e?.data!)
+                        res[marketIdx].bids = orderBook
+                        res[marketIdx].bidPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
+                        res[marketIdx].bidSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
+                    }
+                })
+                resolve(res)
+            } catch (err) {
+                reject(err)
+            }
+        }).catch((err) => reject(err))
+    })
+}
+
+
+
+interface OptifiMarketFullDataV1 {
     asset: "BTC" | "ETH",
     strike: number,
     instrumentType: "Call" | "Put",
@@ -106,7 +230,7 @@ interface OptifiMarketFullData {
 /**
  * get optifi markets full data with less requests
  */
-export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiMarketFullData[]> {
+export function findOptifiMarketsWithFullDataV1(context: Context): Promise<OptifiMarketFullDataV1[]> {
     return new Promise((resolve, reject) => {
         // console.log("start to fetch findOptifiMarkets")
         findOptifiMarkets(context).then(async (marketRes) => {
@@ -114,7 +238,7 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
             let instrumentAddresses = markets.map(e => e.instrument)
             let serumMarketAddresses = markets.map(e => e.serumMarket)
 
-            let res: OptifiMarketFullData[] = []
+            let res: OptifiMarketFullDataV1[] = []
             try {
                 // console.log("start to fetch instrumentInfos")
                 let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
