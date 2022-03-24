@@ -74,8 +74,8 @@ export function calcMarginRequirementForUser(
             // console.log('tBTC: ', tBTC);
             // console.log('isCallBTC: ', isCallBTC);
             // console.log('strikeBTC: ', strikeBTC);
-            console.log('netPositionsBTC: ', netPositionsBTC);
-            console.log('netPositionsETH: ', netPositionsETH);
+            // console.log('netPositionsBTC: ', netPositionsBTC);
+            // console.log('netPositionsETH: ', netPositionsETH);
 
             // Calc margin requirement for both BTC and ETH options
             let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
@@ -196,8 +196,8 @@ export function preCalcMarginForNewOrder(
             // console.log('tBTC: ', tBTC);
             // console.log('isCallBTC: ', isCallBTC);
             // console.log('strikeBTC: ', strikeBTC);
-            console.log('netPositionsBTC: ', netPositionsBTC);
-            console.log('netPositionsETH: ', netPositionsETH);
+            // console.log('netPositionsBTC: ', netPositionsBTC);
+            // console.log('netPositionsETH: ', netPositionsETH);
 
             // Calc margin requirement for both BTC and ETH options
             // Calc margin requirement for both BTC and ETH options
