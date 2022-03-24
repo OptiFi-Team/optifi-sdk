@@ -85,7 +85,7 @@ export function findOptifiInstruments(context: Context): Promise<Chain[]> {
 
 
 
-interface OptifiMarketFullData {
+export interface OptifiMarketFullData {
     asset: "BTC" | "ETH",
     strike: number,
     instrumentType: "Call" | "Put",
@@ -208,7 +208,7 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
 
 
 
-interface OptifiMarketFullDataV1 {
+export interface OptifiMarketFullDataV1 {
     asset: "BTC" | "ETH",
     strike: number,
     instrumentType: "Call" | "Put",

@@ -1,8 +1,14 @@
 import { initializeContextWithoutWallet } from "../index";
-import { findOptifiInstruments, findOptifiMarketsWithFullData } from "../utils/market";
+import { findOptifiInstruments, findOptifiMarkets, findOptifiMarketsWithFullData } from "../utils/market";
 
 
 initializeContextWithoutWallet().then((context) => {
+
+    // findOptifiMarkets(context).then(res => {
+    //     console.log("findOptifiMarkets res: ", res)
+    // }).catch((err) => {
+    //     console.error(err);
+    // })
 
     // findOptifiInstruments(context).then(res => {
     //     console.log("findOptifiInstruments res: ", res)
@@ -15,6 +21,7 @@ initializeContextWithoutWallet().then((context) => {
     }).catch((err) => {
         console.error(err);
     })
+
 }).catch((err) => {
     console.error(err);
 })
