@@ -13,11 +13,10 @@ const liquidationLoop = async (context: Context) => {
     try {
         let Users = await getAllUsersOnExchange(context);
 
-        console.log("Find ", Users.length, " user on the exchange");
+        console.log("Find ", Users.length, " user on the exchange...");
 
         Users.forEach(async (user) => {
             let userToLiquidate = user.publicKey;
-            console.log("userToLiquidate: ", userToLiquidate);
 
             let decoded = context.program.coder.accounts.decode("UserAccount", user.accountInfo.data)!;
 
@@ -27,13 +26,12 @@ const liquidationLoop = async (context: Context) => {
 
             let margin = tokenAmount.value.uiAmount!;
 
-            console.log("margin:", margin);
-
             // check user's margin requirement for all existing positions
             let marginRequirement = await calcMarginRequirementForUser(context, userToLiquidate);
-            console.log("marginRequirement: ", marginRequirement)
 
             if (margin < marginRequirement * 0.9) {
+                console.log("userToLiquidate: ", userToLiquidate.toString(), "margin:", margin, "marginRequirement: ", marginRequirement)
+
                 liquidateUser(context, userToLiquidate).then((res) => {
                     console.log("Got liquidateUser res", res);
                 }).catch((err) => {
@@ -41,7 +39,7 @@ const liquidationLoop = async (context: Context) => {
                 })
             }
         });
-        await sleep(2000);
+        await sleep(10000);
         await liquidationLoop(context);
     } catch (e) {
         await sleep(50000);
