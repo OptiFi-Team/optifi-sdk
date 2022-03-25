@@ -1,5 +1,6 @@
 import Context from "../types/context";
 import {
+    AccountInfo,
     PublicKey,
     SystemProgram,
     SYSVAR_RENT_PUBKEY,
@@ -7,11 +8,11 @@ import {
     TransactionInstruction,
     TransactionSignature
 } from "@solana/web3.js";
-import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
-import {ASSOCIATED_TOKEN_PROGRAM_ID} from "../constants";
+import { Account, AccountState, AccountLayout, ACCOUNT_SIZE, TokenAccountNotFoundError, TokenInvalidAccountOwnerError, TokenInvalidAccountSizeError, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { ASSOCIATED_TOKEN_PROGRAM_ID } from "../constants";
 import * as anchor from "@project-serum/anchor";
-import {signAndSendTransaction, TransactionResultType} from "./transactions";
-import {formatExplorerAddress, SolanaEntityType} from "./debug";
+import { signAndSendTransaction, TransactionResultType } from "./transactions";
+import { formatExplorerAddress, SolanaEntityType } from "./debug";
 
 /**
  * Taken from the function of the same name in https://github.com/solana-labs/solana-program-library/blob/master/token/ts/src/instructions/associatedTokenAccount.ts -
@@ -43,8 +44,8 @@ export function createAssociatedTokenAccountInstruction(
 
 
 export function findAssociatedTokenAccount(context: Context,
-                                           tokenMintAddress: PublicKey,
-                                           owner?: PublicKey): Promise<[PublicKey, number]> {
+    tokenMintAddress: PublicKey,
+    owner?: PublicKey): Promise<[PublicKey, number]> {
     let accountOwner = owner || context.provider.wallet.publicKey;
     return anchor.web3.PublicKey.findProgramAddress(
         [
@@ -58,8 +59,8 @@ export function findAssociatedTokenAccount(context: Context,
 
 
 export function createAssociatedTokenAccount(context: Context,
-                                             tokenMint: PublicKey,
-                                             owner: PublicKey): Promise<[PublicKey, TransactionSignature]> {
+    tokenMint: PublicKey,
+    owner: PublicKey): Promise<[PublicKey, TransactionSignature]> {
     return new Promise((resolve, reject) => {
         findAssociatedTokenAccount(context, tokenMint, owner).then(([associatedTokenAccountAddress, _]) => {
             let associatedTokenTx = new Transaction();
@@ -91,8 +92,8 @@ export function createAssociatedTokenAccount(context: Context,
 }
 
 export function findOrCreateAssociatedTokenAccount(context: Context,
-                                                  tokenMint: PublicKey,
-                                                  owner: PublicKey): Promise<PublicKey> {
+    tokenMint: PublicKey,
+    owner: PublicKey): Promise<PublicKey> {
     return new Promise((resolve, reject) => {
         findAssociatedTokenAccount(context, tokenMint, owner).then(([associatedTokenAddress, _]) => {
             try {
@@ -112,9 +113,47 @@ export function findOrCreateAssociatedTokenAccount(context: Context,
                         }
                     })
             } catch (e) {
-               console.error(e);
-               reject(e);
+                console.error(e);
+                reject(e);
             }
         })
     })
+}
+
+
+
+/**
+ * Retrieve information about a token account
+ *
+ * @param connection Connection to use
+ * @param address    Token account
+ * @param programId  SPL Token program account
+ *
+ * @return Token account information
+ */
+export async function getTokenAccountFromAccountInfo(
+    accountInfo: AccountInfo<Buffer>,
+    address: PublicKey,
+    programId = TOKEN_PROGRAM_ID
+): Promise<Account> {
+    const info = accountInfo;
+    if (!info) throw new TokenAccountNotFoundError();
+    if (!info.owner.equals(programId)) throw new TokenInvalidAccountOwnerError();
+    if (info.data.length != ACCOUNT_SIZE) throw new TokenInvalidAccountSizeError();
+
+    const rawAccount = AccountLayout.decode(info.data);
+
+    return {
+        address,
+        mint: rawAccount.mint,
+        owner: rawAccount.owner,
+        amount: rawAccount.amount,
+        delegate: rawAccount.delegateOption ? rawAccount.delegate : null,
+        delegatedAmount: rawAccount.delegatedAmount,
+        isInitialized: rawAccount.state !== AccountState.Uninitialized,
+        isFrozen: rawAccount.state === AccountState.Frozen,
+        isNative: !!rawAccount.isNativeOption,
+        rentExemptReserve: rawAccount.isNativeOption ? rawAccount.isNative : null,
+        closeAuthority: rawAccount.closeAuthorityOption ? rawAccount.closeAuthority : null,
+    };
 }

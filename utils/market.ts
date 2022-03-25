@@ -5,11 +5,12 @@ import { Market, Orderbook, OpenOrders } from "@project-serum/serum"
 import { Chain, Exchange, OptifiMarket } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
 import { OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID, USDC_DECIMALS } from "../constants";
-import { findAssociatedTokenAccount } from "./token";
+import { numberAssetToDecimal } from "./generic";
+import { findAssociatedTokenAccount, getTokenAccountFromAccountInfo } from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";
-import { numberAssetToDecimal } from "./generic";
+import UserPosition from "../types/user";
 
 
 export function findOptifiMarketWithIdx(context: Context,
@@ -537,5 +538,75 @@ export function getPosition(
         let longAmount = await watchGetTokenAmount(context, market.instrumentLongSplToken, userAccountAddress);
         let shortAmount = await watchGetTokenAmount(context, market.instrumentShortSplToken, userAccountAddress);
         resolve([longAmount, shortAmount])
+    })
+}
+
+export interface Position {
+    marketId: PublicKey;
+    expiryDate: Date;
+    strike: number;
+    asset: "BTC" | "ETH";
+    instrumentType: "Call" | "Put";
+    longAmount: number;
+    shortAmount: number;
+    netPosition: number;
+    positionType: "long" | "short";
+}
+
+/**
+ * To get the user token amount on each trading market
+ */
+export function getUserPositions(
+    context: Context,
+    userAccountAddress: PublicKey
+): Promise<Position[]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let allMarkets = await findOptifiMarkets(context)
+            let userAccount = await context.program.account.userAccount.fetch(userAccountAddress);
+            // // @ts-ignore
+            // let userAccount = res as UserAccount;
+            let positions = userAccount.positions as UserPosition[];
+            let tradingMarkets = allMarkets.filter(market => positions.map(e => e.instrument.toString()).includes(market[0].instrument.toString()));
+            let instrumentAddresses = tradingMarkets.map(e => e[0].instrument)
+            let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
+            let instrumentInfos = instrumentRawInfos as Chain[]
+            let longAndShortVaults: PublicKey[] = []
+            for (let i = 0; i < tradingMarkets.length; i++) {
+                let market = tradingMarkets[i]
+                let longMint = market[0].instrumentLongSplToken
+                let shortMint = market[0].instrumentShortSplToken
+
+                let [userLongTokenVault,] = await findAssociatedTokenAccount(context, longMint, userAccountAddress)
+                let [userShortTokenVault,] = await findAssociatedTokenAccount(context, shortMint, userAccountAddress)
+                longAndShortVaults.push(userLongTokenVault, userShortTokenVault)
+            }
+
+            let tokenAccountsInfos = await context.connection.getMultipleAccountsInfo(longAndShortVaults)
+            let vaultBalances: number[] = []
+            for (let i = 0; i < tokenAccountsInfos.length; i++) {
+                let account = await getTokenAccountFromAccountInfo(tokenAccountsInfos[i]!, longAndShortVaults[i])
+                vaultBalances.push((new anchor.BN(account.amount.toString())).toNumber())
+            }
+
+            let res: Position[] = tradingMarkets.map((market, i) => {
+                let position: Position = {
+                    marketId: market[1],
+                    expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
+                    strike: instrumentInfos[i].strike.toNumber(),
+                    asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
+                    instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
+                    longAmount: vaultBalances[2 * i],
+                    shortAmount: vaultBalances[2 * i + 1],
+                    positionType: vaultBalances[2 * i] - vaultBalances[2 * i + 1] >= 0 ? "long" : "short",
+                    netPosition: vaultBalances[2 * i] - vaultBalances[2 * i + 1],
+                }
+                return position
+            })
+
+            resolve(res)
+        } catch (err) {
+            reject(err)
+        }
     })
 }
