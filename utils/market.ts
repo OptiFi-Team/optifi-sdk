@@ -259,11 +259,8 @@ export function findOptifiMarketsWithFullDataV1(context: Context): Promise<Optif
                         !decoded.ownAddress.equals(serumMarketAddresses[i])) {
                         throw new Error('Invalid serum market');
                     }
-                    // const [baseMintDecimals, quoteMintDecimals] = await Promise.all([
-                    //     getMintDecimals(connection, decoded.baseMint),
-                    //     getMintDecimals(connection, decoded.quoteMint),
-                    // ]);
-                    const [baseMintDecimals, quoteMintDecimals] = [0, 6]
+                
+                    const [baseMintDecimals, quoteMintDecimals] = [numberAssetToDecimal(instrumentInfos[i].asset)!, USDC_DECIMALS]
 
                     let market = new Market(decoded, baseMintDecimals, quoteMintDecimals, undefined, serumDexProgramId, null);
 
