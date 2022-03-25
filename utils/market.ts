@@ -4,11 +4,12 @@ import * as anchor from "@project-serum/anchor";
 import { Market, Orderbook, OpenOrders } from "@project-serum/serum"
 import { Chain, Exchange, OptifiMarket } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
-import { OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID } from "../constants";
+import { OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID, USDC_DECIMALS } from "../constants";
 import { findAssociatedTokenAccount } from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";
+import { numberAssetToDecimal } from "./generic";
 
 
 export function findOptifiMarketWithIdx(context: Context,
@@ -137,10 +138,11 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
                         throw new Error('Invalid serum market');
                     }
                     // const [baseMintDecimals, quoteMintDecimals] = await Promise.all([
-                    //     getMintDecimals(connection, decoded.baseMint),
-                    //     getMintDecimals(connection, decoded.quoteMint),
+                    //     getMint(context.connection, decoded.baseMint),
+                    //     getMint(context.connection, decoded.quoteMint),
                     // ]);
-                    const [baseMintDecimals, quoteMintDecimals] = [0, 6]
+
+                    const [baseMintDecimals, quoteMintDecimals] = [numberAssetToDecimal(instrumentInfos[i].asset)!, USDC_DECIMALS]
 
                     let market = new Market(decoded, baseMintDecimals, quoteMintDecimals, undefined, serumDexProgramId, null);
 
