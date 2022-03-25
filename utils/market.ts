@@ -4,8 +4,7 @@ import * as anchor from "@project-serum/anchor";
 import { Market, Orderbook, OpenOrders } from "@project-serum/serum"
 import { Chain, Exchange, OptifiMarket } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
-import { OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID, USDC_DECIMALS } from "../constants";
-import { numberAssetToDecimal } from "./generic";
+import { OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID } from "../constants";
 import { findAssociatedTokenAccount, getTokenAccountFromAccountInfo } from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
