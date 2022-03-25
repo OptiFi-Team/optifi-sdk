@@ -57,7 +57,15 @@ export function findOptifiMarkets(context: Context): Promise<[OptifiMarket, Publ
     })
 }
 
-export function findOptifiInstruments(context: Context): Promise<Chain[]> {
+/**
+ * get instrument info for all optifi markets
+ * 
+ *  *
+ * @param context Context to use
+ *
+ * @return An list of array including instrument info, instrument pubkey and optifi market pubkey
+ */
+export function findOptifiInstruments(context: Context): Promise<[Chain, PublicKey, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findOptifiMarkets(context).then(async (marketRes) => {
             let markets = marketRes.map((i) => i[0]) as OptifiMarket[];
@@ -77,7 +85,11 @@ export function findOptifiInstruments(context: Context): Promise<Chain[]> {
             try {
                 let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
                 let instrumentInfos = instrumentRawInfos as Chain[]
-                resolve(instrumentInfos)
+                let res: [Chain, PublicKey, PublicKey][] = []
+                instrumentInfos.forEach((e, i) => {
+                    res.push([e as Chain, instrumentAddresses[i], marketRes[i][1]])
+                })
+                resolve(res)
             } catch (err) {
                 reject(err)
             }
@@ -259,7 +271,7 @@ export function findOptifiMarketsWithFullDataV1(context: Context): Promise<Optif
                         !decoded.ownAddress.equals(serumMarketAddresses[i])) {
                         throw new Error('Invalid serum market');
                     }
-                
+
                     const [baseMintDecimals, quoteMintDecimals] = [numberAssetToDecimal(instrumentInfos[i].asset)!, USDC_DECIMALS]
 
                     let market = new Market(decoded, baseMintDecimals, quoteMintDecimals, undefined, serumDexProgramId, null);
@@ -587,16 +599,20 @@ export function getUserPositions(
             }
 
             let res: Position[] = tradingMarkets.map((market, i) => {
+                let decimals = numberAssetToDecimal(instrumentInfos[i].asset)!
+                let longAmount = vaultBalances[2 * i] / 10 ** decimals
+                let shortAmount = vaultBalances[2 * i + 1] / 10 ** decimals
+
                 let position: Position = {
                     marketId: market[1],
                     expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
                     strike: instrumentInfos[i].strike.toNumber(),
                     asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
                     instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
-                    longAmount: vaultBalances[2 * i],
-                    shortAmount: vaultBalances[2 * i + 1],
-                    positionType: vaultBalances[2 * i] - vaultBalances[2 * i + 1] >= 0 ? "long" : "short",
-                    netPosition: vaultBalances[2 * i] - vaultBalances[2 * i + 1],
+                    longAmount,
+                    shortAmount,
+                    netPosition: longAmount - shortAmount,
+                    positionType: longAmount - shortAmount >= 0 ? "long" : "short",
                 }
                 return position
             })
