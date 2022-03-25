@@ -19,11 +19,11 @@ export default function placeOrder(context: Context,
     return new Promise((resolve, reject) => {
         formPlaceOrderContext(context, marketAddress).then(async ([orderContext, asset]) => {
 
-            let limit = price * (10 ** USDC_DECIMALS);
+            let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(asset)!); // price for 1 lot_size 
 
             let maxCoinQty = size * (10 ** numberAssetToDecimal(asset)!);
 
-            let maxPcQty = limit * size;
+            let maxPcQty = limit * maxCoinQty;
 
             if (side == OrderSide.Bid) {
                 maxPcQty = maxPcQty * 1.0022;
