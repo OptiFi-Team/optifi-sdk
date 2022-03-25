@@ -28,6 +28,25 @@ export const retrievRecentTxs = async (context: Context,
   return result
 }
 
+
+// concurrently get recent txs - 1000 tx by default
+export const retrievRecentTxsV2 = async (context: Context,
+  account: PublicKey): Promise<TransactionResponse[]> => {
+  return new Promise(async (resolve, reject) => {
+    let result: TransactionResponse[] = []
+    let signatures = await context.connection.getSignaturesForAddress(
+      account
+    );
+    Promise.all([
+      signatures.map((signature) =>
+        context.connection.getTransaction(signature.signature).then((res) => {
+          result.push(res!)
+        }))
+    ]).then(() => resolve(result))
+      .catch((err) => reject(err))
+  })
+}
+
 const parseOrderTxs = async (txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
 
@@ -131,7 +150,7 @@ export function getAllOrdersForAccount(
   return new Promise(async (resolve, reject) => {
     try {
       // get all recent txs
-      let allTxs = await retrievRecentTxs(context, account)
+      let allTxs = await retrievRecentTxsV2(context, account)
       // sort them in ascending time order for btter parsing process
       allTxs = allTxs.reverse()
 
