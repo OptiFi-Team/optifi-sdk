@@ -95,39 +95,42 @@ const parseOrderTxs = async (txs: TransactionResponse[], serumId: PublicKey, ins
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
 
                   // get the orginal order details
-                  let orginalOrder = orderTxs.find(e => e.clientId == decData.cancelOrderByClientIdV2.clientId)!
-                  let record = JSON.parse(JSON.stringify(orginalOrder));
+                  let orginalOrder = orderTxs.find(e => e.clientId.toString() == decData.cancelOrderByClientIdV2.clientId.toString())!
+                  
+                  // console.log("orginalOrder: ", orginalOrder, decData.cancelOrderByClientIdV2.clientId.toNumber())
+                  if (orginalOrder) {
+                    let record = JSON.parse(JSON.stringify(orginalOrder));
+                    let marketAddress = tx.transaction.message.accountKeys[inx.accounts[6]].toString() // market address index is 6 in the cancel order inx
+                    // console.log("tx.meta?.preTokenBalances: ", tx.meta?.preTokenBalances)
+                    // console.log("tx.meta?.postTokenBalances: ", tx.meta?.postTokenBalances)
+                    // console.log("inx.accounts: ", inx.accounts)
+                    //  tx.transaction.message.accountKeys[inx.accounts[6]].toString()
+                    let userMarginAccountIndex = inx.accounts[3]
+                    let longTokenVaultIndex = inx.accounts[5]
+                    // console.log("long vault: ",longTokenVaultIndex,  tx.transaction.message.accountKeys[longTokenVaultIndex].toString())
+                    let cancelledQuantity: number = 0
+                    if (record.side == "buy") {
+                      let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userMarginAccountIndex)!
+                      let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userMarginAccountIndex)!
+                      cancelledQuantity = (new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()
+                    } else {
+                      let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == longTokenVaultIndex)!
+                      let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == longTokenVaultIndex)!
+                      // console.log("preTokenAccount: ", preTokenAccount, "postTokenAccount: " , postTokenAccount)
+                      // console.log("tx.meta?.preTokenBalances? ", tx.meta?.preTokenBalances)
+                      // console.log("tx.meta?.postTokenBalances? ", tx.meta?.postTokenBalances)
+                      cancelledQuantity = (new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()
+                    }
 
-                  let marketAddress = tx.transaction.message.accountKeys[inx.accounts[6]].toString() // market address index is 6 in the cancel order inx
-                  // console.log("tx.meta?.preTokenBalances: ", tx.meta?.preTokenBalances)
-                  // console.log("tx.meta?.postTokenBalances: ", tx.meta?.postTokenBalances)
-                  // console.log("inx.accounts: ", inx.accounts)
-                  //  tx.transaction.message.accountKeys[inx.accounts[6]].toString()
-                  let userMarginAccountIndex = inx.accounts[3]
-                  let longTokenVaultIndex = inx.accounts[5]
-                  // console.log("long vault: ",longTokenVaultIndex,  tx.transaction.message.accountKeys[longTokenVaultIndex].toString())
-                  let cancelledQuantity: number = 0
-                  if (record.side == "buy") {
-                    let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userMarginAccountIndex)!
-                    let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userMarginAccountIndex)!
-                    cancelledQuantity = (new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()
-                  } else {
-                    let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == longTokenVaultIndex)!
-                    let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == longTokenVaultIndex)!
-                    // console.log("preTokenAccount: ", preTokenAccount, "postTokenAccount: " , postTokenAccount)
-                    // console.log("tx.meta?.preTokenBalances? ", tx.meta?.preTokenBalances)
-                    // console.log("tx.meta?.postTokenBalances? ", tx.meta?.postTokenBalances)
-                    cancelledQuantity = (new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()
+                    // console.log("cancelledAmount: ", cancelledAmount)
+                    record.cancelledQuantity = cancelledQuantity
+                    record.timestamp = new Date(tx.blockTime! * 1000);
+                    record.txid = tx.transaction.signatures[0]
+                    record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
+                    record.marketAddress = marketAddress
+                    record.txType = "cancel order"
+                    orderTxs.push(record);
                   }
-
-                  // console.log("cancelledAmount: ", cancelledAmount)
-                  record.cancelledQuantity = cancelledQuantity
-                  record.timestamp = new Date(tx.blockTime! * 1000);
-                  record.txid = tx.transaction.signatures[0]
-                  record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
-                  record.marketAddress = marketAddress
-                  record.txType = "cancel order"
-                  orderTxs.push(record);
                 }
               } catch (e) {
                 console.log(e);

@@ -56,7 +56,13 @@ export function getUserBalance(
     });
 }
 
-export function getUserPositionsPnL(context: Context, userAccountAddress?: PublicKey): Promise<number[]> {
+export function calcPnLForUserPositions(
+    context: Context,
+    userAccountAddress?: PublicKey,
+    userPositions?: Position[],
+    marketPrices?: number[],
+    userTradesHistory?: Trade[]
+): Promise<number[]> {
     return new Promise(async (resolve, reject) => {
         try {
             if (!userAccountAddress) {
@@ -64,22 +70,30 @@ export function getUserPositionsPnL(context: Context, userAccountAddress?: Publi
             }
 
             // get all positions of the user account
-            let userPositions = await getUserPositions(context, userAccountAddress)
-            userPositions = userPositions.filter(e => e.netPosition != 0)
+            if (!userPositions) {
+                userPositions = await getUserPositions(context, userAccountAddress)
+                userPositions = userPositions.filter(e => e.netPosition != 0)
+            }
 
             // get user's trade history
-            let userTradesHistory = await getAllTradesForAccount(context, userAccountAddress)
+            if (!userTradesHistory) {
+                userTradesHistory = await getAllTradesForAccount(context, userAccountAddress)
+            }
 
-            // get the current market price
-            let marketsInfos = await findOptifiMarketsWithFullData(context)
+            if (!marketPrices) {
+                // get the current market price
+                let marketsInfos = await findOptifiMarketsWithFullData(context)
 
-            let marketPrices: number[] = []
-            userPositions.forEach(position => {
-                let market = marketsInfos.find(market => market.marketAddress.toString() == position.marketId.toString())!
-                marketPrices.push(market.askPrice + market.bidPrice / 2)
-            })
+                let prices: number[] = []
+                userPositions.forEach(position => {
+                    let market = marketsInfos.find(market => market.marketAddress.toString() == position.marketId.toString())!
+                    prices.push(market.askPrice + market.bidPrice / 2)
+                })
+                marketPrices = prices
+            }
 
-            let positionPnLs = userPositions.map((position, i) => calPnlForOneUserPosition(position, marketPrices[i], userTradesHistory))
+            let positionPnLs = userPositions.map((position, i) => calPnLForOnePosition(position, marketPrices![i], userTradesHistory!))
+          
             resolve(positionPnLs)
         } catch (err) {
             reject(err)
@@ -87,7 +101,7 @@ export function getUserPositionsPnL(context: Context, userAccountAddress?: Publi
     })
 }
 
-export function calPnlForOneUserPosition(postion: Position, marketPrice: number, tradeHistory: Trade[]): number {
+export function calPnLForOnePosition(postion: Position, marketPrice: number, tradeHistory: Trade[]): number {
     let pnl: number = 0
     let netPosition = postion.netPosition
     if (netPosition != 0) {
@@ -97,16 +111,17 @@ export function calPnlForOneUserPosition(postion: Position, marketPrice: number,
         let netQuoteAmount = 0
         relatedTrades.forEach(e => {
             if (e.side === "buy") {
-                netBaseAmount -= e.maxQuoteQuantity
-                netQuoteAmount += e.maxBaseQuantity
+                netQuoteAmount -= e.maxQuoteQuantity
+                netBaseAmount += e.maxBaseQuantity
             } else {
-                netBaseAmount += e.maxQuoteQuantity
-                netQuoteAmount -= e.maxBaseQuantity
+                netQuoteAmount += e.maxQuoteQuantity
+                netBaseAmount -= e.maxBaseQuantity
 
             }
         })
         let entryUnitPrice = new Decimal(netQuoteAmount).div(new Decimal(netBaseAmount)).toNumber()
-
+        // console.log("netPosition: ", netPosition, marketPrice, entryUnitPrice)
+       
         // calc pnl
         pnl = netPosition * (marketPrice + entryUnitPrice)
     }
