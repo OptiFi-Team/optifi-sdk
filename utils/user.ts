@@ -1,10 +1,10 @@
 import Context from "../types/context";
-import {
-    userAccountExists,
-} from "./accounts";
-import {
-    UserAccount,
-} from "../types/optifi-exchange-types";
+import { findUserAccount, userAccountExists, } from "./accounts";
+import { UserAccount, } from "../types/optifi-exchange-types";
+import { PublicKey } from "@solana/web3.js";
+import { findOptifiMarketsWithFullData, getUserPositions, Position } from "./market";
+import { getAllTradesForAccount, Trade } from "./tradeHistory";
+import Decimal from "decimal.js";
 
 
 export function getAmountToReserve(
@@ -54,4 +54,61 @@ export function getUserBalance(
             .catch((err) => reject(err));
 
     });
+}
+
+export function getUserPositionsPnL(context: Context, userAccountAddress?: PublicKey): Promise<number[]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!userAccountAddress) {
+                [userAccountAddress,] = await findUserAccount(context)
+            }
+
+            // get all positions of the user account
+            let userPositions = await getUserPositions(context, userAccountAddress)
+            userPositions = userPositions.filter(e => e.netPosition != 0)
+
+            // get user's trade history
+            let userTradesHistory = await getAllTradesForAccount(context, userAccountAddress)
+
+            // get the current market price
+            let marketsInfos = await findOptifiMarketsWithFullData(context)
+
+            let marketPrices: number[] = []
+            userPositions.forEach(position => {
+                let market = marketsInfos.find(market => market.marketAddress.toString() == position.marketId.toString())!
+                marketPrices.push(market.askPrice + market.bidPrice / 2)
+            })
+
+            let positionPnLs = userPositions.map((position, i) => calPnlForOneUserPosition(position, marketPrices[i], userTradesHistory))
+            resolve(positionPnLs)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+export function calPnlForOneUserPosition(postion: Position, marketPrice: number, tradeHistory: Trade[]): number {
+    let pnl: number = 0
+    let netPosition = postion.netPosition
+    if (netPosition != 0) {
+        // get entry price from trade history
+        let relatedTrades = tradeHistory.filter(e => e.marketAddress.toString() == postion.marketId.toString())
+        let netBaseAmount = 0
+        let netQuoteAmount = 0
+        relatedTrades.forEach(e => {
+            if (e.side === "buy") {
+                netBaseAmount -= e.maxQuoteQuantity
+                netQuoteAmount += e.maxBaseQuantity
+            } else {
+                netBaseAmount += e.maxQuoteQuantity
+                netQuoteAmount -= e.maxBaseQuantity
+
+            }
+        })
+        let entryUnitPrice = new Decimal(netQuoteAmount).div(new Decimal(netBaseAmount)).toNumber()
+
+        // calc pnl
+        pnl = netPosition * (marketPrice + entryUnitPrice)
+    }
+    return pnl
 }
