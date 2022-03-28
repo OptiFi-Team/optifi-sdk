@@ -30,13 +30,13 @@ it will create a new exchange with the OPTIFI_EXCHANGE_ID set in `./constants.ts
 - create user account on the exchange
 
 ```bash
-npx ts-node scripts/createUserAccountIfNotExists.ts
+npx ts-node scripts/user/createUserAccountIfNotExists.ts
 ```
 
 - deposit fund (OptiFi USDC) to user's margin account (1000 usdc by default)
 
 ```bash
-npx ts-node scripts/createUserAccountIfNotExists.ts
+npx ts-node scripts/user/deposit.ts
 ```
 
 - find all available markets and select an OptiFi market to trade
@@ -68,7 +68,7 @@ npx ts-node scripts/loadMarketOrderbook.ts
 npx ts-node scripts/order/placeOrder.ts
 ```
 
-- check the orderbook again after new order placed
+- check the user's open account again after new order placed
 
 ```bash
 npx ts-node scripts/loadOpenOdersAccount.ts
