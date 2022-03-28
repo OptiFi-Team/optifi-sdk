@@ -151,11 +151,11 @@ function createOptifiMarkets(context: Context,
                 if (currIdx !== 0) {
                     // Wait to create subsequent markets, beacuse the data is depent on previous markets,
                     // and there are validation delays
-                    console.log("Waiting 7 seconds before next market...");
+                    console.log("Waiting 10 seconds before next market...");
                     await new Promise((resolve) => {
                         setTimeout(() => {
                             resolve(true)
-                        }, 7 * 1000)
+                        }, 10 * 1000)
                     })
                     console.log("Finished, waiting, continuing market creation...");
                 }
@@ -215,8 +215,8 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                             console.log("Creating markets");
                             //console.log("Created instruments ", JSON.stringify(res.map((i) => i.toString())));
                             //process.stdout.write(JSON.stringify(res.map((i) => i.toString())));
-                            console.log("Waiting 10 seconds to create Serum Markets");
-                            await sleep(10000);
+                            console.log("Waiting 20 seconds to create Serum Markets");
+                            await sleep(20000);
                             createOrRetreiveSerumMarkets(context, instrumentKeys).then((marketKeys) => {
                                 //console.log("String serum market keys are, ", marketKeys.map((i) => i.toString()))
                                 console.log("Creating instruments")
@@ -224,8 +224,8 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                                     marketKeys,
                                     instrumentKeys
                                 ).then(async () => {
-                                    console.log("Waiting 5 seconds to create MarginStress accounts");
-                                    await sleep(5000);
+                                    console.log("Waiting 10 seconds to create MarginStress accounts");
+                                    await sleep(10000);
                                     console.log("Creating MarginStress accounts");
                                     await createMarginStress(context);
                                 }).catch((err) => {
