@@ -2288,6 +2288,10 @@
           {
             "name": "contractSize",
             "type": "u64"
+          },
+          {
+            "name": "clientOrderIdCounter",
+            "type": "u64"
           }
         ]
       }
@@ -2736,6 +2740,30 @@
           },
           {
             "name": "bidOrdersPrice",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "askClientOrderIds",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "bidClientOrderIds",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "prevAskOrdersPrice",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "prevBidOrdersPrice",
             "type": {
               "vec": "u64"
             }
@@ -3564,6 +3592,6 @@
     }
   ],
   "metadata": {
-    "address": "BqpmdnJPg45jg7gyza3WLaNLsa4bHWKsug7ioy61LK3Z"
+    "address": "ALrZxu3BbLDDTc6GzrJPMmtigyYSNYwGWqckDBbvw4oA"
   }
 }

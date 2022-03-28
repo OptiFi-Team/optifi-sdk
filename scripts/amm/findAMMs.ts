@@ -12,7 +12,7 @@ initializeContextWithoutWallet().then((context) => {
             )
             console.log("amm liquidity: ", amm[0].totalLiquidity.toString())
             console.log("amm net delta: ", amm[0].netDelta.toString())
-
+            console.log("amm proposal: ", amm[0].proposals)
         }
     }).catch((err) => {
         console.error(err);
