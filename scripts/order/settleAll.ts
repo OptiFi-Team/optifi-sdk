@@ -20,23 +20,29 @@ initializeContext().then((context) => {
                 console.log("Check the market: ", market[1].toString());
 
                 openOrdersRes
-                    .filter(({ baseTokenFree, quoteTokenFree }) => {
+                    .filter(async ({ baseTokenFree, quoteTokenFree }) => {
                         if (baseTokenFree.toNumber() > 0 || quoteTokenFree.toNumber() > 0) {
                             console.log("Find unsettle options: ", baseTokenFree.toNumber());
                             console.log("Find unsettle usdc: ", quoteTokenFree.toNumber());
-                            unsettleMarkets.push(market[1]);
+                            // unsettleMarkets.push(market[1]);
+                            let unsettleMarkets = [market[1]];
+                            let res = await settleOrderFunds(context, unsettleMarkets);
+                            if (res) {
+                                console.log(res);
+                            }
                         }
                     });
             };
         }
-        findUnsettleMarkets().then(async () => {
-            if (unsettleMarkets.length > 0) {
-                console.log("Start settle the markets: ", unsettleMarkets.toString());
-                let res = await settleOrderFunds(context, unsettleMarkets);
-                if (res) {
-                    console.log(res);
-                }
-            }
-        })
+        findUnsettleMarkets();
+        // findUnsettleMarkets().then(async () => {
+        //     // if (unsettleMarkets.length > 0) {
+        //     //     console.log("Start settle the markets: ", unsettleMarkets.toString());
+        //     //     let res = await settleOrderFunds(context, unsettleMarkets);
+        //     //     if (res) {
+        //     //         console.log(res);
+        //     //     }
+        //     // }
+        // })
     })
 })
