@@ -23,7 +23,7 @@ export default function ammDeposit(context: Context,
                         findAssociatedTokenAccount(context, amm.lpTokenMint).then(async ([userLpTokenVault, _]) => {
                             let instructions: TransactionInstruction[] = []
                             try {
-                                let accountInfo = await getAccount(context.connection, userLpTokenVault)
+                                let accountInfo = await getAccount(context.connection, userLpTokenVault, "processed")
                                 console.log("user lp token accountInfo: ", accountInfo)
                             } catch (err) {
                                 // console.log("err: ", err)

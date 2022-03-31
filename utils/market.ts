@@ -2,13 +2,16 @@ import Context from "../types/context";
 import { Commitment, PublicKey } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Market, Orderbook, OpenOrders } from "@project-serum/serum"
-import { Chain, Exchange, OptifiMarket } from "../types/optifi-exchange-types";
+import { Chain, Exchange, OptifiMarket, UserAccount } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
-import { OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID } from "../constants";
-import { findAssociatedTokenAccount } from "./token";
+import { OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID, USDC_DECIMALS } from "../constants";
+import { numberAssetToDecimal } from "./generic";
+import { findAssociatedTokenAccount, getTokenAccountFromAccountInfo } from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";
+import UserPosition from "../types/user";
+const DECIMAL = 6;
 
 
 export function findOptifiMarketWithIdx(context: Context,
@@ -55,7 +58,15 @@ export function findOptifiMarkets(context: Context): Promise<[OptifiMarket, Publ
     })
 }
 
-export function findOptifiInstruments(context: Context): Promise<Chain[]> {
+/**
+ * get instrument info for all optifi markets
+ * 
+ *  *
+ * @param context Context to use
+ *
+ * @return An list of array including instrument info, instrument pubkey and optifi market pubkey
+ */
+export function findOptifiInstruments(context: Context): Promise<[Chain, PublicKey, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findOptifiMarkets(context).then(async (marketRes) => {
             let markets = marketRes.map((i) => i[0]) as OptifiMarket[];
@@ -75,7 +86,11 @@ export function findOptifiInstruments(context: Context): Promise<Chain[]> {
             try {
                 let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
                 let instrumentInfos = instrumentRawInfos as Chain[]
-                resolve(instrumentInfos)
+                let res: [Chain, PublicKey, PublicKey][] = []
+                instrumentInfos.forEach((e, i) => {
+                    res.push([e as Chain, instrumentAddresses[i], marketRes[i][1]])
+                })
+                resolve(res)
             } catch (err) {
                 reject(err)
             }
@@ -84,7 +99,8 @@ export function findOptifiInstruments(context: Context): Promise<Chain[]> {
 }
 
 
-interface OptifiMarketFullData {
+
+export interface OptifiMarketFullData {
     asset: "BTC" | "ETH",
     strike: number,
     instrumentType: "Call" | "Put",
@@ -101,6 +117,9 @@ interface OptifiMarketFullData {
     instrumentAddress: PublicKey
     asks: Orderbook | null,
     bids: Orderbook | null,
+    serumMarket: Market,
+    asksPubkey: PublicKey,
+    bidsPubkey: PublicKey,
 }
 
 /**
@@ -133,10 +152,128 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
                         throw new Error('Invalid serum market');
                     }
                     // const [baseMintDecimals, quoteMintDecimals] = await Promise.all([
-                    //     getMintDecimals(connection, decoded.baseMint),
-                    //     getMintDecimals(connection, decoded.quoteMint),
+                    //     getMint(context.connection, decoded.baseMint),
+                    //     getMint(context.connection, decoded.quoteMint),
                     // ]);
-                    const [baseMintDecimals, quoteMintDecimals] = [0, 6]
+
+                    const [baseMintDecimals, quoteMintDecimals] = [numberAssetToDecimal(instrumentInfos[i].asset)!, USDC_DECIMALS]
+
+                    let market = new Market(decoded, baseMintDecimals, quoteMintDecimals, undefined, serumDexProgramId, null);
+
+                    // console.log("market: ", market)
+                    decodedSerumMarkets.push(market)
+
+                    // // @ts-ignore
+                    // console.log("decoded.bidsAddress: ", decoded.bids)
+                    // // @ts-ignore
+                    // console.log("decoded.asksAddress: ", decoded.asks)
+                    // @ts-ignore
+                    asksAndBidsAddresses.push(market.asksAddress, market.bidsAddress)
+                    res.push({
+                        asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
+                        strike: instrumentInfos[i].strike.toNumber(),
+                        instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
+                        bidPrice: 0,
+                        bidSize: 0,
+                        bidOrderId: "",
+                        askPrice: 0,
+                        askSize: 0,
+                        askOrderId: "",
+                        volume: 0,
+                        expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
+                        marketAddress: marketRes[i][1],
+                        marketId: marketRes[i][0].optifiMarketId,
+                        instrumentAddress: marketRes[i][0].instrument,
+                        asks: null,
+                        bids: null,
+                        serumMarket: market,
+                        asksPubkey: market.asksAddress,
+                        bidsPubkey: market.bidsAddress
+                    })
+                })
+
+                // console.log("start to fetch asksAndBidsInfos")
+                let asksAndBidsInfos = await context.connection.getMultipleAccountsInfo(asksAndBidsAddresses)
+                asksAndBidsInfos.forEach((e, i) => {
+                    // console.log(a)
+                    // console.log(instrumentInfos[marketIdx])
+                    // console.log(instrumentInfos[marketIdx].strike.toNumber())
+
+                    if (i % 2 == 0) {
+                        let marketIdx = i / 2
+                        let orderBook = Orderbook.decode(decodedSerumMarkets[marketIdx], e?.data!)
+                        res[marketIdx].asks = orderBook
+                        res[marketIdx].askPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
+                        res[marketIdx].askSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
+
+                    } else {
+                        let marketIdx = (i - 1) / 2
+                        let orderBook = Orderbook.decode(decodedSerumMarkets[marketIdx], e?.data!)
+                        res[marketIdx].bids = orderBook
+                        res[marketIdx].bidPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
+                        res[marketIdx].bidSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
+                    }
+                })
+                resolve(res)
+            } catch (err) {
+                reject(err)
+            }
+        }).catch((err) => reject(err))
+    })
+}
+
+
+
+export interface OptifiMarketFullDataV1 {
+    asset: "BTC" | "ETH",
+    strike: number,
+    instrumentType: "Call" | "Put",
+    bidPrice: number,
+    bidSize: number,
+    bidOrderId: string,
+    askPrice: number,
+    askSize: number,
+    askOrderId: string,
+    volume: number,
+    expiryDate: Date,
+    marketAddress: PublicKey,
+    marketId: number,
+    instrumentAddress: PublicKey
+    asks: Orderbook | null,
+    bids: Orderbook | null,
+}
+
+/**
+ * get optifi markets full data with less requests
+ */
+export function findOptifiMarketsWithFullDataV1(context: Context): Promise<OptifiMarketFullDataV1[]> {
+    return new Promise((resolve, reject) => {
+        // console.log("start to fetch findOptifiMarkets")
+        findOptifiMarkets(context).then(async (marketRes) => {
+            let markets = marketRes.map((e) => e[0]) as OptifiMarket[];
+            let instrumentAddresses = markets.map(e => e.instrument)
+            let serumMarketAddresses = markets.map(e => e.serumMarket)
+
+            let res: OptifiMarketFullDataV1[] = []
+            try {
+                // console.log("start to fetch instrumentInfos")
+                let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
+                let instrumentInfos = instrumentRawInfos as Chain[]
+
+                // console.log("start to fetch serumMarketInfos")
+                let serumMarketInfos = await context.connection.getMultipleAccountsInfo(serumMarketAddresses)
+                let asksAndBidsAddresses: PublicKey[] = []
+                let decodedSerumMarkets: Market[] = []
+                let serumDexProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
+                serumMarketInfos.forEach((e, i) => {
+                    let decoded = Market.getLayout(serumDexProgramId).decode(e?.data!)
+                    if (!decoded.accountFlags.initialized ||
+                        !decoded.accountFlags.market ||
+                        !decoded.ownAddress.equals(serumMarketAddresses[i])) {
+                        throw new Error('Invalid serum market');
+                    }
+
+                    const [baseMintDecimals, quoteMintDecimals] = [numberAssetToDecimal(instrumentInfos[i].asset)!, USDC_DECIMALS]
 
                     let market = new Market(decoded, baseMintDecimals, quoteMintDecimals, undefined, serumDexProgramId, null);
 
@@ -194,7 +331,9 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
 
                 resolve(res)
 
-                // context.connection.onAccountChange(serumMarketAddresses[0], (updatedAccountInfo, context) => console.log('Updated account info: ', updatedAccountInfo),
+                // context.connection.onAccountChange(serumMarketAddresses[0], (updatedAccountInfo, context) => {
+                //     console.log('Updated account info: ', updatedAccountInfo)
+                // },
                 //     'confirmed')
                 // let instrumentInfos = instrumentRawInfos as Chain[]
                 // resolve(instrumentInfos)
@@ -267,7 +406,7 @@ export function deriveVaultNonce(marketKey: PublicKey,
         try {
             PublicKey.createProgramAddress([marketKey.toBuffer(), nonce.toArrayLike(Buffer, "le", 8)],
                 dexProgramId).then((vaultOwner) => {
-                    console.log("Returning vault ", vaultOwner, nonce);
+                    // console.log("Returning vault ", vaultOwner, nonce);
                     resolve([vaultOwner, nonce])
                 }).catch((err) => {
                     tryNext();
@@ -409,5 +548,127 @@ export function getPosition(
         let longAmount = await watchGetTokenAmount(context, market.instrumentLongSplToken, userAccountAddress);
         let shortAmount = await watchGetTokenAmount(context, market.instrumentShortSplToken, userAccountAddress);
         resolve([longAmount, shortAmount])
+    })
+}
+
+export interface Position {
+    marketId: PublicKey;
+    expiryDate: Date;
+    strike: number;
+    asset: "BTC" | "ETH";
+    instrumentType: "Call" | "Put";
+    longAmount: number;
+    shortAmount: number;
+    netPosition: number;
+    positionType: "long" | "short";
+}
+
+/**
+ * To get the user token amount on each trading market
+ */
+export function getUserPositions(
+    context: Context,
+    userAccountAddress: PublicKey
+): Promise<Position[]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let allMarkets = await findOptifiMarkets(context)
+            let userAccount = await context.program.account.userAccount.fetch(userAccountAddress);
+            // // @ts-ignore
+            // let userAccount = res as UserAccount;
+            let positions = userAccount.positions as UserPosition[];
+            let tradingMarkets = allMarkets.filter(market => positions.map(e => e.instrument.toString()).includes(market[0].instrument.toString()));
+            let instrumentAddresses = tradingMarkets.map(e => e[0].instrument)
+            let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
+            let instrumentInfos = instrumentRawInfos as Chain[]
+            let longAndShortVaults: PublicKey[] = []
+            for (let i = 0; i < tradingMarkets.length; i++) {
+                let market = tradingMarkets[i]
+                let longMint = market[0].instrumentLongSplToken
+                let shortMint = market[0].instrumentShortSplToken
+
+                let [userLongTokenVault,] = await findAssociatedTokenAccount(context, longMint, userAccountAddress)
+                let [userShortTokenVault,] = await findAssociatedTokenAccount(context, shortMint, userAccountAddress)
+                longAndShortVaults.push(userLongTokenVault, userShortTokenVault)
+            }
+
+            let tokenAccountsInfos = await context.connection.getMultipleAccountsInfo(longAndShortVaults)
+            let vaultBalances: number[] = []
+            for (let i = 0; i < tokenAccountsInfos.length; i++) {
+                let account = await getTokenAccountFromAccountInfo(tokenAccountsInfos[i]!, longAndShortVaults[i])
+                vaultBalances.push((new anchor.BN(account.amount.toString())).toNumber())
+            }
+
+            let res: Position[] = tradingMarkets.map((market, i) => {
+                let decimals = numberAssetToDecimal(instrumentInfos[i].asset)!
+                let longAmount = vaultBalances[2 * i] / 10 ** decimals
+                let shortAmount = vaultBalances[2 * i + 1] / 10 ** decimals
+
+                let position: Position = {
+                    marketId: market[1],
+                    expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
+                    strike: instrumentInfos[i].strike.toNumber(),
+                    asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
+                    instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
+                    longAmount,
+                    shortAmount,
+                    netPosition: longAmount - shortAmount,
+                    positionType: longAmount - shortAmount >= 0 ? "long" : "short",
+                }
+                return position
+            })
+
+            resolve(res)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+export function loadPositionsFromUserAccount(
+    context: Context,
+    userAccount: UserAccount,
+    optifiMarkets: OptifiMarketFullData[]
+): Promise<Position[]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let positions = userAccount.positions as UserPosition[];
+            let tradingMarkets = optifiMarkets.filter(market => positions.map(e => e.instrument.toString()).includes(market.instrumentAddress.toString()));
+            let vaultBalances: number[] = []
+            for (let i = 0; i < positions.length; i++) {
+                // @ts-ignore
+                vaultBalances.push(positions[i].longQty.toNumber());
+                // @ts-ignore
+                vaultBalances.push(positions[i].shortQty.toNumber());
+            }
+
+            let res: Position[] = tradingMarkets.map((market, i) => {
+                // decimals = numberAssetToDecimal(instrumentInfos[i].asset)!
+
+                let longAmount = vaultBalances[2 * i] / 10 ** DECIMAL
+                let shortAmount = vaultBalances[2 * i + 1] / 10 ** DECIMAL
+
+                let position: Position = {
+                    marketId: market.marketAddress,
+                    //expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
+                    expiryDate: market.expiryDate,
+                    // strike: instrumentInfos[i].strike.toNumber(),
+                    strike: market.strike,
+                    // asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
+                    asset: market.asset,
+                    // instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
+                    instrumentType: market.instrumentType,
+                    longAmount,
+                    shortAmount,
+                    netPosition: longAmount - shortAmount,
+                    positionType: longAmount - shortAmount >= 0 ? "long" : "short",
+                }
+                return position
+            })
+
+            resolve(res)
+        } catch (err) {
+            reject(err)
+        }
     })
 }

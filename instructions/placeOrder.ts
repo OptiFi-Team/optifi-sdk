@@ -7,16 +7,28 @@ import { OrderSide } from "../types/optifi-exchange-types";
 import marginStress from "./marginStress";
 import { isUserInitializedOnMarket } from "../utils/market";
 import { createInitUserOnOptifiMarketInstruciton } from "./initUserOnOptifiMarket";
+import { USDC_DECIMALS } from "../constants";
+import { numberAssetToDecimal } from "../utils/generic";
 
 export default function placeOrder(context: Context,
     marketAddress: PublicKey,
     side: OrderSide,
-    limit: number,
-    maxCoinQty: number,
-    maxPcQty: number
+    price: number,
+    size: number,
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         formPlaceOrderContext(context, marketAddress).then(async ([orderContext, asset]) => {
+
+            let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(asset)!); // price for 1 lot_size 
+
+            let maxCoinQty = size * (10 ** numberAssetToDecimal(asset)!);
+
+            let maxPcQty = limit * maxCoinQty;
+
+            if (side == OrderSide.Bid) {
+                maxPcQty = maxPcQty * 1.0022;
+            }
+
             console.log("side: ", side);
             console.log("limit: ", limit);
             console.log("maxCoinQty: ", maxCoinQty);

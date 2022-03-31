@@ -4,7 +4,7 @@ import ammDeposit from "../../instructions/ammDeposit";
 
 let amount = 1000000; // already including decimals
 
-let ammAddress = new PublicKey("ETtfLt1Vx5pdFiVh8frCz2SYF67Y6rx15ESmBami33mX");
+let ammAddress = new PublicKey("BqCCiwsymyNu66fiTiJ7UCBQqexZpNZpAF2QF18nkDnR");
 
 initializeContext().then((context) => {
     ammDeposit(context, ammAddress, amount).then((res) => {

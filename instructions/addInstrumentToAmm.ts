@@ -1,6 +1,6 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import { Keypair, PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import { OptifiMarket } from "../types/optifi-exchange-types";
 import { findOrCreateAssociatedTokenAccount } from "../utils/token";
 import { findOptifiExchange, getDexOpenOrders } from "../utils/accounts";
@@ -21,28 +21,33 @@ export default function addInstrumentToAmm(context: Context,
             //     findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammAddress).then((ammShortTokenVault) => {
             findOptifiExchange(context).then(async ([exchangeAddress, _]) => {
                 try {
+                    let inxs: TransactionInstruction[] = []
+
                     let [ammLiquidityAuth,] = await getAmmLiquidityAuthPDA(context);
                     let [dexOpenOrders, bump2] = await getDexOpenOrders(
                         context,
                         optifiMarket.serumMarket,
                         ammLiquidityAuth)
-                    let [serumMarketAuthority,] = await findSerumAuthorityPDA(context);
-                    let initAmmOnOptifiMarketInx = context.program.instruction.initAmmOnOptifiMarket(bump2, {
-                        accounts: {
-                            optifiExchange: exchangeAddress,
-                            ammAuthority: ammLiquidityAuth,
-                            serumOpenOrders: dexOpenOrders,
-                            optifiMarket: marketAddress,
-                            serumMarketAuthority: serumMarketAuthority,
-                            serumMarket: optifiMarket.serumMarket,
-                            serumDexProgramId: SERUM_DEX_PROGRAM_ID[context.endpoint],
-                            payer: context.provider.wallet.publicKey,
-                            systemProgram: SystemProgram.programId,
-                            rent: SYSVAR_RENT_PUBKEY,
-                        }
-                    });
+                    let dexOpenOrdersInfo = await context.connection.getAccountInfo(dexOpenOrders)
+                    if (!dexOpenOrdersInfo) {
+                        let [serumMarketAuthority,] = await findSerumAuthorityPDA(context);
+                        let initAmmOnOptifiMarketInx = context.program.instruction.initAmmOnOptifiMarket(bump2, {
+                            accounts: {
+                                optifiExchange: exchangeAddress,
+                                ammAuthority: ammLiquidityAuth,
+                                serumOpenOrders: dexOpenOrders,
+                                optifiMarket: marketAddress,
+                                serumMarketAuthority: serumMarketAuthority,
+                                serumMarket: optifiMarket.serumMarket,
+                                serumDexProgramId: SERUM_DEX_PROGRAM_ID[context.endpoint],
+                                payer: context.provider.wallet.publicKey,
+                                systemProgram: SystemProgram.programId,
+                                rent: SYSVAR_RENT_PUBKEY,
+                            }
+                        });
+                        inxs.push(initAmmOnOptifiMarketInx)
+                    }
 
-                    let inxs = [initAmmOnOptifiMarketInx]
 
                     // let ammLongTokenVault = await findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, ammLiquidityAuth)
                     // let ammShortTokenVault = await findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammLiquidityAuth)

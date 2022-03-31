@@ -9,8 +9,9 @@ import { calculateMargin, stress_function, option_intrinsic_value, reshap } from
 import { getPosition, findOptifiMarkets, getTokenAmount } from "./market";
 import UserPosition from "../types/user";
 import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
-import { SWITCHBOARD } from "../constants";
+import { SWITCHBOARD, USDC_DECIMALS } from "../constants";
 import { getAccount } from "@solana/spl-token";
+import { numberAssetToDecimal } from "./generic";
 
 export const r = 0;
 export const q = 0;
@@ -53,14 +54,17 @@ export function calcMarginRequirementForUser(
             let instrumentAccountInfos = instrumentAccountInfosRaw as Chain[];
             instrumentAccountInfos.forEach((instrument, i) => {
                 let maturity = (instrument.expiryDate.toNumber() - new Date().getTime() / 1000) / (60 * 60 * 24 * 365)
+                if (maturity < 0) {
+                    return
+                }
                 if (instrument.asset == 0) {
-                    netPositionsBTC.push(userNetPositions[i])
+                    netPositionsBTC.push(userNetPositions[i] / (10 ** USDC_DECIMALS))
                     tBTC.push(maturity)
                     strikeBTC.push(instrument.strike.toNumber());
                     isCallBTC.push(Object.keys(instrument.instrumentType)[0] === "call" ? 1 : 0)
 
                 } else if (instrument.asset == 1) {
-                    netPositionsETH.push(userNetPositions[i])
+                    netPositionsETH.push(userNetPositions[i] / (10 ** USDC_DECIMALS))
                     tETH.push(maturity)
                     strikeETH.push(instrument.strike.toNumber());
                     isCallETH.push(Object.keys(instrument.instrumentType)[0] === "call" ? 1 : 0)
@@ -70,6 +74,7 @@ export function calcMarginRequirementForUser(
             // console.log('tBTC: ', tBTC);
             // console.log('isCallBTC: ', isCallBTC);
             // console.log('strikeBTC: ', strikeBTC);
+            // console.log('netPositionsBTC: ', netPositionsBTC);
             // console.log('netPositionsETH: ', netPositionsETH);
 
             // Calc margin requirement for both BTC and ETH options
@@ -79,13 +84,13 @@ export function calcMarginRequirementForUser(
             if (netPositionsBTC.length > 0) {
                 // calc margin requriement for BTC postions
                 marginForBTC = await calcMarginForOneAsset(context, 0, usdcSpot.lastRoundResult?.result!, strikeBTC, isCallBTC, netPositionsBTC, tBTC)
-                console.log("marginForBTC: ", marginForBTC)
+                // console.log("marginForBTC: ", marginForBTC)
 
             }
             if (netPositionsETH.length > 0) {
                 // calc margin requriement for ETH postions
                 marginForETH = await calcMarginForOneAsset(context, 1, usdcSpot.lastRoundResult?.result!, strikeETH, isCallETH, netPositionsETH, tETH)
-                console.log("marginForETH: ", marginForETH)
+                // console.log("marginForETH: ", marginForETH)
             }
 
             // get the total margin
@@ -172,13 +177,16 @@ export function preCalcMarginForNewOrder(
             let instrumentAccountInfos = instrumentAccountInfosRaw as Chain[];
             instrumentAccountInfos.forEach((instrument, i) => {
                 let maturity = (instrument.expiryDate.toNumber() - new Date().getTime() / 1000) / (60 * 60 * 24 * 365)
+                if (maturity < 0) {
+                    return
+                }
                 if (instrument.asset == 0) {
-                    netPositionsBTC.push(userNetPositions[i])
+                    netPositionsBTC.push(userNetPositions[i] / (10 ** USDC_DECIMALS))
                     tBTC.push(maturity)
                     strikeBTC.push(instrument.strike.toNumber());
                     isCallBTC.push(Object.keys(instrument.instrumentType)[0] === "call" ? 1 : 0)
                 } else if (instrument.asset == 1) {
-                    netPositionsETH.push(userNetPositions[i])
+                    netPositionsETH.push(userNetPositions[i] / (10 ** USDC_DECIMALS))
                     tETH.push(maturity)
                     strikeETH.push(instrument.strike.toNumber());
                     isCallETH.push(Object.keys(instrument.instrumentType)[0] === "call" ? 1 : 0)
@@ -188,6 +196,7 @@ export function preCalcMarginForNewOrder(
             // console.log('tBTC: ', tBTC);
             // console.log('isCallBTC: ', isCallBTC);
             // console.log('strikeBTC: ', strikeBTC);
+            // console.log('netPositionsBTC: ', netPositionsBTC);
             // console.log('netPositionsETH: ', netPositionsETH);
 
             // Calc margin requirement for both BTC and ETH options
@@ -297,7 +306,7 @@ async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: 
     // console.log("is call: ", isCall)
     // console.log("iv: ", iv)
 
-    console.log("userPositions, spot, t, price, intrinsic, stress_price_change", userPositions, spot, t, price, intrinsic, stress_price_change)
+    // console.log("userPositions, spot, t, price, intrinsic, stress_price_change", userPositions, spot, t, price, intrinsic, stress_price_change)
     let margin_result = calculateMargin(userPositions, spot, t, price, intrinsic, stress_price_change);
     let margin = margin_result["Total Margin"]
     return margin
