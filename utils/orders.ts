@@ -584,119 +584,53 @@ interface Order {
 
 
 
-
-
 export function getOrdersOnMarket(
   context: Context,
   marketId: PublicKey,
   instruments: any,
 ): Promise<Order[]> {
   return new Promise(async (resolve, reject) => {
-    try {
-      const [userAccount, _] = await findUserAccount(context)
-      const optifiyMarket = await context.program.account.optifiMarket.fetch(marketId)
-      const serumMarket = await getSerumMarket(context, optifiyMarket.serumMarket)
-      const orders: any = await serumMarket.loadOrdersForOwner(context.connection, userAccount)
-      if (orders.length > 0 && orders !== undefined) {
-        const instrumentRes: any = instruments.find((instrument: any) => {
-          return (instrument[1].toString() === optifiyMarket.instrument.toString())
-        })
-        const openOrders: Array<any> = orders.map((order: any) => {
-          if (orders.length > 0) {
-            return {
-              ...order,
-              originalSize: '',
-              marketAddress: marketId.toString(),
-              price: order.price,
-              clientId: order.clientId.toNumber(),
-              assets: instrumentRes.asset ? instrumentRes.asset : instrumentRes[0].asset,
-              instrumentType: instrumentRes.instrumentType ? instrumentRes.instrumentType.toLowerCase() : Object.keys(instrumentRes[0].instrumentType)[0],
-              strike: instrumentRes.strike ? instrumentRes.strike.toNumber() : instrumentRes[0].strike.toNumber(),
-              expiryDate: instrumentRes.expiryDate ? instrumentRes.expiryDate.toNumber : instrumentRes[0].expiryDate.toNumber()
-            }
-          }
-        })
-        resolve(openOrders)
-      }
-    }
-    catch (err) {
-      console.error(err)
-      reject(err)
-    }
-
-
-    // findUserAccount(context)
-    //   .then(([userAccount, _]) => {
-    //     context.program.account.optifiMarket
-    //       .fetch(marketId)
-    //       .then(async (marketRes) => {
-    //         let optifiMarket = marketRes as OptifiMarket;
-
-    //         getSerumMarket(context, optifiMarket.serumMarket)
-    //           .then((serumMarket) => {
-    //             serumMarket
-    //               .loadOrdersForOwner(context.connection, userAccount)
-    //               .then((orders) => {
-    //                 if (instruments.length > 0) {
-    //                   const instrumentRes: any = instruments.find((instrument: any) => {
-    //                     return (instrument[1].toString() === optifiMarket.instrument.toString())
-    //                   })
-    //                   const openOrders: Array<any> = orders.map((order: any) => {
-    //                     if (orders.length > 0) {
-    //                       return {
-    //                         ...order,
-    //                         originalSize: '',
-    //                         marketAddress: marketId.toString(),
-    //                         price: order.price,
-    //                         clientId: order.clientId.toNumber(),
-    //                         assets: instrumentRes.asset ? instrumentRes.asset : instrumentRes[0].asset,
-    //                         instrumentType: instrumentRes.instrumentType ? instrumentRes.instrumentType.toLowerCase() : Object.keys(instrumentRes[0].instrumentType)[0],
-    //                         strike: instrumentRes.strike ? instrumentRes.strike.toNumber() : instrumentRes[0].strike.toNumber(),
-    //                         expiryDate: instrumentRes.expiryDate ? instrumentRes.expiryDate.toNumber : instrumentRes[0].expiryDate.toNumber()
-    //                       }
-    //                     }
-    //                   })
-    //                   resolve(openOrders);
-
-
-    //                 }
-    //               });
-    //           });
-    //       })
-    //       .catch((err) => reject(err));
-    //   })
-    //   .catch((err) => reject(err));
+    findUserAccount(context)
+      .then(([userAccount, _]) => {
+        context.program.account.optifiMarket
+          .fetch(marketId)
+          .then(async (marketRes) => {
+            let optifiMarket = marketRes as OptifiMarket;
+            getSerumMarket(context, optifiMarket.serumMarket)
+              .then((serumMarket) => {
+                serumMarket
+                  .loadOrdersForOwner(context.connection, userAccount)
+                  .then((orders) => {
+                    if (instruments.length > 0) {
+                      const instrumentRes: any = instruments.find((instrument: any) => {
+                        return (instrument[1].toString() === optifiMarket.instrument.toString())
+                      })
+                      const openOrders: Array<any> = orders.map((order: any) => {
+                        if (orders.length > 0) {
+                          return {
+                            ...order,
+                            originalSize: '',
+                            marketAddress: marketId.toString(),
+                            price: order.price,
+                            clientId: order.clientId.toNumber(),
+                            assets: instrumentRes.asset ? instrumentRes.asset : instrumentRes[0].asset,
+                            instrumentType: instrumentRes.instrumentType ? instrumentRes.instrumentType.toLowerCase() : Object.keys(instrumentRes[0].instrumentType)[0],
+                            strike: instrumentRes.strike ? instrumentRes.strike.toNumber() : instrumentRes[0].strike.toNumber(),
+                            expiryDate: instrumentRes.expiryDate ? instrumentRes.expiryDate.toNumber : instrumentRes[0].expiryDate.toNumber()
+                          }
+                        }
+                      })
+                      resolve(openOrders);
+                    }
+                  });
+              });
+          })
+          .catch((err) => reject(err));
+      })
+      .catch((err) => reject(err));
   });
 }
 
-// export async function getAllOpenOrdersForUser(
-//   context: Context,
-//   instruments: any
-// ) {
-
-//   const markets = await findOptifiMarkets(context)
-//   const [userAccount, _] = await findUserAccount(context)
-//   const orderHistory = await getAllOrdersForAccount(context, userAccount)
-
-//   let clientGuide = {}
-
-//   orderHistory.map((history) => {
-//     clientGuide[history.clientId] = history.maxBaseQuantity
-//   })
-
-//   let allOpenOrders: any = (await Promise.all(markets.map(async (mkt: any) => {
-//     const isUserInitialized = await isUserInitializedOnMarket(context, mkt[1])
-//     if (isUserInitialized === true) {
-//       return await getOrdersOnMarket(context, mkt[1], instruments)
-//     }
-//   }))).filter(order => order !== undefined).flat()
-
-//   allOpenOrders.map((order) => {
-//     order.originalSize = clientGuide[order.clientId]
-//   })
-//   return (allOpenOrders)
-
-// }
 
 export function getAllOpenOrdersForUser(
   context: Context,
@@ -715,6 +649,7 @@ export function getAllOpenOrdersForUser(
       let existingMarkets = await findOptifiMarkets(context)
       let orderInfoStuff = existingMarkets.map(async (mkt: any) => {
         const isUserInitialized = await isUserInitializedOnMarket(context, mkt[1])
+
         if (isUserInitialized === true) {
           const serumMarket = await getSerumMarket(context, mkt[0].serumMarket)
           const myOrder: any = await serumMarket.loadOrdersForOwner(context.connection, userAddress)
@@ -740,7 +675,6 @@ export function getAllOpenOrdersForUser(
               }
             })
             return openOrders
-
           }
         }
       })
