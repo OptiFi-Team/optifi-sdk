@@ -592,13 +592,12 @@ export function getOrdersOnMarket(
   instruments: any,
 ): Promise<Order[]> {
   return new Promise(async (resolve, reject) => {
-
     try {
       const [userAccount, _] = await findUserAccount(context)
       const optifiyMarket = await context.program.account.optifiMarket.fetch(marketId)
       const serumMarket = await getSerumMarket(context, optifiyMarket.serumMarket)
       const orders: any = await serumMarket.loadOrdersForOwner(context.connection, userAccount)
-      if (instruments.length > 0) {
+      if (orders.length > 0 && orders !== undefined) {
         const instrumentRes: any = instruments.find((instrument: any) => {
           return (instrument[1].toString() === optifiyMarket.instrument.toString())
         })
@@ -616,7 +615,6 @@ export function getOrdersOnMarket(
               expiryDate: instrumentRes.expiryDate ? instrumentRes.expiryDate.toNumber : instrumentRes[0].expiryDate.toNumber()
             }
           }
-
         })
         resolve(openOrders)
       }
@@ -671,30 +669,86 @@ export function getOrdersOnMarket(
   });
 }
 
-export async function getAllOpenOrdersForUser(
+// export async function getAllOpenOrdersForUser(
+//   context: Context,
+//   instruments: any
+// ) {
+
+//   const markets = await findOptifiMarkets(context)
+//   const [userAccount, _] = await findUserAccount(context)
+//   const orderHistory = await getAllOrdersForAccount(context, userAccount)
+
+//   let clientGuide = {}
+
+//   orderHistory.map((history) => {
+//     clientGuide[history.clientId] = history.maxBaseQuantity
+//   })
+
+//   let allOpenOrders: any = (await Promise.all(markets.map(async (mkt: any) => {
+//     const isUserInitialized = await isUserInitializedOnMarket(context, mkt[1])
+//     if (isUserInitialized === true) {
+//       return await getOrdersOnMarket(context, mkt[1], instruments)
+//     }
+//   }))).filter(order => order !== undefined).flat()
+
+//   allOpenOrders.map((order) => {
+//     order.originalSize = clientGuide[order.clientId]
+//   })
+//   return (allOpenOrders)
+
+// }
+
+export function getAllOpenOrdersForUser(
   context: Context,
-  instruments: any
-) {
+  instruments: any,
+): Promise<Array<Order[]>> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [userAddress, _] = await findUserAccount(context)
+      const orderHistory = await getAllOrdersForAccount(context, userAddress)
+      let clientGuide = {}
 
-  let markets = await findOptifiMarkets(context)
+      orderHistory.map((history) => {
+        clientGuide[history.clientId] = history.maxBaseQuantity
+      })
 
-  const [userAccount, _] = await findUserAccount(context)
+      let existingMarkets = await findOptifiMarkets(context)
+      let orderInfoStuff = existingMarkets.map(async (mkt: any) => {
+        const isUserInitialized = await isUserInitializedOnMarket(context, mkt[1])
+        if (isUserInitialized === true) {
+          const serumMarket = await getSerumMarket(context, mkt[0].serumMarket)
+          const myOrder: any = await serumMarket.loadOrdersForOwner(context.connection, userAddress)
 
-  const orderHistory = await getAllOrdersForAccount(context, userAccount)
+          if (myOrder.length > 0 && myOrder !== undefined) {
+            const instrumentRes: any = instruments.find((instrument: any) => {
+              return instrument[1].toString() === mkt[0].instrument.toString()
+            })
 
+            const openOrders: Array<any> = myOrder.map((order: any) => {
+              if (myOrder.length > 0) {
+                return {
+                  ...order,
+                  originalSize: clientGuide[order.clientId],
+                  marketAddress: mkt[1].toString(),
+                  price: order.price,
+                  clientId: order.clientId.toNumber(),
+                  assets: instrumentRes.asset ? instrumentRes.asset : instrumentRes[0].asset,
+                  instrumentType: instrumentRes.instrumentType ? instrumentRes.instrumentType.toLowerCase() : Object.keys(instrumentRes[0].instrumentType)[0],
+                  strike: instrumentRes.strike ? instrumentRes.strike.toNumber() : instrumentRes[0].strike.toNumber(),
+                  expiryDate: instrumentRes.expiryDate ? instrumentRes.expiryDate.toNumber : instrumentRes[0].expiryDate.toNumber()
+                }
+              }
+            })
+            return openOrders
 
-  let allOpenOrders: any = (await Promise.all(markets.map(async (mkt: any) => {
-    return await getOrdersOnMarket(context, mkt[1], instruments)
-  }))).flat()
+          }
+        }
+      })
+      resolve((await Promise.all(orderInfoStuff)).filter(order => order !== undefined).flat())
 
-  let clientGuide = {}
-
-  orderHistory.map((history) => {
-    clientGuide[history.clientId] = history.maxBaseQuantity
+    } catch (err) {
+      console.log(err)
+      reject(err)
+    }
   })
-
-  allOpenOrders.map((order) => {
-    order.originalSize = clientGuide[order.clientId]
-  })
-  return (allOpenOrders)
 }
