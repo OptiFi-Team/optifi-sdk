@@ -7,8 +7,7 @@ import { getOrdersOnMarket } from "../utils/orders";
 import {
   OpenOrders
 } from "@project-serum/serum";
-
-let market = new PublicKey("7DHkZnxN54g7wCDinDjHajoAMj7fkniaEuTwSoHjrhyi");
+import {market} from "../constants"
 // let userAccount = new PublicKey("5UiD5WNnGVRuTmhfjhVLYvHV8fDiXH5eUNCoBxwJpkYs")
 
 initializeContext().then(async (context) => {
