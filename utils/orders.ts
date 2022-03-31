@@ -671,3 +671,30 @@ export function getOrdersOnMarket(
   });
 }
 
+export async function getAllOpenOrdersForUser(
+  context: Context,
+  instruments: any
+) {
+
+  let markets = await findOptifiMarkets(context)
+
+  const [userAccount, _] = await findUserAccount(context)
+
+  const orderHistory = await getAllOrdersForAccount(context, userAccount)
+
+
+  let allOpenOrders: any = (await Promise.all(markets.map(async (mkt: any) => {
+    return await getOrdersOnMarket(context, mkt[1], instruments)
+  }))).flat()
+
+  let clientGuide = {}
+
+  orderHistory.map((history) => {
+    clientGuide[history.clientId] = history.maxBaseQuantity
+  })
+
+  allOpenOrders.map((order) => {
+    order.originalSize = clientGuide[order.clientId]
+  })
+  return (allOpenOrders)
+}
