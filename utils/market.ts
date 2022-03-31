@@ -2,7 +2,7 @@ import Context from "../types/context";
 import { Commitment, PublicKey } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Market, Orderbook, OpenOrders } from "@project-serum/serum"
-import { Chain, Exchange, OptifiMarket } from "../types/optifi-exchange-types";
+import { Chain, Exchange, OptifiMarket, UserAccount } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
 import { OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID, USDC_DECIMALS } from "../constants";
 import { numberAssetToDecimal } from "./generic";
@@ -11,6 +11,7 @@ import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";
 import UserPosition from "../types/user";
+const DECIMAL = 6;
 
 
 export function findOptifiMarketWithIdx(context: Context,
@@ -605,6 +606,54 @@ export function getUserPositions(
 
                 let position: Position = {
                     marketId: market[1],
+                    expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
+                    strike: instrumentInfos[i].strike.toNumber(),
+                    asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
+                    instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
+                    longAmount,
+                    shortAmount,
+                    netPosition: longAmount - shortAmount,
+                    positionType: longAmount - shortAmount >= 0 ? "long" : "short",
+                }
+                return position
+            })
+
+            resolve(res)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+export function loadPositionsFromUserAccount(
+    context: Context,
+    userAccount: UserAccount,
+    optifiMarkets: OptifiMarketFullData[]
+): Promise<Position[]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let positions = userAccount.positions as UserPosition[];
+            let tradingMarkets = optifiMarkets.filter(market => positions.map(e => e.instrument.toString()).includes(market.instrumentAddress.toString()));
+            let instrumentAddresses = tradingMarkets.map(e => e.instrumentAddress)
+            let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
+            let instrumentInfos = instrumentRawInfos as Chain[]
+            let vaultBalances: number[] = []
+            for (let i = 0; i < positions.length; i++) {
+                // @ts-ignore
+                vaultBalances.push(positions[i].longQty.toNumber());
+                // @ts-ignore
+                vaultBalances.push(positions[i].shortQty.toNumber());
+            }
+            console.log("vaultBalances:" + vaultBalances);
+
+            let res: Position[] = tradingMarkets.map((market, i) => {
+                // decimals = numberAssetToDecimal(instrumentInfos[i].asset)!
+
+                let longAmount = vaultBalances[2 * i] / 10 ** DECIMAL
+                let shortAmount = vaultBalances[2 * i + 1] / 10 ** DECIMAL
+
+                let position: Position = {
+                    marketId: market.marketAddress,
                     expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
                     strike: instrumentInfos[i].strike.toNumber(),
                     asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
