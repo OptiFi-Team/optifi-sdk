@@ -580,6 +580,8 @@ interface Order {
   instrumentType?: string;
   expiryDate?: number;
   originalSize?: number;
+  status: string;
+  fillPercentage?: number;
 }
 
 
@@ -616,7 +618,9 @@ export function getOrdersOnMarket(
                             assets: instrumentRes.asset ? instrumentRes.asset : instrumentRes[0].asset,
                             instrumentType: instrumentRes.instrumentType ? instrumentRes.instrumentType.toLowerCase() : Object.keys(instrumentRes[0].instrumentType)[0],
                             strike: instrumentRes.strike ? instrumentRes.strike.toNumber() : instrumentRes[0].strike.toNumber(),
-                            expiryDate: instrumentRes.expiryDate ? instrumentRes.expiryDate.toNumber : instrumentRes[0].expiryDate.toNumber()
+                            expiryDate: instrumentRes.expiryDate ? instrumentRes.expiryDate.toNumber : instrumentRes[0].expiryDate.toNumber(),
+                            status: '',
+                            fillPercentage: ''
                           }
                         }
                       })
@@ -666,6 +670,8 @@ export function getAllOpenOrdersForUser(
                   originalSize: clientGuide[order.clientId],
                   marketAddress: mkt[1].toString(),
                   price: order.price,
+                  status: order.size < clientGuide[order.clientId] ? 'Partially Filled' : 'Open',
+                  fillPercentage: 1 - (order.size / clientGuide[order.clientId]),
                   clientId: order.clientId.toNumber(),
                   assets: instrumentRes.asset ? instrumentRes.asset : instrumentRes[0].asset,
                   instrumentType: instrumentRes.instrumentType ? instrumentRes.instrumentType.toLowerCase() : Object.keys(instrumentRes[0].instrumentType)[0],
