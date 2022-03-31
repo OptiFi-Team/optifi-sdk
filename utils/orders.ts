@@ -18,7 +18,7 @@ import {
   OrderSide,
   UserAccount,
 } from "../types/optifi-exchange-types";
-import { deriveVaultNonce } from "./market";
+import { deriveVaultNonce, findOptifiMarkets, isUserInitializedOnMarket } from "./market";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { findOptifiMarketMintAuthPDA } from "./pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -34,6 +34,7 @@ import { numberToOptifiAsset } from "../utils/generic";
 import { Chain } from "../types/optifi-exchange-types";
 import { findMarginStressWithAsset } from "./margin";
 import Asset from "../types/asset";
+import { getAllOrdersForAccount } from "./orderHistory";
 
 export enum TxType {
   PlaceOrder = 0,
@@ -575,31 +576,98 @@ interface Order {
   sizeLots: BN;
   side: "buy" | "sell";
   clientId?: BN;
+  marketAddress?: string;
+  instrumentType?: string;
+  expiryDate?: number;
+  originalSize?: number;
 }
+
+
+
+
 
 export function getOrdersOnMarket(
   context: Context,
-  marketId: PublicKey
+  marketId: PublicKey,
+  instruments: any,
 ): Promise<Order[]> {
-  return new Promise((resolve, reject) => {
-    findUserAccount(context)
-      .then(([userAccount, _]) => {
-        context.program.account.optifiMarket
-          .fetch(marketId)
-          .then((marketRes) => {
-            let optifiMarket = marketRes as OptifiMarket;
-            getSerumMarket(context, optifiMarket.serumMarket).then(
-              (serumMarket) => {
-                serumMarket
-                  .loadOrdersForOwner(context.connection, userAccount)
-                  .then((orders) => {
-                    resolve(orders);
-                  });
-              }
-            );
-          })
-          .catch((err) => reject(err));
-      })
-      .catch((err) => reject(err));
+  return new Promise(async (resolve, reject) => {
+
+    try {
+      const [userAccount, _] = await findUserAccount(context)
+      const optifiyMarket = await context.program.account.optifiMarket.fetch(marketId)
+      const serumMarket = await getSerumMarket(context, optifiyMarket.serumMarket)
+      const orders: any = await serumMarket.loadOrdersForOwner(context.connection, userAccount)
+      if (instruments.length > 0) {
+        const instrumentRes: any = instruments.find((instrument: any) => {
+          return (instrument[1].toString() === optifiyMarket.instrument.toString())
+        })
+        const openOrders: Array<any> = orders.map((order: any) => {
+          if (orders.length > 0) {
+            return {
+              ...order,
+              originalSize: '',
+              marketAddress: marketId.toString(),
+              price: order.price,
+              clientId: order.clientId.toNumber(),
+              assets: instrumentRes.asset ? instrumentRes.asset : instrumentRes[0].asset,
+              instrumentType: instrumentRes.instrumentType ? instrumentRes.instrumentType.toLowerCase() : Object.keys(instrumentRes[0].instrumentType)[0],
+              strike: instrumentRes.strike ? instrumentRes.strike.toNumber() : instrumentRes[0].strike.toNumber(),
+              expiryDate: instrumentRes.expiryDate ? instrumentRes.expiryDate.toNumber : instrumentRes[0].expiryDate.toNumber()
+            }
+          }
+
+        })
+        resolve(openOrders)
+      }
+    }
+    catch (err) {
+      console.error(err)
+      reject(err)
+    }
+
+
+    // findUserAccount(context)
+    //   .then(([userAccount, _]) => {
+    //     context.program.account.optifiMarket
+    //       .fetch(marketId)
+    //       .then(async (marketRes) => {
+    //         let optifiMarket = marketRes as OptifiMarket;
+
+    //         getSerumMarket(context, optifiMarket.serumMarket)
+    //           .then((serumMarket) => {
+    //             serumMarket
+    //               .loadOrdersForOwner(context.connection, userAccount)
+    //               .then((orders) => {
+    //                 if (instruments.length > 0) {
+    //                   const instrumentRes: any = instruments.find((instrument: any) => {
+    //                     return (instrument[1].toString() === optifiMarket.instrument.toString())
+    //                   })
+    //                   const openOrders: Array<any> = orders.map((order: any) => {
+    //                     if (orders.length > 0) {
+    //                       return {
+    //                         ...order,
+    //                         originalSize: '',
+    //                         marketAddress: marketId.toString(),
+    //                         price: order.price,
+    //                         clientId: order.clientId.toNumber(),
+    //                         assets: instrumentRes.asset ? instrumentRes.asset : instrumentRes[0].asset,
+    //                         instrumentType: instrumentRes.instrumentType ? instrumentRes.instrumentType.toLowerCase() : Object.keys(instrumentRes[0].instrumentType)[0],
+    //                         strike: instrumentRes.strike ? instrumentRes.strike.toNumber() : instrumentRes[0].strike.toNumber(),
+    //                         expiryDate: instrumentRes.expiryDate ? instrumentRes.expiryDate.toNumber : instrumentRes[0].expiryDate.toNumber()
+    //                       }
+    //                     }
+    //                   })
+    //                   resolve(openOrders);
+
+
+    //                 }
+    //               });
+    //           });
+    //       })
+    //       .catch((err) => reject(err));
+    //   })
+    //   .catch((err) => reject(err));
   });
 }
+
