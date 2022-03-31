@@ -15,7 +15,8 @@ const liquidationLoop = async (context: Context) => {
 
         console.log("Find ", Users.length, " user on the exchange...");
 
-        Users.forEach(async (user) => {
+        for (let user of Users) {
+
             let userToLiquidate = user.publicKey;
 
             let decoded = context.program.coder.accounts.decode("UserAccount", user.accountInfo.data)!;
@@ -38,13 +39,13 @@ const liquidationLoop = async (context: Context) => {
                     console.error(err);
                 })
             }
-        });
-        await sleep(10000);
-        await liquidationLoop(context);
+            await sleep(1000);
+        }
+        await sleep(30000);
     } catch (e) {
-        await sleep(50000);
-        await liquidationLoop(context);
+        await sleep(600000);
     }
+    await liquidationLoop(context);
 }
 
 initializeContext().then((context) => {
