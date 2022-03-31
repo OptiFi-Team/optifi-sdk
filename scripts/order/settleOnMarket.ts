@@ -3,8 +3,8 @@ import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import settleOrderFunds from "../../instructions/settleOrderFunds";
 import userMarginCalculate from "../../instructions/userMarginCalculate";
-
-let market = new PublicKey("3qCSVYhpkuJoNnkGtL2ddtt3LzB6B5jyx7EohFkCoZyw");
+import {market} from "../../constants"
+//let market = new PublicKey("3qCSVYhpkuJoNnkGtL2ddtt3LzB6B5jyx7EohFkCoZyw");
 
 initializeContext().then(async (context) => {
     console.log("Start settle the markets: ", market.toString());

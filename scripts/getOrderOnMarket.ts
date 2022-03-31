@@ -1,8 +1,8 @@
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../index";
 import { getOrdersOnMarket } from "../utils/orders";
-
-let market = new PublicKey("BzpWij8iXh3t6VFaJ5NWLi6yCNkT24gVTax141LNLGnL");
+import {market} from "../constants"
+//let market = new PublicKey("BzpWij8iXh3t6VFaJ5NWLi6yCNkT24gVTax141LNLGnL");
 
 initializeContext().then((context) => {
     getOrdersOnMarket(context, market).then(orders => {
