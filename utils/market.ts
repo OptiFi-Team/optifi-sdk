@@ -634,9 +634,6 @@ export function loadPositionsFromUserAccount(
         try {
             let positions = userAccount.positions as UserPosition[];
             let tradingMarkets = optifiMarkets.filter(market => positions.map(e => e.instrument.toString()).includes(market.instrumentAddress.toString()));
-            let instrumentAddresses = tradingMarkets.map(e => e.instrumentAddress)
-            let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
-            let instrumentInfos = instrumentRawInfos as Chain[]
             let vaultBalances: number[] = []
             for (let i = 0; i < positions.length; i++) {
                 // @ts-ignore
@@ -644,7 +641,6 @@ export function loadPositionsFromUserAccount(
                 // @ts-ignore
                 vaultBalances.push(positions[i].shortQty.toNumber());
             }
-            console.log("vaultBalances:" + vaultBalances);
 
             let res: Position[] = tradingMarkets.map((market, i) => {
                 // decimals = numberAssetToDecimal(instrumentInfos[i].asset)!
@@ -654,10 +650,14 @@ export function loadPositionsFromUserAccount(
 
                 let position: Position = {
                     marketId: market.marketAddress,
-                    expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
-                    strike: instrumentInfos[i].strike.toNumber(),
-                    asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
-                    instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
+                    //expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
+                    expiryDate: market.expiryDate,
+                    // strike: instrumentInfos[i].strike.toNumber(),
+                    strike: market.strike,
+                    // asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
+                    asset: market.asset,
+                    // instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
+                    instrumentType: market.instrumentType,
                     longAmount,
                     shortAmount,
                     netPosition: longAmount - shortAmount,
