@@ -114,7 +114,7 @@ export interface OptifiMarketFullData {
     askSize: number,
     askOrderId: string,
     volume: number,
-    expiryDate: Date,
+    expiryDate: Date,// it is diff from "Date" in position
     marketAddress: PublicKey,
     marketId: number,
     instrumentAddress: PublicKey
