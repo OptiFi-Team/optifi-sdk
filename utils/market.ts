@@ -11,6 +11,9 @@ import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";
 import UserPosition from "../types/user";
+import {
+    dateToAnchorTimestamp
+} from "./generic";
 const DECIMAL = 6;
 
 
@@ -651,7 +654,7 @@ export function loadPositionsFromUserAccount(
                 let position: Position = {
                     marketId: market.marketAddress,
                     //expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
-                    expiryDate: market.expiryDate,
+                    expiryDate: new Date(dateToAnchorTimestamp(market.expiryDate).toNumber() * 1000),
                     // strike: instrumentInfos[i].strike.toNumber(),
                     strike: market.strike,
                     // asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
