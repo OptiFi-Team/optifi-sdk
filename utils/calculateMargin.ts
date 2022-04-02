@@ -293,6 +293,13 @@ export function priceErrorCalc(S, q, T, nd1, x, r, nd2, p) {
 
 //var Vega = S*Math.sqrt(T)*Math.exp(-q*T)*npd1;
 export function vegaCalc(S, T, q, npd1) {
+    // console.log('vega1: ', arrmul(S, arrsqrt(T)))
+    // console.log('vega2: ', arrmularr(arrexp(arrmul((-q), T)), npd1))
+    // console.log('Vega params: ')
+    // console.log('S', S)
+    // console.log('T', T)
+    // console.log('q', q)
+    // console.log('npd1', npd1)
     let vega = arrmularr(arrmul(S, arrsqrt(T)), arrmularr(arrexp(arrmul((-q), T)), npd1))
     return vega;
 }
@@ -651,13 +658,13 @@ export function imp_vol_put(spot, strike, price, r, q, t) {
                 var Vega = vegaCalc(S, T, q, npd1);
                 console.log('PriceErr: ', PriceError)
                 console.log('Vega: ', Vega)
-                if(Vega === 0 ) {
+                if(Vega === 0 ) {   // 
                     console.log('No Volatility can be found');
                     sigma = NaN;
                     break;
                 }
 
-                var dv = 0; //PriceError/Vega;
+                var dv = PriceError/Vega;
                 sigma = sigma - dv;
                 var time2 = (new Date()).getTime() / 1000 - tic;
 

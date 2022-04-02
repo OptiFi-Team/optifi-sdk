@@ -2,9 +2,10 @@ import Context from "../types/context";
 import { OptifiMarketFullData } from "./market"
 import { OracleDataType } from "../types/optifi-exchange-types";
 import { imp_vol_call, imp_vol_put } from "./calculateMargin";
+import { PublicKey } from "@solana/web3.js";
+import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
+import { SWITCHBOARD, USDC_DECIMALS } from "../constants";
 
-// imp_vol_put(spot, strike, price, r, q, t)
-export const spot = OracleDataType.Spot;
 export const r = 0;
 export const q = 0;
 
@@ -26,6 +27,7 @@ export function calculateIV(
 ): Promise<IVResult> {
     return new Promise(async (resolve, reject) => {
         try {
+            // get Spot price too just like optionDeltafunction
             let tCall: number[] = [];
             let tPut: number[] = [];
             let strikeCall: number[] = [];
@@ -33,32 +35,36 @@ export function calculateIV(
             let priceCall: number[] = [];
             let pricePut: number[] = [];
 
+            let spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
+            spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
+
+            let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
+
+            let spot = spotRes.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
+
+
             optifiMarket.map(async (market) => {
                 if(market.instrumentType === "Call") {
                     // @ts-ignore
-                    tCall.push((market.expiryDate.getTime() - new Date().getTime() / 1000) / (60 * 60 * 24 * 365));
+                    tCall.push(((market.expiryDate.getTime() - new Date().getTime())/ (60 * 60 * 24 * 365)) / 1000);
                     strikeCall.push(market.strike);
                     priceCall.push(market.bidPrice ? market.askPrice : market.bidPrice);
                 }
                 else {
                     // @ts-ignore
-                    tPut.push((market.expiryDate.getTime() - new Date().getTime() / 1000) / (60 * 60 * 24 * 365));
+                    tPut.push(((market.expiryDate.getTime() - new Date().getTime())/ (60 * 60 * 24 * 365)) / 1000);
                     strikePut.push(market.strike);
                     pricePut.push(market.bidPrice ? market.askPrice : market.bidPrice);
                 }
             })
 
             // console.log('spot: ', spot)
-            // console.log('tCall: ', tCall)
-            // console.log('tPut: ', tPut)
-            // console.log('strikeCall: ', strikeCall)
-            // console.log('strikePut: ', strikePut)
-            // console.log('priceCall: ', priceCall)
-            // console.log('pricePut: ', pricePut)
+            console.log('tCall: ', tCall)
+            console.log('tPut: ', tPut)
 
             resolve({
-                IV_call: imp_vol_call(48400, reshap(strikeCall), reshap(priceCall), r, q, reshap(tCall)),
-                IV_put: imp_vol_put(48400, reshap(strikePut), reshap(pricePut), r, q, reshap(tPut))
+                IV_call: imp_vol_call(spot, reshap(strikeCall), reshap(priceCall), r, q, reshap(tCall)),
+                IV_put: imp_vol_put(spot, reshap(strikePut), reshap(pricePut), r, q, reshap(tPut))
             })
         }
         catch (err) {
