@@ -7,13 +7,14 @@ import { getSerumMarket, watchSettleSerumFunds } from "../../utils/serum";
 import cancelOrderByClientOrderId from "../../instructions/cancelOrder";
 import { dateToAnchorTimestamp, sleep } from "../../utils/generic";
 import * as anchor from "@project-serum/anchor";
+import {market} from "../constants"
 
-let market = new PublicKey("5QCyCgJb6W1wzdtFN53RKpDmuVRoJuGrsh4BAb6tUZJ6");
+// let market = new PublicKey("5QCyCgJb6W1wzdtFN53RKpDmuVRoJuGrsh4BAb6tUZJ6");
 
-let orderId = new anchor.BN("1646469898");
+let orderId = new anchor.BN("1646711054");
 
 // If buy -> Bid, sell -> ask
-let side = OrderSide.Bid;
+let side = OrderSide.Ask;
 
 
 // I think there should be somewhere to save the open orders for user, and

@@ -3,14 +3,12 @@ import { getPosition } from "../utils/market";
 import { findUserAccount } from "../utils/accounts";
 import { OptifiMarket } from "../types/optifi-exchange-types";
 import { PublicKey } from "@solana/web3.js";
-
-
-let marketId = new PublicKey("6aeHV6SjtsDnEpicvf7UPSjb65qoYpHpK96qo1Gnq1DQ");
+import {market} from "./constants";
 
 
 initializeContext().then((context) => {
     findUserAccount(context).then(([userAccountAddress, _]) => {
-        context.program.account.optifiMarket.fetch(marketId).then(async (marketRes) => {
+        context.program.account.optifiMarket.fetch(market).then(async (marketRes) => {
             let optifiMarket = marketRes as OptifiMarket;
             console.log("Got optifi market ", optifiMarket);
             let [longAmount, shortAmount] = await getPosition(context,

@@ -10,7 +10,7 @@ or provided to `initializeContext` at runtime
 **Optional Environment Variables**:
 
 - `OPTIFI_WALLET`: the filepath of a Solana wallet
-- `OPTIFI_PROGRAM_ID`: The ID of the on chain OptiFi program to interact with. If you don't want to deploy the OptiFi program by yourself, try using the program id deployed on devnet: `FVWhLLPYPPPVtmrAwSgsy4cF84z888hamnyXYdtFN2jT`
+- `OPTIFI_PROGRAM_ID`: The ID of the on chain OptiFi program to interact with. If you don't want to deploy the OptiFi program by yourself, try using the program id deployed on devnet: `2GaTQRMXs8QsDuHsxb1iGzT5SR8PtdYwqPUDrPJmuYat`
 
 ## How to initialize a new OptiFi Exchange
 
