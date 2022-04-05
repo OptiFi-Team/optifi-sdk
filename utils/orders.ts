@@ -1,5 +1,6 @@
 import Context from "../types/context";
 import {
+  Connection,
   PublicKey,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_RENT_PUBKEY,
@@ -18,7 +19,7 @@ import {
   OrderSide,
   UserAccount,
 } from "../types/optifi-exchange-types";
-import { deriveVaultNonce, findOptifiMarkets, isUserInitializedOnMarket } from "./market";
+import { deriveVaultNonce, findOptifiMarkets, isUserInitializedOnMarket, OptifiMarketFullData } from "./market";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { findOptifiMarketMintAuthPDA } from "./pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -35,6 +36,7 @@ import { Chain } from "../types/optifi-exchange-types";
 import { findMarginStressWithAsset } from "./margin";
 import Asset from "../types/asset";
 import { getAllOrdersForAccount } from "./orderHistory";
+import { Market, Orderbook, OpenOrders } from "@project-serum/serum";
 
 export enum TxType {
   PlaceOrder = 0,
@@ -635,8 +637,8 @@ export function getOrdersOnMarket(
   });
 }
 
-
-export function getAllOpenOrdersForUser(
+// Deprecated
+export function getAllOpenOrdersForUserV1(
   context: Context,
   instruments: any,
 ): Promise<Array<Order[]>> {
@@ -691,4 +693,65 @@ export function getAllOpenOrdersForUser(
       reject(err)
     }
   })
+}
+
+export function getAllOpenOrdersForUser(
+  context: Context,
+  optifiMarkets: OptifiMarketFullData[]
+): Promise<Array<Order>> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [userAddress, _] = await findUserAccount(context)
+      const userAccountRaw = await context.program.account.userAccount.fetch(userAddress);
+      const orderHistory = await getAllOrdersForAccount(context, userAddress)
+      let clientGuide = {}
+
+      orderHistory.map((history) => {
+        clientGuide[history.clientId] = history.maxBaseQuantity
+      })
+
+      let res: Order[] = []
+      for (let marketAddress of userAccountRaw.tradingMarkets) {
+        let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == marketAddress.toString())!
+        const myOrder: any = await loadOrdersForOwner(context.connection, optifiMarket.serumMarket, optifiMarket.asks!, optifiMarket.bids!, userAddress)
+        if (myOrder.length > 0 && myOrder !== undefined) {
+          const openOrders: Array<Order> = myOrder.map((order: any) => {
+            if (myOrder.length > 0) {
+              return {
+                ...order,
+                originalSize: clientGuide[order.clientId],
+                marketAddress: optifiMarket.marketAddress,
+                price: order.price,
+                status: order.size < clientGuide[order.clientId] ? 'Partially Filled' : 'Open',
+                fillPercentage: clientGuide[order.clientId] ? 1 - (order.size / clientGuide[order.clientId]) : 0,
+                clientId: order.clientId.toNumber(),
+                assets: optifiMarket.asset,
+                instrumentType: Object.keys(optifiMarket.instrumentType)[0],
+                strike: optifiMarket.strike,
+                expiryDate: optifiMarket.expiryDate
+              }
+            }
+          })
+          res.push(...openOrders)
+        }
+      }
+      resolve(res.filter(order => order !== undefined).flat())
+
+    } catch (err) {
+      console.log(err)
+      reject(err)
+    }
+  })
+}
+
+// Customised seurm helper
+async function loadOrdersForOwner(connection: Connection, market: Market, asks: Orderbook, bids: Orderbook, ownerAddress: PublicKey, cacheDurationMs = 0) {
+  const [openOrdersAccounts] = await Promise.all([
+    market.findOpenOrdersAccountsForOwner(connection, ownerAddress, cacheDurationMs),
+  ]);
+  return filterForOpenOrders(bids, asks, openOrdersAccounts);
+}
+// Customised seurm helper
+function filterForOpenOrders(bids: Orderbook, asks: Orderbook, openOrdersAccounts: OpenOrders[]) {
+  return [...bids, ...asks].filter((order) => openOrdersAccounts.some((openOrders) => order.openOrdersAddress.equals(openOrders.address)));
 }
