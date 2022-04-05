@@ -1,8 +1,8 @@
 import { initializeContext } from "../index";
 import { OrderSide } from "../types/optifi-exchange-types";
 import { findUserAccount } from "../utils/accounts";
-import { findOptifiInstruments, findOptifiMarkets, isUserInitializedOnMarket } from '../utils/market'
-import { getAllOpenOrdersForUser, getOrdersOnMarket } from "../utils/orders";
+import { findOptifiInstruments, findOptifiMarkets, findOptifiMarketsWithFullData, isUserInitializedOnMarket } from '../utils/market'
+import { getAllOpenOrdersForUser, getAllOpenOrdersForUserV1, getOrdersOnMarket } from "../utils/orders";
 import { getSerumMarket } from '../utils/serum'
 import { getAllOrdersForAccount } from '../utils/orderHistory'
 
@@ -63,13 +63,25 @@ Using getAllOpenOrdersForUser function from orders.ts
 Grabs all orders from each market and return an array of orders
 */
 
+// (async () => {
+//     console.log('running getAllOpenOrdersForUser')
+//     initializeContext()
+//         .then(context => {
+//             findOptifiInstruments(context)
+//                 .then(instruments => {
+//                     getAllOpenOrdersForUserV1(context, instruments)
+//                         .then(res => console.log(res))
+//                 })
+//         })
+// })();
+
 (async () => {
     console.log('running getAllOpenOrdersForUser')
     initializeContext()
         .then(context => {
-            findOptifiInstruments(context)
-                .then(instruments => {
-                    getAllOpenOrdersForUser(context, instruments)
+            findOptifiMarketsWithFullData(context)
+                .then(optifiMarkets => {
+                    getAllOpenOrdersForUser(context, optifiMarkets)
                         .then(res => console.log(res))
                 })
         })
