@@ -7,7 +7,7 @@ import { getOrdersOnMarket } from "../utils/orders";
 import {
   OpenOrders
 } from "@project-serum/serum";
-import {market} from "../constants"
+import {market} from "./constants";
 // let userAccount = new PublicKey("5UiD5WNnGVRuTmhfjhVLYvHV8fDiXH5eUNCoBxwJpkYs")
 
 initializeContext().then(async (context) => {
@@ -26,5 +26,8 @@ initializeContext().then(async (context) => {
     new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
   );
   console.log(openOrdersAccount2)
+  console.log(openOrdersAccount2.baseTokenFree.toNumber())
+  console.log(openOrdersAccount2.quoteTokenFree.toNumber())
+
 });
 

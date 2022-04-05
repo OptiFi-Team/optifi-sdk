@@ -8,7 +8,7 @@ import { rejects } from "assert";
 import { PublicKey } from "@solana/web3.js";
 import { getOrdersOnMarket } from "../utils/orders";
 import { getAllTradesForAccount } from "../utils/tradeHistory";
-import {market} from "../constants"
+import {market} from "./constants";
 // let market = new PublicKey("EdsJP7dzK3TfBSHbjDwNpXUXupgqkXn8yBvSQHwgm1A7");
 
 
