@@ -4,7 +4,6 @@ import { InstrumentCommon, InstrumentUnique } from "../types/optifi-exchange-typ
 import { Exchange } from "../types/optifi-exchange-types";
 import { findOptifiExchange } from "../utils/accounts";
 
-let marketId = new PublicKey("4eCGYyNZpZ4XfRbQXFTADX7Xuepb23eUjMGxdWrDnFS6");
 
 initializeContext().then((context) => {
     findOptifiExchange(context).then(([exchangeAddress, _]) => {
