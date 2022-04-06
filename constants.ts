@@ -68,9 +68,9 @@ export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
     // ]
 }
 
-// We want our maturities to end on Wednesdays, 2:00PM UTC
-export const EXPIRATION_WEEKDAY: number = 3;
-export const EXPIRATION_TIME: number = 14;
+// We want our maturities to end on Friday, 8:00PM UTC as same as Deribit
+export const EXPIRATION_WEEKDAY: number = 5;
+export const EXPIRATION_TIME: number = 8;
 
 export const SECONDS_IN_YEAR: number = (60 * 60) * 24 * 365;
 
