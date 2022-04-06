@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
-import registerLiquidationMarket from "../../instructions/registerLiquidationMarket";
+import registerLiquidationMarket from "../../instructions/liquidation/registerLiquidationMarket";
 
 
 

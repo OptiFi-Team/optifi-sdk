@@ -1,16 +1,17 @@
-import Context from "../types/context";
+import Context from "../../types/context";
 import { PublicKey, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../utils/accounts";
-import { OptifiMarket } from "../types/optifi-exchange-types";
-import { findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount } from "../utils/token";
-import { SERUM_DEX_PROGRAM_ID } from "../constants";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
+import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../../utils/accounts";
+import { OptifiMarket } from "../../types/optifi-exchange-types";
+import { findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount } from "../../utils/token";
+import { SERUM_DEX_PROGRAM_ID } from "../../constants";
+import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import InstructionResult from "../types/instructionResult";
-import { getSerumMarket } from "../utils/serum";
-import { deriveVaultNonce } from "../utils/market";
+import InstructionResult from "../../types/instructionResult";
+import { getSerumMarket } from "../../utils/serum";
+import { deriveVaultNonce } from "../../utils/market";
+import { findMarginStressWithAsset } from "../../utils/margin";
 
-export default function liquidatePosition(context: Context,
+export default function liquidationPlaceOrder(context: Context,
     userAccountAddress: PublicKey,
     marketAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
@@ -34,19 +35,24 @@ export default function liquidatePosition(context: Context,
                                                 userAccountAddress
                                             ).then((shortSPLTokenVault) => {
                                                 let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
-                                                deriveVaultNonce(market.serumMarket, serumId).then(([vaultOwner, _]) => {
+                                                deriveVaultNonce(market.serumMarket, serumId).then(async ([vaultOwner, _]) => {
+                                                    let chainRes = await context.program.account.chain
+                                                        .fetch(marketRes.instrument)
+                                                    // @ts-ignore
+                                                    let chain = chainRes as Chain;
+
+                                                    let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, chain.asset);
 
                                                     console.log("liquidatePosition...");
 
-                                                    context.program.rpc.liquidatePosition(
+                                                    context.program.rpc.liquidationPlaceOrder(
                                                         {
                                                             accounts: {
                                                                 optifiExchange: exchangeAddress,
+                                                                marginStressAccount: marginStressAddress,
                                                                 userAccount: userAccountAddress,
                                                                 userMarginAccount: userAccount.userMarginAccountUsdc,
                                                                 liquidationState: liquidationStateAddress,
-                                                                userInstrumentLongTokenVault:
-                                                                    longSPLTokenVault,
                                                                 userInstrumentShortTokenVault:
                                                                     shortSPLTokenVault,
                                                                 optifiMarket: marketAddress,
@@ -58,13 +64,6 @@ export default function liquidatePosition(context: Context,
                                                                 asks: serumMarket.asksAddress,
                                                                 coinVault: serumMarket.decoded.baseVault,
                                                                 pcVault: serumMarket.decoded.quoteVault,
-                                                                vaultSigner:
-                                                                    vaultOwner,
-                                                                instrumentLongSplTokenMint:
-                                                                    serumMarket.decoded
-                                                                        .baseMint,
-                                                                instrumentShortSplTokenMint:
-                                                                    market.instrumentShortSplToken,
                                                                 serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
                                                                 tokenProgram: TOKEN_PROGRAM_ID,
                                                                 rent: SYSVAR_RENT_PUBKEY,
