@@ -638,12 +638,21 @@ export function loadPositionsFromUserAccount(
             let positions = userAccount.positions as UserPosition[];
             let tradingMarkets = optifiMarkets.filter(market => positions.map(e => e.instrument.toString()).includes(market.instrumentAddress.toString()));
             let vaultBalances: number[] = []
-            for (let i = 0; i < positions.length; i++) {
-                // @ts-ignore
-                vaultBalances.push(positions[i].longQty.toNumber());
-                // @ts-ignore
-                vaultBalances.push(positions[i].shortQty.toNumber());
-            }
+             //follow the order of tradingMarkets 
+             let positionsWithTradingMarkets: UserPosition[] = [];
+             for (let i = 0; i < tradingMarkets.length; i++) {
+                 for (let j = 0; j < positions.length; j++) {
+                     if (positions[j].instrument.toString() == (tradingMarkets[i].instrumentAddress.toString()))
+                         positionsWithTradingMarkets.push(positions[j]);
+                 }
+             }
+    
+             for (let i = 0; i < positionsWithTradingMarkets.length; i++) {
+                 // @ts-ignore
+                 vaultBalances.push(positionsWithTradingMarkets[i].longQty.toNumber());
+                 // @ts-ignore
+                 vaultBalances.push(positionsWithTradingMarkets[i].shortQty.toNumber());
+             }
 
             let res: Position[] = tradingMarkets.map((market, i) => {
                 // decimals = numberAssetToDecimal(instrumentInfos[i].asset)!
