@@ -80,14 +80,14 @@ export function calculateIV(
                 }
             })
 
-            console.log('strikeCall: ', strikeCall)
-            console.log('strikePut: ', strikePut)
-            console.log('tCall: ', tCall)
-            console.log('tPut: ', tPut)
-            console.log('bidpriceCall: ', bidpriceCall)
-            console.log('askpriceCall: ', askpriceCall)
-            console.log('bidpricePut: ', bidpricePut)
-            console.log('askpricePut: ', askpricePut)
+            // console.log('strikeCall: ', strikeCall)
+            // console.log('strikePut: ', strikePut)
+            // console.log('tCall: ', tCall)
+            // console.log('tPut: ', tPut)
+            // console.log('bidpriceCall: ', bidpriceCall)
+            // console.log('askpriceCall: ', askpriceCall)
+            // console.log('bidpricePut: ', bidpricePut)
+            // console.log('askpricePut: ', askpricePut)
 
             resolve({
                 IV_call_bid: imp_vol_call(spot, reshap(strikeCall), reshap(bidpriceCall), r, q, reshap(tCall)),

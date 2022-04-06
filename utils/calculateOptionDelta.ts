@@ -48,9 +48,9 @@ export function calculateOptionDelta(
                 strike.push(market.strike);
             })
 
-            console.log('t: ', t)
-            console.log('isCall: ', isCall)
-            console.log('strike: ', strike)
+            // console.log('t: ', t)
+            // console.log('isCall: ', isCall)
+            // console.log('strike: ', strike)
 
             resolve(option_delta(spot, reshap(strike), iv, r, q, reshap(t), reshap(isCall)));
         }

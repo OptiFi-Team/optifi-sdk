@@ -242,8 +242,8 @@ export function option_delta(spot, strike, iv, r, q, t, isCall) {
     var call = cdf(d1(spot, strike, iv, r, q, t));
     var put = minus(call, 1);
 
-    console.log('call: ', call)
-    console.log('put: ', put)
+    // console.log('call: ', call)
+    // console.log('put: ', put)
 
     return arrplusarr(arrmularr(call, isCall), arrmularr(minus(1, isCall), put));
 }
@@ -584,10 +584,10 @@ export function imp_vol_call(spot, strike, price, r, q, t) {
     var NC = C.length;
     var NX = X.length;
 
-    console.log('C: ', C)
-    console.log('S: ', S)
-    console.log('X: ', X)
-    console.log('T: ', T)
+    // console.log('C: ', C)
+    // console.log('S: ', S)
+    // console.log('X: ', X)
+    // console.log('T: ', T)
 
     if(NC === NX) {
         var ff: number[] = [];
@@ -670,13 +670,13 @@ export function imp_vol_put(spot, strike, price, r, q, t) {
 				// nd2= nm.cdf(-d2)
 				// npd1= nm.pdf(d1)
                 // var d1_val = d1(S, X, sigma, r, q, T);
-                console.log(`-----------------------${np}`)
-                console.log('S:',S)
-                console.log('X[np]:',X[np][0])
-                console.log('r:',r)
-                console.log('q:',q)
-                console.log('sigma:',sigma)
-                console.log('T[np]:',T[np][0])
+                // console.log(`-----------------------${np}`)
+                // console.log('S:',S)
+                // console.log('X[np]:',X[np][0])
+                // console.log('r:',r)
+                // console.log('q:',q)
+                // console.log('sigma:',sigma)
+                // console.log('T[np]:',T[np][0])
 
 
                 var d1_val = (Math.log(S / X[np][0]) + (r - q + sigma**2/2.)*(T[np][0])) / (sigma*Math.sqrt(T[np][0]));
