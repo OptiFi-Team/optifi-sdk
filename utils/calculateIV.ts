@@ -10,8 +10,10 @@ export const r = 0;
 export const q = 0;
 
 interface IVResult {
-    IV_call: number | number[],
-    IV_put: number | number[]
+    IV_call_bid: number | number[],
+    IV_call_ask: number | number[],
+    IV_put_bid: number | number[],
+    IV_put_ask: number | number[]
 }
 
 function reshap(arr: number[]) {
@@ -29,11 +31,18 @@ export function calculateIV(
         try {
             // get Spot price too just like optionDeltafunction
             let tCall: number[] = [];
+            let tCall1: number[] = [];
             let tPut: number[] = [];
+            let tPut1: number[] = [];
             let strikeCall: number[] = [];
+            let strikeCall1: number[] = [];
             let strikePut: number[] = [];
-            let priceCall: number[] = [];
-            let pricePut: number[] = [];
+            let strikePut1: number[] = [];
+            let bidpriceCall: number[] = [];
+            let askpriceCall: number[] = [];
+            let bidpricePut: number[] = [];
+            let askpricePut: number[] = [];
+            let ivResult: number[] = [];
 
             let spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
             spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
@@ -46,25 +55,45 @@ export function calculateIV(
             optifiMarket.map(async (market) => {
                 if(market.instrumentType === "Call") {
                     // @ts-ignore
-                    tCall.push(((market.expiryDate.getTime() - new Date().getTime())/ (60 * 60 * 24 * 365)) / 1000);
+                    // let t = ((market.expiryDate.getTime() - new Date().getTime())/ (60 * 60 * 24 * 365)) / 1000;
+                    // let strike = market.strike;
+                    // let price = (market.bidPrice ? market.askPrice : market.bidPrice);
+                    // ivResult.push(imp_vol_call(spot, strike, price, r, q, t))
+                    //tCall.push(((market.expiryDate.getTime() - new Date().getTime())/ (60 * 60 * 24 * 365)) / 1000);
+                    tCall.push(0.0254814);
+                    tCall1.push(0.0254814);
                     strikeCall.push(market.strike);
-                    priceCall.push(market.bidPrice ? market.askPrice : market.bidPrice);
+                    strikeCall1.push(market.strike);
+                    // each market has both ask and bid price
+                    bidpriceCall.push(market.bidPrice);
+                    askpriceCall.push(market.askPrice);
                 }
                 else {
                     // @ts-ignore
-                    tPut.push(((market.expiryDate.getTime() - new Date().getTime())/ (60 * 60 * 24 * 365)) / 1000);
+                    // tPut.push(((market.expiryDate.getTime() - new Date().getTime())/ (60 * 60 * 24 * 365)) / 1000);
+                    tPut.push(0.0254814);
+                    tPut1.push(0.0254814);
                     strikePut.push(market.strike);
-                    pricePut.push(market.bidPrice ? market.askPrice : market.bidPrice);
+                    strikePut1.push(market.strike);
+                    bidpricePut.push(market.bidPrice);
+                    askpricePut.push(market.askPrice);
                 }
             })
 
-            // console.log('spot: ', spot)
+            console.log('strikeCall: ', strikeCall)
+            console.log('strikePut: ', strikePut)
             console.log('tCall: ', tCall)
             console.log('tPut: ', tPut)
+            console.log('bidpriceCall: ', bidpriceCall)
+            console.log('askpriceCall: ', askpriceCall)
+            console.log('bidpricePut: ', bidpricePut)
+            console.log('askpricePut: ', askpricePut)
 
             resolve({
-                IV_call: imp_vol_call(spot, reshap(strikeCall), reshap(priceCall), r, q, reshap(tCall)),
-                IV_put: imp_vol_put(spot, reshap(strikePut), reshap(pricePut), r, q, reshap(tPut))
+                IV_call_bid: imp_vol_call(spot, reshap(strikeCall), reshap(bidpriceCall), r, q, reshap(tCall)),
+                IV_call_ask: imp_vol_call(spot, reshap(strikeCall1), reshap(askpriceCall), r, q, reshap(tCall1)),
+                IV_put_bid: imp_vol_put(spot, reshap(strikePut), reshap(bidpricePut), r, q, reshap(tPut)),
+                IV_put_ask: imp_vol_put(spot, reshap(strikePut1), reshap(askpricePut), r, q, reshap(tPut1)),
             })
         }
         catch (err) {

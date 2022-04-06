@@ -42,10 +42,15 @@ export function calculateOptionDelta(
 
             optifiMarket.map(async (market) => {
                 // @ts-ignore
-                t.push((market.expiryDate.getTime() - new Date().getTime()) / (60 * 60 * 24 * 365) / 1000);
+                // t.push((market.expiryDate.getTime() - new Date().getTime()) / (60 * 60 * 24 * 365) / 1000);
+                t.push(0.0254814);
                 isCall.push(Object.keys(market.instrumentType)[0] === "call" ? 1 : 0);
                 strike.push(market.strike);
             })
+
+            console.log('t: ', t)
+            console.log('isCall: ', isCall)
+            console.log('strike: ', strike)
 
             resolve(option_delta(spot, reshap(strike), iv, r, q, reshap(t), reshap(isCall)));
         }
