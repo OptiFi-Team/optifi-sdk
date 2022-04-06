@@ -3,10 +3,10 @@ import { initializeContext } from "../index";
 import { OptifiMarket } from "../types/optifi-exchange-types";
 import { getSerumMarket } from "../utils/serum";
 
-let marketId = new PublicKey("3qCSVYhpkuJoNnkGtL2ddtt3LzB6B5jyx7EohFkCoZyw");
+import {market} from "./constants";
 
 initializeContext().then((context) => {
-    context.program.account.optifiMarket.fetch(marketId).then((marketRes) => {
+    context.program.account.optifiMarket.fetch(market).then((marketRes) => {
         let optifiMarket = marketRes as OptifiMarket;
         console.log("Got optifi market ", optifiMarket);
         getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {
