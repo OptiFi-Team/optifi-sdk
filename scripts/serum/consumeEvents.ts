@@ -41,7 +41,7 @@ initializeContext().then(async (context) => {
         serumMarketInfo.decoded.eventQueue,
         pcFeeAccount,
         coinFeeAccount,
-        200
+        20
     ).then(e => {
         console.log(e)
     })
