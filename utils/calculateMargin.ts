@@ -258,6 +258,16 @@ export function incr(stress, step, spot) {
     return result;
 }
 
+export function ndf(arr) {
+    var result = [] as any;
+
+    for (let i = 0; i < arr.length; i++) {
+        result.push(0.5 * (1.0 - erf(Math.abs(arr[i]) / Math.sqrt(2))));
+    }
+
+    return result;
+}
+
 export function cdf(arr) {
     var result = [] as any;
 
@@ -337,17 +347,9 @@ export function plus (a, b) {
 
 export function divide (a, b) {
     var result = [] as any;
-    if(typeof a == "number") {
-        for(let i = 0; i < b.length; i++) {
-            result.push([Math.floor(a / b[i])]); 
-        }
+    for (let i = 0; i < b.length; i++) {
+        result.push(a / b[i][0])
     }
-    else {
-        for(let i = 0; i < a.length; i++) {
-            result.push([Math.floor(b / a[i])]); 
-        }
-    }
-
     return result;
 }
 
