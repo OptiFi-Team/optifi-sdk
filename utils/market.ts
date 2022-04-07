@@ -28,7 +28,7 @@ export function findOptifiMarketWithIdx(context: Context,
 }
 
 
-export function findOptifiMarkets(context: Context): Promise<[OptifiMarket, PublicKey][]> {
+export function findOptifiMarkets(context: Context, inputMarkets?: PublicKey[]): Promise<[OptifiMarket, PublicKey][]> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             context.program.account.exchange.fetch(exchangeAddress).then((exchangeRes) => {
@@ -43,7 +43,7 @@ export function findOptifiMarkets(context: Context): Promise<[OptifiMarket, Publ
                     //     marketsWithKeys.push([optifiMarket, market.optifiMarketPubkey])
                     // }
 
-                    let marketAddresses = markets.map(e => e.optifiMarketPubkey)
+                    let marketAddresses = inputMarkets || markets.map(e => e.optifiMarketPubkey)
                     let marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(marketAddresses)
                     let marketsInfos = marketsRawInfos as OptifiMarket[];
                     marketAddresses.forEach((marketAddress, i) => {
