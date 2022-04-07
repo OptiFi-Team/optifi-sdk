@@ -586,6 +586,160 @@
       ]
     },
     {
+      "name": "closePosition",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "requestQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentTokenMintAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcCentralPool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentLongSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": {
+            "defined": "OrderSide"
+          }
+        },
+        {
+          "name": "limit",
+          "type": "u64"
+        },
+        {
+          "name": "maxCoinQty",
+          "type": "u64"
+        },
+        {
+          "name": "maxPcQty",
+          "type": "u64"
+        },
+        {
+          "name": "clientOrderId",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "cancelOrderByClientOrderId",
       "accounts": [
         {
@@ -1818,7 +1972,7 @@
       "args": []
     },
     {
-      "name": "registerLiquidationMarket",
+      "name": "liquidationRegister",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -1939,10 +2093,15 @@
       "args": []
     },
     {
-      "name": "liquidatePosition",
+      "name": "liquidationPlaceOrder",
       "accounts": [
         {
           "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -1962,13 +2121,8 @@
           "isSigner": false
         },
         {
-          "name": "userInstrumentLongTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "userInstrumentShortTokenVault",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -2017,6 +2171,87 @@
           "isSigner": false
         },
         {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "liquidator",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "liquidationSettleOrder",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liquidationState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "vaultSigner",
           "isMut": true,
           "isSigner": false
@@ -2032,17 +2267,12 @@
           "isSigner": false
         },
         {
-          "name": "serumDexProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "rent",
+          "name": "serumDexProgramId",
           "isMut": false,
           "isSigner": false
         },
@@ -3348,7 +3578,10 @@
             "name": "CancelOrder"
           },
           {
-            "name": "ClosePositions"
+            "name": "PlaceOrder"
+          },
+          {
+            "name": "SettleOrder"
           }
         ]
       }
@@ -3590,5 +3823,8 @@
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "BqpmdnJPg45jg7gyza3WLaNLsa4bHWKsug7ioy61LK3Z"
+  }
 }
