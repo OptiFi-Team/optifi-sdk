@@ -8,7 +8,7 @@ import Context from "../../types/context";
 import { consumeEvents } from "../../instructions/serum/consumeEvents";
 
 
-// consume Events for all OpenOrders Accounts on a market
+// // consume Events for all OpenOrders Accounts on a market
 // initializeContext().then(async (context) => {
 //     let optifiMarket = await context.program.account.optifiMarket.fetch(market) // optifi market
 //     let serumMarket = optifiMarket.serumMarket // serum market address of the optifi market
@@ -37,8 +37,8 @@ import { consumeEvents } from "../../instructions/serum/consumeEvents";
 //             serumMarket,
 //             openOrdersAccountsToCrank,
 //             serumMarketInfo.decoded.eventQueue,
-//             pcFeeAccount,
-//             coinFeeAccount,
+//             // pcFeeAccount,
+//             // coinFeeAccount,
 //             200
 //         )
 //         console.log(res)
@@ -52,6 +52,9 @@ initializeContext().then(async (context) => {
     let serumMarketInfo = await getSerumMarket(context, serumMarket)
 
     let event = await serumMarketInfo.loadEventQueue(context.connection);
+    for (let fill of await serumMarketInfo.loadFills(context.connection)) {
+        console.log("fill: ", fill.eventFlags, fill.orderId, fill.price, fill.size, fill.side);
+    }
 
     console.log(event);
 
@@ -66,6 +69,14 @@ initializeContext().then(async (context) => {
             serumMarket,
             userAccountAddress
         );
+
+        event.forEach(e => {
+            if (e.openOrders.toString() == dexOpenOrders.toString()) {
+                console.log("hi")
+                console.log(e);
+
+            }
+        })
 
         let openOrdersAccounts = [dexOpenOrders]
 
