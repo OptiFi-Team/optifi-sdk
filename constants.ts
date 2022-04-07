@@ -161,5 +161,3 @@ export const MAX_PC_QTY = 1000 * PC_LOT_SIZE;
 
 export const USDC_DECIMALS = 6;
 export const SOL_DECIMALS = 9;
-
-export let market = new PublicKey("GHtSNAhYsgPUcg4ZTPjp5g4ttq2cqaJBvt7YiHEVqbwb");
