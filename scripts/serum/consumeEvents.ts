@@ -15,12 +15,6 @@ initializeContext().then(async (context) => {
     let serumMarketInfo = await getSerumMarket(context, serumMarket)
 
     let [userAccountAddress,] = await findUserAccount(context)
-    let [dexOpenOrders, _bump2] = await getDexOpenOrders(
-        context,
-        serumMarket,
-        userAccountAddress
-    );
-
     let [longSPLTokenVault,] = await findAssociatedTokenAccount(
         context,
         optifiMarket.instrumentLongSplToken,
