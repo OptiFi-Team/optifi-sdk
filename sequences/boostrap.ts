@@ -155,7 +155,7 @@ function createOptifiMarkets(context: Context,
                     await new Promise((resolve) => {
                         setTimeout(() => {
                             resolve(true)
-                        }, 10 * 1000)
+                        }, 15 * 1000)
                     })
                     console.log("Finished, waiting, continuing market creation...");
                 }

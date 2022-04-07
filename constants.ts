@@ -68,9 +68,9 @@ export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
     // ]
 }
 
-// We want our maturities to end on Wednesdays, 2:00PM UTC
-export const EXPIRATION_WEEKDAY: number = 3;
-export const EXPIRATION_TIME: number = 14;
+// We want our maturities to end on Friday, 8:00PM UTC as same as Deribit
+export const EXPIRATION_WEEKDAY: number = 5;
+export const EXPIRATION_TIME: number = 8;
 
 export const SECONDS_IN_YEAR: number = (60 * 60) * 24 * 365;
 
@@ -113,7 +113,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111108",
+    "https://api.devnet.solana.com": "111109",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
