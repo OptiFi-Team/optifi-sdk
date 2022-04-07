@@ -12,6 +12,11 @@ export const r = 0;
 export const q = 0;
 export const stress = 0.3;
 
+interface OptionDeltaResult {
+    OptionDelta_btc: number | number[],
+    OptionDelta_eth: number | number[],
+}
+
 function reshap(arr: number[]) {
 
     const newArr: number[][] = [];
@@ -22,36 +27,55 @@ function reshap(arr: number[]) {
 export function calculateOptionDelta(
     context: Context, 
     optifiMarket: OptifiMarketFullData[]
-): Promise<number[]> {
+): Promise<OptionDeltaResult> {
     return new Promise(async (resolve, reject) => {
         try{
-            let t: number[] = [];
-            let isCall: number[] = [];
-            let strike: number[] = [];
+            let t_btc: number[] = [];
+            let isCall_btc: number[] = [];
+            let strike_btc: number[] = [];
 
-            let spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
-            spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
+            let t_eth: number[] = [];
+            let isCall_eth: number[] = [];
+            let strike_eth: number[] = [];
 
-            let ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
-            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+            let today = new Date().getTime();
+
+            let spotRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
+            spotRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
+            let ivRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+            ivRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+
+            let spotRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD));
+            spotRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
+            let ivRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV))
+            ivRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV))
 
             let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
 
-            let spot = spotRes.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
-            let iv = ivRes.lastRoundResult?.result! / 100
+            let spot_btc = spotRes_btc.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
+            let iv_btc = ivRes_btc.lastRoundResult?.result! / 100
+            let spot_eth = spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
+            let iv_eth = ivRes_eth.lastRoundResult?.result! / 100
 
             optifiMarket.map(async (market) => {
-                // @ts-ignore
-                t.push((market.expiryDate.getTime() - new Date().getTime()) / (60 * 60 * 24 * 365) / 1000);
-                isCall.push(Object.keys(market.instrumentType)[0] === "call" ? 1 : 0);
-                strike.push(market.strike);
+                switch(market.asset) {
+                    case "BTC":
+                        t_btc.push((market.expiryDate.getTime() - today) / (60 * 60 * 24 * 365) / 1000);
+                        isCall_btc.push(market.instrumentType === "Call" ? 1 : 0);
+                        strike_btc.push(market.strike);
+                        break
+                    case "ETH":
+                        t_eth.push((market.expiryDate.getTime() - new Date().getTime()) / (60 * 60 * 24 * 365) / 1000);
+                        isCall_eth.push(market.instrumentType === "Call" ? 1 : 0);
+                        strike_eth.push(market.strike);
+                        break
+                }
             })
 
-            // console.log('t: ', t)
-            // console.log('isCall: ', isCall)
-            // console.log('strike: ', strike)
-
-            resolve(option_delta(spot, reshap(strike), iv, r, q, reshap(t), reshap(isCall)));
+            resolve({
+                OptionDelta_btc: option_delta(spot_btc, reshap(strike_btc), iv_btc, r, q, reshap(t_btc), reshap(isCall_btc)),
+                OptionDelta_eth: option_delta(spot_eth, reshap(strike_eth), iv_eth, r, q, reshap(t_eth), reshap(isCall_eth))
+            });
         }
         catch (err) {
             reject(err);

@@ -242,8 +242,6 @@ export function option_delta(spot, strike, iv, r, q, t, isCall) {
     var call = cdf(d1(spot, strike, iv, r, q, t));
     var put = minus(call, 1);
 
-    // console.log('call: ', call)
-    // console.log('put: ', put)
 
     return arrplusarr(arrmularr(call, isCall), arrmularr(minus(1, isCall), put));
 }
