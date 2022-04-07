@@ -290,7 +290,8 @@ export function createUserAccountIfNotExist(context: Context): Promise<void> {
                 resolve()
             } else {
                 console.debug("User account does not already exist, creating...");
-                initializeUserAccount(context).then((_) => {
+                initializeUserAccount(context).then((res) => {
+                    console.log(res)
                     resolve()
                 }).catch((err) => reject(err))
             }
