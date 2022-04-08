@@ -2,6 +2,47 @@ import { ndf, d2, reshap } from "./calculateMargin"
 import { STRIKE, PREMIUM, IS_CALL, TIME_TO_MATURITY } from "./calcMarginTestData"
 import Context from "../types/context";
 
+import { OptifiMarketFullData, Position } from "./market";
+
+interface ProfitChance {
+    breakEven: number,
+    profitChance: number
+}
+interface ProfitChanceRes {
+    buy: ProfitChance,
+    sell: ProfitChance,
+}
+
+/**
+ * calc break even and profit chance for all optifi markets
+ * 
+ *  *
+ * @param context Context to use
+ *
+ * @param optifiMarkets
+ * 
+ * @return An array of ProfitChanceRes for each optifi market
+ */
+export function calcProfitChance(
+    context: Context,
+    optifiMarkets: OptifiMarketFullData[],
+): Promise<ProfitChanceRes[]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            // =====================================================
+            // TODO: use the data in optifiMarkets to calc break even 
+            // and profit chance with the finished functions below
+            // the length of returned array should be equal to length of optifiMarkets
+            // =====================================================
+
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+
 function calcBreakEven() {
     let lenIsSame = (
         (STRIKE.length == PREMIUM.length) &&
@@ -42,7 +83,7 @@ export function calcNDF(
 
             let d2_result = d2(spot, break_even, iv, r, q, t)
             let ndf_result = ndf(d2_result);
-            
+
             console.log("profit chance:");
             console.log(ndf_result);
             resolve(ndf_result);
