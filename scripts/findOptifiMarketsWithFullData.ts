@@ -1,12 +1,10 @@
 import { initializeContextWithoutWallet } from "../index";
 import { findOptifiInstruments, findOptifiMarkets, findOptifiMarketsWithFullData } from "../utils/market";
-import { calculateIV } from "../utils/calculateIV";
-import { calculateOptionDelta } from "../utils/calculateOptionDelta";
 
 
 initializeContextWithoutWallet().then((context) => {
 
-    // findOptifiMarkets(context).then(res => {ß
+    // findOptifiMarkets(context).then(res => {
     //     console.log("findOptifiMarkets res: ", res)
     // }).catch((err) => {
     //     console.error(err);
@@ -19,19 +17,7 @@ initializeContextWithoutWallet().then((context) => {
     // })
 
     findOptifiMarketsWithFullData(context).then(res => {
-        // console.log("findOptifiInstrumentsWithOrderbook res: ", res)
-        //console.log("calculateIV function: ", calculateIV(context, res))
-        // let test = calculateIV(context, res);
-        // test.then(function(result) {
-        //     console.log('calculateIV function result is ', result);
-        // })
-
-        // console.log("calculateOptionDelta function: ", calculateOptionDelta(context, res))
-        let test = calculateOptionDelta(context, res);
-        test.then(function(result) {
-            console.log('calculateOptionDelta testing result is ', result)
-        })
-
+        console.log("findOptifiInstrumentsWithOrderbook res: ", res)
     }).catch((err) => {
         console.error(err);
     })
