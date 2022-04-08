@@ -1,6 +1,6 @@
 import { initializeContext } from "../../index";
 import { PublicKey } from "@solana/web3.js";
-import { getSerumMarket } from "../../utils/serum";
+import { getSerumMarket, findOpenOrdersForSerumMarket } from "../../utils/serum";
 import { getAllUsersOnExchange, getDexOpenOrders } from "../../utils/accounts";
 import Context from "../../types/context";
 import { consumeEvents } from "../../instructions/serum/consumeEvents";
@@ -24,7 +24,8 @@ const consumeEventsLoop = async (context: Context, market: PublicKey) => {
     let serumMarket = optifiMarket.serumMarket // serum market address of the optifi market
     let serumMarketInfo = await getSerumMarket(context, serumMarket)
 
-    let openOrdersAccounts = await findAllOpenOrdersForSerumMarket(context, serumMarket,)
+    let openOrdersAccountsInfo = await findOpenOrdersForSerumMarket(context, serumMarket)
+    let openOrdersAccounts = openOrdersAccountsInfo.map(e => e.address)
 
     console.log(`found ${openOrdersAccounts.length} open orders accounts`)
 
@@ -42,12 +43,13 @@ const consumeEventsLoop = async (context: Context, market: PublicKey) => {
     }
 
     await sleep(5000);
+    openOrdersAccounts = openOrdersAccounts.reverse()
     for (let i = 0; i < openOrdersAccounts.length; i += batchSize) {
         const openOrdersAccountsToCrank = openOrdersAccounts.slice(i, i + batchSize);
         let res = await consumeEvents(
             context,
             serumMarket,
-            openOrdersAccountsToCrank.reverse(),
+            openOrdersAccountsToCrank,
             serumMarketInfo.decoded.eventQueue,
             65535
         )
@@ -56,19 +58,4 @@ const consumeEventsLoop = async (context: Context, market: PublicKey) => {
 
     await sleep(5000);
     consumeEventsLoop(context, market);
-}
-
-async function findAllOpenOrdersForSerumMarket(context: Context, serumMarket: PublicKey) {
-    let allUserAccounts = await getAllUsersOnExchange(context);
-    let res: PublicKey[] = []
-    for (let e of allUserAccounts) {
-        let [dexOpenOrders,] = await getDexOpenOrders(
-            context,
-            serumMarket,
-            e.publicKey
-        )
-        res.push(dexOpenOrders)
-    }
-
-    return res
 }

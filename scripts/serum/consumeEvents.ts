@@ -1,8 +1,8 @@
 import { initializeContext } from "../../index";
 import { market } from "../constants"
-import { PublicKey } from "@solana/web3.js";
-import { getSerumMarket } from "../../utils/serum";
-import { findUserAccount, findUserUSDCAddress, getAllUsersOnExchange, getDexOpenOrders, userAccountExists } from "../../utils/accounts";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { findOpenOrdersForSerumMarket, getSerumMarket } from "../../utils/serum";
+import { findUserAccount, findUserUSDCAddress, getAllUsersOnExchange, getDexOpenOrders, getFilteredProgramAccounts, userAccountExists } from "../../utils/accounts";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import Context from "../../types/context";
 import { consumeEvents } from "../../instructions/serum/consumeEvents";
@@ -15,7 +15,8 @@ initializeContext().then(async (context) => {
     let serumMarket = optifiMarket.serumMarket // serum market address of the optifi market
     let serumMarketInfo = await getSerumMarket(context, serumMarket)
 
-    let openOrdersAccounts = await findAllOpenOrdersForSerumMarket(context, serumMarket,)
+    let openOrdersAccountsInfo = await findOpenOrdersForSerumMarket(context, serumMarket)
+    let openOrdersAccounts = openOrdersAccountsInfo.map(e => e.address)
 
     console.log(`found ${openOrdersAccounts.length} open orders accounts`)
 
@@ -104,18 +105,3 @@ initializeContext().then(async (context) => {
 //     }
 // })
 
-
-async function findAllOpenOrdersForSerumMarket(context: Context, serumMarket: PublicKey) {
-    let allUserAccounts = await getAllUsersOnExchange(context);
-    let res: PublicKey[] = []
-    for (let e of allUserAccounts) {
-        let [dexOpenOrders,] = await getDexOpenOrders(
-            context,
-            serumMarket,
-            e.publicKey
-        )
-        res.push(dexOpenOrders)
-    }
-
-    return res
-}
