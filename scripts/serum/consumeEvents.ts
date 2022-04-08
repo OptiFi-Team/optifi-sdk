@@ -33,12 +33,13 @@ initializeContext().then(async (context) => {
     }
 
     await sleep(5000);
+    openOrdersAccounts = openOrdersAccounts.reverse()
     for (let i = 0; i < openOrdersAccounts.length; i += batchSize) {
         const openOrdersAccountsToCrank = openOrdersAccounts.slice(i, i + batchSize);
         let res = await consumeEvents(
             context,
             serumMarket,
-            openOrdersAccountsToCrank.reverse(),
+            openOrdersAccountsToCrank,
             serumMarketInfo.decoded.eventQueue,
             65535
         )
