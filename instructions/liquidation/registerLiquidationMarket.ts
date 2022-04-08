@@ -37,8 +37,6 @@ export default function registerLiquidationMarket(context: Context,
 
                                     let userAccount = await context.program.account.userAccount.fetch(userAccountAddress);
 
-
-                                    console.log(openOrdersAccount.toString());
                                     context.program.rpc.liquidationRegister(
                                         {
                                             accounts: {

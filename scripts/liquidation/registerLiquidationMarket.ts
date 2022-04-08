@@ -11,7 +11,7 @@ let marketAddress = new PublicKey("EJpCyV6hfnQ8QsbmGweSUx6t2JchQoFgaxEiaRtV26p9"
 initializeContext().then(async (context) => {
 
     registerLiquidationMarket(context, userToLiquidate, marketAddress).then((res) => {
-        console.log("Got init res", res);
+        console.log("Got register res", res);
     }).catch((err) => {
         console.error(err);
     })
