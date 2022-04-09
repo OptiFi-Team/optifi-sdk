@@ -148,6 +148,22 @@ export const SERUM_DEX_PROGRAM_ID: EndpointConstant = {
     "https://api.testnet.solana.com": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
 }
 
+// Mango market program ids
+// from https://github.com/blockworks-foundation/mango-client-v3/blob/main/src/ids.json
+export const MANGO_PROGRAM_ID: EndpointConstant = {
+    "https://api.mainnet-beta.solana.com": "mv3ekLzLbnVPNxjSKvqBpU3ZeZXPQdEC3bp5MDEBG68",
+    "https://api.devnet.solana.com": "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA",
+    "https://api.testnet.solana.com": "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA"
+}
+
+// Mango group pubkey
+export const MANGO_GROUP_ID: EndpointConstant = {
+    "https://api.mainnet-beta.solana.com": "98pjRuQjK3qA6gXts96PqZT4Ze5QmnCmt3QYjhbUSPue",
+    "https://api.devnet.solana.com": "5vQp48Wx55Ft1PUAx8qWbsioNaLeXWVkyCq2XpQSv34M",
+    "https://api.testnet.solana.com": "5vQp48Wx55Ft1PUAx8qWbsioNaLeXWVkyCq2XpQSv34M"
+}
+
+
 // Associated token program is constant across all of the clusters
 export const ASSOCIATED_TOKEN_PROGRAM_ID: string = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 

@@ -1333,6 +1333,26 @@
           "name": "rent",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "mangoProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mangoGroup",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammMangoAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammLiqudityAuth",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -2522,6 +2542,10 @@
           {
             "name": "clientOrderIdCounter",
             "type": "u64"
+          },
+          {
+            "name": "ammMangoAccount",
+            "type": "publicKey"
           }
         ]
       }
@@ -3822,9 +3846,14 @@
       "code": 328,
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
+    },
+    {
+      "code": 329,
+      "name": "InvalidMangoAccount",
+      "msg": "the mango account is invalid"
     }
   ],
   "metadata": {
-    "address": "BqpmdnJPg45jg7gyza3WLaNLsa4bHWKsug7ioy61LK3Z"
+    "address": "Gw3Pw2jYaZd8DHgLBTZ5m2NJGCXf2sb7zWcV6RgUn8Rb"
   }
 }
