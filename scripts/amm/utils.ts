@@ -5,6 +5,7 @@ import { findAMMWithIdx } from "../../utils/amm";
 import { findOptifiExchange } from "../../utils/accounts";
 import { PublicKey } from "@solana/web3.js";
 import syncPositions from "../../instructions/syncPositions";
+import ammSyncFuturesPositions from "../../instructions/amm/ammSyncFuturesPositions";
 import calculateAmmDelta from "../../instructions/calculateAmmDelta";
 import calculateAmmProposal from "../../instructions/calculateAmmProposal";
 import { ammCancelOrders } from "../../instructions/ammCancelOrders";
@@ -39,6 +40,24 @@ export async function syncAmmPositions(context: Context, ammIndex: number) {
             }
         })
 
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+export async function syncAmmFuturePositions(context: Context, ammIndex: number) {
+    try {
+        let [optifiExchange, _bump1] = await findOptifiExchange(context)
+        let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
+        let ammInfoRaw = await context.program.account.ammAccount.fetch(ammAddress)
+        // @ts-ignore
+        let ammInfo = ammInfoRaw as AmmAccount;
+        let ammTradingInstruments = ammInfo.tradingInstruments.map(e => e.toString())
+
+        console.log(ammTradingInstruments.length)
+        let res = await ammSyncFuturesPositions(context, ammAddress)
+        console.log(`successfully synced futures postions for amm ${ammAddress.toString()} with id ${ammIndex}`)
+        console.log(res)
     } catch (err) {
         console.error(err);
     }
@@ -107,13 +126,13 @@ export async function executeAmmOrderProposalV2(context: Context, ammIndex: numb
                 });
 
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
-                    console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
-                    // execute all the proposal orders
-                    for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length; j++) {
-                        let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
-                        console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
-                        console.log(res)
-                    }
+                console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
+                // execute all the proposal orders
+                for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length; j++) {
+                    let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
+                    console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
+                    console.log(res)
+                }
             }
         };
     } catch (err) {

@@ -9,33 +9,17 @@ import { findAssociatedTokenAccount } from "../../utils/token";
 import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
 import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {} from "@blockworks-foundation/mango-client";
 
 export default function ammSyncFuturesPositions(context: Context,
-    marketAddress: PublicKey,
     ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            context.program.account.optifiMarket.fetch(marketAddress)
-                .then((marketRes) => {
-                    let optifiMarket = marketRes as OptifiMarket;
                     context.program.account.ammAccount.fetch(ammAddress).then(async (ammRes) => {
                         try {
                             // @ts-ignore
                             let amm = ammRes as AmmAccount;
                             let [ammLiquidityAuth,] = await getAmmLiquidityAuthPDA(context);
-                            let [ammLongTokenVault,] = await findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, ammLiquidityAuth)
-                            let [ammShortTokenVault,] = await findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammLiquidityAuth)
-                            let [ammOpenOrders,] = await getDexOpenOrders(
-                                context,
-                                optifiMarket.serumMarket,
-                                ammLiquidityAuth)
-
-                            let [position, instrumentIdx] = findInstrumentIndexFromAMM(context,
-                                amm,
-                                optifiMarket.instrument
-                            );
-
-
 
                             // prepare the mango account for amm
                             let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.endpoint])
@@ -80,6 +64,5 @@ export default function ammSyncFuturesPositions(context: Context,
                     // })
                     // .catch((err) => reject(err))
                 }).catch((err) => reject(err))
-        })
     })
 }
