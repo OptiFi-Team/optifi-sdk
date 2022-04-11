@@ -49,6 +49,10 @@ export default async function liquidateUser(context: Context, userToLiquidate: P
         let res = await context.program.account.liquidationState.fetch(liquidationStateAddress);
         let liquidationState = res as unknown as LiquidationState;
         let liquidationMarkets = liquidationState.markets;
+        let liquidationValues = liquidationState.values.map(v => v.toNumber());
+        // sort the liquidationMarkets by values
+
+
         let marketsWithKeys = await findOptifiMarkets(context, liquidationMarkets);
         // the length of marketsWithKeys should not be zero
         console.log("Start liquidate positions with ", marketsWithKeys.length, " markets");
@@ -64,7 +68,7 @@ export default async function liquidateUser(context: Context, userToLiquidate: P
 
             // Wait for order filled
             let serumMarket = await getSerumMarket(context, market[0].serumMarket);
-            await waitForSettle(context, serumMarket, userToLiquidate, marketAddress)
+            await waitForSettle(context, serumMarket, userToLiquidate, marketAddress);
         }
     }
     await liquidate();
@@ -77,19 +81,16 @@ async function waitForSettle(context: Context, serumMarket: Market, userToLiquid
         context.connection,
         userToLiquidate
     );
-    openOrdersRes
-        .filter(async ({ baseTokenFree, quoteTokenTotal }) => {
-            if (baseTokenFree.toNumber() > 0 && quoteTokenTotal.toNumber() == 0) {
-                console.log("Find unsettle options: ", baseTokenFree.toNumber());
-                liquidationSettleOrder(context, userToLiquidate, marketAddress).then((res) => {
-                    console.log("Got liquidationSettleOrder res", res);
-                }).catch((err) => {
-                    console.error(err);
-                });
-            } else {
-                console.log("Wating 10 secs for order filled...");
-                await sleep(10000);
-                await waitForSettle(context, serumMarket, userToLiquidate, marketAddress)
-            }
+
+    if (openOrdersRes[0].baseTokenFree.toNumber() > 0 && openOrdersRes[0].quoteTokenTotal.toNumber() == 0) {
+        console.log("Find unsettle options: ", openOrdersRes[0].baseTokenFree.toNumber());
+        liquidationSettleOrder(context, userToLiquidate, marketAddress).then((res) => {
+            console.log("Got liquidationSettleOrder res", res);
+        }).catch((err) => {
+            console.error(err);
         });
+    };
+    console.log("Wating 10 secs for order filled...");
+    await sleep(10000);
+    await waitForSettle(context, serumMarket, userToLiquidate, marketAddress)
 }
