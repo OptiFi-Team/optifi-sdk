@@ -354,14 +354,14 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                             let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
                             let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
 
-                            let usdcAmount = new Decimal(postTokenAccount.uiTokenAmount.uiAmount!).minus(
-                                new Decimal(preTokenAccount.uiTokenAmount.uiAmount!)).toNumber()
+                            let usdcAmount = new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(
+                                new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
                             let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
                             let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
 
-                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmount!).minus(
-                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmount!)).toNumber()
-                                : postTokenAccount2.uiTokenAmount.uiAmount!
+                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
+                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
+                                : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
 
                             res.push(new AmmTx({
                                 type: "Deposit",
@@ -387,9 +387,9 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                             let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
 
                             // Decimal lib handles float precision
-                            let usdcAmount = preTokenAccount ? new Decimal(postTokenAccount.uiTokenAmount.uiAmount!).minus(
-                                new Decimal(preTokenAccount.uiTokenAmount.uiAmount!)).toNumber()
-                                : postTokenAccount.uiTokenAmount.uiAmount!
+                            let usdcAmount = preTokenAccount ? new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(
+                                new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
+                                : new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).toNumber()
 
                             let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
                             let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
@@ -397,9 +397,9 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                             // console.log("preTokenAccount2: ", preTokenAccount2)
                             // console.log("postTokenAccount2: ", postTokenAccount2)
 
-                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmount!).minus(
-                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmount!)).toNumber()
-                                : postTokenAccount2.uiTokenAmount.uiAmount!
+                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
+                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
+                                : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
 
                             res.push(new AmmTx({
                                 type: "Withdraw",
