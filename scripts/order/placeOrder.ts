@@ -6,10 +6,10 @@ import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { userAccountExists } from "../../utils/accounts";
 import { UserAccount } from "../../types/optifi-exchange-types";
 import { market } from "../constants"
-//let market = new PublicKey("GHtSNAhYsgPUcg4ZTPjp5g4ttq2cqaJBvt7YiHEVqbwb");
-let price = 380;
-let size = 0.1; // should be integer
-let side = OrderSide.Bid;
+
+let price = 1000;
+let size = 1;
+let side = OrderSide.Ask;
 
 initializeContext().then((context) => {
     userAccountExists(context).then(async ([_, res]) => {
