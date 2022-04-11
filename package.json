@@ -28,6 +28,7 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
+    "@blockworks-foundation/mango-client": "^3.4.2",
     "@project-serum/anchor": "0.18.2",
     "@project-serum/common": "^0.0.1-beta.3",
     "@solana/buffer-layout": "^4.0.0",

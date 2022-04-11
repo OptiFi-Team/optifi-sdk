@@ -1566,7 +1566,7 @@
         },
         {
           "name": "mangoAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1586,17 +1586,17 @@
         },
         {
           "name": "nodeBank",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "ownerTokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

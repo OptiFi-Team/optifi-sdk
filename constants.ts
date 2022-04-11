@@ -159,10 +159,45 @@ export const MANGO_PROGRAM_ID: EndpointConstant = {
 // Mango group pubkey
 export const MANGO_GROUP_ID: EndpointConstant = {
     "https://api.mainnet-beta.solana.com": "98pjRuQjK3qA6gXts96PqZT4Ze5QmnCmt3QYjhbUSPue",
-    "https://api.devnet.solana.com": "5vQp48Wx55Ft1PUAx8qWbsioNaLeXWVkyCq2XpQSv34M",
-    "https://api.testnet.solana.com": "5vQp48Wx55Ft1PUAx8qWbsioNaLeXWVkyCq2XpQSv34M"
+    "https://api.devnet.solana.com": "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA",
+    "https://api.testnet.solana.com": "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA"
 }
 
+// Mango usdc token
+export const MANGO_USDC_CONFIG: EndpointConstant = {
+    "https://api.mainnet-beta.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "decimals": 6,
+        "rootKey": "AMzanZxMirPCgGcBoH9kw4Jzi9LFMomyUCXbpzDeL2T8",
+        "nodeKeys": ["BGcwkj1WudQwUUjFk78hAjwd1uAm8trh1N4CJSa51euh"]
+    },
+    "https://api.devnet.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+        "decimals": 6,
+        "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
+        "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
+    },
+    "https://api.testnet.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+        "decimals": 6,
+        "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
+        "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
+    },
+}
+
+
+
+
+// "cluster": "devnet",
+// "name": "devnet.2",
+// "publicKey": "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA",
+
+// "cluster": "devnet",
+// "name": "devnet.3",
+// "publicKey": "5vQp48Wx55Ft1PUAx8qWbsioNaLeXWVkyCq2XpQSv34M",
 
 // Associated token program is constant across all of the clusters
 export const ASSOCIATED_TOKEN_PROGRAM_ID: string = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
