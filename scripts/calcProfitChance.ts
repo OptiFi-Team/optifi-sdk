@@ -1,6 +1,6 @@
 
 import { initializeContext } from "../index";
-import { calcNDF, calcProfitChance } from "../utils/calcProfitChance"
+import { calcProfitChance } from "../utils/calcProfitChance"
 import { findOptifiMarketsWithFullData } from "../utils/market";
 
 // initializeContext().then((context) => {
