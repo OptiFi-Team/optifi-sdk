@@ -744,7 +744,7 @@ export function getAllOpenOrdersForUser(
   })
 }
 
-// Customised seurm helper
+// Customised seurm helper - to load orders for an optifi user account with less rpc reuquests
 async function loadOrdersForOwner(connection: Connection, market: Market, asks: Orderbook, bids: Orderbook, ownerAddress: PublicKey, cacheDurationMs = 0) {
   const [openOrdersAccounts] = await Promise.all([
     market.findOpenOrdersAccountsForOwner(connection, ownerAddress, cacheDurationMs),
@@ -754,4 +754,21 @@ async function loadOrdersForOwner(connection: Connection, market: Market, asks: 
 // Customised seurm helper
 function filterForOpenOrders(bids: Orderbook, asks: Orderbook, openOrdersAccounts: OpenOrders[]) {
   return [...bids, ...asks].filter((order) => openOrdersAccounts.some((openOrders) => order.openOrdersAddress.equals(openOrders.address)));
+}
+
+// Customised seurm helper - to load orders for an optifi user account with less rpc reuquests
+export async function loadOrdersForUserAccount(context: Context, serumMarket: Market, asks: Orderbook, bids: Orderbook, userAccountAddress: PublicKey, cacheDurationMs = 0) {
+  // get user's open orders account on the given market
+  let [openOrdersAccountAddr, _] = await getDexOpenOrders(
+    context,
+    serumMarket.publicKey,
+    userAccountAddress
+  )
+
+  return filterForOpenOrders2(bids, asks, openOrdersAccountAddr);
+}
+
+// Customised seurm helper
+function filterForOpenOrders2(bids: Orderbook, asks: Orderbook, openOrdersAccountAddress: PublicKey) {
+  return [...bids, ...asks].filter((order) => order.openOrdersAddress.equals(openOrdersAccountAddress));
 }
