@@ -757,11 +757,11 @@ function filterForOpenOrders(bids: Orderbook, asks: Orderbook, openOrdersAccount
 }
 
 // Customised seurm helper - to load orders for an optifi user account with less rpc reuquests
-export async function loadOrdersForUserAccount(context: Context, serumMarket: Market, asks: Orderbook, bids: Orderbook, userAccountAddress: PublicKey, cacheDurationMs = 0) {
+export async function loadOrdersForUserAccount(context: Context, serumMarketAddress: PublicKey, asks: Orderbook, bids: Orderbook, userAccountAddress: PublicKey) {
   // get user's open orders account on the given market
   let [openOrdersAccountAddr, _] = await getDexOpenOrders(
     context,
-    serumMarket.publicKey,
+    serumMarketAddress,
     userAccountAddress
   )
 
