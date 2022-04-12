@@ -4,7 +4,6 @@ import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../
 import { OptifiMarket } from "../../types/optifi-exchange-types";
 import { findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount } from "../../utils/token";
 import { SERUM_DEX_PROGRAM_ID } from "../../constants";
-import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import InstructionResult from "../../types/instructionResult";
 import { getSerumMarket } from "../../utils/serum";

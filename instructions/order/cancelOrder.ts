@@ -1,13 +1,13 @@
 import * as anchor from "@project-serum/anchor";
-import Context from "../types/context";
+import Context from "../../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
-import { OrderSide } from "../types/optifi-exchange-types";
-import InstructionResult from "../types/instructionResult";
-import { formCancelOrderContext } from "../utils/orders";
+import { OrderSide } from "../../types/optifi-exchange-types";
+import InstructionResult from "../../types/instructionResult";
+import { formCancelOrderContext } from "../../utils/orders";
 import {
   signAndSendTransaction,
   TransactionResultType,
-} from "../utils/transactions";
+} from "../../utils/transactions";
 
 // =========================================================================================
 //  the cancelOrder in Optifi program is deprecated, use cancelOrderByClientOrderId instead
@@ -42,7 +42,7 @@ import {
 //   });
 // }
 
-export default  function cancelOrderByClientOrderId(
+export default function cancelOrderByClientOrderId(
   context: Context,
   marketAddress: PublicKey,
   side: OrderSide,

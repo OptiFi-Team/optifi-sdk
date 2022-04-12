@@ -1,15 +1,13 @@
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { TransactionSignature } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import { formCancelOrderContext, getOrdersOnMarket } from "../../utils/orders";
 import { OrderSide } from "../../types/optifi-exchange-types";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
-import { getSerumMarket, watchSettleSerumFunds } from "../../utils/serum";
-import cancelOrderByClientOrderId from "../../instructions/cancelOrder";
-import { dateToAnchorTimestamp, sleep } from "../../utils/generic";
+import { watchSettleSerumFunds } from "../../utils/serum";
+import cancelOrderByClientOrderId from "../../instructions/order/cancelOrder";
+import { sleep } from "../../utils/generic";
 import * as anchor from "@project-serum/anchor";
-import {market} from "../constants"
-
-// let market = new PublicKey("5QCyCgJb6W1wzdtFN53RKpDmuVRoJuGrsh4BAb6tUZJ6");
+import { market } from "../constants"
 
 let orderId = new anchor.BN("1646711054");
 

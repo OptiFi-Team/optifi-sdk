@@ -62,7 +62,7 @@ export interface OrderAccountContext {
   coinVault: PublicKey;
   pcVault: PublicKey;
   vaultSigner: PublicKey;
-  usdcCentralPool: PublicKey;
+  usdcFeePool: PublicKey;
   instrumentShortSplTokenMint: PublicKey;
   serumDexProgramId: PublicKey;
   tokenProgram: PublicKey;
@@ -168,8 +168,8 @@ export function formOrderContext(
                                                     pcVault:
                                                       serumMarket.decoded
                                                         .quoteVault,
-                                                    usdcCentralPool:
-                                                      exchange.usdcCentralPool,
+                                                    usdcFeePool:
+                                                      exchange.usdcFeePool,
                                                     vaultSigner: vaultOwner,
                                                     //    orderPayerTokenAccount: (side === OrderSide.Bid ? userAccount.userMarginAccountUsdc : longSPLTokenVault),
                                                     //    instrumentTokenMintAuthorityPda: mintAuthAddress,
@@ -327,8 +327,8 @@ export function formPlaceOrderContext(
                                                           pcVault:
                                                             serumMarket.decoded
                                                               .quoteVault,
-                                                          usdcCentralPool:
-                                                            exchange.usdcCentralPool,
+                                                          usdcFeePool:
+                                                            exchange.usdcFeePool,
                                                           vaultSigner:
                                                             vaultOwner,
                                                           instrumentTokenMintAuthorityPda:
@@ -500,8 +500,8 @@ export function formCancelOrderContext(
                                                         pcVault:
                                                           serumMarket.decoded
                                                             .quoteVault,
-                                                        usdcCentralPool:
-                                                          exchange.usdcCentralPool,
+                                                        usdcFeePool:
+                                                          exchange.usdcFeePool,
                                                         vaultSigner:
                                                           vaultOwner,
                                                         instrumentShortSplTokenMint:

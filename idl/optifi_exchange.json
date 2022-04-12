@@ -21,6 +21,11 @@
           "isSigner": false
         },
         {
+          "name": "usdcFeePool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -535,8 +540,8 @@
           "isSigner": false
         },
         {
-          "name": "usdcCentralPool",
-          "isMut": false,
+          "name": "usdcFeePool",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -582,6 +587,10 @@
         {
           "name": "clientOrderId",
           "type": "u64"
+        },
+        {
+          "name": "orderType",
+          "type": "u8"
         }
       ]
     },
@@ -684,7 +693,7 @@
           "isSigner": false
         },
         {
-          "name": "usdcCentralPool",
+          "name": "usdcFeePool",
           "isMut": false,
           "isSigner": false
         },
@@ -828,7 +837,7 @@
           "isSigner": false
         },
         {
-          "name": "usdcCentralPool",
+          "name": "usdcFeePool",
           "isMut": false,
           "isSigner": false
         },
@@ -2610,6 +2619,10 @@
             "type": "publicKey"
           },
           {
+            "name": "usdcFeePool",
+            "type": "publicKey"
+          },
+          {
             "name": "oracle",
             "type": {
               "vec": {
@@ -3822,9 +3835,19 @@
       "code": 328,
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
+    },
+    {
+      "code": 329,
+      "name": "OrderFailed",
+      "msg": "The order is failed"
+    },
+    {
+      "code": 330,
+      "name": "WrongFeeAccount",
+      "msg": "Wrong USDC fee account"
     }
   ],
   "metadata": {
-    "address": "BqpmdnJPg45jg7gyza3WLaNLsa4bHWKsug7ioy61LK3Z"
+    "address": "BVhrEVqN7zmfYQWvxp4R6sbjmAhJoYnGa3YzsSYvNUto"
   }
 }
