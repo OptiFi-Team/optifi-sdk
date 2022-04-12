@@ -1565,6 +1565,11 @@
           "isSigner": false
         },
         {
+          "name": "mangoGroupSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "mangoAccount",
           "isMut": true,
           "isSigner": false
@@ -1606,6 +1611,81 @@
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc1",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc2",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc3",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc4",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc5",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc6",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc7",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc8",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc9",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc10",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc11",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc12",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc13",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc14",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "openOrdersAcc15",
           "isMut": false,
           "isSigner": false
         }
@@ -3922,9 +4002,11 @@
       "code": 329,
       "name": "InvalidMangoAccount",
       "msg": "the mango account is invalid"
+    },
+    {
+      "code": 330,
+      "name": "InvalidMangoToken",
+      "msg": "the mango token index is invalid"
     }
-  ],
-  "metadata": {
-    "address": "Gw3Pw2jYaZd8DHgLBTZ5m2NJGCXf2sb7zWcV6RgUn8Rb"
-  }
+  ]
 }

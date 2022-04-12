@@ -1,7 +1,7 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, getDexOpenOrders } from "../../utils/accounts";
+import { Connection, PublicKey, TransactionSignature } from "@solana/web3.js";
+import { findExchangeAccount, findOracleAccountFromAsset, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
 import { AmmAccount, OptifiMarket } from "../../types/optifi-exchange-types";
 import { MANGO_GROUP_ID, MANGO_PROGRAM_ID, MANGO_USDC_CONFIG, SERUM_DEX_PROGRAM_ID } from "../../constants";
 import { findInstrumentIndexFromAMM } from "../../utils/amm";
@@ -9,7 +9,32 @@ import { findAssociatedTokenAccount } from "../../utils/token";
 import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
 import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { MangoClient } from "@blockworks-foundation/mango-client";
+import { MangoClient, MangoAccount, MangoAccountLayout } from "@blockworks-foundation/mango-client";
+import { numberToOptifiAsset } from "../../utils/generic";
+import {
+    Asset as OptifiAsset,
+} from '../../types/optifi-exchange-types';
+
+
+/**
+ * Retrieve information about a Mango Account
+ */
+async function getMangoAccount(
+    connection: Connection,
+    mangoAccountPk: PublicKey,
+    dexProgramId: PublicKey,
+): Promise<MangoAccount> {
+    const acc = await connection.getAccountInfo(
+        mangoAccountPk,
+        'processed',
+    );
+    const mangoAccount = new MangoAccount(
+        mangoAccountPk,
+        MangoAccountLayout.decode(acc == null ? undefined : acc.data),
+    );
+    await mangoAccount.loadOpenOrders(connection, dexProgramId);
+    return mangoAccount;
+}
 
 export default function ammSyncFuturesPositions(context: Context,
     ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
@@ -25,6 +50,10 @@ export default function ammSyncFuturesPositions(context: Context,
                     let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.endpoint])
                     let [ammMangoAccountAddress,] = await getMangoAccountPDA(mangoProgramId, mangoGroup, ammLiquidityAuth, amm.ammIdx)
                     // console.log("ammMangoAccountAddress: ", ammMangoAccountAddress.toString())
+
+                    // new MangoAccount(ammMangoAccountAddress,)
+                    let mangoAccountInfo = await getMangoAccount(context.connection, ammMangoAccountAddress, mangoProgramId)
+                    console.log("mangoAccountInfo: ", mangoAccountInfo)
 
                     let client = new MangoClient(context.connection, mangoProgramId);
                     let mangoGroupAccountInfo = await client.getMangoGroup(mangoGroup)
@@ -48,6 +77,30 @@ export default function ammSyncFuturesPositions(context: Context,
                         let vault = filteredNodeBanks[0]!.vault
 
                         // console.log(mangoGroupAccountInfo.tokens.forEach(e => console.log(e.mint.toString(), " ", e.rootBank.toString())))
+
+                        let spotOracle =
+                            findOracleAccountFromAsset(
+                                context,
+                                numberToOptifiAsset(
+                                    amm.asset
+                                )
+                            );
+                        let ivOracle =
+                            findOracleAccountFromAsset(
+                                context,
+                                numberToOptifiAsset(
+                                    amm.asset
+                                ),
+                                OracleAccountType.Iv
+                            );
+                        let usdcSpotOracle =
+                            findOracleAccountFromAsset(
+                                context,
+                                OptifiAsset.USDC,
+                                OracleAccountType.Spot
+                            );
+
+
                         context.program.rpc.ammSyncFuturePositions(
                             {
                                 accounts: {
@@ -55,6 +108,7 @@ export default function ammSyncFuturesPositions(context: Context,
                                     amm: ammAddress,
                                     mangoProgram: mangoProgramId,
                                     mangoGroup: mangoGroup,
+                                    mangoGroupSigner: mangoGroupAccountInfo.signerKey,
                                     mangoAccount: ammMangoAccountAddress,
                                     owner: ammLiquidityAuth,
                                     mangoCache: mangoGroupAccountInfo.mangoCache,
@@ -63,8 +117,26 @@ export default function ammSyncFuturesPositions(context: Context,
                                     vault: vault,
                                     ownerTokenAccount: new PublicKey("DtgXSHvstkRUhhbwZhBpbhyFwmXMchsnyvePuAgHbWfe"), // TODO: amm.quoteTokenVault,
                                     payer: context.provider.wallet.publicKey,
-                                    tokenProgram: TOKEN_PROGRAM_ID
-                                }
+                                    tokenProgram: TOKEN_PROGRAM_ID,
+                                    // assetFeed: spotOracle,
+                                    // usdcFeed: usdcSpotOracle
+                                    openOrdersAcc1:mangoAccountInfo.spotOpenOrders[0],
+                                    openOrdersAcc2:mangoAccountInfo.spotOpenOrders[1],
+                                    openOrdersAcc3:mangoAccountInfo.spotOpenOrders[2],
+                                    openOrdersAcc4:mangoAccountInfo.spotOpenOrders[3],
+                                    openOrdersAcc5:mangoAccountInfo.spotOpenOrders[4],
+                                    openOrdersAcc6:mangoAccountInfo.spotOpenOrders[5],
+                                    openOrdersAcc7:mangoAccountInfo.spotOpenOrders[6],
+                                    openOrdersAcc8:mangoAccountInfo.spotOpenOrders[7],
+                                    openOrdersAcc9:mangoAccountInfo.spotOpenOrders[8],
+                                    openOrdersAcc10:mangoAccountInfo.spotOpenOrders[9],
+                                    openOrdersAcc11:mangoAccountInfo.spotOpenOrders[10],
+                                    openOrdersAcc12:mangoAccountInfo.spotOpenOrders[11],
+                                    openOrdersAcc13:mangoAccountInfo.spotOpenOrders[12],
+                                    openOrdersAcc14:mangoAccountInfo.spotOpenOrders[13],
+                                    openOrdersAcc15:mangoAccountInfo.spotOpenOrders[14],
+                                },
+                                // remainingAccounts: mangoAccountInfo.spotOpenOrders
                             }
                         ).then((syncRes) => {
                             resolve({
