@@ -30,6 +30,7 @@ initializeContext().then(async (context) => {
   console.log("baseTokenFree ", openOrdersAccount2.baseTokenFree.toNumber())
   console.log("baseTokenTotal ", openOrdersAccount2.baseTokenTotal.toNumber())
   console.log("quoteTokenFree ", openOrdersAccount2.quoteTokenFree.toNumber())
+  // Orderbook locked in amount ( how much usdc locked for orderbook?)
   console.log("quoteTokenTotal ", openOrdersAccount2.quoteTokenTotal.toNumber())
 
   openOrdersAccount2.clientIds.forEach(id => {

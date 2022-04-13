@@ -592,7 +592,7 @@ export function imp_vol_call(spot, strike, price, r, q, t) {
 
         for(let nc = 0 ; nc < NC; nc++) {
             var sigma = 0.3;
-            var error = 0.0000001;
+            var error = 0.00001;
 
             var dv = error + 1;
             var tic = (new Date()).getTime() / 1000;
@@ -655,12 +655,14 @@ export function imp_vol_put(spot, strike, price, r, q, t) {
 
         for(let np = 0 ; np < NP; np++) {
             var sigma = 0.3;
-            var error = 0.0000001;
+            var error = 0.00001;
 
             var dv = error + 1;
             var tic = (new Date()).getTime() / 1000;
 
             while(Math.abs(dv) > error) {
+                // console.log('Math.abs(dv): ', Math.abs(dv))
+                // console.log('error: ', error)
                 // d1=(log(S/X[np])+(r-q+sigma**2/2.)*T[np])/(sigma*sqrt(T[np]))
 				
 				// d2= d1-sigma*sqrt(T)

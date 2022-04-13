@@ -61,15 +61,6 @@ let reg_t_margin = option_reg_t_margin(spot, strike, stress, isCall);
 // console.log('reg_t_margin', reg_t_margin)
 
 let delta = option_delta(spot, strike, iv, r, q, t, isCall);
-console.log('spot ', spot)
-console.log('strike ', strike)
-console.log('iv ', iv)
-console.log('r ', r)
-console.log('q ', q)
-console.log('t ', t)
-console.log('isCall ', isCall)
-console.log('delta', delta)
-
 let intrinsic = option_intrinsic_value(spot, strike, isCall);
 // console.log('intrinsic', intrinsic)
 

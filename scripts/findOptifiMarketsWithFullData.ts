@@ -1,6 +1,6 @@
 import { initializeContextWithoutWallet } from "../index";
 import { findOptifiInstruments, findOptifiMarkets, findOptifiMarketsWithFullData } from "../utils/market";
-
+import { calculateIV } from "../utils/calculateIV"
 
 initializeContextWithoutWallet().then((context) => {
 
@@ -17,10 +17,11 @@ initializeContextWithoutWallet().then((context) => {
     // })
 
     findOptifiMarketsWithFullData(context).then(res => {
-        console.log("findOptifiInstrumentsWithOrderbook res: ", res)
+        console.log("calculateIV res: ", calculateIV(context, res))
     }).catch((err) => {
         console.error(err);
     })
+
 
 }).catch((err) => {
     console.error(err);

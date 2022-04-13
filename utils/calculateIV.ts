@@ -30,10 +30,7 @@ export function calculateIV(
         try {
             // get Spot price too just like optionDeltafunction
             let spotRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-            spotRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-
             let spotRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
-            spotRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
 
             let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
 
@@ -41,7 +38,7 @@ export function calculateIV(
             let spot_eth = spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
 
             let today = new Date().getTime();
-
+            
             let res = optifiMarket.map(market => {
                 let spot: number;
                 switch (market.asset) {
@@ -52,11 +49,13 @@ export function calculateIV(
                         spot = spot_eth
                         break
                 }
-
+                // update decimal
                 let t = (market.expiryDate.getTime() / 1000 - today / 1000) / (60 * 60 * 24 * 365);
+                t = (Math.round(t * 10000) / 10000)
                 let ivBid: number | number[];
                 let ivAsk: number | number[];
                 let isCall = market.instrumentType === "Call" ? 1 : 0
+
                 if (isCall) {
                     ivBid = imp_vol_call(spot, reshap([market.strike]), reshap([market.bidPrice]), r, q, reshap([t]))
                     ivAsk = imp_vol_call(spot, reshap([market.strike]), reshap([market.askPrice]), r, q, reshap([t]))
