@@ -17,7 +17,7 @@ initializeContextWithoutWallet().then((context) => {
     // })
 
     findOptifiMarketsWithFullData(context).then(res => {
-        console.log("calculateIV res: ", calculateIV(context, res))
+        console.log("findOptifiInstrumentsWithOrderbook res: ", res)
     }).catch((err) => {
         console.error(err);
     })
