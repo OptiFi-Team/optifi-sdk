@@ -7,10 +7,10 @@ import { userAccountExists } from "../../utils/accounts";
 import { market } from "../constants"
 import OrderType from "../../types/OrderType";
 
-let price = 840;
+let price = 1000;
 let size = 1;
 let side = OrderSide.Bid;
-let orderType = OrderType.PostOnly;
+let orderType = OrderType.ImmediateOrCancel;
 
 initializeContext().then((context) => {
     userAccountExists(context).then(async ([_, res]) => {

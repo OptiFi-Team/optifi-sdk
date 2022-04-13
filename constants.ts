@@ -36,7 +36,7 @@ export const STRIKE_LADDER_SIZE: number = 5;
 export const AMM_TRADE_CAPACITY = 25;
 
 // How many assets are supported, should be in the same sequence as enum
-export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin, Asset.Ethereum];
+export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin];
 
 // How many duration are supported
 export const SUPPORTED_DURATION: Duration[] = [Duration.Weekly, Duration.Monthly];
@@ -113,7 +113,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111208",
+    "https://api.devnet.solana.com": "111213",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
@@ -156,8 +156,26 @@ export const COIN_LOT_SIZE: number = 1; // let's set 1 as one instrument spl tok
 export const PC_LOT_SIZE: number = 1;
 export const PC_DUST_THRESHOLD: number = 2;
 
-export const MAX_COIN_QTY = 500 * COIN_LOT_SIZE;
-export const MAX_PC_QTY = 1000 * PC_LOT_SIZE;
-
 export const USDC_DECIMALS = 6;
 export const SOL_DECIMALS = 9;
+
+
+// // The fee for each transaction on the OptiFi system
+// export const TAKER_FEE: number = 0.0010;
+// export const SERUM_TAKER_FEE: number = 0.0004;
+// export const OPTIFI_TAKER_FEE: number = TAKER_FEE - SERUM_TAKER_FEE;
+// // PostOnly order
+// export const MAKER_FEE: number = 0.0005;
+// export const SERUM_MAKER_FEE: number = 0.0;
+// export const OPTIFI_MAKER_FEE: number = MAKER_FEE - SERUM_MAKER_FEE;
+
+
+// FOR DEVNET
+// The fee for each transaction on the OptiFi system
+export const TAKER_FEE: number = 0.0028;
+export const SERUM_TAKER_FEE: number = 0.0022;
+export const OPTIFI_TAKER_FEE: number = TAKER_FEE - SERUM_TAKER_FEE;
+// PostOnly order
+export const MAKER_FEE: number = 0.0027;
+export const SERUM_MAKER_FEE: number = 0.0022;
+export const OPTIFI_MAKER_FEE: number = MAKER_FEE - SERUM_MAKER_FEE;

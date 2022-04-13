@@ -545,6 +545,11 @@
           "isSigner": false
         },
         {
+          "name": "centralUsdcPoolAuth",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "instrumentShortSplTokenMint",
           "isMut": true,
           "isSigner": false
@@ -698,6 +703,11 @@
           "isSigner": false
         },
         {
+          "name": "centralUsdcPoolAuth",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "instrumentShortSplTokenMint",
           "isMut": true,
           "isSigner": false
@@ -838,6 +848,11 @@
         },
         {
           "name": "usdcFeePool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "centralUsdcPoolAuth",
           "isMut": false,
           "isSigner": false
         },

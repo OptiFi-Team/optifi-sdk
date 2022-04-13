@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import Context from "../../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
-import { formPlaceOrderContext } from "../../utils/orders";
+import { calculatePcQtyAndFee, formPlaceOrderContext } from "../../utils/orders";
 import { OrderSide } from "../../types/optifi-exchange-types";
 import marginStress from "../marginStress";
 import { USDC_DECIMALS } from "../../constants";
@@ -23,16 +23,16 @@ export default function placeOrder(context: Context,
 
             let maxCoinQty = size * (10 ** numberAssetToDecimal(asset)!);
 
-            let maxPcQty = limit * maxCoinQty;
+            let PcQty = limit * maxCoinQty;
 
-            if (side == OrderSide.Bid) {
-                maxPcQty = maxPcQty * 1.0022;
-            }
+            let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(PcQty, side, orderType, false)!;
 
             console.log("side: ", side);
             console.log("limit: ", limit);
             console.log("maxCoinQty: ", maxCoinQty);
+            console.log("totalFee: ", totalFee);
             console.log("maxPcQty: ", maxPcQty);
+            console.log("totalPcQty: ", maxPcQty);
 
 
             let ix = await marginStress(context, asset);
