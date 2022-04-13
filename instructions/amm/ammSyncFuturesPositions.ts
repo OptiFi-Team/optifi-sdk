@@ -118,26 +118,17 @@ export default function ammSyncFuturesPositions(context: Context,
                                     ownerTokenAccount: new PublicKey("DtgXSHvstkRUhhbwZhBpbhyFwmXMchsnyvePuAgHbWfe"), // TODO: amm.quoteTokenVault,
                                     payer: context.provider.wallet.publicKey,
                                     tokenProgram: TOKEN_PROGRAM_ID,
-                                    // assetFeed: spotOracle,
-                                    // usdcFeed: usdcSpotOracle
-                                    openOrdersAcc1:mangoAccountInfo.spotOpenOrders[0],
-                                    openOrdersAcc2:mangoAccountInfo.spotOpenOrders[1],
-                                    openOrdersAcc3:mangoAccountInfo.spotOpenOrders[2],
-                                    openOrdersAcc4:mangoAccountInfo.spotOpenOrders[3],
-                                    openOrdersAcc5:mangoAccountInfo.spotOpenOrders[4],
-                                    openOrdersAcc6:mangoAccountInfo.spotOpenOrders[5],
-                                    openOrdersAcc7:mangoAccountInfo.spotOpenOrders[6],
-                                    openOrdersAcc8:mangoAccountInfo.spotOpenOrders[7],
-                                    openOrdersAcc9:mangoAccountInfo.spotOpenOrders[8],
-                                    openOrdersAcc10:mangoAccountInfo.spotOpenOrders[9],
-                                    openOrdersAcc11:mangoAccountInfo.spotOpenOrders[10],
-                                    openOrdersAcc12:mangoAccountInfo.spotOpenOrders[11],
-                                    openOrdersAcc13:mangoAccountInfo.spotOpenOrders[12],
-                                    openOrdersAcc14:mangoAccountInfo.spotOpenOrders[13],
-                                    openOrdersAcc15:mangoAccountInfo.spotOpenOrders[14],
+                                    perpMarket: new PublicKey("FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z"),
+                                    eventQueue: new PublicKey("Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU"),
                                 },
-                                // remainingAccounts: mangoAccountInfo.spotOpenOrders
+                                remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) => ({
+                                    isSigner: false,
+                                    isWritable: false,
+                                    pubkey,
+                                }))
+
                             }
+
                         ).then((syncRes) => {
                             resolve({
                                 successful: true,
