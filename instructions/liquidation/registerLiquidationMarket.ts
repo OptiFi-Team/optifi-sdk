@@ -1,17 +1,17 @@
-import Context from "../types/context";
-import InstructionResult from "../types/instructionResult";
+import Context from "../../types/context";
+import InstructionResult from "../../types/instructionResult";
 import { PublicKey, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../utils/accounts";
-import { Chain, OptifiMarket } from "../types/optifi-exchange-types";
-import { findAssociatedTokenAccount } from "../utils/token";
-import { SERUM_DEX_PROGRAM_ID } from "../constants";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
-import { getSerumMarket } from "../utils/serum";
-import { findMarginStressWithAsset } from "../utils/margin";
-import { optifiAssetToNumber } from "../utils/generic";
-import { findSerumAuthorityPDA } from "../utils/pda";
+import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../../utils/accounts";
+import { Chain, OptifiMarket } from "../../types/optifi-exchange-types";
+import { findAssociatedTokenAccount } from "../../utils/token";
+import { SERUM_DEX_PROGRAM_ID } from "../../constants";
+import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
+import { getSerumMarket } from "../../utils/serum";
+import { findMarginStressWithAsset } from "../../utils/margin";
+import { optifiAssetToNumber } from "../../utils/generic";
+import { findSerumAuthorityPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { deriveVaultNonce } from "../utils/market";
+import { deriveVaultNonce } from "../../utils/market";
 
 export default function registerLiquidationMarket(context: Context,
     userAccountAddress: PublicKey,
@@ -37,9 +37,7 @@ export default function registerLiquidationMarket(context: Context,
 
                                     let userAccount = await context.program.account.userAccount.fetch(userAccountAddress);
 
-
-                                    console.log(openOrdersAccount.toString());
-                                    context.program.rpc.registerLiquidationMarket(
+                                    context.program.rpc.liquidationRegister(
                                         {
                                             accounts: {
                                                 optifiExchange: exchangeAddress,

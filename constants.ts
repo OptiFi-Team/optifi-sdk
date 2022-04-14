@@ -113,7 +113,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111109",
+    "https://api.devnet.solana.com": "111205",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
@@ -161,5 +161,3 @@ export const MAX_PC_QTY = 1000 * PC_LOT_SIZE;
 
 export const USDC_DECIMALS = 6;
 export const SOL_DECIMALS = 9;
-
-export let market = new PublicKey("GHtSNAhYsgPUcg4ZTPjp5g4ttq2cqaJBvt7YiHEVqbwb");

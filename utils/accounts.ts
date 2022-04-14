@@ -290,7 +290,8 @@ export function createUserAccountIfNotExist(context: Context): Promise<void> {
                 resolve()
             } else {
                 console.debug("User account does not already exist, creating...");
-                initializeUserAccount(context).then((_) => {
+                initializeUserAccount(context).then((res) => {
+                    console.log(res)
                     resolve()
                 }).catch((err) => reject(err))
             }
@@ -302,11 +303,12 @@ export function createUserAccountIfNotExist(context: Context): Promise<void> {
 
 export async function getFilteredProgramAccounts(
     context: Context,
+    programId: PublicKey,
     filters,
 ): Promise<{ publicKey: PublicKey; accountInfo: AccountInfo<Buffer> }[]> {
     // @ts-ignore
     const resp = await context.connection._rpcRequest('getProgramAccounts', [
-        context.program.programId.toBase58(),
+        programId.toBase58(),
         {
             commitment: context.connection.commitment,
             filters,
@@ -346,5 +348,5 @@ export async function getAllUsersOnExchange(context: Context)
         },
     ];
 
-    return getFilteredProgramAccounts(context, userAccountFilter)
+    return getFilteredProgramAccounts(context, context.program.programId, userAccountFilter)
 }

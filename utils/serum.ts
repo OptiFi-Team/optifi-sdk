@@ -4,7 +4,7 @@ import { Market, OpenOrders } from "@project-serum/serum";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { OptifiMarket, UserAccount } from "../types/optifi-exchange-types";
 import { findOrCreateAssociatedTokenAccount } from "./token";
-import { findUserAccount } from "./accounts";
+import { findUserAccount, getFilteredProgramAccounts } from "./accounts";
 import { signAndSendTransaction, TransactionResultType } from "./transactions";
 import settleFunds from "../instructions/settleFunds";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";
@@ -100,4 +100,20 @@ export function watchSettleSerumFunds(context: Context,
         }
         waitSerumSettle();
     })
+}
+
+export async function findOpenOrdersForSerumMarket(context: Context, marketAddress: PublicKey, programId: PublicKey = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])) {
+    const filters = [
+        {
+            memcmp: {
+                offset: 13,
+                bytes: marketAddress.toBase58(),
+            },
+        },
+        {
+            dataSize: 3228,
+        },
+    ];
+    const accounts = await getFilteredProgramAccounts(context, programId, filters);
+    return accounts.map(({ publicKey, accountInfo }) => OpenOrders.fromAccountInfo(publicKey, accountInfo, programId));
 }
