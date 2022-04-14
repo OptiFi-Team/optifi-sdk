@@ -20,8 +20,8 @@ import {
   UserAccount,
 } from "../types/optifi-exchange-types";
 import { deriveVaultNonce, findOptifiMarkets, isUserInitializedOnMarket, OptifiMarketFullData } from "./market";
-import { SERUM_DEX_PROGRAM_ID } from "../constants";
-import { findOptifiMarketMintAuthPDA } from "./pda";
+import { MAKER_FEE, TAKER_FEE, SERUM_DEX_PROGRAM_ID, SERUM_MAKER_FEE, SERUM_TAKER_FEE } from "../constants";
+import { findOptifiMarketMintAuthPDA, findOptifiUSDCPoolAuthPDA } from "./pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
   findAssociatedTokenAccount,
@@ -37,6 +37,7 @@ import { findMarginStressWithAsset } from "./margin";
 import Asset from "../types/asset";
 import { getAllOrdersForAccount } from "./orderHistory";
 import { Market, Orderbook, OpenOrders } from "@project-serum/serum";
+import OrderType from "../types/OrderType";
 
 export enum TxType {
   PlaceOrder = 0,
@@ -62,7 +63,8 @@ export interface OrderAccountContext {
   coinVault: PublicKey;
   pcVault: PublicKey;
   vaultSigner: PublicKey;
-  usdcCentralPool: PublicKey;
+  usdcFeePool: PublicKey;
+  centralUsdcPoolAuth: PublicKey;
   instrumentShortSplTokenMint: PublicKey;
   serumDexProgramId: PublicKey;
   tokenProgram: PublicKey;
@@ -127,73 +129,76 @@ export function formOrderContext(
                                             optifiMarket.serumMarket
                                           )
                                             .then((serumMarket) => {
-                                              context.program.account.exchange
-                                                .fetch(exchangeAddress)
-                                                .then((exchangeRes) => {
-                                                  let exchange =
-                                                    exchangeRes as Exchange;
-                                                  resolve({
-                                                    optifiExchange:
-                                                      exchangeAddress,
-                                                    user: context.provider
-                                                      .wallet.publicKey,
-                                                    userAccount:
-                                                      userAccountAddress,
-                                                    userMarginAccount:
-                                                      userAccount.userMarginAccountUsdc,
-                                                    userInstrumentLongTokenVault:
-                                                      longSPLTokenVault,
-                                                    userInstrumentShortTokenVault:
-                                                      shortSPLTokenVault,
-                                                    optifiMarket: marketAddress,
-                                                    serumMarket:
-                                                      optifiMarket.serumMarket,
-                                                    openOrders:
-                                                      openOrdersAccount,
-                                                    //    openOrdersOwner: userAccountAddress,
-                                                    requestQueue:
-                                                      serumMarket.decoded
-                                                        .requestQueue,
-                                                    eventQueue:
-                                                      serumMarket.decoded
-                                                        .eventQueue,
-                                                    bids: serumMarket.bidsAddress,
-                                                    asks: serumMarket.asksAddress,
-                                                    coinMint:
-                                                      serumMarket.decoded
-                                                        .baseMint,
-                                                    coinVault:
-                                                      serumMarket.decoded
-                                                        .baseVault,
-                                                    pcVault:
-                                                      serumMarket.decoded
-                                                        .quoteVault,
-                                                    usdcCentralPool:
-                                                      exchange.usdcCentralPool,
-                                                    vaultSigner: vaultOwner,
-                                                    //    orderPayerTokenAccount: (side === OrderSide.Bid ? userAccount.userMarginAccountUsdc : longSPLTokenVault),
-                                                    //    instrumentTokenMintAuthorityPda: mintAuthAddress,
-                                                    instrumentShortSplTokenMint:
-                                                      optifiMarket.instrumentShortSplToken,
-                                                    serumDexProgramId: serumId,
-                                                    tokenProgram:
-                                                      TOKEN_PROGRAM_ID,
-                                                    //    rent: SYSVAR_RENT_PUBKEY
+                                              findOptifiUSDCPoolAuthPDA(context).then(([centralUSDCPoolAuth, _]) => {
+                                                context.program.account.exchange
+                                                  .fetch(exchangeAddress)
+                                                  .then((exchangeRes) => {
+                                                    let exchange =
+                                                      exchangeRes as Exchange;
+                                                    resolve({
+                                                      optifiExchange:
+                                                        exchangeAddress,
+                                                      user: context.provider
+                                                        .wallet.publicKey,
+                                                      userAccount:
+                                                        userAccountAddress,
+                                                      userMarginAccount:
+                                                        userAccount.userMarginAccountUsdc,
+                                                      userInstrumentLongTokenVault:
+                                                        longSPLTokenVault,
+                                                      userInstrumentShortTokenVault:
+                                                        shortSPLTokenVault,
+                                                      optifiMarket: marketAddress,
+                                                      serumMarket:
+                                                        optifiMarket.serumMarket,
+                                                      openOrders:
+                                                        openOrdersAccount,
+                                                      //    openOrdersOwner: userAccountAddress,
+                                                      requestQueue:
+                                                        serumMarket.decoded
+                                                          .requestQueue,
+                                                      eventQueue:
+                                                        serumMarket.decoded
+                                                          .eventQueue,
+                                                      bids: serumMarket.bidsAddress,
+                                                      asks: serumMarket.asksAddress,
+                                                      coinMint:
+                                                        serumMarket.decoded
+                                                          .baseMint,
+                                                      coinVault:
+                                                        serumMarket.decoded
+                                                          .baseVault,
+                                                      pcVault:
+                                                        serumMarket.decoded
+                                                          .quoteVault,
+                                                      usdcFeePool:
+                                                        exchange.usdcFeePool,
+                                                      centralUsdcPoolAuth: centralUSDCPoolAuth,
+                                                      vaultSigner: vaultOwner,
+                                                      //    orderPayerTokenAccount: (side === OrderSide.Bid ? userAccount.userMarginAccountUsdc : longSPLTokenVault),
+                                                      //    instrumentTokenMintAuthorityPda: mintAuthAddress,
+                                                      instrumentShortSplTokenMint:
+                                                        optifiMarket.instrumentShortSplToken,
+                                                      serumDexProgramId: serumId,
+                                                      tokenProgram:
+                                                        TOKEN_PROGRAM_ID,
+                                                      //    rent: SYSVAR_RENT_PUBKEY
+                                                    });
+                                                  })
+                                                  .catch((err) => {
+                                                    console.error(err);
+                                                    reject(err);
                                                   });
-                                                })
+                                              })
                                                 .catch((err) => {
-                                                  console.error(err);
+                                                  console.error(
+                                                    "Got error trying to load serum market info from ",
+                                                    optifiMarket.serumMarket,
+                                                    err
+                                                  );
                                                   reject(err);
                                                 });
-                                            })
-                                            .catch((err) => {
-                                              console.error(
-                                                "Got error trying to load serum market info from ",
-                                                optifiMarket.serumMarket,
-                                                err
-                                              );
-                                              reject(err);
-                                            });
+                                            }).catch((err) => reject(err));
                                         })
                                         .catch((err) => reject(err));
                                     })
@@ -279,96 +284,99 @@ export function formPlaceOrderContext(
                                               context.program.account.chain
                                                 .fetch(optifiMarket.instrument)
                                                 .then((chainRes) => {
-                                                  // console.log("Chain res is ", chainRes);
-                                                  // @ts-ignore
-                                                  let chain = chainRes as Chain;
-                                                  // console.log("Chain is", chain);
-                                                  context.program.account.exchange
-                                                    .fetch(exchangeAddress)
-                                                    .then((exchangeRes) => {
-                                                      findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
-                                                        let exchange =
-                                                          exchangeRes as Exchange;
+                                                  findOptifiUSDCPoolAuthPDA(context).then(([centralUSDCPoolAuth, _]) => {
+                                                    // console.log("Chain res is ", chainRes);
+                                                    // @ts-ignore
+                                                    let chain = chainRes as Chain;
+                                                    // console.log("Chain is", chain);
+                                                    context.program.account.exchange
+                                                      .fetch(exchangeAddress)
+                                                      .then((exchangeRes) => {
+                                                        findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
+                                                          let exchange =
+                                                            exchangeRes as Exchange;
 
-                                                        let result: PlaceOrderContext =
-                                                        {
-                                                          optifiExchange:
-                                                            exchangeAddress,
-                                                          user: context.provider
-                                                            .wallet.publicKey,
-                                                          userAccount:
-                                                            userAccountAddress,
-                                                          userMarginAccount:
-                                                            userAccount.userMarginAccountUsdc,
-                                                          userInstrumentLongTokenVault:
-                                                            longSPLTokenVault,
-                                                          userInstrumentShortTokenVault:
-                                                            shortSPLTokenVault,
-                                                          optifiMarket:
-                                                            marketAddress,
-                                                          serumMarket:
-                                                            optifiMarket.serumMarket,
-                                                          openOrders:
-                                                            openOrdersAccount,
-                                                          requestQueue:
-                                                            serumMarket.decoded
-                                                              .requestQueue,
-                                                          eventQueue:
-                                                            serumMarket.decoded
-                                                              .eventQueue,
-                                                          bids: serumMarket.bidsAddress,
-                                                          asks: serumMarket.asksAddress,
-                                                          coinMint:
-                                                            serumMarket.decoded
-                                                              .baseMint,
-                                                          coinVault:
-                                                            serumMarket.decoded
-                                                              .baseVault,
-                                                          pcVault:
-                                                            serumMarket.decoded
-                                                              .quoteVault,
-                                                          usdcCentralPool:
-                                                            exchange.usdcCentralPool,
-                                                          vaultSigner:
-                                                            vaultOwner,
-                                                          instrumentTokenMintAuthorityPda:
-                                                            mintAuthAddress,
-                                                          instrumentShortSplTokenMint:
-                                                            optifiMarket.instrumentShortSplToken,
-                                                          serumDexProgramId:
-                                                            serumId,
-                                                          tokenProgram:
-                                                            TOKEN_PROGRAM_ID,
-                                                          rent: SYSVAR_RENT_PUBKEY,
-                                                          // clock:
-                                                          //   SYSVAR_CLOCK_PUBKEY,
-                                                          marginStressAccount: marginStressAddress,
-                                                        };
-                                                        resolve([result, chain.asset]);
+                                                          let result: PlaceOrderContext =
+                                                          {
+                                                            optifiExchange:
+                                                              exchangeAddress,
+                                                            user: context.provider
+                                                              .wallet.publicKey,
+                                                            userAccount:
+                                                              userAccountAddress,
+                                                            userMarginAccount:
+                                                              userAccount.userMarginAccountUsdc,
+                                                            userInstrumentLongTokenVault:
+                                                              longSPLTokenVault,
+                                                            userInstrumentShortTokenVault:
+                                                              shortSPLTokenVault,
+                                                            optifiMarket:
+                                                              marketAddress,
+                                                            serumMarket:
+                                                              optifiMarket.serumMarket,
+                                                            openOrders:
+                                                              openOrdersAccount,
+                                                            requestQueue:
+                                                              serumMarket.decoded
+                                                                .requestQueue,
+                                                            eventQueue:
+                                                              serumMarket.decoded
+                                                                .eventQueue,
+                                                            bids: serumMarket.bidsAddress,
+                                                            asks: serumMarket.asksAddress,
+                                                            coinMint:
+                                                              serumMarket.decoded
+                                                                .baseMint,
+                                                            coinVault:
+                                                              serumMarket.decoded
+                                                                .baseVault,
+                                                            pcVault:
+                                                              serumMarket.decoded
+                                                                .quoteVault,
+                                                            usdcFeePool:
+                                                              exchange.usdcFeePool,
+                                                            centralUsdcPoolAuth: centralUSDCPoolAuth,
+                                                            vaultSigner:
+                                                              vaultOwner,
+                                                            instrumentTokenMintAuthorityPda:
+                                                              mintAuthAddress,
+                                                            instrumentShortSplTokenMint:
+                                                              optifiMarket.instrumentShortSplToken,
+                                                            serumDexProgramId:
+                                                              serumId,
+                                                            tokenProgram:
+                                                              TOKEN_PROGRAM_ID,
+                                                            rent: SYSVAR_RENT_PUBKEY,
+                                                            // clock:
+                                                            //   SYSVAR_CLOCK_PUBKEY,
+                                                            marginStressAccount: marginStressAddress,
+                                                          };
+                                                          resolve([result, chain.asset]);
+                                                        })
+                                                          .catch((err) => {
+                                                            console.error(err);
+                                                            reject(err);
+                                                          });
                                                       })
-                                                        .catch((err) => {
-                                                          console.error(err);
-                                                          reject(err);
-                                                        });
-                                                    })
+                                                      .catch((err) => {
+                                                        console.error(err);
+                                                        reject(err);
+                                                      });
+                                                  })
                                                     .catch((err) => {
                                                       console.error(err);
                                                       reject(err);
                                                     });
                                                 })
                                                 .catch((err) => {
-                                                  console.error(err);
+                                                  console.error(
+                                                    "Got error trying to load serum market info from ",
+                                                    optifiMarket.serumMarket,
+                                                    err
+                                                  );
                                                   reject(err);
                                                 });
-                                            })
-                                            .catch((err) => {
-                                              console.error(
-                                                "Got error trying to load serum market info from ",
-                                                optifiMarket.serumMarket,
-                                                err
-                                              );
-                                              reject(err);
-                                            });
+                                            }).catch((err) => reject(err));
                                         })
                                         .catch((err) => reject(err));
                                     })
@@ -454,84 +462,87 @@ export function formCancelOrderContext(
                                               context.program.account.chain
                                                 .fetch(optifiMarket.instrument)
                                                 .then((chainRes) => {
-                                                  // console.log("Chain res is ", chainRes);
-                                                  // @ts-ignore
-                                                  let chain = chainRes as Chain;
-                                                  // console.log("Chain is", chain);
-                                                  context.program.account.exchange
-                                                    .fetch(exchangeAddress)
-                                                    .then((exchangeRes) => {
-                                                      let exchange =
-                                                        exchangeRes as Exchange;
-                                                      let result: CancelOrderContext =
-                                                      {
-                                                        optifiExchange:
-                                                          exchangeAddress,
-                                                        user: context.provider
-                                                          .wallet.publicKey,
-                                                        userAccount:
-                                                          userAccountAddress,
-                                                        userMarginAccount:
-                                                          userAccount.userMarginAccountUsdc,
-                                                        userInstrumentLongTokenVault:
-                                                          longSPLTokenVault,
-                                                        userInstrumentShortTokenVault:
-                                                          shortSPLTokenVault,
-                                                        optifiMarket:
-                                                          marketAddress,
-                                                        serumMarket:
-                                                          optifiMarket.serumMarket,
-                                                        openOrders:
-                                                          openOrdersAccount,
-                                                        requestQueue:
-                                                          serumMarket.decoded
-                                                            .requestQueue,
-                                                        eventQueue:
-                                                          serumMarket.decoded
-                                                            .eventQueue,
-                                                        bids: serumMarket.bidsAddress,
-                                                        asks: serumMarket.asksAddress,
-                                                        coinMint:
-                                                          serumMarket.decoded
-                                                            .baseMint,
-                                                        coinVault:
-                                                          serumMarket.decoded
-                                                            .baseVault,
-                                                        pcVault:
-                                                          serumMarket.decoded
-                                                            .quoteVault,
-                                                        usdcCentralPool:
-                                                          exchange.usdcCentralPool,
-                                                        vaultSigner:
-                                                          vaultOwner,
-                                                        instrumentShortSplTokenMint:
-                                                          optifiMarket.instrumentShortSplToken,
-                                                        serumDexProgramId:
-                                                          serumId,
-                                                        tokenProgram:
-                                                          TOKEN_PROGRAM_ID,
-                                                        marginStressAccount: serumId,
-                                                      };
-                                                      resolve(result);
-                                                    })
+                                                  findOptifiUSDCPoolAuthPDA(context).then(([centralUSDCPoolAuth, _]) => {
+                                                    // console.log("Chain res is ", chainRes);
+                                                    // @ts-ignore
+                                                    let chain = chainRes as Chain;
+                                                    // console.log("Chain is", chain);
+                                                    context.program.account.exchange
+                                                      .fetch(exchangeAddress)
+                                                      .then((exchangeRes) => {
+                                                        let exchange =
+                                                          exchangeRes as Exchange;
+                                                        let result: CancelOrderContext =
+                                                        {
+                                                          optifiExchange:
+                                                            exchangeAddress,
+                                                          user: context.provider
+                                                            .wallet.publicKey,
+                                                          userAccount:
+                                                            userAccountAddress,
+                                                          userMarginAccount:
+                                                            userAccount.userMarginAccountUsdc,
+                                                          userInstrumentLongTokenVault:
+                                                            longSPLTokenVault,
+                                                          userInstrumentShortTokenVault:
+                                                            shortSPLTokenVault,
+                                                          optifiMarket:
+                                                            marketAddress,
+                                                          serumMarket:
+                                                            optifiMarket.serumMarket,
+                                                          openOrders:
+                                                            openOrdersAccount,
+                                                          requestQueue:
+                                                            serumMarket.decoded
+                                                              .requestQueue,
+                                                          eventQueue:
+                                                            serumMarket.decoded
+                                                              .eventQueue,
+                                                          bids: serumMarket.bidsAddress,
+                                                          asks: serumMarket.asksAddress,
+                                                          coinMint:
+                                                            serumMarket.decoded
+                                                              .baseMint,
+                                                          coinVault:
+                                                            serumMarket.decoded
+                                                              .baseVault,
+                                                          pcVault:
+                                                            serumMarket.decoded
+                                                              .quoteVault,
+                                                          usdcFeePool:
+                                                            exchange.usdcFeePool,
+                                                          centralUsdcPoolAuth: centralUSDCPoolAuth,
+                                                          vaultSigner:
+                                                            vaultOwner,
+                                                          instrumentShortSplTokenMint:
+                                                            optifiMarket.instrumentShortSplToken,
+                                                          serumDexProgramId:
+                                                            serumId,
+                                                          tokenProgram:
+                                                            TOKEN_PROGRAM_ID,
+                                                          marginStressAccount: serumId,
+                                                        };
+                                                        resolve(result);
+                                                      })
+                                                      .catch((err) => {
+                                                        console.error(err);
+                                                        reject(err);
+                                                      });
+                                                  })
                                                     .catch((err) => {
                                                       console.error(err);
                                                       reject(err);
                                                     });
                                                 })
                                                 .catch((err) => {
-                                                  console.error(err);
+                                                  console.error(
+                                                    "Got error trying to load serum market info from ",
+                                                    optifiMarket.serumMarket,
+                                                    err
+                                                  );
                                                   reject(err);
                                                 });
-                                            })
-                                            .catch((err) => {
-                                              console.error(
-                                                "Got error trying to load serum market info from ",
-                                                optifiMarket.serumMarket,
-                                                err
-                                              );
-                                              reject(err);
-                                            });
+                                            }).catch((err) => reject(err));
                                         })
                                         .catch((err) => reject(err));
                                     })
@@ -771,4 +782,39 @@ export async function loadOrdersForUserAccount(context: Context, serumMarketAddr
 // Customised seurm helper
 function filterForOpenOrders2(bids: Orderbook, asks: Orderbook, openOrdersAccountAddress: PublicKey) {
   return [...bids, ...asks].filter((order) => order.openOrdersAddress.equals(openOrdersAccountAddress));
+}
+
+
+// Fee Calculator
+function getTotalFee(orderType: OrderType, is_registered_maker: Boolean): number {
+  switch (orderType) {
+    case OrderType.PostOnly: {
+      return MAKER_FEE;
+    }
+    default: {
+      return TAKER_FEE;
+    }
+  }
+}
+function getSerumFee(orderType: OrderType, is_registered_maker: Boolean): number {
+  switch (orderType) {
+    case OrderType.PostOnly: {
+      return SERUM_MAKER_FEE;
+    }
+    default: {
+      return SERUM_TAKER_FEE;
+    }
+  }
+}
+export function calculatePcQtyAndFee(maxPcQty: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
+
+  let totalFee = maxPcQty * getTotalFee(orderType, is_registered_maker);
+  let serumFee = maxPcQty * getSerumFee(orderType, is_registered_maker);
+
+  switch (orderSide) {
+    case OrderSide.Ask:
+      return [maxPcQty - totalFee, maxPcQty - serumFee, totalFee];
+    case OrderSide.Bid:
+      return [maxPcQty + totalFee, maxPcQty + serumFee, totalFee];
+  }
 }

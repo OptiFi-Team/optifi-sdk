@@ -62,32 +62,34 @@ export default function initialize(context: Context): Promise<InstructionResult<
         findExchangeAccount(context).then(([exchangeAddress, bump]) => {
             findOptifiUSDCPoolAuthPDA(context).then(([poolAuthPDAAddress, poolBump]) => {
                 const usdcCentralPoolWallet = anchor.web3.Keypair.generate();
+                const usdcFeePoolWallet = anchor.web3.Keypair.generate();
                 createUSDCPoolAccount(context, poolAuthPDAAddress, usdcCentralPoolWallet).then(async (res) => {
-                    // try {
-                    //     let tx = new Transaction();
-                    //     tx.add(
-                    //         SystemProgram.createAccount({
-                    //             fromPubkey: context.provider.wallet.publicKey,
-                    //             newAccountPubkey: exchangeAddress,
-                    //             lamports: await context.connection.getMinimumBalanceForRentExemption(
-                    //                 102400
-                    //             ),
-                    //             space: 102400,
-                    //             programId: context.program.programId,
-                    //         })
-                    //     );
-                    //     let res = await context.provider.wallet.signTransaction(tx);
-
-                    //     console.log("Successfully created exchange account, ", res);
-                    // }
-                    // catch (e) {
-                    //     console.error("Got error while trying to create exchange account ", e);
-                    //     reject(e)
-                    // }
-
-                    try {
+                    console.log(formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction));
+                    createUSDCPoolAccount(context, poolAuthPDAAddress, usdcFeePoolWallet).then(async (res) => {
                         console.log(formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction));
-                        let initializeTx = context.program.transaction.initialize(
+                        // try {
+                        //     let tx = new Transaction();
+                        //     tx.add(
+                        //         SystemProgram.createAccount({
+                        //             fromPubkey: context.provider.wallet.publicKey,
+                        //             newAccountPubkey: exchangeAddress,
+                        //             lamports: await context.connection.getMinimumBalanceForRentExemption(
+                        //                 102400
+                        //             ),
+                        //             space: 102400,
+                        //             programId: context.program.programId,
+                        //         })
+                        //     );
+                        //     let res = await context.provider.wallet.signTransaction(tx);
+
+                        //     console.log("Successfully created exchange account, ", res);
+                        // }
+                        // catch (e) {
+                        //     console.error("Got error while trying to create exchange account ", e);
+                        //     reject(e)
+                        // }
+
+                        context.program.rpc.initialize(
                             bump,
                             {
                                 uuid: context.exchangeUUID,
@@ -106,34 +108,21 @@ export default function initialize(context: Context): Promise<InstructionResult<
                                     optifiExchange: exchangeAddress,
                                     authority: context.provider.wallet.publicKey,
                                     usdcCentralPool: usdcCentralPoolWallet.publicKey,
+                                    usdcFeePool: usdcFeePoolWallet.publicKey,
                                     payer: context.provider.wallet.publicKey,
                                     systemProgram: SystemProgram.programId,
                                     rent: SYSVAR_RENT_PUBKEY
                                 }
                             },
-                        );
-                        console.debug("Dispatching initialization transaction");
-                        signAndSendTransaction(context, initializeTx).then((res) => {
-                            let txUrl = formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction);
-                            console.log("Successfully created exchange, ", txUrl);
+                        ).then((res) => {
                             resolve({
                                 successful: true,
-                                data: context.exchangeUUID
+                                data: res as TransactionSignature
                             })
-                        }).catch((err) => {
-                            console.error(err);
-                            reject({
-                                successful: false,
-                                error: err
-                            } as InstructionResult<any>);
-                        })
-                    }
-                    catch (e) {
-                        console.error("Got error while trying to initialize instructions ", e);
-                        reject(e)
-                    }
+                        }).catch((err) => reject(err))
+                    }).catch((err) => reject(err))
                 }).catch((err) => reject(err))
-            })
+            }).catch((err) => reject(err))
         }).catch((err) => {
             console.error(err);
             reject(err);

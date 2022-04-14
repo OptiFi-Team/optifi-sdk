@@ -2,12 +2,8 @@ import Context from "../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { Market, OpenOrders } from "@project-serum/serum";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
-import { OptifiMarket, UserAccount } from "../types/optifi-exchange-types";
-import { findOrCreateAssociatedTokenAccount } from "./token";
+import { OptifiMarket } from "../types/optifi-exchange-types";
 import { findUserAccount, getFilteredProgramAccounts } from "./accounts";
-import { signAndSendTransaction, TransactionResultType } from "./transactions";
-import settleFunds from "../instructions/settleFunds";
-import { formatExplorerAddress, SolanaEntityType } from "./debug";
 import settleOrderFunds from "../instructions/settleOrderFunds";
 
 export function getSerumMarket(context: Context, marketAddress: PublicKey): Promise<Market> {
