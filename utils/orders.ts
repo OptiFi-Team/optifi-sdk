@@ -724,9 +724,9 @@ export function getAllOpenOrdersForUser(
                 price: order.price,
                 status: order.size < clientGuide[order.clientId] ? 'Partially Filled' : 'Open',
                 fillPercentage: clientGuide[order.clientId] ? 1 - (order.size / clientGuide[order.clientId]) : 0,
-                clientId: order.clientId,
+                clientId: order.clientId.toNumber(),
                 assets: optifiMarket.asset,
-                instrumentType: optifiMarket.instrumentType,
+                instrumentType: Object.keys(optifiMarket.instrumentType)[0],
                 strike: optifiMarket.strike,
                 expiryDate: optifiMarket.expiryDate
               }

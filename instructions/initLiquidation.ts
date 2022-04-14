@@ -1,7 +1,7 @@
-import Context from "../../types/context";
+import Context from "../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
-import InstructionResult from "../../types/instructionResult";
-import { findExchangeAccount, findLiquidationState } from "../../utils/accounts";
+import InstructionResult from "../types/instructionResult";
+import { findExchangeAccount, findLiquidationState } from "../utils/accounts";
 
 export default function initLiquidation(context: Context, userToLiquidate: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {

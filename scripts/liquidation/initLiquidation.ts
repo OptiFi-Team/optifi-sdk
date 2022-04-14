@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
-import initLiquidation from "../../instructions/liquidation/initLiquidation";
+import initLiquidation from "../../instructions/initLiquidation";
 
 
 let userToLiquidate = new PublicKey("9QEsU961hXuMQuKA1PDK17HAv1JiwxSnavGr5yrKCjZD");

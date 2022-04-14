@@ -61,14 +61,7 @@ let reg_t_margin = option_reg_t_margin(spot, strike, stress, isCall);
 // console.log('reg_t_margin', reg_t_margin)
 
 let delta = option_delta(spot, strike, iv, r, q, t, isCall);
-console.log('spot ', spot)
-console.log('strike ', strike)
-console.log('iv ', iv)
-console.log('r ', r)
-console.log('q ', q)
-console.log('t ', t)
-console.log('isCall ', isCall)
-console.log('delta', delta)
+// console.log('delta', delta)
 
 let intrinsic = option_intrinsic_value(spot, strike, isCall);
 // console.log('intrinsic', intrinsic)
@@ -94,9 +87,9 @@ let stress_price_change = stress_results['Stress Price Delta']
 let margin_results_user1 = calculateMargin(user1, spot, t, price, intrinsic, stress_price_change)
 let margin_results_user2 = calculateMargin(user2, spot, t, price, intrinsic, stress_price_change)
 let margin_results_user3 = calculateMargin(user3, spot, t, price, intrinsic, stress_price_change)
-// console.log('margin_results_user1', margin_results_user1)
-// console.log('margin_results_user2', margin_results_user2)
-// console.log('margin_results_user3', margin_results_user3)
+console.log('margin_results_user1', margin_results_user1)
+console.log('margin_results_user2', margin_results_user2)
+console.log('margin_results_user3', margin_results_user3)
 
 // the following results are from phyton
 let expected_margin_results_user1 = {
