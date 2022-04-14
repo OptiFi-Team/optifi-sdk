@@ -1,17 +1,10 @@
-import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
-import InstructionResult from "../types/instructionResult";
+import { PublicKey } from "@solana/web3.js";
 import { Chain, OrderSide } from "../types/optifi-exchange-types";
-import { OptifiMarket } from "../types/optifi-exchange-types";
 import { findUserAccount } from './accounts'
 import { calculateMargin, stress_function, option_intrinsic_value, reshap } from "./calculateMargin";
-import { getPosition, findOptifiMarkets, getTokenAmount } from "./market";
-import UserPosition from "../types/user";
 import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
 import { SWITCHBOARD, USDC_DECIMALS } from "../constants";
-import { getAccount } from "@solana/spl-token";
-import { numberAssetToDecimal } from "./generic";
 
 export const r = 0;
 export const q = 0;
@@ -285,7 +278,7 @@ export async function getSpotnIv(context: Context) {
     let iv = ivRes.lastRoundResult?.result! / 100
 
     let result = [spotRes, ivRes];
-    
+
     return result
 }
 

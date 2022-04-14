@@ -3,7 +3,7 @@ import { initializeContext } from "../../index";
 import liquidateUser from "../../sequences/liquidateUser";
 
 
-let userToLiquidate = new PublicKey("9wJTJhgnivUV28pk4y3teU5HAM1hfXbap3NBvTGoizVB");
+let userToLiquidate = new PublicKey("6k1Wxd3qekJfRpEpThyQpNEY4vLtXkwSY9LZ2fTr7JCG");
 
 
 initializeContext().then((context) => {

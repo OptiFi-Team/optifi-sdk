@@ -371,7 +371,7 @@ export function initializeUserIfNotInitializedOnMarket(context: Context,
 /**
  * To get the user token amount on the market
  */
-export function getTokenAmount(
+export function getTokenUiAmount(
     context: Context,
     instrumentSplToken: PublicKey,
     userAccountAddress: PublicKey
@@ -397,7 +397,33 @@ export function getTokenAmount(
     })
 }
 
-export function watchGetTokenAmount(
+export function getTokenAmount(
+    context: Context,
+    instrumentSplToken: PublicKey,
+    userAccountAddress: PublicKey
+): Promise<number> {
+    return new Promise((resolve, reject) => {
+        findAssociatedTokenAccount(context, instrumentSplToken, userAccountAddress).then(
+            (Account) => {
+                context.connection.getTokenAccountBalance(Account[0]).then((amount) => {
+                    if (amount.value.uiAmount !== null) {
+                        resolve(amount.value.uiAmount * (10 ** amount.value.decimals));
+                    }
+                    else {
+                        resolve(0);
+                    }
+                }).catch((err) => {
+                    console.error(err);
+                    reject(err)
+                })
+            }).catch((err) => {
+                console.error(err);
+                reject(err)
+            })
+    })
+}
+
+export function watchGetTokenUiAmount(
     context: Context,
     instrumentSplToken: PublicKey,
     userAccountAddress: PublicKey
@@ -405,7 +431,7 @@ export function watchGetTokenAmount(
     return new Promise((resolve, reject) => {
         const waitGetTokenAmount = async () => {
             try {
-                let res = await getTokenAmount(context, instrumentSplToken, userAccountAddress);
+                let res = await getTokenUiAmount(context, instrumentSplToken, userAccountAddress);
                 resolve(res);
             } catch (e) {
                 console.error(e);
@@ -427,8 +453,8 @@ export function getPosition(
     userAccountAddress: PublicKey,
 ): Promise<[number, number]> {
     return new Promise(async (resolve, reject) => {
-        let longAmount = await watchGetTokenAmount(context, market.instrumentLongSplToken, userAccountAddress);
-        let shortAmount = await watchGetTokenAmount(context, market.instrumentShortSplToken, userAccountAddress);
+        let longAmount = await watchGetTokenUiAmount(context, market.instrumentLongSplToken, userAccountAddress);
+        let shortAmount = await watchGetTokenUiAmount(context, market.instrumentShortSplToken, userAccountAddress);
         resolve([longAmount, shortAmount])
     })
 }

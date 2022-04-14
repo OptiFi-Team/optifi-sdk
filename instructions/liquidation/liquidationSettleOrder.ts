@@ -1,5 +1,5 @@
 import Context from "../../types/context";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../../utils/accounts";
 import { OptifiMarket } from "../../types/optifi-exchange-types";
 import { findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount } from "../../utils/token";
@@ -43,17 +43,8 @@ export default function liquidationSettleOrder(context: Context,
                                                             // @ts-ignore
                                                             let chain = chainRes as Chain;
                                                             findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
-                                                                let ix = context.program.instruction.userMarginCalculate(
-                                                                    {
-                                                                        accounts: {
-                                                                            optifiExchange: exchangeAddress,
-                                                                            marginStressAccount: marginStressAddress,
-                                                                            userAccount: userAccount,
-                                                                            clock: SYSVAR_CLOCK_PUBKEY
-                                                                        }
-                                                                    }
-                                                                );
-                                                                context.program.rpc.liquidationSettleOrder(
+                                                                let ix: TransactionInstruction[] = []
+                                                                let ix1 = context.program.instruction.liquidationSettleOrder(
                                                                     {
                                                                         accounts: {
                                                                             optifiExchange: exchangeAddress,
@@ -79,8 +70,19 @@ export default function liquidationSettleOrder(context: Context,
                                                                             serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
                                                                             tokenProgram: TOKEN_PROGRAM_ID,
                                                                             liquidator: context.provider.wallet.publicKey,
+                                                                        }
+                                                                    }
+                                                                );
+                                                                ix.push(ix1);
+                                                                context.program.rpc.userMarginCalculate(
+                                                                    {
+                                                                        accounts: {
+                                                                            optifiExchange: exchangeAddress,
+                                                                            marginStressAccount: marginStressAddress,
+                                                                            userAccount: userAccountAddress,
+                                                                            clock: SYSVAR_CLOCK_PUBKEY
                                                                         },
-                                                                        instructions: [ix]
+                                                                        instructions: ix
                                                                     }
                                                                 ).then((res) => {
                                                                     resolve({
