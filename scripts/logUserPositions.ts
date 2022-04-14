@@ -41,7 +41,7 @@ initializeContext().then(async (context) => {
     let marketPrices: number[] = []
     userPositions.forEach(position => {
         let market = marketsInfos.find(market => market.marketAddress.toString() == position.marketId.toString())!
-        marketPrices.push(market.askPrice + market.bidPrice / 2)
+        marketPrices.push((market.askPrice + market.bidPrice) / 2)
     })
 
     // prepare trade history
