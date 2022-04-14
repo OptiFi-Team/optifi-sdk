@@ -36,7 +36,7 @@ export const STRIKE_LADDER_SIZE: number = 5;
 export const AMM_TRADE_CAPACITY = 25;
 
 // How many assets are supported, should be in the same sequence as enum
-export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin];
+export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin, Asset.Ethereum];
 
 // How many duration are supported
 export const SUPPORTED_DURATION: Duration[] = [Duration.Weekly, Duration.Monthly];
@@ -113,7 +113,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111213",
+    "https://api.devnet.solana.com": "111111",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
