@@ -32,7 +32,7 @@ export default function placeOrder(context: Context,
             console.log("maxCoinQty: ", maxCoinQty);
             console.log("totalFee: ", totalFee);
             console.log("maxPcQty: ", maxPcQty);
-            console.log("totalPcQty: ", maxPcQty);
+            console.log("totalPcQty: ", totalPcQty);
 
 
             let ix = await marginStress(context, asset);
