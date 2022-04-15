@@ -8,6 +8,7 @@ import { OptifiMarketFullData, Position } from "./market";
 import { option_delta } from "./calculateMargin";
 import { resolve } from "path";
 import { rejects } from "assert";
+import { table } from "console";
 
 interface ProfitChance {
     breakEven: number,
@@ -42,7 +43,7 @@ export const q = 0;
  * 
  * @return An array of ProfitChanceRes for each optifi market
  */
-export function calcProfitChance(
+export async function calcProfitChance(
     context: Context,
     optifiMarkets: OptifiMarketFullData[],
 ): Promise<ProfitChanceRes[]> {
@@ -54,25 +55,103 @@ export function calcProfitChance(
             // and profit chance with the finished functions below
             // the length of returned array should be equal to length of optifiMarkets
             // =====================================================
-
-            let break_even_data = await getBreakEvenData(context, optifiMarkets)//get spot , iv , r , q , t , strike
-            //break_even_arr[0]: askPrice break even
-            //break_even_arr[1]: bidPrice break even
-            let break_even_arr = await calcBreakEven(break_even_data);
-
-            console.log(break_even_arr);
             let res: ProfitChanceRes[] = [];
-            //TODO
-            //spot 和iv 都只會有兩種,所以只要call 兩次d2就可以了
+            let marketLen = optifiMarkets.length;
 
-            // resolve(res);
+            let marketData = await getMarketData(context, optifiMarkets)//get spot , iv , r , q , t , strike, total len is 20
+            let BTCmarketData = marketData.slice(0, marketLen / 2);
+            let ETHmarketData = marketData.slice(marketLen / 2, marketLen);
+            // marketData element:
+            // {
+            //     spot: 3035.5769939999996,
+            //     iv: 0.517,
+            //     t: 0.01936258158929181,
+            //     isCall: 1,
+            //     strike: 3250,
+            //     premium: { askPrice: 0, bidPrice: 0 }
+            //  }
+
+            //breakEvenArr[0]: askPrice break even , len 10
+            //breakEvenArr[1]: bidPrice break even , len 10
+            //if askPrice is equal to bidPrice , two array should be equal
+            let BTCbreakEvenArr = await calcBreakEven(BTCmarketData);
+            let ETHbreakEvenArr = await calcBreakEven(ETHmarketData);
+
+            //prepare t
+            let tBTCTmp: number[] = [];
+            let tETHTmp: number[] = [];
+
+            for (let data of BTCmarketData) {
+                tBTCTmp.push(data.t);
+            }
+            for (let data of ETHmarketData) {
+                tETHTmp.push(data.t);
+            }
+
+            let tBTC = reshap(tBTCTmp);
+            let tETH = reshap(tETHTmp);
+  
+            let BTCbreakEvenAskPriceArr = reshap(BTCbreakEvenArr[0])
+            let BTCbreakEvenBidPriceArr = reshap(BTCbreakEvenArr[1])
+            let ETHbreakEvenAskPriceArr = reshap(ETHbreakEvenArr[0])
+            let ETHbreakEvenBidPriceArr = reshap(ETHbreakEvenArr[1])
+
+            //spot and iv only btc/eth
+            //BTC
+            let d2BTCAskPriceResult = d2(marketData[0].spot, BTCbreakEvenAskPriceArr, marketData[0].iv, r, q, tBTC)
+            let d2BTCBidPriceResult = d2(marketData[0].spot, BTCbreakEvenBidPriceArr, marketData[0].iv, r, q, tBTC)
+            //ETH
+            let d2ETHAskPriceResult = d2(marketData[marketLen / 2].spot, ETHbreakEvenAskPriceArr, marketData[marketLen / 2].iv, r, q, tETH)
+            let d2ETHBidPriceResult = d2(marketData[marketLen / 2].spot, ETHbreakEvenBidPriceArr, marketData[marketLen / 2].iv, r, q, tETH)
+
+            //BTC profit chance
+            let ndfBTCAskPriceResult = ndf(d2BTCAskPriceResult);
+            let ndfBTCBidPriceResult = ndf(d2BTCBidPriceResult);
+            //ETH profit chance
+            let ndfETHAskPriceResult = ndf(d2ETHAskPriceResult);
+            let ndfETHBidPriceResult = ndf(d2ETHBidPriceResult);
+
+            // BTC
+            for (let i = 0; i < marketLen / 2; i++) {
+                let oneRes: ProfitChanceRes = {
+                    buy:
+                    {
+                        breakEven: BTCbreakEvenBidPriceArr[i][0],
+                        profitChance: ndfBTCBidPriceResult[i]
+                    },
+                    sell: {
+                        breakEven: BTCbreakEvenAskPriceArr[i][0],
+                        profitChance: ndfBTCAskPriceResult[i]
+                    }
+                }
+
+                res.push(oneRes)
+            }
+            // ETH
+            for (let i = 0; i < marketLen / 2; i++) {
+                let oneRes: ProfitChanceRes = {
+                    buy:
+                    {
+                        breakEven: ETHbreakEvenBidPriceArr[i][0],
+                        profitChance: ndfETHBidPriceResult[i]
+                    },
+                    sell: {
+                        breakEven: ETHbreakEvenAskPriceArr[i][0],
+                        profitChance: ndfETHAskPriceResult[i]
+                    }
+                }
+                res.push(oneRes)
+            }
+
+
+            resolve(res);
         } catch (err) {
             reject(err)
         }
     })
 }
 
-function getBreakEvenData(
+function getMarketData(
     context: Context,
     optifiMarkets: OptifiMarketFullData[]
 ): Promise<BreakEvenDataRes> {
@@ -93,6 +172,7 @@ function getBreakEvenData(
 
             let today = new Date().getTime();
             let res: BreakEvenDataRes = optifiMarkets.map(market => {
+
                 let spot: number;
                 let iv: number;
                 switch (market.asset) {
@@ -137,9 +217,11 @@ function calcBreakEven(
             let len = break_even_data.length;
             let res = new Array<Array<number>>()
             let sign: number;
+
             for (let len = 0; len < 2; len++) {
                 res.push([]);
             }
+
             for (let i = 0; i < len; i++) {
                 sign = (break_even_data[i].isCall == 1) ? 1 : -1;
                 //askPrice break even
@@ -152,53 +234,4 @@ function calcBreakEven(
             rejects(err);
         }
     })
-
-
-    // let lenIsSame = (
-    //     (STRIKE.length == PREMIUM.length) &&
-    //     (STRIKE.length == IS_CALL.length) &&
-    //     (STRIKE.length == TIME_TO_MATURITY.length)
-    // )
-    // if (!lenIsSame) {
-    //     console.log("check element amount in calcMarginTestData!")
-    //     console.log("STRIKE.length: " + STRIKE.length);
-    //     console.log("PREMIUM.length: " + PREMIUM.length);
-    //     console.log("IS_CALL.length: " + IS_CALL.length);
-    //     console.log("TIME_TO_MATURITY.length: " + TIME_TO_MATURITY.length);
-    //     return [];
-    // }
-    // let len = (STRIKE.length > PREMIUM.length) ? STRIKE.length : PREMIUM.length;
-    // let res: number[] = [];
-    // let sign: number;
-    // for (let i = 0; i < len; i++) {
-    //     sign = (IS_CALL[i] == 1) ? 1 : -1;
-    //     res.push(STRIKE[i] + sign * PREMIUM[i]);
-    // }
-    // return res;
 }
-
-// export function calcNDF(
-//     context: Context,
-//     spot: number,
-//     iv: number,
-//     r: number,
-//     q: number,
-// ): Promise<number[]> {
-//     return new Promise(async (resolve, reject) => {
-//         try {
-//             let break_even_arr = calcBreakEven();
-//             let break_even = reshap(break_even_arr);
-
-//             let t = reshap(TIME_TO_MATURITY);
-
-//             let d2_result = d2(spot, break_even, iv, r, q, t)
-//             let ndf_result = ndf(d2_result);
-
-//             console.log("profit chance:");
-//             console.log(ndf_result);
-//             resolve(ndf_result);
-//         } catch (err) {
-//             reject(err)
-//         }
-//     })
-// }
