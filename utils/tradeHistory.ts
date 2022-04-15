@@ -34,12 +34,10 @@ export function getAllTradesForAccount(
             gasFee: order.gasFee,
             marketAddress: order.marketAddress
           }))
-        } else if (
-          order.txType == "cancel order"
-        ) {
+        } else if (order.txType == "cancel order") {
           let index = trades.findIndex(e => e.clientId == order.clientId)
           if (trades[index].side == "buy") {
-            if (trades[index].maxQuoteQuantity == order.cancelledQuantity!) {
+            if (trades[index].maxQuoteQuantity <= order.cancelledQuantity!) {
               // remove the order if it's totally cancelled
               trades.splice(index, 1)
             } else {
@@ -47,7 +45,7 @@ export function getAllTradesForAccount(
               trades[index].maxQuoteQuantity -= order.cancelledQuantity!
             }
           } else {
-            if (trades[index].maxBaseQuantity == order.cancelledQuantity!) {
+            if (trades[index].maxBaseQuantity <= order.cancelledQuantity!) {
               // remove the order if it's totally cancelled
               trades.splice(index, 1)
             } else {

@@ -8,9 +8,7 @@ import { findOptifiInstruments } from "./market";
 import { numberAssetToDecimal } from "./generic";
 import Decimal from "decimal.js";
 
-const placeOrderSignature = "CMPapPMYm4iS"
-const cancelOrderSignature = "fRxJkFxjTpaL"
-const cancelOrderByClientOrderIdSignature = "264TKrGFGtaF"
+const inxNames = ["placeOrder", "cancelOrderByClientOrderId"];
 
 // get recent tx  - 1000 tx by default
 export const retrievRecentTxs = async (context: Context,
@@ -37,17 +35,17 @@ export const retrievRecentTxsV2 = async (context: Context,
     let signatures = await context.connection.getSignaturesForAddress(
       account
     );
-    Promise.all([
+    Promise.all(
       signatures.map((signature) =>
         context.connection.getTransaction(signature.signature).then((res) => {
           result.push(res!)
         }))
-    ]).then(() => resolve(result))
+    ).then(() => resolve(result))
       .catch((err) => reject(err))
   })
 }
 
-const parseOrderTxs = async (txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
+const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
 
   for (let tx of txs) {
@@ -55,9 +53,10 @@ const parseOrderTxs = async (txs: TransactionResponse[], serumId: PublicKey, ins
     inxs.forEach((inx) => {
       // console.log("inx.data: ", inx.data)
       // console.log("txid: ", tx.transaction.signatures[0]);
-
-      if (inx.data.includes(placeOrderSignature) || inx.data.includes(cancelOrderByClientOrderIdSignature)) {
-        // console.log(txid);
+      let decodedInx = context.program.coder.instruction.decode(inx.data, "base58")
+      // console.log(decodedInx)
+      // if (inx.data.includes(placeOrderSignature) || inx.data.includes(cancelOrderByClientOrderIdSignature)) {
+      if (decodedInx && inxNames.includes(decodedInx.name)) {
         let innerInxs = tx.meta?.innerInstructions!;
         innerInxs.forEach((innerInx) => {
           innerInx.instructions.forEach((inx2) => {
@@ -96,7 +95,7 @@ const parseOrderTxs = async (txs: TransactionResponse[], serumId: PublicKey, ins
 
                   // get the orginal order details
                   let orginalOrder = orderTxs.find(e => e.clientId.toString() == decData.cancelOrderByClientIdV2.clientId.toString())!
-                  
+
                   // console.log("orginalOrder: ", orginalOrder, decData.cancelOrderByClientIdV2.clientId.toNumber())
                   if (orginalOrder) {
                     let record = JSON.parse(JSON.stringify(orginalOrder));
@@ -155,7 +154,12 @@ export function getAllOrdersForAccount(
       // get all recent txs
       let allTxs = await retrievRecentTxsV2(context, account)
       // sort them in ascending time order for btter parsing process
-      allTxs = allTxs.reverse()
+      allTxs.sort(function (a, b) {
+        // Compare the 2 dates
+        if (a.slot < b.slot) return -1;
+        if (a.slot > b.slot) return 1;
+        return 0;
+      });
 
       let instruments
       if (instrumentsWithOptifiMarketAddress) {
@@ -171,7 +175,7 @@ export function getAllOrdersForAccount(
 
       // parse order txs, inlcuding place order, cancel order
       let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
-      let orderTxs = await parseOrderTxs(allTxs, serumId, instruments)
+      let orderTxs = await parseOrderTxs(context, allTxs, serumId, instruments)
       // sort them back to descending time order
       orderTxs.sort(function (a, b) {
         // Compare the 2 dates
