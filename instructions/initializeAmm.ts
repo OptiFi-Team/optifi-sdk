@@ -65,6 +65,7 @@ export function initializeAmm(context: Context,
                                         mangoProgram: mangoProgramId,
                                         mangoGroup: mangoGroup,
                                         ammMangoAccount: ammMangoAccountAddress,
+                                        perpMarket: new PublicKey("FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z"),
                                         ammLiqudityAuth: ammLiquidityAuthAddress
                                     },
                                     signers: [ammUSDCTokenVault, ammLPTokenMint],

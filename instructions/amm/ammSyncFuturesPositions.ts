@@ -115,17 +115,17 @@ export default function ammSyncFuturesPositions(context: Context,
                                     rootBank: usdcRootBank.publicKey,
                                     nodeBank: filteredNodeBanks[0]!.publicKey,
                                     vault: vault,
-                                    ownerTokenAccount: new PublicKey("DtgXSHvstkRUhhbwZhBpbhyFwmXMchsnyvePuAgHbWfe"), // TODO: amm.quoteTokenVault,
+                                    ownerTokenAccount: amm.quoteTokenVault,
                                     payer: context.provider.wallet.publicKey,
                                     tokenProgram: TOKEN_PROGRAM_ID,
                                     perpMarket: new PublicKey("FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z"),
                                     eventQueue: new PublicKey("Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU"),
                                 },
-                                remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) => ({
-                                    isSigner: false,
-                                    isWritable: false,
-                                    pubkey,
-                                }))
+                                // remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) => ({
+                                //     isSigner: false,
+                                //     isWritable: false,
+                                //     pubkey,
+                                // }))
 
                             }
 
