@@ -156,7 +156,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 keypair = Keypair.fromSecretKey(new Uint8Array(readJsonFile<any>(wallet)));
             }
             const idl = optifiExchange as unknown as OptifiExchangeIDL;
-            const connection = new Connection(endpoint);
+            const connection = new Connection(endpoint, "recent");
             const walletWrapper = new anchor.Wallet(keypair);
             const provider = new anchor.Provider(connection, walletWrapper, anchor.Provider.defaultOptions());
             const program = new anchor.Program(idl,

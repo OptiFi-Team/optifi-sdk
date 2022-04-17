@@ -1350,6 +1350,11 @@
           "isSigner": false
         },
         {
+          "name": "perpMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "ammLiqudityAuth",
           "isMut": false,
           "isSigner": false
@@ -1621,6 +1626,102 @@
         },
         {
           "name": "perpMarket",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "perpMarketIndex",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "ammUpdateFutureOrders",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mangoProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mangoGroup",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mangoGroupSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mangoAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mangoCache",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "perpMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rootBank",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nodeBank",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -2632,6 +2733,14 @@
           {
             "name": "ammMangoAccount",
             "type": "publicKey"
+          },
+          {
+            "name": "isHedgeNeeded",
+            "type": "bool"
+          },
+          {
+            "name": "isHedgeInProgress",
+            "type": "bool"
           }
         ]
       }
@@ -3947,6 +4056,14 @@
       "code": 331,
       "name": "IncorrectOpenOrdersAccountsLength",
       "msg": "the length of open orders accounts is incorrect"
+    },
+    {
+      "code": 332,
+      "name": "WrongPerpMarketIndex",
+      "msg": "wrong perp market index"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "Gw3Pw2jYaZd8DHgLBTZ5m2NJGCXf2sb7zWcV6RgUn8Rb"
+  }
 }

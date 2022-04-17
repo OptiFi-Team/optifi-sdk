@@ -19,7 +19,7 @@ import {
 /**
  * Retrieve information about a Mango Account
  */
-async function getMangoAccount(
+export async function getMangoAccount(
     connection: Connection,
     mangoAccountPk: PublicKey,
     dexProgramId: PublicKey,
@@ -49,7 +49,7 @@ export default function ammSyncFuturesPositions(context: Context,
                     let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.endpoint])
                     let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.endpoint])
                     let [ammMangoAccountAddress,] = await getMangoAccountPDA(mangoProgramId, mangoGroup, ammLiquidityAuth, amm.ammIdx)
-                    // console.log("ammMangoAccountAddress: ", ammMangoAccountAddress.toString())
+                    console.log("ammMangoAccountAddress: ", ammMangoAccountAddress.toString())
 
                     // new MangoAccount(ammMangoAccountAddress,)
                     let mangoAccountInfo = await getMangoAccount(context.connection, ammMangoAccountAddress, mangoProgramId)
@@ -59,87 +59,94 @@ export default function ammSyncFuturesPositions(context: Context,
                     let mangoGroupAccountInfo = await client.getMangoGroup(mangoGroup)
                     // console.log("mangoGroupAccountInfo: ", mangoGroupAccountInfo)
                     // console.log("mangoGroupAccountInfo.mangoCache: ", mangoGroupAccountInfo.mangoCache.toString())
+                    const perpMarket = new PublicKey("FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z")
+                    const eventQueue = new PublicKey("Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU")
+                    
+                    let perpMarketIndex = mangoGroupAccountInfo.perpMarkets.findIndex(e => e.perpMarket.equals(perpMarket))
+                    if (mangoGroupAccountInfo.perpMarkets[perpMarketIndex]) {
+                        const rootBanks = await mangoGroupAccountInfo.loadRootBanks(client.connection);
+                        // console.log("rootBanks: ", rootBanks)
+                        // rootBanks.forEach(e => console.log("e?.publicKey.toString(): ", e?.publicKey.toString()))
+                        let mangoUSDCConfig = MANGO_USDC_CONFIG[context.endpoint]
+                        let usdcRootKey = new PublicKey(mangoUSDCConfig["rootKey"])
+                        let index = rootBanks.findIndex(e => e?.publicKey.equals(usdcRootKey))
+                        // console.log("index: ", index)
+                        const usdcRootBank = rootBanks[index];
 
-                    const rootBanks = await mangoGroupAccountInfo.loadRootBanks(client.connection);
-                    // console.log("rootBanks: ", rootBanks)
-                    // rootBanks.forEach(e => console.log("e?.publicKey.toString(): ", e?.publicKey.toString()))
-                    let mangoUSDCConfig = MANGO_USDC_CONFIG[context.endpoint]
-                    let usdcRootKey = new PublicKey(mangoUSDCConfig["rootKey"])
-                    let index = rootBanks.findIndex(e => e?.publicKey.equals(usdcRootKey))
-                    // console.log("index: ", index)
-                    const usdcRootBank = rootBanks[index];
+                        if (usdcRootBank) {
+                            const nodeBanks = await usdcRootBank.loadNodeBanks(client.connection);
 
-                    if (usdcRootBank) {
-                        const nodeBanks = await usdcRootBank.loadNodeBanks(client.connection);
+                            const filteredNodeBanks = nodeBanks.filter((nodeBank) => !!nodeBank);
+                            // expect(filteredNodeBanks.length).to.equal(1);
+                            let vault = filteredNodeBanks[0]!.vault
 
-                        const filteredNodeBanks = nodeBanks.filter((nodeBank) => !!nodeBank);
-                        // expect(filteredNodeBanks.length).to.equal(1);
-                        let vault = filteredNodeBanks[0]!.vault
+                            // console.log(mangoGroupAccountInfo.tokens.forEach(e => console.log(e.mint.toString(), " ", e.rootBank.toString())))
 
-                        // console.log(mangoGroupAccountInfo.tokens.forEach(e => console.log(e.mint.toString(), " ", e.rootBank.toString())))
+                            let spotOracle =
+                                findOracleAccountFromAsset(
+                                    context,
+                                    numberToOptifiAsset(
+                                        amm.asset
+                                    )
+                                );
+                            let ivOracle =
+                                findOracleAccountFromAsset(
+                                    context,
+                                    numberToOptifiAsset(
+                                        amm.asset
+                                    ),
+                                    OracleAccountType.Iv
+                                );
+                            let usdcSpotOracle =
+                                findOracleAccountFromAsset(
+                                    context,
+                                    OptifiAsset.USDC,
+                                    OracleAccountType.Spot
+                                );
 
-                        let spotOracle =
-                            findOracleAccountFromAsset(
-                                context,
-                                numberToOptifiAsset(
-                                    amm.asset
-                                )
-                            );
-                        let ivOracle =
-                            findOracleAccountFromAsset(
-                                context,
-                                numberToOptifiAsset(
-                                    amm.asset
-                                ),
-                                OracleAccountType.Iv
-                            );
-                        let usdcSpotOracle =
-                            findOracleAccountFromAsset(
-                                context,
-                                OptifiAsset.USDC,
-                                OracleAccountType.Spot
-                            );
+                            context.program.rpc.ammSyncFuturePositions(
+                                perpMarketIndex,
+                                {
+                                    accounts: {
+                                        optifiExchange: exchangeAddress,
+                                        amm: ammAddress,
+                                        mangoProgram: mangoProgramId,
+                                        mangoGroup: mangoGroup,
+                                        mangoGroupSigner: mangoGroupAccountInfo.signerKey,
+                                        mangoAccount: ammMangoAccountAddress,
+                                        owner: ammLiquidityAuth,
+                                        mangoCache: mangoGroupAccountInfo.mangoCache,
+                                        rootBank: usdcRootBank.publicKey,
+                                        nodeBank: filteredNodeBanks[0]!.publicKey,
+                                        vault: vault,
+                                        ownerTokenAccount: amm.quoteTokenVault,
+                                        payer: context.provider.wallet.publicKey,
+                                        tokenProgram: TOKEN_PROGRAM_ID,
+                                        perpMarket: perpMarket,
+                                        eventQueue: eventQueue,
+                                    },
+                                    remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) => ({
+                                        isSigner: false,
+                                        isWritable: false,
+                                        pubkey,
+                                    }))
 
+                                }
 
-                        context.program.rpc.ammSyncFuturePositions(
-                            {
-                                accounts: {
-                                    optifiExchange: exchangeAddress,
-                                    amm: ammAddress,
-                                    mangoProgram: mangoProgramId,
-                                    mangoGroup: mangoGroup,
-                                    mangoGroupSigner: mangoGroupAccountInfo.signerKey,
-                                    mangoAccount: ammMangoAccountAddress,
-                                    owner: ammLiquidityAuth,
-                                    mangoCache: mangoGroupAccountInfo.mangoCache,
-                                    rootBank: usdcRootBank.publicKey,
-                                    nodeBank: filteredNodeBanks[0]!.publicKey,
-                                    vault: vault,
-                                    ownerTokenAccount: amm.quoteTokenVault,
-                                    payer: context.provider.wallet.publicKey,
-                                    tokenProgram: TOKEN_PROGRAM_ID,
-                                    perpMarket: new PublicKey("FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z"),
-                                    eventQueue: new PublicKey("Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU"),
-                                },
-                                // remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) => ({
-                                //     isSigner: false,
-                                //     isWritable: false,
-                                //     pubkey,
-                                // }))
-
-                            }
-
-                        ).then((syncRes) => {
-                            resolve({
-                                successful: true,
-                                data: syncRes as TransactionSignature
+                            ).then((syncRes) => {
+                                resolve({
+                                    successful: true,
+                                    data: syncRes as TransactionSignature
+                                })
+                            }).catch((err) => {
+                                console.error(err);
+                                reject(err);
                             })
-                        }).catch((err) => {
-                            console.error(err);
-                            reject(err);
-                        })
+                        } else {
+                            reject(Error("failed to load mango usdcRootBank"));
+                        }
                     } else {
-                        reject(Error("failed to load mango usdcRootBank"));
+                        reject(Error(`failed to find the perp market ${perpMarket.toString()} in mango group account`));
                     }
                 } catch (err) {
                     reject(err)

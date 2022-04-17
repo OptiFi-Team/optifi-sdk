@@ -107,13 +107,13 @@ export type EndpointConstant = {
 }
 
 export const USDC_TOKEN_MINT: EndpointConstant = {
-    "https://api.mainnet-beta.solana.com": "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9",
-    "https://api.devnet.solana.com": "6H2zescZeVfaJwBkM2jKiKWrAG5yfDAfb3CyJFDXDZE5",
-    "https://api.testnet.solana.com": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    "https://api.mainnet-beta.solana.com": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "https://api.devnet.solana.com": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+    "https://api.testnet.solana.com": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN"
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111205",
+    "https://api.devnet.solana.com": "111208",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
