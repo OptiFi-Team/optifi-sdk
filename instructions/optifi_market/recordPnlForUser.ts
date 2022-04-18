@@ -1,15 +1,15 @@
-import Context from "../types/context";
-import InstructionResult from "../types/instructionResult";
+import Context from "../../types/context";
+import InstructionResult from "../../types/instructionResult";
 import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findOracleAccountFromInstrument, findUserAccount, getDexOpenOrders } from "../utils/accounts";
-import { Asset, Chain, OptifiMarket, UserAccount } from "../types/optifi-exchange-types";
-import { deriveVaultNonce, findMarketInstrumentContext } from "../utils/market";
-import { SERUM_DEX_PROGRAM_ID, SWITCHBOARD } from "../constants";
-import { findSerumAuthorityPDA, findSerumPruneAuthorityPDA } from "../utils/pda";
-import { signAndSendTransaction } from "../utils/transactions";
+import { findExchangeAccount, findOracleAccountFromInstrument, findUserAccount, getDexOpenOrders } from "../../utils/accounts";
+import { Asset, Chain, OptifiMarket, UserAccount } from "../../types/optifi-exchange-types";
+import { deriveVaultNonce, findMarketInstrumentContext } from "../../utils/market";
+import { SERUM_DEX_PROGRAM_ID, SWITCHBOARD } from "../../constants";
+import { findSerumAuthorityPDA, findSerumPruneAuthorityPDA } from "../../utils/pda";
+import { signAndSendTransaction } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { findAssociatedTokenAccount } from "../utils/token";
-import { getSerumMarket } from "../utils/serum";
+import { findAssociatedTokenAccount } from "../../utils/token";
+import { getSerumMarket } from "../../utils/serum";
 
 
 export default function recordPnl(context: Context,
@@ -45,7 +45,7 @@ export default function recordPnl(context: Context,
                                                                 coinVault: serumMarket.decoded.baseVault,
                                                                 pcVault: serumMarket.decoded.quoteVault,
                                                                 vaultSigner: vaultAddress,
-                                                                userMarginAccount: userAccount.userMarginAccountUsdc,
+                                                                userMarginAccountUsdc: userAccount.userMarginAccountUsdc,
                                                                 instrumentLongSplTokenMint: marketContext.optifiMarket.instrumentLongSplToken,
                                                                 instrumentShortSplTokenMint: marketContext.optifiMarket.instrumentShortSplToken,
                                                                 userInstrumentLongTokenVault: userLongTokenVault,

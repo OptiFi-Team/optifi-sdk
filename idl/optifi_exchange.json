@@ -1120,7 +1120,7 @@
           "isSigner": false
         },
         {
-          "name": "userMarginAccount",
+          "name": "userMarginAccountUsdc",
           "isMut": true,
           "isSigner": false
         },
@@ -1193,6 +1193,183 @@
         {
           "name": "userMarginAccountUsdc",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "centralUsdcPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "centralUsdcPoolAuth",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "recordPnlForAmm",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammSerumOpenOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrument",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammUsdcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentLongSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pruneAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetSpotPriceOracleFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcSpotPriceOracleFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammLiquidityAuth",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "ammAuthorityBump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "settleFundForAmm",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammUsdcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammLiquidityAuth",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -2546,6 +2723,12 @@
           {
             "name": "clientOrderIdCounter",
             "type": "u64"
+          },
+          {
+            "name": "tempPnl",
+            "type": {
+              "defined": "TempPnL"
+            }
           }
         ]
       }
@@ -3861,8 +4044,5 @@
       "name": "WrongFeeAccount",
       "msg": "Wrong USDC fee account"
     }
-  ],
-  "metadata": {
-    "address": "BVhrEVqN7zmfYQWvxp4R6sbjmAhJoYnGa3YzsSYvNUto"
-  }
+  ]
 }
