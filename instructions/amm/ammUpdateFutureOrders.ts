@@ -35,7 +35,7 @@ export default function ammUpdateFuturesPositions(context: Context,
 
                     // new MangoAccount(ammMangoAccountAddress,)
                     let mangoAccountInfo = await getMangoAccount(context.connection, ammMangoAccountAddress, mangoProgramId)
-                    console.log("mangoAccountInfo: ", mangoAccountInfo)
+                    // console.log("mangoAccountInfo: ", mangoAccountInfo)
 
                     let client = new MangoClient(context.connection, mangoProgramId);
                     let mangoGroupAccountInfo = await client.getMangoGroup(mangoGroup)

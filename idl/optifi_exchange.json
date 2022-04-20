@@ -708,6 +708,11 @@
           "isSigner": false
         },
         {
+          "name": "usdcCentralPool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "instrumentShortSplTokenMint",
           "isMut": true,
           "isSigner": false
@@ -2942,6 +2947,12 @@
           {
             "name": "isHedgeInProgress",
             "type": "bool"
+          },
+          {
+            "name": "tempPnl",
+            "type": {
+              "defined": "TempPnL"
+            }
           }
         ]
       }
@@ -4249,21 +4260,31 @@
     },
     {
       "code": 329,
+      "name": "OrderFailed",
+      "msg": "The order is failed"
+    },
+    {
+      "code": 330,
+      "name": "WrongFeeAccount",
+      "msg": "Wrong USDC fee account"
+    },
+    {
+      "code": 331,
       "name": "InvalidMangoAccount",
       "msg": "the mango account is invalid"
     },
     {
-      "code": 330,
+      "code": 332,
       "name": "InvalidMangoToken",
       "msg": "the mango token index is invalid"
     },
     {
-      "code": 331,
+      "code": 333,
       "name": "IncorrectOpenOrdersAccountsLength",
       "msg": "the length of open orders accounts is incorrect"
     },
     {
-      "code": 332,
+      "code": 334,
       "name": "WrongPerpMarketIndex",
       "msg": "wrong perp market index"
     }
