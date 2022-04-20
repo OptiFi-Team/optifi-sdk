@@ -7,6 +7,7 @@ import { findOptifiExchange } from "../utils/accounts";
 
 initializeContext().then((context) => {
     findOptifiExchange(context).then(([exchangeAddress, _]) => {
+        console.log("exchangeAddress: ", exchangeAddress.toString())
         context.program.account.exchange.fetch(exchangeAddress).then((res) => {
             let optifiExchange = res as Exchange;
             console.log("Got Optifi Exchange ", optifiExchange);
