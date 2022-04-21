@@ -1,7 +1,6 @@
 import { initializeContext } from "../../index";
 import { syncAmmPositions } from "./utils";
-
-let ammIndex = 1;
+import { ammIndex } from "./constants";
 
 initializeContext().then((context) => {
     syncAmmPositions(context, ammIndex)

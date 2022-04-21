@@ -4,8 +4,7 @@ import { MangoClient , MangoCache, MangoCacheLayout} from "@blockworks-foundatio
 import { MANGO_GROUP_ID, MANGO_PROGRAM_ID } from "../../constants";
 import { PublicKey } from "@solana/web3.js";
 import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../../utils/pda";
-
-let ammIndex = 1;
+import { ammIndex } from "./constants";
 
 initializeContext().then(async (context) => {
     let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.endpoint])

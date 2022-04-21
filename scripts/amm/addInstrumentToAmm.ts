@@ -9,8 +9,7 @@ import { findAMMWithIdx } from "../../utils/amm";
 import { findOptifiExchange } from "../../utils/accounts";
 import { PublicKey } from "@solana/web3.js";
 import addInstrumentToAmm from "../../instructions/addInstrumentToAmm";
-
-let ammIndex = 1;
+import { ammIndex } from "./constants";
 
 export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
     try {
@@ -31,11 +30,12 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
             }
         })
 
-        for (let market of optifiMarketsToAdd) {
+        // for (let market of optifiMarketsToAdd) {
+            let market = optifiMarketsToAdd[0]
             let res = await addInstrumentToAmm(context, ammAddress, market)
             console.log(`successfully added optifi market ${market.toString()} to amm ${ammAddress.toString()} with id ${ammIndex}`)
             console.log(res)
-        }
+        // }
     } catch (err) {
         console.error(err);
     }

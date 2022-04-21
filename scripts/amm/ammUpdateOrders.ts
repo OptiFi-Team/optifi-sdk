@@ -1,7 +1,7 @@
 import { initializeContext } from "../../index";
 import { executeAmmOrderProposal, executeAmmOrderProposalV2 } from "./utils";
+import { ammIndex } from "./constants";
 
-let ammIndex = 1;
 
 initializeContext().then((context) => {
     executeAmmOrderProposalV2(context, ammIndex)

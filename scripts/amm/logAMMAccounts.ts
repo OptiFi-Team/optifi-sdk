@@ -3,8 +3,7 @@ import { AmmAccount, AmmState } from "../../types/optifi-exchange-types";
 import { findOptifiExchange } from "../../utils/accounts";
 import { findAMMAccounts, findAMMWithIdx } from "../../utils/amm";
 import { formatExplorerAddress, logFormatted, SolanaEntityType } from "../../utils/debug";
-
-let ammIndex = 1;
+import { ammIndex } from "./constants";
 
 initializeContext().then(async (context) => {
     // findAMMAccounts(context).then((ammAccounts) => {
@@ -23,12 +22,14 @@ initializeContext().then(async (context) => {
     // @ts-ignore
     let amm = await context.program.account.ammAccount.fetch(ammAddress)
     console.log("amm account info: ", amm)
-    console.log("amm.totalLiquidity: ", amm.totalLiquidity.toNumber())
+    console.log("amm.totalLiquidityUsdc: ", amm.totalLiquidityUsdc.toNumber())
     console.log("amm.netDelta: ", amm.netDelta.toNumber())
     console.log("amm.quoteTokenVault: ", amm.quoteTokenVault.toString())
     console.log("amm.lpTokenMint: ", amm.lpTokenMint.toString())
-    console.log("amm.tradingInstruments: ", amm.tradingInstruments[1].toString())
-    console.log("amm.tradingInstruments: ", amm.tradingInstruments[1].toString())
+    if (amm.tradingInstruments.length >= 2) {
+        console.log("amm.tradingInstruments: ", amm.tradingInstruments[0].toString())
+        console.log("amm.tradingInstruments: ", amm.tradingInstruments[1].toString())
+    }
     // @ts-ignore
     amm.proposals.forEach(e => console.log(
         "askOrdersSize: ", e.askOrdersSize.map(e => e.toNumber()),
