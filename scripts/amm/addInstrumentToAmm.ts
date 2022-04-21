@@ -30,12 +30,11 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
             }
         })
 
-        // for (let market of optifiMarketsToAdd) {
-            let market = optifiMarketsToAdd[0]
+        for (let market of optifiMarketsToAdd) {
             let res = await addInstrumentToAmm(context, ammAddress, market)
             console.log(`successfully added optifi market ${market.toString()} to amm ${ammAddress.toString()} with id ${ammIndex}`)
             console.log(res)
-        // }
+        }
     } catch (err) {
         console.error(err);
     }
