@@ -56,61 +56,64 @@ export function initializeChain(context: Context,
                     })
                 )
             }
-            let doCreate = async () => {
+            let doFindOrCreate = async () => {
                 for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                     console.log("Creating instrument ", i);
                     let instrument = foundInstruments[i];
-                    let optifiAsset = assetToOptifiAsset(instrumentContext.asset);
-                    let newInstrumentTx = context.program.transaction.createNewInstrument(
-                        instrument[1],
-                        {
-                            asset: optifiAssetToNumber(optifiAsset),
-                            instrumentType: instrumentTypeToNumber(instrumentTypeToOptifiInstrumentType(instrumentContext.instrumentType)),
-                            expiryDate: dateToAnchorTimestamp(instrumentContext.expirationDate),
-                            duration: optifiDurationToNumber(instrumentContext.duration),
-                            start: dateToAnchorTimestamp(instrumentContext.start),
-                            expiryType: expiryTypeToNumber(expiryTypeToOptifiExpiryType(instrumentContext.expiryType)),
-                            authority: context.provider.wallet.publicKey,
-                            contractSize: new anchor.BN(0.01 * 10000),
-                            instrumentIdx: i
-                        },
-                        {
-                            accounts: {
-                                optifiExchange: exchangeAddress,
-                                instrument: instrument[0],
-                                payer: context.provider.wallet.publicKey,
-                                systemProgram: SystemProgram.programId,
-                                assetSpotPriceOracleFeed: findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Spot),
-                                assetIvOracleFeed: findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Iv),
-                                clock: SYSVAR_CLOCK_PUBKEY
+                    let instrumentAccountInfo = await context.program.account.chain.fetch(instrument[0]);
+                    if (!instrumentAccountInfo) {
+                        let optifiAsset = assetToOptifiAsset(instrumentContext.asset);
+                        let newInstrumentTx = context.program.transaction.createNewInstrument(
+                            instrument[1],
+                            {
+                                asset: optifiAssetToNumber(optifiAsset),
+                                instrumentType: instrumentTypeToNumber(instrumentTypeToOptifiInstrumentType(instrumentContext.instrumentType)),
+                                expiryDate: dateToAnchorTimestamp(instrumentContext.expirationDate),
+                                duration: optifiDurationToNumber(instrumentContext.duration),
+                                start: dateToAnchorTimestamp(instrumentContext.start),
+                                expiryType: expiryTypeToNumber(expiryTypeToOptifiExpiryType(instrumentContext.expiryType)),
+                                authority: context.provider.wallet.publicKey,
+                                contractSize: new anchor.BN(0.01 * 10000),
+                                instrumentIdx: i
                             },
-                        }
-                    )
-                    await signAndSendTransaction(context, newInstrumentTx)
-                        .then((res) => {
-                            console.log(res);
-                            if (res.resultType === TransactionResultType.Successful) {
-                                console.log("Created new instrument -",
-                                    formatExplorerAddress(
-                                        context,
-                                        res.txId as string,
-                                        SolanaEntityType.Transaction,
-                                    )
-                                )
-                            } else {
-                                console.error(res);
-                                reject(res);
+                            {
+                                accounts: {
+                                    optifiExchange: exchangeAddress,
+                                    instrument: instrument[0],
+                                    payer: context.provider.wallet.publicKey,
+                                    systemProgram: SystemProgram.programId,
+                                    assetSpotPriceOracleFeed: findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Spot),
+                                    assetIvOracleFeed: findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Iv),
+                                    clock: SYSVAR_CLOCK_PUBKEY
+                                },
                             }
+                        )
+                        await signAndSendTransaction(context, newInstrumentTx)
+                            .then((res) => {
+                                console.log(res);
+                                if (res.resultType === TransactionResultType.Successful) {
+                                    console.log("Created new instrument -",
+                                        formatExplorerAddress(
+                                            context,
+                                            res.txId as string,
+                                            SolanaEntityType.Transaction,
+                                        )
+                                    )
+                                } else {
+                                    console.error(res);
+                                    reject(res);
+                                }
 
-                        })
-                        .catch((err) => {
-                            console.error("Got error trying to sign and send chain instruction ", err);
-                            reject(err);
-                        })
+                            })
+                            .catch((err) => {
+                                console.error("Got error trying to sign and send chain instruction ", err);
+                                reject(err);
+                            })
+                    }
                 }
             }
             Promise.all(instrumentPromises).then(() => {
-                doCreate().then(() => {
+                doFindOrCreate().then(() => {
                     resolve({
                         successful: true,
                         data: Object.values(foundInstruments).map((i: [PublicKey, number, string]) => i[0])

@@ -49,7 +49,7 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                                     duration: duration,
                                     start: start,
                                     expiryType: expiryType,
-                                    expirationDate: expirationDate,
+                                    expirationDate: new Date("2022-04-21T22:45:00"), // expirationDate
                                 })
                             }
                             break;

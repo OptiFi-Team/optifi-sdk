@@ -16,6 +16,9 @@ import { createNextOptifiMarket, createOptifiMarketWithIdx } from "../instructio
 import { numberAssetToDecimal, readJsonFile, sleep } from "../utils/generic";
 import { findOptifiMarkets } from "../utils/market";
 import { createMarginStress } from "./createMarginStress";
+import fs from "fs";
+import path from "path";
+import createAMMAccounts from "./createAMMAccounts";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -190,12 +193,111 @@ function createOptifiMarkets(context: Context,
     })
 }
 
+
 /**
  * Bootstrap the optifi exchange entirely, creating new instruments, etc.
  *
  * @param context The program context
  */
 export default function boostrap(context: Context): Promise<InstructionResult<BootstrapResult>> {
+    console.log("Exchange ID is ", context.exchangeUUID);
+    return new Promise(async (resolve, reject) => {
+        let [exchangeAddress,] = await findExchangeAccount(context);
+        console.log("Exchange is ", exchangeAddress.toString());
+        createMaterailsForExchangeIfNotExist(exchangeAddress);
+
+        // Find or create the addresses of both the exchange and user accounts,
+        // and make sure that our user is an authority
+        console.log("Finding or initializing a new Optifi exchange...")
+        await createOrFetchExchange(context)
+        console.log("Created exchange")
+
+        // save the created exchange address to material
+        let materials = readMaterailsForExchange(exchangeAddress);
+        console.log(materials)
+        materials.exchangeAddress = exchangeAddress.toString();
+        saveMaterailsForExchange(exchangeAddress, materials);
+
+
+        // create new instruments
+        console.debug("Creating Instruments")
+        let instrumentKeys = await createOrFetchInstruments(context);
+        console.debug("Created Instruments")
+        materials.instruments = instrumentKeys.map(e => {
+            return { address: e.toString(), isInUse: false }
+        })
+        saveMaterailsForExchange(exchangeAddress, materials);
+
+
+        // create new serum markets
+        console.log("Creating serum markets");
+        console.log("Waiting 5 seconds to create Serum Markets");
+        await sleep(5000);
+        if (materials.serumMarkets.length != 20) {
+            let serumMarketKeys = await createOrRetreiveSerumMarkets(context, instrumentKeys)
+            materials.serumMarkets = serumMarketKeys.map(e => {
+                return {
+                    address: e.toString(),
+                    isInUse: false
+                }
+            })
+        }
+        console.log("Created serum markets");
+        saveMaterailsForExchange(exchangeAddress, materials);
+
+        //console.log("String serum market keys are, ", marketKeys.map((i) => i.toString()))
+        console.log("Creating optifi markets")
+
+        let existingMarkets = await findOptifiMarkets(context);
+
+        existingMarkets.forEach((market, i) => {
+            materials.optifiMarkets[i] = {
+                address: market[1].toString(),
+                instrument: market[0].instrument.toString(),
+                serumMarket: market[0].serumMarket.toString(),
+                marketId: market[0].optifiMarketId,
+            }
+            let instrumentIdx = materials.instruments.findIndex(e => e.address == market[0].instrument.toString())
+            if (instrumentIdx > 0) {
+                materials.instruments[instrumentIdx].isInUse = true
+            }
+            let serumMarketIdx = materials.serumMarkets.findIndex(e => e.address == market[0].serumMarket.toString())
+            if (serumMarketIdx > 0) {
+                materials.serumMarkets[serumMarketIdx].isInUse = true
+            }
+        })
+
+        saveMaterailsForExchange(exchangeAddress, materials);
+
+        console.log("materials.optifiMarkets: ", materials.optifiMarkets)
+        for (let i = materials.optifiMarkets.length; i < 20; i++) {
+            await createOptifiMarketWithIdx(context,
+                new PublicKey(materials.serumMarkets[i].address),
+                new PublicKey(materials.instruments[i].address),
+                i + 1,
+            )
+
+            await sleep(5 * 1000)
+        }
+        console.log("Created optifi markets")
+
+        console.log("Creating MarginStress accounts");
+        await createMarginStress(context);
+        console.log("Created MarginStress accounts");
+
+        console.log("Creating AMM accounts");
+        await createAMMAccounts(context)
+        console.log("Created AMM accounts");
+    })
+}
+
+
+/**
+ * Bootstrap the optifi exchange entirely, creating new instruments, etc.
+ *
+ * @param context The program context
+ */
+export function boostrapV1(context: Context): Promise<InstructionResult<BootstrapResult>> {
     console.log("Exchange ID is ", context.exchangeUUID);
     return new Promise((resolve, reject) => {
         // Find or create the addresses of both the exchange and user accounts,
@@ -243,4 +345,71 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
             })
         }).catch((err) => reject(err))
     })
+}
+
+const logsDirPrefix = "logs"
+function readMaterailsForExchange(exchangeAddress: PublicKey): ExchangeMaterial {
+    let filePath = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
+    return JSON.parse(
+        fs.readFileSync(
+            filePath,
+            "utf-8"
+        )
+    )
+}
+
+function saveMaterailsForExchange(exchangeAddress: PublicKey, data: ExchangeMaterial) {
+    let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
+    fs.writeFileSync(filename, JSON.stringify(data));
+}
+
+interface ExchangeMaterialInstruments {
+    address: string,
+    isInUse: boolean,
+}
+interface ExchangeMaterialSerumMarkets {
+    address: string,
+    isInUse: boolean,
+}
+
+interface ExchangeMaterialMarginStress {
+    address: string,
+    asset: number
+}
+
+interface ExchangeMaterialOptifiMarkets {
+    address: string,
+    marketId: number,
+    instrument: string,
+    serumMarket: string,
+}
+
+interface ExchangeMaterialAmms {
+    address: string,
+    asset: number,
+    index: number
+}
+
+interface ExchangeMaterial {
+    exchangeAddress: string,
+    instruments: ExchangeMaterialInstruments[],
+    serumMarkets: ExchangeMaterialSerumMarkets[],
+    optifiMarkets: ExchangeMaterialOptifiMarkets[],
+    marginStressAccounts: ExchangeMaterialMarginStress[],
+    amms: ExchangeMaterialAmms[],
+}
+
+function createMaterailsForExchangeIfNotExist(exchangeAddress: PublicKey) {
+    let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
+    if (!fs.existsSync(filename)) {
+        let data: ExchangeMaterial = {
+            exchangeAddress: exchangeAddress.toString(),
+            instruments: [],
+            serumMarkets: [],
+            optifiMarkets: [],
+            marginStressAccounts: [],
+            amms: []
+        }
+        fs.writeFileSync(filename, JSON.stringify(data));
+    }
 }
