@@ -5,7 +5,7 @@ import { AmmState, MarginStressState } from "../../types/optifi-exchange-types";
 import { findExchangeAccount, findOptifiExchange } from "../../utils/accounts";
 import { findAMMAccounts, findAMMWithIdx } from "../../utils/amm";
 import { sleep } from "../../utils/generic";
-import { syncAmmPositions, calcAmmDelta, calculateAmmProposals, executeAmmOrderProposal, executeAmmOrderProposalV2 } from "./utils";
+import { syncAmmPositions, calcAmmDelta, calculateAmmProposals, executeAmmOrderProposal, executeAmmOrderProposalV2, updateAmmFutureOrders, syncAmmFuturePositions } from "./utils";
 import Context from "../../types/context";
 
 let ammIdxs = [1, 2]
@@ -27,9 +27,14 @@ const ammLoop = async (context: Context, optifiExchange: PublicKey, idx: number)
         switch (state) {
             case Sync:
                 await syncAmmPositions(context, idx);
+                await syncAmmFuturePositions(context, idx);
                 break;
             case CalculateDelta:
                 await calcAmmDelta(context, idx);
+                let ammAccountInfo = await context.program.account.ammAccount.fetch(ammAddress);
+                if (ammAccountInfo.isHedgeNeeded || ammAccountInfo.isHedgeInProgress) {
+                    await updateAmmFutureOrders(context, idx)
+                }
                 break;
             case CalculateProposal:
                 await calculateAmmProposals(context, idx);
@@ -43,14 +48,18 @@ const ammLoop = async (context: Context, optifiExchange: PublicKey, idx: number)
             // throw new Error("unkown amm state!")
         }
     } catch (e) {
-        await sleep(5000);
+        // sleep and skip error
+        await sleep(50000);
+        await ammLoop(context, optifiExchange, idx);
     }
 
     try {
-        await sleep(40000);
+        await sleep(30000);
         await ammLoop(context, optifiExchange, idx);
     } catch (e) {
-        await sleep(5000);
+        // sleep and skip error
+        await sleep(50000);
+        await ammLoop(context, optifiExchange, idx);
     }
 }
 
