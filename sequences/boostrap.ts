@@ -225,7 +225,7 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
     return new Promise(async (resolve, reject) => {
         let [exchangeAddress,] = await findExchangeAccount(context);
         console.log("Exchange is ", exchangeAddress.toString());
-        createMaterailsForExchangeIfNotExist(exchangeAddress);
+        createMaterailsForExchangeIfNotExist(context, exchangeAddress);
 
         // Find or create the addresses of both the exchange and user accounts,
         // and make sure that our user is an authority
@@ -244,8 +244,11 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
         console.debug("Creating Instruments")
         let instrumentKeys = await createOrFetchInstruments(context);
         console.debug("Created Instruments")
-        materials.instruments = instrumentKeys.map(e => {
-            return { address: e.toString(), isInUse: false }
+        let existingInstruments = materials.instruments.map(e => e.address)
+        instrumentKeys.forEach(e => {
+            if (!existingInstruments.includes(e.toString())) {
+                materials.instruments.push({ address: e.toString(), isInUse: false })
+            }
         })
         saveMaterailsForExchange(exchangeAddress, materials);
 
@@ -290,7 +293,7 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
             //     materials.instruments[instrumentIdx].isInUse = true
             // }
             let serumMarketIdx = materials.serumMarkets.findIndex(e => e.address == market[0].serumMarket.toString())
-            if (serumMarketIdx > 0) {
+            if (serumMarketIdx >= 0) {
                 materials.serumMarkets[serumMarketIdx].isInUse = true
             }
         })
@@ -305,6 +308,9 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                 i + 1,
             )
 
+            materials.serumMarkets[i].isInUse = true
+            saveMaterailsForExchange(exchangeAddress, materials);
+
             await sleep(5 * 1000)
         }
         console.log("Created optifi markets")
@@ -313,9 +319,9 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
         await createMarginStress(context);
         console.log("Created MarginStress accounts");
 
-        console.log("Creating AMM accounts");
-        await createAMMAccounts(context)
-        console.log("Created AMM accounts");
+        // console.log("Creating AMM accounts");
+        // await createAMMAccounts(context)
+        // console.log("Created AMM accounts");
     })
 }
 
@@ -375,22 +381,6 @@ export function boostrapV1(context: Context): Promise<InstructionResult<Bootstra
     })
 }
 
-const logsDirPrefix = "logs"
-function readMaterailsForExchange(exchangeAddress: PublicKey): ExchangeMaterial {
-    let filePath = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
-    return JSON.parse(
-        fs.readFileSync(
-            filePath,
-            "utf-8"
-        )
-    )
-}
-
-function saveMaterailsForExchange(exchangeAddress: PublicKey, data: ExchangeMaterial) {
-    let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
-    fs.writeFileSync(filename, JSON.stringify(data));
-}
-
 interface ExchangeMaterialInstruments {
     address: string,
     isInUse: boolean,
@@ -419,6 +409,9 @@ interface ExchangeMaterialAmms {
 }
 
 interface ExchangeMaterial {
+    network: string,
+    programId: string,
+    exchangeUUID: string,
     exchangeAddress: string,
     instruments: ExchangeMaterialInstruments[],
     serumMarkets: ExchangeMaterialSerumMarkets[],
@@ -427,10 +420,30 @@ interface ExchangeMaterial {
     amms: ExchangeMaterialAmms[],
 }
 
-function createMaterailsForExchangeIfNotExist(exchangeAddress: PublicKey) {
+
+const logsDirPrefix = "logs"
+function readMaterailsForExchange(exchangeAddress: PublicKey): ExchangeMaterial {
+    let filePath = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
+    return JSON.parse(
+        fs.readFileSync(
+            filePath,
+            "utf-8"
+        )
+    )
+}
+
+function saveMaterailsForExchange(exchangeAddress: PublicKey, data: ExchangeMaterial) {
+    let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
+    fs.writeFileSync(filename, JSON.stringify(data));
+}
+
+function createMaterailsForExchangeIfNotExist(context: Context, exchangeAddress: PublicKey) {
     let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
     if (!fs.existsSync(filename)) {
         let data: ExchangeMaterial = {
+            network: context.endpoint.toString(),
+            programId: context.program.programId.toString(),
+            exchangeUUID: context.exchangeUUID,
             exchangeAddress: exchangeAddress.toString(),
             instruments: [],
             serumMarkets: [],

@@ -40,7 +40,9 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                                 let expirationDate = expirations[maturity];
                                 let duration: Duration;
                                 switch (maturity) {
-                                    case MaturityType.Weekly: duration = Duration.Weekly;
+                                    case MaturityType.Weekly:
+                                         duration = Duration.Weekly;
+                                         break;
                                     case MaturityType.Monthly: duration = Duration.Monthly;
                                 }
                                 instrumentsToCreate.push({
@@ -49,7 +51,7 @@ export function createInstruments(context: Context): Promise<PublicKey[]> {
                                     duration: duration,
                                     start: start,
                                     expiryType: expiryType,
-                                    expirationDate: new Date("2022-04-21T22:45:00"), // expirationDate
+                                    expirationDate: expirationDate,
                                 })
                             }
                             break;

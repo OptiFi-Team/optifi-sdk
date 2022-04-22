@@ -1593,11 +1593,6 @@
           "isSigner": false
         },
         {
-          "name": "userAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "ammQuoteTokenVault",
           "isMut": true,
           "isSigner": false
@@ -1650,11 +1645,6 @@
         },
         {
           "name": "amm",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -4287,6 +4277,21 @@
       "code": 334,
       "name": "WrongPerpMarketIndex",
       "msg": "wrong perp market index"
+    },
+    {
+      "code": 335,
+      "name": "MismatchedAsset",
+      "msg": "asset of amm and the instrument are mismatched"
+    },
+    {
+      "code": 336,
+      "name": "InstrumentExpired",
+      "msg": "the instrument is expired"
+    },
+    {
+      "code": 337,
+      "name": "MismatchedDuration",
+      "msg": "duration of amm and the instrument are mismatched"
     }
   ],
   "metadata": {
