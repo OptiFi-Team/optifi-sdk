@@ -15,6 +15,7 @@ import {
     Asset as OptifiAsset,
 } from '../../types/optifi-exchange-types';
 import { getMangoAccount } from "./ammSyncFuturesPositions";
+import { getMangoPerpMarketInfoByAsset } from "../../scripts/amm/utils";
 
 
 
@@ -60,6 +61,12 @@ export default function ammUpdateFuturesPositions(context: Context,
 
                         // console.log(mangoGroupAccountInfo.tokens.forEach(e => console.log(e.mint.toString(), " ", e.rootBank.toString())))
 
+                        const perpMarketInfo = getMangoPerpMarketInfoByAsset(context, amm.asset)!;
+                        const perpMarket = new PublicKey(perpMarketInfo["publicKey"])
+                        const bids =  new PublicKey(perpMarketInfo["bidsKey"])
+                        const asks =  new PublicKey(perpMarketInfo["asksKey"])
+                        const eventQueue =  new PublicKey(perpMarketInfo["eventsKey"])
+                        
                         let spotOracle =
                             findOracleAccountFromAsset(
                                 context,
@@ -94,10 +101,10 @@ export default function ammUpdateFuturesPositions(context: Context,
                                     mangoAccount: ammMangoAccountAddress,
                                     owner: ammLiquidityAuth,
                                     mangoCache: mangoGroupAccountInfo.mangoCache,
-                                    perpMarket: new PublicKey("FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z"),
-                                    bids: new PublicKey("F1Dcnq6F8NXR3gXADdsYqrXYBUUwoT7pfCtRuQWSyQFd"),
-                                    asks: new PublicKey("BFEBZsLYmEhj4quWDRKbyMKhW1Q9c7gu3LqsnipNGTVn"),
-                                    eventQueue: new PublicKey("Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU"),
+                                    perpMarket: perpMarket,
+                                    bids: bids,
+                                    asks: asks,
+                                    eventQueue: eventQueue,
                                     rootBank: usdcRootBank.publicKey,
                                     nodeBank: filteredNodeBanks[0]!.publicKey,
                                     vault: vault,

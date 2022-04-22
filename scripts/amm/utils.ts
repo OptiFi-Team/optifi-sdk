@@ -1,5 +1,5 @@
 import Context from "../../types/context";
-import { AmmAccount, AmmState, Duration, OptifiMarket } from "../../types/optifi-exchange-types";
+import { AmmAccount, AmmState, Duration, Asset, OptifiMarket } from "../../types/optifi-exchange-types";
 import { findOptifiMarkets } from "../../utils/market";
 import { findAMMWithIdx } from "../../utils/amm";
 import { findOptifiExchange } from "../../utils/accounts";
@@ -11,6 +11,7 @@ import calculateAmmProposal from "../../instructions/calculateAmmProposal";
 import { ammCancelOrders } from "../../instructions/ammCancelOrders";
 import { ammUpdateOrders } from "../../instructions/ammUpdateOrders";
 import ammUpdateFuturesPositions from "../../instructions/amm/ammUpdateFutureOrders";
+import { MANGO_PERP_MARKETS } from "../../constants";
 
 
 export async function syncAmmPositions(context: Context, ammIndex: number) {
@@ -132,7 +133,7 @@ export async function executeAmmOrderProposalV2(context: Context, ammIndex: numb
         // @ts-ignore
         for (let i = 0; i < ammInfo.proposals.length; i++) {
             // @ts-ignore
-            if (!ammInfo.flags[i+1]) {
+            if (!ammInfo.flags[i + 1]) {
                 // @ts-ignore
                 let proposalsForOneInstrument = ammInfo.proposals[i]
                 console.log("ammInfo.quoteTokenVault: ", ammInfo.quoteTokenVault.toString())
@@ -214,5 +215,17 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
         };
     } catch (err) {
         console.error(err);
+    }
+}
+
+
+export function getMangoPerpMarketInfoByAsset(context: Context, asset: number) {
+    let configs = MANGO_PERP_MARKETS[context.endpoint]
+    switch (asset) {
+        case 0:
+            return configs[0]
+        case 1:
+            return configs[1]
+        default:
     }
 }

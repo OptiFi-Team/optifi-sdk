@@ -113,7 +113,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111111",
+    "https://api.devnet.solana.com": "113308",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
@@ -179,6 +179,48 @@ export const MANGO_USDC_CONFIG: EndpointConstant = {
         "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
         "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
     },
+    "https://api.testnet.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+        "decimals": 6,
+        "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
+        "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
+    },
+}
+
+// Mango usdc token
+export const MANGO_PERP_MARKETS: EndpointConstant = {
+    "https://api.mainnet-beta.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "decimals": 6,
+        "rootKey": "AMzanZxMirPCgGcBoH9kw4Jzi9LFMomyUCXbpzDeL2T8",
+        "nodeKeys": ["BGcwkj1WudQwUUjFk78hAjwd1uAm8trh1N4CJSa51euh"]
+    },
+    "https://api.devnet.solana.com": [
+        {
+            "name": "BTC-PERP",
+            "publicKey": "FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z",
+            "baseSymbol": "BTC",
+            "baseDecimals": 6,
+            "quoteDecimals": 6,
+            "marketIndex": 1,
+            "bidsKey": "F1Dcnq6F8NXR3gXADdsYqrXYBUUwoT7pfCtRuQWSyQFd",
+            "asksKey": "BFEBZsLYmEhj4quWDRKbyMKhW1Q9c7gu3LqsnipNGTVn",
+            "eventsKey": "Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU"
+        },
+        {
+            "name": "ETH-PERP",
+            "publicKey": "8jKPf3KJKWvvSbbYnunwZYv62UoRPpyGb93NWLaswzcS",
+            "baseSymbol": "ETH",
+            "baseDecimals": 6,
+            "quoteDecimals": 6,
+            "marketIndex": 2,
+            "bidsKey": "6jGBscmZgRXk6oVLWbnQDpRftmzrDVu82TARci9VHKuW",
+            "asksKey": "FXSvghvoaWFHRXzWUHi5tjK9YhgcPgMPpypFXBd4Aq3r",
+            "eventsKey": "8WLv5fKLYkyZpFG74kRmp2RALHQFcNKmH7eJn8ebHC13"
+        },
+    ],
     "https://api.testnet.solana.com": {
         "symbol": "USDC",
         "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",

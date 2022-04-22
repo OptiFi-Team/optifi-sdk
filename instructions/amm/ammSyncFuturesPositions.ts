@@ -14,6 +14,7 @@ import { numberToOptifiAsset } from "../../utils/generic";
 import {
     Asset as OptifiAsset,
 } from '../../types/optifi-exchange-types';
+import { getMangoPerpMarketInfoByAsset } from "../../scripts/amm/utils";
 
 
 /**
@@ -59,9 +60,10 @@ export default function ammSyncFuturesPositions(context: Context,
                     let mangoGroupAccountInfo = await client.getMangoGroup(mangoGroup)
                     // console.log("mangoGroupAccountInfo: ", mangoGroupAccountInfo)
                     // console.log("mangoGroupAccountInfo.mangoCache: ", mangoGroupAccountInfo.mangoCache.toString())
-                    const perpMarket = new PublicKey("FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z")
-                    const eventQueue = new PublicKey("Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU")
-                    
+                    const perpMarketInfo = getMangoPerpMarketInfoByAsset(context, amm.asset)!;
+                    const perpMarket = new PublicKey(perpMarketInfo["publicKey"])
+                    const eventQueue =  new PublicKey(perpMarketInfo["eventsKey"])
+
                     let perpMarketIndex = mangoGroupAccountInfo.perpMarkets.findIndex(e => e.perpMarket.equals(perpMarket))
                     if (mangoGroupAccountInfo.perpMarkets[perpMarketIndex]) {
                         const rootBanks = await mangoGroupAccountInfo.loadRootBanks(client.connection);

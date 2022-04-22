@@ -16,6 +16,7 @@ import { findAMMAccounts, findAMMWithIdx } from "../utils/amm";
 import { findExchangeAccount } from "../utils/accounts";
 import Asset from "../types/asset";
 import { Duration } from "../types/optifi-exchange-types";
+import { getMangoPerpMarketInfoByAsset } from "../scripts/amm/utils";
 
 export function initializeAmm(context: Context,
     asset: Asset,
@@ -41,6 +42,8 @@ export function initializeAmm(context: Context,
                             let [ammMangoAccountAddress,] = await getMangoAccountPDA(mangoProgramId, mangoGroup, ammLiquidityAuthAddress, idx)
                             console.log("ammMangoAccountAddress: ", ammMangoAccountAddress.toString())
 
+                            const perpMarketInfo = getMangoPerpMarketInfoByAsset(context, optifiAssetToNumber(optifiAsset))!;
+                            const perpMarket = new PublicKey(perpMarketInfo["publicKey"])
                             context.program.rpc.initializeAmm(
                                 bump,
                                 {
@@ -65,7 +68,7 @@ export function initializeAmm(context: Context,
                                         mangoProgram: mangoProgramId,
                                         mangoGroup: mangoGroup,
                                         ammMangoAccount: ammMangoAccountAddress,
-                                        perpMarket: new PublicKey("FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z"),
+                                        perpMarket: perpMarket,
                                         ammLiqudityAuth: ammLiquidityAuthAddress
                                     },
                                     signers: [ammUSDCTokenVault, ammLPTokenMint],
