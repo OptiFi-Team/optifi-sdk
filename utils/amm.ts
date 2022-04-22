@@ -2,7 +2,7 @@ import Context from "../types/context";
 import { GetProgramAccountsFilter, PublicKey, TransactionResponse } from "@solana/web3.js";
 import { AmmAccount } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount } from "./accounts";
-import { AMM_PREFIX, SOL_DECIMALS } from "../constants";
+import { AMM_PREFIX, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
 import Position from "../types/position";
 import { retrievRecentTxs } from "./orderHistory";
 import { decodeIdlAccount } from "@project-serum/anchor/dist/cjs/idl";
@@ -221,7 +221,8 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
 }
 interface AmmEquity {
     ammUsdcVaultBalance: number, // each amm's usdc vault balance
-    ammLpTokenSupply: number // each amm's lp token total supply
+    ammLpTokenSupply: number, // each amm's lp token total supply
+    delta: number, // amm's delta based on btc
 }
 
 export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> {
@@ -231,11 +232,13 @@ export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> 
             let assets: number[] = []
             let tradedAmmLpMints: PublicKey[] = []
             let tradedAmmUsdcVaults: PublicKey[] = []
+            let deltas: number[] = []
 
             for (let amm of allAmm) {
                 assets.push(amm[0].asset)
                 tradedAmmLpMints.push(amm[0].lpTokenMint)
                 tradedAmmUsdcVaults.push(amm[0].quoteTokenVault)
+                deltas.push(new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber())
             }
             let equity = new Map<number, AmmEquity>()
 
@@ -249,6 +252,7 @@ export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> 
                 equity.set(asset, {
                     ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** usdcMintInfo.decimals).toNumber(),
                     ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
+                    delta: deltas[assets.indexOf(asset)]
                 })
             }
             resolve(equity)
