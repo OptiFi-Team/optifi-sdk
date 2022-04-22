@@ -14,7 +14,7 @@ import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { createInstruments } from "./createInstruments";
 import { createNextOptifiMarket, createOptifiMarketWithIdx } from "../instructions/createOptifiMarket";
 import { numberAssetToDecimal, readJsonFile, sleep } from "../utils/generic";
-import { findOptifiMarkets } from "../utils/market";
+import { findOptifiMarkets, findOptifiMarketWithIdx } from "../utils/market";
 import { createMarginStress } from "./createMarginStress";
 import fs from "fs";
 import path from "path";
@@ -283,15 +283,11 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
 
         existingMarkets.forEach((market, i) => {
             materials.optifiMarkets[i] = {
+                marketId: market[0].optifiMarketId,
                 address: market[1].toString(),
                 instrument: market[0].instrument.toString(),
                 serumMarket: market[0].serumMarket.toString(),
-                marketId: market[0].optifiMarketId,
             }
-            // let instrumentIdx = materials.instruments.findIndex(e => e.address == market[0].instrument.toString())
-            // if (instrumentIdx > 0) {
-            //     materials.instruments[instrumentIdx].isInUse = true
-            // }
             let serumMarketIdx = materials.serumMarkets.findIndex(e => e.address == market[0].serumMarket.toString())
             if (serumMarketIdx >= 0) {
                 materials.serumMarkets[serumMarketIdx].isInUse = true
@@ -301,7 +297,8 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
         saveMaterailsForExchange(exchangeAddress, materials);
 
         console.log("materials.optifiMarkets: ", materials.optifiMarkets)
-        for (let i = materials.optifiMarkets.length; i < 20; i++) {
+        let existingMarketsLen = materials.optifiMarkets.length;
+        for (let i = existingMarketsLen; i < 20; i++) {
             await createOptifiMarketWithIdx(context,
                 new PublicKey(materials.serumMarkets[i].address),
                 new PublicKey(materials.instruments[i].address),
@@ -309,6 +306,13 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
             )
 
             materials.serumMarkets[i].isInUse = true
+            let [optifiMarketAddress,] = await findOptifiMarketWithIdx(context, exchangeAddress, i + 1)
+            materials.optifiMarkets[i] = {
+                marketId: i + 1,
+                address: optifiMarketAddress.toString(),
+                instrument: materials.instruments[i].address,
+                serumMarket: materials.serumMarkets[i].address,
+            }
             saveMaterailsForExchange(exchangeAddress, materials);
 
             await sleep(5 * 1000)
@@ -434,7 +438,7 @@ function readMaterailsForExchange(exchangeAddress: PublicKey): ExchangeMaterial 
 
 function saveMaterailsForExchange(exchangeAddress: PublicKey, data: ExchangeMaterial) {
     let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
-    fs.writeFileSync(filename, JSON.stringify(data));
+    fs.writeFileSync(filename, JSON.stringify(data, null, 4));
 }
 
 function createMaterailsForExchangeIfNotExist(context: Context, exchangeAddress: PublicKey) {
@@ -451,6 +455,6 @@ function createMaterailsForExchangeIfNotExist(context: Context, exchangeAddress:
             marginStressAccounts: [],
             amms: []
         }
-        fs.writeFileSync(filename, JSON.stringify(data));
+        fs.writeFileSync(filename, JSON.stringify(data, null, 4));
     }
 }
