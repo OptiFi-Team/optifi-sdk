@@ -119,7 +119,10 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
 function initializeContext(wallet?: string | WalletProvider,
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet): Promise<Context> {
+    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet,
+    commitmentLevel: anchor.web3.Commitment = "recent",
+
+): Promise<Context> {
     let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
     return new Promise((resolve, reject) => {
 
@@ -156,7 +159,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 keypair = Keypair.fromSecretKey(new Uint8Array(readJsonFile<any>(wallet)));
             }
             const idl = optifiExchange as unknown as OptifiExchangeIDL;
-            const connection = new Connection(endpoint, "recent");
+            const connection = new Connection(endpoint, commitmentLevel);
             const walletWrapper = new anchor.Wallet(keypair);
             const provider = new anchor.Provider(connection, walletWrapper, anchor.Provider.defaultOptions());
             const program = new anchor.Program(idl,
