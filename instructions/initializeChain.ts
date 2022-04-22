@@ -60,7 +60,7 @@ export function initializeChain(context: Context,
                 for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                     console.log("Creating instrument ", i);
                     let instrument = foundInstruments[i];
-                    let instrumentAccountInfo = await context.program.account.chain.fetch(instrument[0]);
+                    let instrumentAccountInfo = await context.program.account.chain.fetchNullable(instrument[0]);
                     if (!instrumentAccountInfo) {
                         let optifiAsset = assetToOptifiAsset(instrumentContext.asset);
                         let newInstrumentTx = context.program.transaction.createNewInstrument(

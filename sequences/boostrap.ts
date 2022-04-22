@@ -89,7 +89,7 @@ function createOrFetchInstruments(context: Context): Promise<PublicKey[]> {
  *
  * @param context Program context
  */
-async function createSerumMarkets(context: Context, instrumentKeys: PublicKey[]): Promise<PublicKey[]> {
+async function createSerumMarketsV1(context: Context, instrumentKeys: PublicKey[]): Promise<PublicKey[]> {
     let createdMarkets: PublicKey[] = [];
     // Intentionally do this the slow way because creating the serum markets is a super expensive process -
     // if there's a problem, we want to know before we've committed all our capital
@@ -114,6 +114,27 @@ async function createSerumMarkets(context: Context, instrumentKeys: PublicKey[])
     return createdMarkets;
 }
 
+async function createSerumMarkets(context: Context, initialInstrument: PublicKey): Promise<PublicKey> {
+    // Intentionally do this the slow way because creating the serum markets is a super expensive process -
+    // if there's a problem, we want to know before we've committed all our capital
+    try {
+        let instrument_res = await context.program.account.chain.fetch(initialInstrument);
+        let instrument = instrument_res as unknown as Chain;
+        let decimal = numberAssetToDecimal(instrument.asset)!;
+        let res = await initializeSerumMarket(context, decimal);
+        if (res.successful) {
+            return res.data as PublicKey;
+        } else {
+            console.error(res);
+            throw new Error("Couldn't create markets")
+        }
+    } catch (e: unknown) {
+        console.error(e);
+        throw new Error(e as string | undefined);
+    }
+}
+
+
 function createOrRetreiveSerumMarkets(context: Context, instrumentKeys: PublicKey[]): Promise<PublicKey[]> {
     return new Promise((resolve, reject) => {
         if (process.env.SERUM_KEYS !== undefined) {
@@ -121,7 +142,7 @@ function createOrRetreiveSerumMarkets(context: Context, instrumentKeys: PublicKe
             let serumKeysInit: string[] = readJsonFile<string[]>(process.env.SERUM_KEYS);
             resolve(serumKeysInit.map((i) => new PublicKey(i)));
         } else {
-            createSerumMarkets(context, instrumentKeys).then((res) => resolve(res)).catch((err) => reject(err));
+            createSerumMarketsV1(context, instrumentKeys).then((res) => resolve(res)).catch((err) => reject(err));
         }
     })
 }
@@ -233,15 +254,22 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
         console.log("Creating serum markets");
         console.log("Waiting 5 seconds to create Serum Markets");
         await sleep(5000);
-        if (materials.serumMarkets.length != 20) {
-            let serumMarketKeys = await createOrRetreiveSerumMarkets(context, instrumentKeys)
-            materials.serumMarkets = serumMarketKeys.map(e => {
-                return {
-                    address: e.toString(),
+        for (let instrumentKey of materials.instruments) {
+            if (!instrumentKey.isInUse) {
+                let serumMarketKey = await createSerumMarkets(context, new PublicKey(instrumentKey.address))
+                materials.serumMarkets.push({
+                    address: serumMarketKey.toString(),
                     isInUse: false
-                }
-            })
+                })
+                materials.instruments.forEach(e => {
+                    if (e.address == instrumentKey.address) {
+                        e.isInUse = true
+                    }
+                })
+                saveMaterailsForExchange(exchangeAddress, materials);
+            }
         }
+
         console.log("Created serum markets");
         saveMaterailsForExchange(exchangeAddress, materials);
 
@@ -257,10 +285,10 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
                 serumMarket: market[0].serumMarket.toString(),
                 marketId: market[0].optifiMarketId,
             }
-            let instrumentIdx = materials.instruments.findIndex(e => e.address == market[0].instrument.toString())
-            if (instrumentIdx > 0) {
-                materials.instruments[instrumentIdx].isInUse = true
-            }
+            // let instrumentIdx = materials.instruments.findIndex(e => e.address == market[0].instrument.toString())
+            // if (instrumentIdx > 0) {
+            //     materials.instruments[instrumentIdx].isInUse = true
+            // }
             let serumMarketIdx = materials.serumMarkets.findIndex(e => e.address == market[0].serumMarket.toString())
             if (serumMarketIdx > 0) {
                 materials.serumMarkets[serumMarketIdx].isInUse = true
