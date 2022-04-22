@@ -7,7 +7,7 @@ let amount = 100; // already including decimals
 
 let ammAddress = new PublicKey("3i7QPGnhG9tHVdcYgr7xsMM6EwQvDYo2iW2HF1zvCxFg");
 
-initializeContext().then(async (context) => {
+initializeContext(undefined, undefined, undefined, undefined, "confirmed").then(async (context) => {
     await getAllUsersTxsOnAllAMM(context).then((res) => {
         console.log("getAllUsersTxsOnAllAMM res", res);
     }).catch((err) => {
