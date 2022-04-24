@@ -1,20 +1,21 @@
-import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../index";
 import { Exchange } from "../types/optifi-exchange-types";
-import { findOptifiExchange } from "../utils/accounts";
+import { findOptifiExchange, getAllUsersOnExchange } from "../utils/accounts";
 
 
-initializeContext().then((context) => {
-    findOptifiExchange(context).then(([exchangeAddress, _]) => {
-        console.log("exchangeAddress: ", exchangeAddress.toString())
-        context.program.account.exchange.fetch(exchangeAddress).then((res) => {
-            let optifiExchange = res as Exchange;
-            console.log("Got Optifi Exchange ", optifiExchange);
+initializeContext().then(async (context) => {
+    let a = await getAllUsersOnExchange(context)
+    console.log(`Found ${a.length} users on Exchange`)
 
-            let common = optifiExchange.instrumentCommon;
-            console.log("Got instrument groups ", common);
+    let [exchangeAddress, _] = await findOptifiExchange(context)
+    console.log("exchangeAddress: ", exchangeAddress.toString())
+    let res = await context.program.account.exchange.fetch(exchangeAddress)
 
-            console.log("Got instrument uniques ", optifiExchange.instrumentUnique);
-        })
-    })
+    let optifiExchange = res as Exchange;
+    console.log("Got Optifi Exchange ", optifiExchange);
+
+    let common = optifiExchange.instrumentCommon;
+    console.log("Got instrument groups ", common);
+    console.log("Got instrument uniques ", optifiExchange.instrumentUnique);
+
 })
