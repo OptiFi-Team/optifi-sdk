@@ -6,7 +6,7 @@ import { Chain, Exchange, OptifiMarket, UserAccount } from "../types/optifi-exch
 import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
 import { OPTIFI_MARKET_PREFIX, SERUM_DEX_PROGRAM_ID, USDC_DECIMALS } from "../constants";
 import { numberAssetToDecimal } from "./generic";
-import { findAssociatedTokenAccount, getTokenAccountFromAccountInfo } from "./token";
+import { findAssociatedTokenAccount, getTokenAccountFromAccountInfo, getTokenMintFromAccountInfo } from "./token";
 import ExchangeMarket from "../types/exchangeMarket";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";
@@ -49,6 +49,40 @@ export function findOptifiMarkets(context: Context, inputMarkets?: PublicKey[]):
                     marketAddresses.forEach((marketAddress, i) => {
                         marketsWithKeys.push([marketsInfos[i], marketAddress])
                     })
+                }
+                retrieveMarket().then(() => {
+                    resolve(marketsWithKeys)
+                }).catch((err) => {
+                    console.error(err);
+                    reject(err);
+                })
+            })
+        })
+    })
+}
+
+export function findStoppableOptifiMarkets(context: Context): Promise<[OptifiMarket, PublicKey][]> {
+    return new Promise((resolve, reject) => {
+        findExchangeAccount(context).then(([exchangeAddress, _]) => {
+            context.program.account.exchange.fetch(exchangeAddress).then((exchangeRes) => {
+                let exchange = exchangeRes as Exchange;
+                let markets = exchange.markets as ExchangeMarket[];
+                let marketsWithKeys: [OptifiMarket, PublicKey][] = [];
+                const retrieveMarket = async () => {
+                    let marketAddresses = markets.map(e => e.optifiMarketPubkey)
+                    let marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(marketAddresses)
+                    let marketsInfos = marketsRawInfos as OptifiMarket[];
+                    let longAndShortMints: PublicKey[] = []
+                    marketsInfos.forEach(e => longAndShortMints.push(e.instrumentLongSplToken, e.instrumentShortSplToken))
+                    let instrumentTokenMintsInfos = await context.connection.getMultipleAccountsInfo(longAndShortMints);
+
+                    for (let i = 0; i < marketAddresses.length; i++) {
+                        let longSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i]!, longAndShortMints[i])
+                        let shortSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i + 1]!, longAndShortMints[2 * i + 1])
+                        if (!marketsInfos[i].isStopped && longSupply.decimals == 0 && shortSupply.decimals == 0) {
+                            marketsWithKeys.push([marketsInfos[i], marketAddresses[i]])
+                        }
+                    }
                 }
                 retrieveMarket().then(() => {
                     resolve(marketsWithKeys)

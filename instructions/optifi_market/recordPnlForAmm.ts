@@ -17,7 +17,7 @@ export default function recordPnlForAmm(context: Context,
     return new Promise(async (resolve, reject) => {
         let [ammLiquidityAuth, ammLiquidityAuthBump] = await getAmmLiquidityAuthPDA(context);
 
-        context.program.account.ammAccount.fetch(ammToSettle).then((userAcctRaw) => {
+        context.program.account.ammAccount.fetch(ammToSettle).then((ammRes) => {
             // @ts-ignore
             let amm = ammRes as AmmAccount;
             findExchangeAccount(context).then(([exchangeAddress, _]) => {
@@ -57,7 +57,7 @@ export default function recordPnlForAmm(context: Context,
                                                                 clock: SYSVAR_CLOCK_PUBKEY,
                                                                 assetSpotPriceOracleFeed: oracleSpotAccount,
                                                                 usdcSpotPriceOracleFeed: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD),
-                                                                ammLiquidityAuth: ammToSettle,
+                                                                ammLiquidityAuth: ammLiquidityAuth,
                                                             }
                                                         })
                                                     recordPnlForAmmTx.then((res) => {
