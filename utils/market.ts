@@ -79,7 +79,7 @@ export function findStoppableOptifiMarkets(context: Context): Promise<[OptifiMar
                     for (let i = 0; i < marketAddresses.length; i++) {
                         let longSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i]!, longAndShortMints[i])
                         let shortSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i + 1]!, longAndShortMints[2 * i + 1])
-                        if (!marketsInfos[i].isStopped && longSupply.decimals == 0 && shortSupply.decimals == 0) {
+                        if (!marketsInfos[i].isStopped && longSupply.supply.toString() == "0" && shortSupply.supply.toString() == "0") {
                             marketsWithKeys.push([marketsInfos[i], marketAddresses[i]])
                         }
                     }
