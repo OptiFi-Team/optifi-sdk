@@ -1,11 +1,10 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, } from "../../utils/accounts";
 import { AmmAccount, } from "../../types/optifi-exchange-types";
-import { findOptifiUSDCPoolPDA, getAmmLiquidityAuthPDA } from "../../utils/pda";
+import { findOptifiUSDCPoolAuthPDA, getAmmLiquidityAuthPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-
 
 export default function settleFundForAmm(context: Context,
     ammToSettle: PublicKey,
@@ -14,7 +13,7 @@ export default function settleFundForAmm(context: Context,
         let [ammLiquidityAuth,] = await getAmmLiquidityAuthPDA(context);
         let [exchangeAddress, _] = await findExchangeAccount(context)
         let optifiExchangeInfo = await context.program.account.exchange.fetch(exchangeAddress)
-        let [centralUsdcPoolAuth,] = await findOptifiUSDCPoolPDA(context)
+        let [centralUsdcPoolAuth,] = await findOptifiUSDCPoolAuthPDA(context)
         context.program.account.ammAccount.fetch(ammToSettle).then((ammRes) => {
             // @ts-ignore
             let amm = ammRes as AmmAccount;

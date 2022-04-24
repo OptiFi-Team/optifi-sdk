@@ -16,41 +16,6 @@ import { findOptifiUSDCPoolAuthPDA } from "../utils/pda";
 import { AccountLayout, createInitializeAccountInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { SWITCHBOARD, USDC_TOKEN_MINT } from "../constants";
 
-function createUSDCPoolAccount(context: Context,
-    poolAuthPDAAddress: PublicKey,
-    usdcCentralPoolWallet: Keypair): Promise<TransactionResult> {
-    return new Promise((resolve, reject) => {
-        context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then((min) => {
-            let poolTx = new Transaction();
-            poolTx.add(
-                SystemProgram.createAccount({
-                    fromPubkey: context.provider.wallet.publicKey,
-                    newAccountPubkey: usdcCentralPoolWallet.publicKey,
-                    lamports: min,
-                    space: AccountLayout.span,
-                    programId: TOKEN_PROGRAM_ID
-                }),
-                createInitializeAccountInstruction(
-                    usdcCentralPoolWallet.publicKey,
-                    new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
-                    poolAuthPDAAddress,
-                    TOKEN_PROGRAM_ID
-                )
-            )
-            signAndSendTransaction(context, poolTx, [usdcCentralPoolWallet])
-                .then((res) => {
-                    if (res.resultType === TransactionResultType.Successful) {
-                        console.debug("Created USDC pool")
-                        resolve(res);
-                    } else {
-                        console.error("Pool initialization was not successful", res);
-                        reject(res);
-                    }
-                }).catch((err) => reject(err))
-        })
-    })
-}
-
 /**
  * Create a new optifi exchange - the first instruction that will be run in the Optifi system
  *
@@ -63,63 +28,90 @@ export default function initialize(context: Context): Promise<InstructionResult<
             findOptifiUSDCPoolAuthPDA(context).then(([poolAuthPDAAddress, poolBump]) => {
                 const usdcCentralPoolWallet = anchor.web3.Keypair.generate();
                 const usdcFeePoolWallet = anchor.web3.Keypair.generate();
-                createUSDCPoolAccount(context, poolAuthPDAAddress, usdcCentralPoolWallet).then(async (res) => {
-                    console.log(formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction));
-                    createUSDCPoolAccount(context, poolAuthPDAAddress, usdcFeePoolWallet).then(async (res) => {
-                        console.log(formatExplorerAddress(context, res.txId as string, SolanaEntityType.Transaction));
-                        // try {
-                        //     let tx = new Transaction();
-                        //     tx.add(
-                        //         SystemProgram.createAccount({
-                        //             fromPubkey: context.provider.wallet.publicKey,
-                        //             newAccountPubkey: exchangeAddress,
-                        //             lamports: await context.connection.getMinimumBalanceForRentExemption(
-                        //                 102400
-                        //             ),
-                        //             space: 102400,
-                        //             programId: context.program.programId,
-                        //         })
-                        //     );
-                        //     let res = await context.provider.wallet.signTransaction(tx);
+                // try {
+                //     let tx = new Transaction();
+                //     tx.add(
+                //         SystemProgram.createAccount({
+                //             fromPubkey: context.provider.wallet.publicKey,
+                //             newAccountPubkey: exchangeAddress,
+                //             lamports: await context.connection.getMinimumBalanceForRentExemption(
+                //                 102400
+                //             ),
+                //             space: 102400,
+                //             programId: context.program.programId,
+                //         })
+                //     );
+                //     let res = await context.provider.wallet.signTransaction(tx);
 
-                        //     console.log("Successfully created exchange account, ", res);
-                        // }
-                        // catch (e) {
-                        //     console.error("Got error while trying to create exchange account ", e);
-                        //     reject(e)
-                        // }
+                //     console.log("Successfully created exchange account, ", res);
+                // }
+                // catch (e) {
+                //     console.error("Got error while trying to create exchange account ", e);
+                //     reject(e)
+                // }
 
-                        context.program.rpc.initialize(
-                            bump,
-                            {
-                                uuid: context.exchangeUUID,
-                                version: 1,
-                                exchangeAuthority: context.provider.wallet.publicKey,
-                                owner: context.provider.wallet.publicKey,
-                                usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
-                                btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD),
-                                ethSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD),
-                                usdcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD),
-                                btcIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV),
-                                ethIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV),
+                context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then((min) => {
+                    context.program.rpc.initialize(
+                        bump,
+                        {
+                            uuid: context.exchangeUUID,
+                            version: 1,
+                            exchangeAuthority: context.provider.wallet.publicKey,
+                            owner: context.provider.wallet.publicKey,
+                            usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                            btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD),
+                            ethSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD),
+                            usdcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD),
+                            btcIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV),
+                            ethIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV),
+                        },
+                        {
+                            accounts: {
+                                optifiExchange: exchangeAddress,
+                                authority: context.provider.wallet.publicKey,
+                                usdcCentralPool: usdcCentralPoolWallet.publicKey,
+                                usdcFeePool: usdcFeePoolWallet.publicKey,
+                                payer: context.provider.wallet.publicKey,
+                                systemProgram: SystemProgram.programId,
+                                rent: SYSVAR_RENT_PUBKEY
                             },
-                            {
-                                accounts: {
-                                    optifiExchange: exchangeAddress,
-                                    authority: context.provider.wallet.publicKey,
-                                    usdcCentralPool: usdcCentralPoolWallet.publicKey,
-                                    usdcFeePool: usdcFeePoolWallet.publicKey,
-                                    payer: context.provider.wallet.publicKey,
-                                    systemProgram: SystemProgram.programId,
-                                    rent: SYSVAR_RENT_PUBKEY
-                                }
-                            },
-                        ).then((res) => {
-                            resolve({
-                                successful: true,
-                                data: res as TransactionSignature
-                            })
-                        }).catch((err) => reject(err))
+                            instructions: [
+                                // create usdc central pool
+                                SystemProgram.createAccount({
+                                    fromPubkey: context.provider.wallet.publicKey,
+                                    newAccountPubkey: usdcCentralPoolWallet.publicKey,
+                                    lamports: min,
+                                    space: AccountLayout.span,
+                                    programId: TOKEN_PROGRAM_ID
+                                }),
+                                createInitializeAccountInstruction(
+                                    usdcCentralPoolWallet.publicKey,
+                                    new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                    poolAuthPDAAddress,
+                                    TOKEN_PROGRAM_ID
+                                ),
+                                // create usdc fee pool
+                                SystemProgram.createAccount({
+                                    fromPubkey: context.provider.wallet.publicKey,
+                                    newAccountPubkey: usdcFeePoolWallet.publicKey,
+                                    lamports: min,
+                                    space: AccountLayout.span,
+                                    programId: TOKEN_PROGRAM_ID
+                                }),
+                                createInitializeAccountInstruction(
+                                    usdcFeePoolWallet.publicKey,
+                                    new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                    poolAuthPDAAddress,
+                                    TOKEN_PROGRAM_ID
+                                )
+                            ],
+                            signers: [usdcCentralPoolWallet, usdcFeePoolWallet]
+                        },
+                    ).then((res) => {
+                        resolve({
+                            successful: true,
+                            data: res as TransactionSignature
+                        })
                     }).catch((err) => reject(err))
                 }).catch((err) => reject(err))
             }).catch((err) => reject(err))

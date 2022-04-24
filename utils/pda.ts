@@ -30,10 +30,6 @@ export function findOptifiUSDCPoolAuthPDA(context: Context): Promise<[PublicKey,
     return derivePDAAddress(context, USDC_POOL_AUTH_PREFIX);
 }
 
-export function findOptifiUSDCPoolPDA(context: Context): Promise<[PublicKey, number]> {
-    return derivePDAAddress(context, USDC_CENTRAL_POOL_PREFIX);
-}
-
 export function findSerumAuthorityPDA(context: Context): Promise<[PublicKey, number]> {
     return derivePDAAddress(context, SERUM_MARKET_AUTHORITY);
 }
