@@ -4,9 +4,6 @@ import { findOptifiExchange, getAllUsersOnExchange } from "../utils/accounts";
 
 
 initializeContext().then(async (context) => {
-    let a = await getAllUsersOnExchange(context)
-    console.log(`Found ${a.length} users on Exchange`)
-
     let [exchangeAddress, _] = await findOptifiExchange(context)
     console.log("exchangeAddress: ", exchangeAddress.toString())
     let res = await context.program.account.exchange.fetch(exchangeAddress)
@@ -17,5 +14,8 @@ initializeContext().then(async (context) => {
     let common = optifiExchange.instrumentCommon;
     console.log("Got instrument groups ", common);
     console.log("Got instrument uniques ", optifiExchange.instrumentUnique);
+
+    let a = await getAllUsersOnExchange(context)
+    console.log(`\n OMG, Found ${a.length} users on OptiFi Exchange!!!`)
 
 })

@@ -22,7 +22,7 @@ initializeContext().then(async (context) => {
   console.log("dexOpenOrders: ", dexOpenOrders.toString())
   let openOrdersAccount2 = await OpenOrders.load(
     context.connection,
-    dexOpenOrders,
+    new PublicKey("GBxUGcuTXqTBJq5r8gxvfyFG41NEmJ91bXf9xU7ZHkcV"), // dexOpenOrders,
     new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
   );
   console.log(openOrdersAccount2)
