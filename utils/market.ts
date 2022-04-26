@@ -228,34 +228,59 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
                         bidsPubkey: market.bidsAddress
                     })
                 })
-
-                // console.log("start to fetch asksAndBidsInfos")
-                let asksAndBidsInfos = await context.connection.getMultipleAccountsInfo(asksAndBidsAddresses)
-                asksAndBidsInfos.forEach((e, i) => {
-                    // console.log(a)
-                    // console.log(instrumentInfos[marketIdx])
-                    // console.log(instrumentInfos[marketIdx].strike.toNumber())
-
-                    if (i % 2 == 0) {
-                        let marketIdx = i / 2
-                        let orderBook = Orderbook.decode(decodedSerumMarkets[marketIdx], e?.data!)
-                        res[marketIdx].asks = orderBook
-                        res[marketIdx].askPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
-                        res[marketIdx].askSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
-
-                    } else {
-                        let marketIdx = (i - 1) / 2
-                        let orderBook = Orderbook.decode(decodedSerumMarkets[marketIdx], e?.data!)
-                        res[marketIdx].bids = orderBook
-                        res[marketIdx].bidPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
-                        res[marketIdx].bidSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
-                    }
-                })
+                await getLatestAskNBidForMarkets(context, decodedSerumMarkets, asksAndBidsAddresses, res)
                 resolve(res)
             } catch (err) {
                 reject(err)
             }
         }).catch((err) => reject(err))
+    })
+}
+
+
+function getLatestAskNBidForMarkets(context: Context, serumMarkets: Market[], asksAndBidsAddresses: PublicKey[], res: OptifiMarketFullData[]): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // console.log("start to fetch asksAndBidsInfos")
+            let asksAndBidsInfos = await context.connection.getMultipleAccountsInfo(asksAndBidsAddresses)
+            asksAndBidsInfos.forEach((e, i) => {
+                if (i % 2 == 0) {
+                    let marketIdx = i / 2
+                    let orderBook = Orderbook.decode(serumMarkets[marketIdx], e?.data!)
+                    res[marketIdx].asks = orderBook
+                    res[marketIdx].askPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
+                    res[marketIdx].askSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
+
+                } else {
+                    let marketIdx = (i - 1) / 2
+                    let orderBook = Orderbook.decode(serumMarkets[marketIdx], e?.data!)
+                    res[marketIdx].bids = orderBook
+                    res[marketIdx].bidPrice = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][0] : 0
+                    res[marketIdx].bidSize = orderBook.getL2(1).length > 0 ? orderBook.getL2(1)[0][1] : 0
+                }
+            })
+            resolve()
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+// reload market data when you want to receive latest order book data for all markets
+export function reloadOptifiMarketsData(context: Context, optifiMarkets: OptifiMarketFullData[]): Promise<OptifiMarketFullData[]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let asksAndBidsAddresses: PublicKey[] = []
+            optifiMarkets.forEach(market => {
+                asksAndBidsAddresses.push(market.asksPubkey, market.bidsPubkey)
+            })
+            let serumMarkets = optifiMarkets.map(e => e.serumMarket)
+            let res = optifiMarkets;
+            await getLatestAskNBidForMarkets(context, serumMarkets, asksAndBidsAddresses, res)
+            resolve(res)
+        } catch (err) {
+            reject(err)
+        }
     })
 }
 
