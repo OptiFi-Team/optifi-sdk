@@ -3,11 +3,12 @@ import { PublicKey } from "@solana/web3.js";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { initializeContext } from "../index";
 import { findUserAccount, getDexOpenOrders } from "../utils/accounts";
-import { getOrdersOnMarket } from "../utils/orders";
+import { getOrdersOnMarket, loadOrdersAccountsForOwner, loadOrdersAccountsForOwnerV2 } from "../utils/orders";
 import {
   OpenOrders
 } from "@project-serum/serum";
 import { market } from "./constants";
+import { findOptifiMarketsWithFullData } from "../utils/market";
 // let userAccount = new PublicKey("5UiD5WNnGVRuTmhfjhVLYvHV8fDiXH5eUNCoBxwJpkYs")
 
 initializeContext().then(async (context) => {
@@ -22,7 +23,7 @@ initializeContext().then(async (context) => {
   console.log("dexOpenOrders: ", dexOpenOrders.toString())
   let openOrdersAccount2 = await OpenOrders.load(
     context.connection,
-    new PublicKey("GBxUGcuTXqTBJq5r8gxvfyFG41NEmJ91bXf9xU7ZHkcV"), // dexOpenOrders,
+    dexOpenOrders,
     new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
   );
   console.log(openOrdersAccount2)
@@ -38,5 +39,12 @@ initializeContext().then(async (context) => {
       console.log(id.toNumber());
     }
   });
+
+  let optifiMarkets  = await findOptifiMarketsWithFullData(context)
+  let [userAccountAddress,] = await findUserAccount(context)
+  
+  let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress)
+  console.log("openOrdersAccount: ", openOrdersAccount)
+
 });
 

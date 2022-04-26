@@ -755,6 +755,57 @@ export function getAllOpenOrdersForUser(
   })
 }
 
+
+// load all orders accounts for owner with only mutiple requests, should try loadOrdersAccountsForOwnerV2 first
+export async function loadOrdersAccountsForOwner(connection: Connection, optifiMarkets: OptifiMarketFullData[], ownerAddress: PublicKey, cacheDurationMs = 0) {
+  const openOrdersAccounts = await Promise.all(
+    optifiMarkets.map(market => market.serumMarket.findOpenOrdersAccountsForOwner(connection, ownerAddress, cacheDurationMs)),
+  );
+  console.log("optifiMarkets: ", optifiMarkets.map(e => e.marketAddress.toString()))
+  console.log("ownerAddress: ", ownerAddress.toString())
+  console.log("cp1", openOrdersAccounts)
+  let res: { optifiMarketAddress: PublicKey, openOrdersAccount: OpenOrders }[] = []
+  openOrdersAccounts.forEach(openOrdersAccountsOnOneMarket => {
+    if (openOrdersAccountsOnOneMarket.length > 0) {
+      let optifiMarket = optifiMarkets.find(optifiMarket => optifiMarket.serumMarket.address.toString() == openOrdersAccountsOnOneMarket[0].market.toString())!
+      res.push({
+        optifiMarketAddress: optifiMarket.marketAddress,
+        openOrdersAccount: openOrdersAccountsOnOneMarket[0]
+      })
+    }
+  })
+  return res;
+}
+
+// load all orders accounts for owner with only one request
+export async function loadOrdersAccountsForOwnerV2(context: Context, optifiMarkets: OptifiMarketFullData[], ownerAddress: PublicKey) {
+  let serumProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+  let userOpenOrdersAccountsAddresses: PublicKey[] = []
+  for (let optifiMarket of optifiMarkets) {
+    let [openOrdersAccountAddr, _] = await getDexOpenOrders(
+      context,
+      optifiMarket.serumMarket.address,
+      ownerAddress
+    )
+    userOpenOrdersAccountsAddresses.push(openOrdersAccountAddr)
+  }
+
+  let openOrdersAccountsInfo = await context.connection.getMultipleAccountsInfo(userOpenOrdersAccountsAddresses)
+  let res: { optifiMarketAddress: PublicKey, openOrdersAccount: OpenOrders }[] = []
+
+  openOrdersAccountsInfo.forEach((e, i) => {
+    if (e) {
+      let openOrdersAccount = OpenOrders.fromAccountInfo(userOpenOrdersAccountsAddresses[i], e, serumProgramId)
+      res.push({
+        optifiMarketAddress: optifiMarkets[i].marketAddress,
+        openOrdersAccount: openOrdersAccount
+      })
+    }
+  })
+
+  return res;
+}
+
 // Customised seurm helper - to load orders for an optifi user account with less rpc reuquests
 async function loadOrdersForOwner(connection: Connection, market: Market, asks: Orderbook, bids: Orderbook, ownerAddress: PublicKey, cacheDurationMs = 0) {
   const [openOrdersAccounts] = await Promise.all([
