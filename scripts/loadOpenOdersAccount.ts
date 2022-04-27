@@ -3,12 +3,13 @@ import { PublicKey } from "@solana/web3.js";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { initializeContext } from "../index";
 import { findUserAccount, getDexOpenOrders } from "../utils/accounts";
-import { getOrdersOnMarket, loadOrdersAccountsForOwner, loadOrdersAccountsForOwnerV2 } from "../utils/orders";
+import { getOrdersOnMarket, loadOrdersAccountsForOwner, loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, loadUnsettledFundForOwnerOnAllMarkets } from "../utils/orders";
 import {
   OpenOrders
 } from "@project-serum/serum";
 import { market } from "./constants";
 import { findOptifiMarketsWithFullData } from "../utils/market";
+import { getAllOrdersForAccount } from "../utils/orderHistory";
 // let userAccount = new PublicKey("5UiD5WNnGVRuTmhfjhVLYvHV8fDiXH5eUNCoBxwJpkYs")
 
 initializeContext().then(async (context) => {
@@ -40,11 +41,19 @@ initializeContext().then(async (context) => {
     }
   });
 
-  let optifiMarkets  = await findOptifiMarketsWithFullData(context)
+  let optifiMarkets = await findOptifiMarketsWithFullData(context)
   let [userAccountAddress,] = await findUserAccount(context)
-  
+
   let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress)
   console.log("openOrdersAccount: ", openOrdersAccount)
+
+  let unsettledFund = await loadUnsettledFundForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount))
+  console.log("unsettledFund: ", unsettledFund)
+
+  let context2 = await initializeContext(undefined, undefined,undefined, undefined, "confirmed")
+  let orderHistory = await getAllOrdersForAccount(context2, userAccount,)
+  let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
+  console.log("orders: ", orders)
 
 });
 
