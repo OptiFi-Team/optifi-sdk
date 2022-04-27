@@ -50,8 +50,11 @@ initializeContext().then(async (context) => {
   let unsettledFund = await loadUnsettledFundForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount))
   console.log("unsettledFund: ", unsettledFund)
 
+  // must use "confirmed" as commitment level for tx hostory related requests 
   let context2 = await initializeContext(undefined, undefined,undefined, undefined, "confirmed")
   let orderHistory = await getAllOrdersForAccount(context2, userAccount,)
+  // order history is optional, get call loadOrdersForOwnerOnAllMarkets without it first. and whenever you get user's order history,
+  // just call this loadOrdersForOwnerOnAllMarkets again
   let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
   console.log("orders: ", orders)
 
