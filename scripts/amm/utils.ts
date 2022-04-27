@@ -78,7 +78,7 @@ export async function updateAmmFutureOrders(context: Context, ammIndex: number) 
 
         console.log(ammTradingInstruments.length)
         let res = await ammUpdateFuturesPositions(context, ammAddress)
-        console.log(`successfully synced futures orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
+        console.log(`successfully updated futures orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
         console.log(res)
     } catch (err) {
         console.error(err);
