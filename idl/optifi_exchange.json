@@ -297,12 +297,22 @@
           "isSigner": false
         },
         {
+          "name": "instrument",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "instrumentLongSplToken",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "instrumentShortSplToken",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
           "isMut": false,
           "isSigner": false
         }
@@ -4319,5 +4329,8 @@
       "name": "MismatchedDuration",
       "msg": "duration of amm and the instrument are mismatched"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord"
+  }
 }

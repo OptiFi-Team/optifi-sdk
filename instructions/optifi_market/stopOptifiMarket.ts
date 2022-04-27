@@ -1,5 +1,5 @@
 import Context from "../../types/context";
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
 import { findExchangeAccount } from "../../utils/accounts";
 import { OptifiMarket } from "../../types/optifi-exchange-types";
@@ -14,8 +14,11 @@ export function stopOptifiMarket(context: Context, marketAddress: PublicKey): Pr
                         accounts: {
                             optifiExchange: exchangeAddress,
                             optifiMarket: marketAddress,
+                            instrument: optifiMarket.instrument,
                             instrumentLongSplToken: optifiMarket.instrumentLongSplToken,
                             instrumentShortSplToken: optifiMarket.instrumentShortSplToken,
+                            clock: SYSVAR_CLOCK_PUBKEY
+
                         }
                     }
                 )
