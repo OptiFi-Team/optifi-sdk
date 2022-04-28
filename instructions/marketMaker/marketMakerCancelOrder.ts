@@ -40,46 +40,39 @@ export default function marketMakerCancelOrder(
                                                                             // @ts-ignore
                                                                             let chain = chainRes as Chain;
                                                                             findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
-                                                                                findOptifiUSDCPoolAuthPDA(context).then(([centralUsdcPoolAuth,]) => {
-                                                                                    let marketMakerCancelOrderTx = context.program.rpc.mmCancelOrder({
-                                                                                        accounts: {
-                                                                                            optifiExchange: exchangeAddress,
-                                                                                            userAccount: userAccountAddress,
-                                                                                            userMarginAccount: userAcctRaw.userMarginAccountUsdc,
-                                                                                            marketMakerAccount: marketMakerAccount,
-                                                                                            user: context.provider.wallet.publicKey,
-                                                                                            userInstrumentLongTokenVault: userLongTokenVault,
-                                                                                            userInstrumentShortTokenVault: userShortTokenVault,
-                                                                                            optifiMarket: marketAddress,
-                                                                                            serumMarket: optifiMarket.serumMarket,
-                                                                                            openOrders: userOpenOrdersAccount,
-                                                                                            requestQueue: serumMarket.decoded.requestQueue,
-                                                                                            eventQueue: serumMarket.decoded.eventQueue,
-                                                                                            bids: serumMarket.bidsAddress,
-                                                                                            asks: serumMarket.asksAddress,
-                                                                                            coinMint: serumMarket.decoded.baseMint,
-                                                                                            coinVault: serumMarket.decoded.baseVault,
-                                                                                            pcVault: serumMarket.decoded.quoteVault,
-                                                                                            vaultSigner: vaultSigner,
-                                                                                            usdcFeePool: exchangeInfo.usdcFeePool,
-                                                                                            centralUsdcPoolAuth: centralUsdcPoolAuth,
-                                                                                            instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
-                                                                                            pruneAuthority: serumMarketAuthority,
-                                                                                            serumDexProgramId: serumProgramId,
-                                                                                            tokenProgram: TOKEN_PROGRAM_ID,
-                                                                                        }
-                                                                                    });
-                                                                                    marketMakerCancelOrderTx.then((res) => {
-                                                                                        console.log("Successfully cancelled market maker order",
-                                                                                            formatExplorerAddress(context, res as string,
-                                                                                                SolanaEntityType.Transaction));
-                                                                                        resolve({
-                                                                                            successful: true,
-                                                                                            data: res as TransactionSignature
-                                                                                        })
-                                                                                    }).catch((err) => {
-                                                                                        console.error(err);
-                                                                                        reject(err);
+                                                                                let marketMakerCancelOrderTx = context.program.rpc.mmCancelOrder({
+                                                                                    accounts: {
+                                                                                        optifiExchange: exchangeAddress,
+                                                                                        userAccount: userAccountAddress,
+                                                                                        userMarginAccount: userAcctRaw.userMarginAccountUsdc,
+                                                                                        marketMakerAccount: marketMakerAccount,
+                                                                                        user: context.provider.wallet.publicKey,
+                                                                                        userInstrumentLongTokenVault: userLongTokenVault,
+                                                                                        userInstrumentShortTokenVault: userShortTokenVault,
+                                                                                        optifiMarket: marketAddress,
+                                                                                        serumMarket: optifiMarket.serumMarket,
+                                                                                        openOrders: userOpenOrdersAccount,
+                                                                                        requestQueue: serumMarket.decoded.requestQueue,
+                                                                                        eventQueue: serumMarket.decoded.eventQueue,
+                                                                                        bids: serumMarket.bidsAddress,
+                                                                                        asks: serumMarket.asksAddress,
+                                                                                        coinMint: serumMarket.decoded.baseMint,
+                                                                                        coinVault: serumMarket.decoded.baseVault,
+                                                                                        pcVault: serumMarket.decoded.quoteVault,
+                                                                                        vaultSigner: vaultSigner,
+                                                                                        instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
+                                                                                        pruneAuthority: serumMarketAuthority,
+                                                                                        serumDexProgramId: serumProgramId,
+                                                                                        tokenProgram: TOKEN_PROGRAM_ID,
+                                                                                    }
+                                                                                });
+                                                                                marketMakerCancelOrderTx.then((res) => {
+                                                                                    console.log("Successfully cancelled market maker order",
+                                                                                        formatExplorerAddress(context, res as string,
+                                                                                            SolanaEntityType.Transaction));
+                                                                                    resolve({
+                                                                                        successful: true,
+                                                                                        data: res as TransactionSignature
                                                                                     })
                                                                                 }).catch((err) => reject(err))
                                                                             }).catch((err) => reject(err))

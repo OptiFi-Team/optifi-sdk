@@ -190,8 +190,6 @@ export default function initializeSerumMarket(context: Context, decimal: number)
                                     decimal
                                 ).then((res) => {
                                     let tx = context.program.transaction.initializeSerumOrderbook(
-                                        authorityAddress, // Authority PK
-                                        pruneAuthorityAddress, // Prune authority PK
                                         new anchor.BN(COIN_LOT_SIZE),
                                         new anchor.BN(PC_LOT_SIZE),
                                         vaultSignerNonce,

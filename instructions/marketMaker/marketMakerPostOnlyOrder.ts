@@ -47,59 +47,55 @@ export default function marketMakerPostOnlyOrder(
                                                                             // @ts-ignore
                                                                             let chain = chainRes as Chain;
                                                                             findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
-                                                                                findOptifiUSDCPoolAuthPDA(context).then(([centralUsdcPoolAuth,]) => {
-                                                                                    let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(chain.asset)!); // price for 1 lot_size 
-                                                                                    let maxCoinQty = size * (10 ** numberAssetToDecimal(chain.asset)!);
-                                                                                    let PcQty = limit * maxCoinQty;
-                                                                                    let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(PcQty, side, OrderType.PostOnly, false)!;
-                                                                                    let marketMakerPostOnlyOrderTx = context.program.rpc.mmPostOnlyOrder(
-                                                                                        side,
-                                                                                        new BN(limit),
-                                                                                        new BN(maxCoinQty),
-                                                                                        new BN(maxPcQty),
-                                                                                        {
-                                                                                            accounts: {
-                                                                                                optifiExchange: exchangeAddress,
-                                                                                                marginStressAccount: marginStressAddress,
-                                                                                                userAccount: userAccountAddress,
-                                                                                                userMarginAccount: userAcctRaw.userMarginAccountUsdc,
-                                                                                                marketMakerAccount: marketMakerAccount,
-                                                                                                user: context.provider.wallet.publicKey,
-                                                                                                userInstrumentLongTokenVault: userLongTokenVault,
-                                                                                                userInstrumentShortTokenVault: userShortTokenVault,
-                                                                                                optifiMarket: marketAddress,
-                                                                                                serumMarket: optifiMarket.serumMarket,
-                                                                                                openOrders: userOpenOrdersAccount,
-                                                                                                requestQueue: serumMarket.decoded.requestQueue,
-                                                                                                eventQueue: serumMarket.decoded.eventQueue,
-                                                                                                bids: serumMarket.bidsAddress,
-                                                                                                asks: serumMarket.asksAddress,
-                                                                                                coinMint: serumMarket.decoded.baseMint,
-                                                                                                coinVault: serumMarket.decoded.baseVault,
-                                                                                                pcVault: serumMarket.decoded.quoteVault,
-                                                                                                vaultSigner: vaultSigner,
-                                                                                                instrumentTokenMintAuthorityPda: mintAuthAddress,
-                                                                                                usdcFeePool: exchangeInfo.usdcFeePool,
-                                                                                                centralUsdcPoolAuth: centralUsdcPoolAuth,
-                                                                                                instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
-                                                                                                serumDexProgramId: serumProgramId,
-                                                                                                tokenProgram: TOKEN_PROGRAM_ID,
-                                                                                                rent: SYSVAR_RENT_PUBKEY,
-                                                                                            }
-                                                                                        });
-                                                                                    marketMakerPostOnlyOrderTx.then((res) => {
-                                                                                        console.log("Successfully placed market maker post-only order",
-                                                                                            formatExplorerAddress(context, res as string,
-                                                                                                SolanaEntityType.Transaction));
-                                                                                        resolve({
-                                                                                            successful: true,
-                                                                                            data: res as TransactionSignature
-                                                                                        })
-                                                                                    }).catch((err) => {
-                                                                                        console.error(err);
-                                                                                        reject(err);
+                                                                                let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(chain.asset)!); // price for 1 lot_size 
+                                                                                let maxCoinQty = size * (10 ** numberAssetToDecimal(chain.asset)!);
+                                                                                let PcQty = limit * maxCoinQty;
+                                                                                let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(PcQty, side, OrderType.PostOnly, false)!;
+                                                                                let marketMakerPostOnlyOrderTx = context.program.rpc.mmPostOnlyOrder(
+                                                                                    side,
+                                                                                    new BN(limit),
+                                                                                    new BN(maxCoinQty),
+                                                                                    new BN(maxPcQty),
+                                                                                    {
+                                                                                        accounts: {
+                                                                                            optifiExchange: exchangeAddress,
+                                                                                            marginStressAccount: marginStressAddress,
+                                                                                            userAccount: userAccountAddress,
+                                                                                            userMarginAccount: userAcctRaw.userMarginAccountUsdc,
+                                                                                            marketMakerAccount: marketMakerAccount,
+                                                                                            user: context.provider.wallet.publicKey,
+                                                                                            userInstrumentLongTokenVault: userLongTokenVault,
+                                                                                            userInstrumentShortTokenVault: userShortTokenVault,
+                                                                                            optifiMarket: marketAddress,
+                                                                                            serumMarket: optifiMarket.serumMarket,
+                                                                                            openOrders: userOpenOrdersAccount,
+                                                                                            requestQueue: serumMarket.decoded.requestQueue,
+                                                                                            eventQueue: serumMarket.decoded.eventQueue,
+                                                                                            bids: serumMarket.bidsAddress,
+                                                                                            asks: serumMarket.asksAddress,
+                                                                                            coinMint: serumMarket.decoded.baseMint,
+                                                                                            coinVault: serumMarket.decoded.baseVault,
+                                                                                            pcVault: serumMarket.decoded.quoteVault,
+                                                                                            vaultSigner: vaultSigner,
+                                                                                            instrumentTokenMintAuthorityPda: mintAuthAddress,
+                                                                                            instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
+                                                                                            serumDexProgramId: serumProgramId,
+                                                                                            tokenProgram: TOKEN_PROGRAM_ID,
+                                                                                            rent: SYSVAR_RENT_PUBKEY,
+                                                                                        }
+                                                                                    });
+                                                                                marketMakerPostOnlyOrderTx.then((res) => {
+                                                                                    console.log("Successfully placed market maker post-only order",
+                                                                                        formatExplorerAddress(context, res as string,
+                                                                                            SolanaEntityType.Transaction));
+                                                                                    resolve({
+                                                                                        successful: true,
+                                                                                        data: res as TransactionSignature
                                                                                     })
-                                                                                }).catch((err) => reject(err))
+                                                                                }).catch((err) => {
+                                                                                    console.error(err);
+                                                                                    reject(err);
+                                                                                })
                                                                             }).catch((err) => reject(err))
                                                                         }).catch((err) => reject(err))
                                                                 }).catch((err) => reject(err))
