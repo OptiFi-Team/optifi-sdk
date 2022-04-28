@@ -41,7 +41,7 @@ export default function marketMakerCancelOrder(
                                                                             let chain = chainRes as Chain;
                                                                             findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
                                                                                 findOptifiUSDCPoolAuthPDA(context).then(([centralUsdcPoolAuth,]) => {
-                                                                                    let marketMakerPostOnlyOrderTx = context.program.rpc.mmCancelOrder({
+                                                                                    let marketMakerCancelOrderTx = context.program.rpc.mmCancelOrder({
                                                                                         accounts: {
                                                                                             optifiExchange: exchangeAddress,
                                                                                             userAccount: userAccountAddress,
@@ -69,8 +69,8 @@ export default function marketMakerCancelOrder(
                                                                                             tokenProgram: TOKEN_PROGRAM_ID,
                                                                                         }
                                                                                     });
-                                                                                    marketMakerPostOnlyOrderTx.then((res) => {
-                                                                                        console.log("Successfully placed market maker post-only order",
+                                                                                    marketMakerCancelOrderTx.then((res) => {
+                                                                                        console.log("Successfully cancelled market maker order",
                                                                                             formatExplorerAddress(context, res as string,
                                                                                                 SolanaEntityType.Transaction));
                                                                                         resolve({
