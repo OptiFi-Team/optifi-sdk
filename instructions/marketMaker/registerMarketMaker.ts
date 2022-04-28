@@ -1,11 +1,10 @@
-import Context from "../types/context";
-import InstructionResult from "../types/instructionResult";
-import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findMarketMakerAccount, findUserAccount } from "../utils/accounts";
-import { findOrCreateAssociatedTokenAccount } from "../utils/token";
-import { USDC_TOKEN_MINT } from "../constants";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
-import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import Context from "../../types/context";
+import InstructionResult from "../../types/instructionResult";
+import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { findExchangeAccount, findMarketMakerAccount, findUserAccount } from "../../utils/accounts";
+import { findOrCreateAssociatedTokenAccount } from "../../utils/token";
+import { USDC_TOKEN_MINT } from "../../constants";
+import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 
 export default function registerMarketMaker(context: Context): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
@@ -15,7 +14,7 @@ export default function registerMarketMaker(context: Context): Promise<Instructi
                     findOrCreateAssociatedTokenAccount(context,
                         new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
                         marketMakerAccount).then((liquidityPoolAccount) => {
-                            let registerMarketMakerTx = context.program.transaction.registerMarketMaker({
+                            let registerMarketMakerTx = context.program.rpc.registerMarketMaker({
                                 accounts: {
                                     optifiExchange: exchangeAddress,
                                     userAccount: userAccountAddress,
@@ -25,16 +24,14 @@ export default function registerMarketMaker(context: Context): Promise<Instructi
                                     rent: SYSVAR_RENT_PUBKEY
                                 }
                             });
-                            signAndSendTransaction(context, registerMarketMakerTx).then((txRes) => {
-                                if (txRes.resultType === TransactionResultType.Successful) {
-                                    console.log("Successfully registered market maker",
-                                        formatExplorerAddress(context, txRes.txId as string,
-                                            SolanaEntityType.Transaction));
-                                    resolve({
-                                        successful: true,
-                                        data: txRes.txId as TransactionSignature
-                                    })
-                                }
+                            registerMarketMakerTx.then((res) => {
+                                console.log("Successfully registered market maker",
+                                    formatExplorerAddress(context, res as string,
+                                        SolanaEntityType.Transaction));
+                                resolve({
+                                    successful: true,
+                                    data: res as TransactionSignature
+                                })
                             }).catch((err) => {
                                 console.error(err);
                                 reject(err);
