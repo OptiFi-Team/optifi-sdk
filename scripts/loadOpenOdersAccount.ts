@@ -51,7 +51,7 @@ initializeContext().then(async (context) => {
   console.log("unsettledFund: ", unsettledFund)
 
   // must use "confirmed" as commitment level for tx hostory related requests 
-  let context2 = await initializeContext(undefined, undefined,undefined, undefined, "confirmed")
+  let context2 = await initializeContext(undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" })
   let orderHistory = await getAllOrdersForAccount(context2, userAccount,)
   // order history is optional, get call loadOrdersForOwnerOnAllMarkets without it first. and whenever you get user's order history,
   // just call this loadOrdersForOwnerOnAllMarkets again
