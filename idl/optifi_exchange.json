@@ -621,10 +621,6 @@
           "type": "u64"
         },
         {
-          "name": "clientOrderId",
-          "type": "u64"
-        },
-        {
           "name": "orderType",
           "type": "u8"
         }
@@ -920,6 +916,87 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "settleOrderFunds",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userSerumOpenOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentLongSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "initUserAccount",
@@ -1448,87 +1525,6 @@
       "args": []
     },
     {
-      "name": "settleOrderFunds",
-      "accounts": [
-        {
-          "name": "optifiExchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "userAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "optifiMarket",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "serumMarket",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userSerumOpenOrders",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "coinVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "pcVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrumentLongSplTokenMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrumentShortSplTokenMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userInstrumentLongTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userInstrumentShortTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userMarginAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vaultSigner",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "serumDexProgramId",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "initializeAmm",
       "accounts": [
         {
@@ -1993,111 +1989,6 @@
       "args": []
     },
     {
-      "name": "ammCancelOrders",
-      "accounts": [
-        {
-          "name": "optifiExchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "amm",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "ammUsdcVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "ammAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ammInstrumentLongTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "optifiMarket",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "serumMarket",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrders",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "eventQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "bids",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "asks",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "coinVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "pcVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vaultSigner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "instrumentTokenMintAuthorityPda",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pruneAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "serumDexProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "instrumentIndex",
-          "type": "u16"
-        },
-        {
-          "name": "ammAuthorityBump",
-          "type": "u8"
-        }
-      ]
-    },
-    {
       "name": "ammUpdateOrders",
       "accounts": [
         {
@@ -2308,7 +2199,7 @@
       "args": []
     },
     {
-      "name": "registerMarketMaker",
+      "name": "marginStressInit",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -2316,22 +2207,12 @@
           "isSigner": false
         },
         {
-          "name": "userAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "marketMakerAccount",
+          "name": "marginStressAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "liquidityPool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "owner",
+          "name": "payer",
           "isMut": false,
           "isSigner": true
         },
@@ -2341,7 +2222,7 @@
           "isSigner": false
         },
         {
-          "name": "clock",
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -2350,11 +2231,15 @@
         {
           "name": "bump",
           "type": "u8"
+        },
+        {
+          "name": "asset",
+          "type": "u8"
         }
       ]
     },
     {
-      "name": "deregisterMarketMaker",
+      "name": "marginStressSync",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -2362,19 +2247,45 @@
           "isSigner": false
         },
         {
-          "name": "userAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "marketMaker",
+          "name": "marginStressAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "owner",
+          "name": "assetFeed",
           "isMut": false,
-          "isSigner": true
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ivFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "marginStressCalculate",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
         }
       ],
       "args": []
@@ -2719,11 +2630,16 @@
       "args": []
     },
     {
-      "name": "scheduleMarketMakerWithdrawal",
+      "name": "registerMarketMaker",
       "accounts": [
         {
-          "name": "userAccount",
+          "name": "optifiExchange",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -2732,7 +2648,400 @@
           "isSigner": false
         },
         {
-          "name": "liquidityPool",
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "mmPostOnlyOrder",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marketMakerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "requestQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentTokenMintAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "centralUsdcPoolAuth",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": {
+            "defined": "OrderSide"
+          }
+        },
+        {
+          "name": "limit",
+          "type": "u64"
+        },
+        {
+          "name": "maxCoinQty",
+          "type": "u64"
+        },
+        {
+          "name": "maxPcQty",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "mmCalculation",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marketMakerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "mmCancelOrder",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marketMakerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "openOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "requestQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coinVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeePool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "centralUsdcPoolAuth",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pruneAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "scheduleMarketMakerWithdrawal",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccountUsdc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marketMakerAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -2753,98 +3062,6 @@
           "type": "u64"
         }
       ]
-    },
-    {
-      "name": "marginStressInit",
-      "accounts": [
-        {
-          "name": "optifiExchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "marginStressAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "bump",
-          "type": "u8"
-        },
-        {
-          "name": "asset",
-          "type": "u8"
-        }
-      ]
-    },
-    {
-      "name": "marginStressSync",
-      "accounts": [
-        {
-          "name": "optifiExchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "marginStressAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "assetFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ivFeed",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "marginStressCalculate",
-      "accounts": [
-        {
-          "name": "optifiExchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "marginStressAccount",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": []
     }
   ],
   "accounts": [
@@ -3133,108 +3350,6 @@
       }
     },
     {
-      "name": "Market",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "version",
-            "type": "i32"
-          },
-          {
-            "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
-          },
-          {
-            "name": "marketAuthority",
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "MarketMakerAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "userAccount",
-            "type": "publicKey"
-          },
-          {
-            "name": "active",
-            "type": "bool"
-          },
-          {
-            "name": "liquidityPool",
-            "type": "publicKey"
-          },
-          {
-            "name": "withdrawTs",
-            "type": "u64"
-          },
-          {
-            "name": "withdrawalAmount",
-            "type": "u64"
-          },
-          {
-            "name": "outstandingPenalty",
-            "type": "u64"
-          },
-          {
-            "name": "ethData",
-            "type": {
-              "defined": "MarketMakerData"
-            }
-          },
-          {
-            "name": "btcData",
-            "type": {
-              "defined": "MarketMakerData"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "OptifiMarket",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "optifiMarketId",
-            "type": "u16"
-          },
-          {
-            "name": "serumMarket",
-            "type": "publicKey"
-          },
-          {
-            "name": "instrument",
-            "type": "publicKey"
-          },
-          {
-            "name": "instrumentLongSplToken",
-            "type": "publicKey"
-          },
-          {
-            "name": "instrumentShortSplToken",
-            "type": "publicKey"
-          },
-          {
-            "name": "isStopped",
-            "type": "bool"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
       "name": "MarginStressAccount",
       "type": {
         "kind": "struct",
@@ -3323,6 +3438,100 @@
       }
     },
     {
+      "name": "Market",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "i32"
+          },
+          {
+            "name": "asset",
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "marketAuthority",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketMakerAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "userAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "active",
+            "type": "bool"
+          },
+          {
+            "name": "withdrawTs",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawalAmount",
+            "type": "u64"
+          },
+          {
+            "name": "outstandingPenalty",
+            "type": "u64"
+          },
+          {
+            "name": "openOrdersData",
+            "type": {
+              "vec": {
+                "defined": "OpenOrdersData"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OptifiMarket",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "optifiMarketId",
+            "type": "u16"
+          },
+          {
+            "name": "serumMarket",
+            "type": "publicKey"
+          },
+          {
+            "name": "instrument",
+            "type": "publicKey"
+          },
+          {
+            "name": "instrumentLongSplToken",
+            "type": "publicKey"
+          },
+          {
+            "name": "instrumentShortSplToken",
+            "type": "publicKey"
+          },
+          {
+            "name": "isStopped",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
       "name": "UserAccount",
       "type": {
         "kind": "struct",
@@ -3364,6 +3573,10 @@
             "type": "bool"
           },
           {
+            "name": "isMarketMaker",
+            "type": "bool"
+          },
+          {
             "name": "bump",
             "type": "u8"
           },
@@ -3387,6 +3600,10 @@
             "type": {
               "vec": "bool"
             }
+          },
+          {
+            "name": "clientOrderIdCounter",
+            "type": "u64"
           }
         ]
       }
@@ -3825,19 +4042,63 @@
       }
     },
     {
-      "name": "MarketMakerData",
+      "name": "OpenOrdersData",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "asset",
+            "name": "market",
+            "type": "publicKey"
+          },
+          {
+            "name": "timestamp",
+            "type": "u64"
+          },
+          {
+            "name": "bids",
             "type": {
-              "defined": "Asset"
+              "vec": {
+                "defined": "Order"
+              }
             }
           },
           {
-            "name": "epoch",
+            "name": "asks",
+            "type": {
+              "vec": {
+                "defined": "Order"
+              }
+            }
+          },
+          {
+            "name": "ask1",
             "type": "u64"
+          },
+          {
+            "name": "bid1",
+            "type": "u64"
+          },
+          {
+            "name": "spotPrice",
+            "type": "u64"
+          },
+          {
+            "name": "delta",
+            "type": "i64"
+          },
+          {
+            "name": "margin",
+            "type": "u64"
+          },
+          {
+            "name": "position",
+            "type": "i64"
+          },
+          {
+            "name": "state",
+            "type": {
+              "defined": "MmState"
+            }
           },
           {
             "name": "volume",
@@ -3852,7 +4113,31 @@
             "type": "u64"
           },
           {
-            "name": "dfmAsk",
+            "name": "dailyVolume",
+            "type": "u64"
+          },
+          {
+            "name": "penalty",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Order",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "size",
+            "type": "u64"
+          },
+          {
+            "name": "clientOrderId",
             "type": "u64"
           }
         ]
@@ -4043,6 +4328,37 @@
       }
     },
     {
+      "name": "MarginStressState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Sync"
+          },
+          {
+            "name": "Calculate"
+          },
+          {
+            "name": "Available"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MmState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Settle"
+          },
+          {
+            "name": "Available"
+          }
+        ]
+      }
+    },
+    {
       "name": "OracleDataType",
       "type": {
         "kind": "enum",
@@ -4094,23 +4410,6 @@
                 }
               }
             ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "MarginStressState",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Sync"
-          },
-          {
-            "name": "Calculate"
-          },
-          {
-            "name": "Available"
           }
         ]
       }
@@ -4256,81 +4555,88 @@
     },
     {
       "code": 324,
+      "name": "CannotCancelOrdersInLiquidation",
+      "msg": "Users cannot cancel manual orders while their accounts are in liquidation"
+    },
+    {
+      "code": 325,
       "name": "PoolNotCentralUSDCPool",
       "msg": "Provided USDC pool is not central pool"
     },
     {
-      "code": 325,
+      "code": 326,
       "name": "InvalidSerumAuthority",
       "msg": "Invalid open orders market authority"
     },
     {
-      "code": 326,
+      "code": 327,
       "name": "WithdrawRequestInvalid",
       "msg": "Only one withdraw request allowed at one time"
     },
     {
-      "code": 327,
+      "code": 328,
+      "name": "UserIsMarketMaker",
+      "msg": "User is already registered as market maker"
+    },
+    {
+      "code": 329,
       "name": "MMWithdrawNotInWindow",
       "msg": "Market maker withdraw outside of valid window"
     },
     {
-      "code": 328,
+      "code": 330,
       "name": "WrongAsset",
       "msg": "Wrong asset"
     },
     {
-      "code": 329,
+      "code": 331,
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
     },
     {
-      "code": 330,
+      "code": 332,
       "name": "OrderFailed",
       "msg": "The order is failed"
     },
     {
-      "code": 331,
+      "code": 333,
       "name": "WrongFeeAccount",
       "msg": "Wrong USDC fee account"
     },
     {
-      "code": 332,
+      "code": 334,
       "name": "InvalidMangoAccount",
       "msg": "the mango account is invalid"
     },
     {
-      "code": 333,
+      "code": 335,
       "name": "InvalidMangoToken",
       "msg": "the mango token index is invalid"
     },
     {
-      "code": 334,
+      "code": 336,
       "name": "IncorrectOpenOrdersAccountsLength",
       "msg": "the length of open orders accounts is incorrect"
     },
     {
-      "code": 335,
+      "code": 337,
       "name": "WrongPerpMarketIndex",
       "msg": "wrong perp market index"
     },
     {
-      "code": 336,
+      "code": 338,
       "name": "MismatchedAsset",
       "msg": "asset of amm and the instrument are mismatched"
     },
     {
-      "code": 337,
+      "code": 339,
       "name": "InstrumentExpired",
       "msg": "the instrument is expired"
     },
     {
-      "code": 338,
+      "code": 340,
       "name": "MismatchedDuration",
       "msg": "duration of amm and the instrument are mismatched"
     }
-  ],
-  "metadata": {
-    "address": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord"
-  }
+  ]
 }
