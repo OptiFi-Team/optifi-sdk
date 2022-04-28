@@ -24,6 +24,8 @@ initializeContext().then(async (context) => {
     console.log("amm account info: ", amm)
     console.log("amm.totalLiquidityUsdc: ", amm.totalLiquidityUsdc.toNumber())
     console.log("amm.netDelta: ", amm.netDelta.toNumber())
+    console.log(`amm.netDelta:${amm.netDelta.toNumber()}, 
+    ui delta: ${((amm.netDelta.toNumber() / 10 ** 6) * amm.price.toNumber()) / amm.totalLiquidityUsdc.toNumber()}`)
     console.log("amm.quoteTokenVault: ", amm.quoteTokenVault.toString())
     console.log("amm.lpTokenMint: ", amm.lpTokenMint.toString())
     if (amm.tradingInstruments.length >= 2) {
