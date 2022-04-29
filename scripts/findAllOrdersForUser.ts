@@ -3,7 +3,7 @@ import { getAllOrdersForAccount } from "../utils/orderHistory";
 import { findUserAccount } from "../utils/accounts";
 
 
-initializeContext()
+initializeContext(undefined, undefined, undefined,undefined, {commitment: "confirmed"} )
   .then((context) => {
     findUserAccount(context)
       .then(([userAccount, _]) => {
