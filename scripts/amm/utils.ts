@@ -8,7 +8,7 @@ import syncPositions from "../../instructions/syncPositions";
 import ammSyncFuturesPositions from "../../instructions/amm/ammSyncFuturesPositions";
 import calculateAmmDelta from "../../instructions/calculateAmmDelta";
 import calculateAmmProposal from "../../instructions/calculateAmmProposal";
-import { ammCancelOrders } from "../../instructions/ammCancelOrders";
+// import { ammCancelOrders } from "../../instructions/ammCancelOrders";
 import { ammUpdateOrders } from "../../instructions/ammUpdateOrders";
 import ammUpdateFuturesPositions from "../../instructions/amm/ammUpdateFutureOrders";
 import { MANGO_PERP_MARKETS } from "../../constants";
@@ -196,11 +196,11 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
 
                 if (!proposalsForOneInstrument.isStarted) {
-                    console.log(`start to cancel previous orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
-                    // to prune all preivious orders 
-                    let res = await ammCancelOrders(context, ammAddress, market[1])
-                    console.log(`successfully cancelled orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
-                    console.log(res)
+                    // console.log(`start to cancel previous orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
+                    // // to prune all preivious orders 
+                    // let res = await ammCancelOrders(context, ammAddress, market[1])
+                    // console.log(`successfully cancelled orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
+                    // console.log(res)
                 } else {
                     console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                     // execute all the proposal orders
