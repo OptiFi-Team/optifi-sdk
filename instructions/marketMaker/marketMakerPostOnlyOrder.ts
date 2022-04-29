@@ -15,6 +15,7 @@ import { numberAssetToDecimal } from "../../utils/generic";
 import { calculatePcQtyAndFee } from "../../utils/orders";
 import OrderType from "../../types/OrderType";
 import BN from "bn.js";
+import marginStress from "../marginStress";
 
 export default function marketMakerPostOnlyOrder(
     context: Context,
@@ -46,7 +47,8 @@ export default function marketMakerPostOnlyOrder(
                                                                         .fetch(marketRes.instrument).then(chainRes => {
                                                                             // @ts-ignore
                                                                             let chain = chainRes as Chain;
-                                                                            findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
+                                                                            findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(async ([marginStressAddress, _bump]) => {
+                                                                                let ix = await marginStress(context, chain.asset);
                                                                                 let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(chain.asset)!); // price for 1 lot_size 
                                                                                 let maxCoinQty = size * (10 ** numberAssetToDecimal(chain.asset)!);
                                                                                 let PcQty = limit * maxCoinQty;
@@ -82,7 +84,8 @@ export default function marketMakerPostOnlyOrder(
                                                                                             serumDexProgramId: serumProgramId,
                                                                                             tokenProgram: TOKEN_PROGRAM_ID,
                                                                                             rent: SYSVAR_RENT_PUBKEY,
-                                                                                        }
+                                                                                        },
+                                                                                        instructions: ix
                                                                                     });
                                                                                 marketMakerPostOnlyOrderTx.then((res) => {
                                                                                     console.log("Successfully placed market maker post-only order",

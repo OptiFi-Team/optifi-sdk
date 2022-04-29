@@ -10,20 +10,22 @@ export default function registerMarketMaker(context: Context): Promise<Instructi
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findUserAccount(context).then(([userAccountAddress, _]) => {
-                findMarketMakerAccount(context).then(([marketMakerAccount]) => {
+                findMarketMakerAccount(context).then(([marketMakerAccount, bump]) => {
                     findOrCreateAssociatedTokenAccount(context,
                         new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
                         marketMakerAccount).then((liquidityPoolAccount) => {
-                            let registerMarketMakerTx = context.program.rpc.registerMarketMaker({
-                                accounts: {
-                                    optifiExchange: exchangeAddress,
-                                    userAccount: userAccountAddress,
-                                    marketMakerAccount: marketMakerAccount,
-                                    user: context.provider.wallet.publicKey,
-                                    systemProgram: SystemProgram.programId,
-                                    rent: SYSVAR_RENT_PUBKEY
-                                }
-                            });
+                            let registerMarketMakerTx = context.program.rpc.registerMarketMaker(
+                                bump,
+                                {
+                                    accounts: {
+                                        optifiExchange: exchangeAddress,
+                                        userAccount: userAccountAddress,
+                                        marketMakerAccount: marketMakerAccount,
+                                        user: context.provider.wallet.publicKey,
+                                        systemProgram: SystemProgram.programId,
+                                        rent: SYSVAR_RENT_PUBKEY
+                                    }
+                                });
                             registerMarketMakerTx.then((res) => {
                                 console.log("Successfully registered market maker",
                                     formatExplorerAddress(context, res as string,
