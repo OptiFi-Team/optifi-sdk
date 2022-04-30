@@ -1,8 +1,8 @@
 import { initializeContextWithoutWallet } from "../index";
-import { findOptifiInstruments, findOptifiMarkets, findOptifiMarketsWithFullData } from "../utils/market";
+import { findOptifiInstruments, findOptifiMarkets, findOptifiMarketsWithFullData, reloadOptifiMarketsData } from "../utils/market";
+import { calculateIV } from "../utils/calculateIV"
 
-
-initializeContextWithoutWallet().then((context) => {
+initializeContextWithoutWallet().then(async (context) => {
 
     // findOptifiMarkets(context).then(res => {
     //     console.log("findOptifiMarkets res: ", res)
@@ -16,12 +16,10 @@ initializeContextWithoutWallet().then((context) => {
     //     console.error(err);
     // })
 
-    findOptifiMarketsWithFullData(context).then(res => {
-        console.log("findOptifiInstrumentsWithOrderbook res: ", res)
-    }).catch((err) => {
-        console.error(err);
-    })
+    let res = await findOptifiMarketsWithFullData(context)
+    console.log("findOptifiMarketsWithFullData res: ", res)
 
-}).catch((err) => {
-    console.error(err);
+    res = await reloadOptifiMarketsData(context, res)
+    console.log("reloaded data: ", res)
+
 })

@@ -62,7 +62,7 @@ export function calcPnLForUserPositions(
     userPositions?: Position[],
     marketPrices?: number[],
     userTradesHistory?: Trade[]
-): Promise<number[]> {
+): Promise<PnL[]> {
     return new Promise(async (resolve, reject) => {
         try {
             if (!userAccountAddress) {
@@ -87,13 +87,13 @@ export function calcPnLForUserPositions(
                 let prices: number[] = []
                 userPositions.forEach(position => {
                     let market = marketsInfos.find(market => market.marketAddress.toString() == position.marketId.toString())!
-                    prices.push(market.askPrice + market.bidPrice / 2)
+                    prices.push((market.askPrice + market.bidPrice) / 2)
                 })
                 marketPrices = prices
             }
 
             let positionPnLs = userPositions.map((position, i) => calPnLForOnePosition(position, marketPrices![i], userTradesHistory!))
-          
+
             resolve(positionPnLs)
         } catch (err) {
             reject(err)
@@ -101,9 +101,19 @@ export function calcPnLForUserPositions(
     })
 }
 
-export function calPnLForOnePosition(postion: Position, marketPrice: number, tradeHistory: Trade[]): number {
+interface PnL {
+    // user's entry price for the holding position
+    avgEntryPrice: number,
+    // current market price of user's holding position
+    marketPrice: number,
+    // user's pnl based avgEntryPrice, marketPrice, and user's holding positions
+    pnl: number
+}
+
+export function calPnLForOnePosition(postion: Position, marketPrice: number, tradeHistory: Trade[]): PnL {
     let pnl: number = 0
     let netPosition = postion.netPosition
+    let entryUnitPrice: number = 0
     if (netPosition != 0) {
         // get entry price from trade history
         let relatedTrades = tradeHistory.filter(e => e.marketAddress.toString() == postion.marketId.toString())
@@ -119,11 +129,19 @@ export function calPnLForOnePosition(postion: Position, marketPrice: number, tra
 
             }
         })
-        let entryUnitPrice = new Decimal(netQuoteAmount).div(new Decimal(netBaseAmount)).toNumber()
-        // console.log("netPosition: ", netPosition, marketPrice, entryUnitPrice)
-       
-        // calc pnl
-        pnl = netPosition * (marketPrice + entryUnitPrice)
+        if (netBaseAmount != 0) {
+            entryUnitPrice = new Decimal(netQuoteAmount).div(new Decimal(netBaseAmount)).toNumber()
+            // console.log("netPosition: ", netPosition, marketPrice, entryUnitPrice)
+
+            // calc pnl
+            pnl = netPosition * (marketPrice + entryUnitPrice)
+        }
+
     }
-    return pnl
+    return {
+        marketPrice,
+        avgEntryPrice: entryUnitPrice,
+        pnl,
+
+    }
 }

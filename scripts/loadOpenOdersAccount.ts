@@ -3,11 +3,13 @@ import { PublicKey } from "@solana/web3.js";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { initializeContext } from "../index";
 import { findUserAccount, getDexOpenOrders } from "../utils/accounts";
-import { getOrdersOnMarket } from "../utils/orders";
+import { getOrdersOnMarket, loadOrdersAccountsForOwner, loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, loadUnsettledFundForOwnerOnAllMarkets } from "../utils/orders";
 import {
   OpenOrders
 } from "@project-serum/serum";
-import {market} from "./constants";
+import { market } from "./constants";
+import { findOptifiMarketsWithFullData } from "../utils/market";
+import { getAllOrdersForAccount } from "../utils/orderHistory";
 // let userAccount = new PublicKey("5UiD5WNnGVRuTmhfjhVLYvHV8fDiXH5eUNCoBxwJpkYs")
 
 initializeContext().then(async (context) => {
@@ -28,6 +30,35 @@ initializeContext().then(async (context) => {
   console.log(openOrdersAccount2)
   console.log(openOrdersAccount2.baseTokenFree.toNumber())
   console.log(openOrdersAccount2.quoteTokenFree.toNumber())
+
+  console.log("baseTokenFree ", openOrdersAccount2.baseTokenFree.toNumber())
+  console.log("baseTokenTotal ", openOrdersAccount2.baseTokenTotal.toNumber())
+  console.log("quoteTokenFree ", openOrdersAccount2.quoteTokenFree.toNumber())
+  // Orderbook locked in amount ( how much usdc locked for orderbook?)
+  console.log("quoteTokenTotal ", openOrdersAccount2.quoteTokenTotal.toNumber())
+
+  openOrdersAccount2.clientIds.forEach(id => {
+    if (id.toNumber() != 0) {
+      console.log(id.toNumber());
+    }
+  });
+
+  let optifiMarkets = await findOptifiMarketsWithFullData(context)
+  let [userAccountAddress,] = await findUserAccount(context)
+
+  let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress)
+  console.log("openOrdersAccount: ", openOrdersAccount)
+
+  let unsettledFund = await loadUnsettledFundForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount))
+  console.log("unsettledFund: ", unsettledFund)
+
+  // must use "confirmed" as commitment level for tx hostory related requests 
+  let context2 = await initializeContext(undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" })
+  let orderHistory = await getAllOrdersForAccount(context2, userAccount,)
+  // order history is optional, get call loadOrdersForOwnerOnAllMarkets without it first. and whenever you get user's order history,
+  // just call this loadOrdersForOwnerOnAllMarkets again
+  let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
+  console.log("orders: ", orders)
 
 });
 

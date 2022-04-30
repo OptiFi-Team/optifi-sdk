@@ -15,7 +15,6 @@ export default function ammDeposit(context: Context,
     amount: number): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            findUserAccount(context).then(([userAccountAddress, _]) => {
                 context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                     // @ts-ignore
                     let amm = ammRes as AmmAccount;
@@ -49,7 +48,6 @@ export default function ammDeposit(context: Context,
                                             accounts: {
                                                 optifiExchange: exchangeAddress,
                                                 amm: ammAddress,
-                                                userAccount: userAccountAddress,
                                                 ammQuoteTokenVault: amm.quoteTokenVault,
                                                 userQuoteTokenVault: userQuoteTokenVault,
                                                 lpTokenMint: amm.lpTokenMint,
@@ -69,7 +67,6 @@ export default function ammDeposit(context: Context,
                                 }).catch((err) => reject(err))
                             }).catch((err) => reject(err))
                         }).catch((err) => reject(err))
-                    }).catch((err) => reject(err))
                 }).catch((err) => reject(err))
             }).catch((err) => reject(err))
         }).catch((err) => reject(err))

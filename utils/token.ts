@@ -8,7 +8,7 @@ import {
     TransactionInstruction,
     TransactionSignature
 } from "@solana/web3.js";
-import { Account, AccountState, AccountLayout, ACCOUNT_SIZE, TokenAccountNotFoundError, TokenInvalidAccountOwnerError, TokenInvalidAccountSizeError, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Account, AccountState, AccountLayout, ACCOUNT_SIZE, TokenAccountNotFoundError, TokenInvalidAccountOwnerError, TokenInvalidAccountSizeError, TOKEN_PROGRAM_ID, MintLayout, Mint, MINT_SIZE, TokenInvalidMintError } from "@solana/spl-token";
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from "../constants";
 import * as anchor from "@project-serum/anchor";
 import { signAndSendTransaction, TransactionResultType } from "./transactions";
@@ -155,5 +155,47 @@ export async function getTokenAccountFromAccountInfo(
         isNative: !!rawAccount.isNativeOption,
         rentExemptReserve: rawAccount.isNativeOption ? rawAccount.isNative : null,
         closeAuthority: rawAccount.closeAuthorityOption ? rawAccount.closeAuthority : null,
+    };
+}
+
+
+
+/**
+ * Retrieve information about a token mint
+ *
+ * @param connection Connection to use
+ * @param tokenMint    Mint Address
+ * @param programId  SPL Token program account
+ *
+ * @return Token account information
+ */
+export async function getTokenMintFromAccountInfo(
+    accountInfo: AccountInfo<Buffer>,
+    tokenMint: PublicKey,
+    programId = TOKEN_PROGRAM_ID
+): Promise<Mint> {
+    const info = accountInfo;
+    if (!info) throw new TokenAccountNotFoundError();
+    if (!info.owner.equals(programId)) throw new TokenInvalidAccountOwnerError();
+    if (info.data.length != MINT_SIZE) throw new TokenInvalidMintError();
+
+    const rawMint = MintLayout.decode(info.data);
+
+    return {
+        /** Address of the mint */
+        address: tokenMint,
+        /**
+         * Optional authority used to mint new tokens. The mint authority may only be provided during mint creation.
+         * If no mint authority is present then the mint has a fixed supply and no further tokens may be minted.
+         */
+        mintAuthority: rawMint.mintAuthority,
+        /** Total supply of tokens */
+        supply: rawMint.supply,
+        /** Number of base 10 digits to the right of the decimal place */
+        decimals: rawMint.decimals,
+        /** Is this mint initialized */
+        isInitialized: rawMint.isInitialized,
+        /** Optional authority to freeze token accounts */
+        freezeAuthority: rawMint.freezeAuthority,
     };
 }

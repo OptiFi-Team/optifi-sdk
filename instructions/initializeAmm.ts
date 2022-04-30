@@ -7,15 +7,16 @@ import {
     SYSVAR_RENT_PUBKEY,
     TransactionSignature
 } from "@solana/web3.js";
-import { getAmmLiquidityAuthPDA } from "../utils/pda";
+import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../utils/pda";
 import { assetToOptifiAsset, optifiAssetToNumber, optifiDurationToNumber } from "../utils/generic";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { AccountLayout, createInitializeAccountInstruction, createInitializeMintInstruction, MintLayout, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { AMM_TRADE_CAPACITY, SERUM_MARKETS, USDC_TOKEN_MINT } from "../constants";
+import { AMM_TRADE_CAPACITY, MANGO_GROUP_ID, MANGO_PROGRAM_ID, SERUM_MARKETS, USDC_TOKEN_MINT } from "../constants";
 import { findAMMAccounts, findAMMWithIdx } from "../utils/amm";
 import { findExchangeAccount } from "../utils/accounts";
 import Asset from "../types/asset";
 import { Duration } from "../types/optifi-exchange-types";
+import { getMangoPerpMarketInfoByAsset } from "../scripts/amm/utils";
 
 export function initializeAmm(context: Context,
     asset: Asset,
@@ -31,9 +32,18 @@ export function initializeAmm(context: Context,
                 let ammLPTokenMint = anchor.web3.Keypair.generate();
                 context.connection.getMinimumBalanceForRentExemption(MintLayout.span).then((mintMin) => {
                     findExchangeAccount(context).then(([exchangeAddress, _]) => {
-                        findAMMWithIdx(context, exchangeAddress, idx).then(([ammAddress, bump]) => {
+                        findAMMWithIdx(context, exchangeAddress, idx).then(async ([ammAddress, bump]) => {
                             console.log("Initializing AMM with idx ", idx, "bump ", bump, "asset", optifiAssetToNumber(optifiAsset),
                                 "with address", ammAddress.toString());
+
+                            // prepare the mango account for amm
+                            let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.endpoint])
+                            let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.endpoint])
+                            let [ammMangoAccountAddress,] = await getMangoAccountPDA(mangoProgramId, mangoGroup, ammLiquidityAuthAddress, idx)
+                            console.log("ammMangoAccountAddress: ", ammMangoAccountAddress.toString())
+
+                            const perpMarketInfo = getMangoPerpMarketInfoByAsset(context, optifiAssetToNumber(optifiAsset))!;
+                            const perpMarket = new PublicKey(perpMarketInfo["publicKey"])
                             context.program.rpc.initializeAmm(
                                 bump,
                                 {
@@ -54,7 +64,12 @@ export function initializeAmm(context: Context,
                                         payer: context.provider.wallet.publicKey,
                                         tokenProgram: TOKEN_PROGRAM_ID,
                                         systemProgram: SystemProgram.programId,
-                                        rent: SYSVAR_RENT_PUBKEY
+                                        rent: SYSVAR_RENT_PUBKEY,
+                                        mangoProgram: mangoProgramId,
+                                        mangoGroup: mangoGroup,
+                                        ammMangoAccount: ammMangoAccountAddress,
+                                        perpMarket: perpMarket,
+                                        ammLiqudityAuth: ammLiquidityAuthAddress
                                     },
                                     signers: [ammUSDCTokenVault, ammLPTokenMint],
                                     instructions: [

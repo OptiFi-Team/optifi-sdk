@@ -1,8 +1,6 @@
 import { initializeContext } from "../../index";
 import { calcAmmDelta } from "./utils";
-
-
-let ammIndex = 1;
+import { ammIndex } from "./constants";
 
 initializeContext().then((context) => {
     calcAmmDelta(context, ammIndex)

@@ -107,13 +107,13 @@ export type EndpointConstant = {
 }
 
 export const USDC_TOKEN_MINT: EndpointConstant = {
-    "https://api.mainnet-beta.solana.com": "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9",
-    "https://api.devnet.solana.com": "6H2zescZeVfaJwBkM2jKiKWrAG5yfDAfb3CyJFDXDZE5",
-    "https://api.testnet.solana.com": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    "https://api.mainnet-beta.solana.com": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "https://api.devnet.solana.com": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+    "https://api.testnet.solana.com": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN"
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111109",
+    "https://api.devnet.solana.com": "211223",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://api.mainnet-beta.solana.com": "dmeWlh",
 }
@@ -148,6 +148,99 @@ export const SERUM_DEX_PROGRAM_ID: EndpointConstant = {
     "https://api.testnet.solana.com": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
 }
 
+// Mango market program ids
+// from https://github.com/blockworks-foundation/mango-client-v3/blob/main/src/ids.json
+export const MANGO_PROGRAM_ID: EndpointConstant = {
+    "https://api.mainnet-beta.solana.com": "mv3ekLzLbnVPNxjSKvqBpU3ZeZXPQdEC3bp5MDEBG68",
+    "https://api.devnet.solana.com": "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA",
+    "https://api.testnet.solana.com": "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA"
+}
+
+// Mango group pubkey
+export const MANGO_GROUP_ID: EndpointConstant = {
+    "https://api.mainnet-beta.solana.com": "98pjRuQjK3qA6gXts96PqZT4Ze5QmnCmt3QYjhbUSPue",
+    "https://api.devnet.solana.com": "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA",
+    "https://api.testnet.solana.com": "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA"
+}
+
+// Mango usdc token
+export const MANGO_USDC_CONFIG: EndpointConstant = {
+    "https://api.mainnet-beta.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "decimals": 6,
+        "rootKey": "AMzanZxMirPCgGcBoH9kw4Jzi9LFMomyUCXbpzDeL2T8",
+        "nodeKeys": ["BGcwkj1WudQwUUjFk78hAjwd1uAm8trh1N4CJSa51euh"]
+    },
+    "https://api.devnet.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+        "decimals": 6,
+        "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
+        "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
+    },
+    "https://api.testnet.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+        "decimals": 6,
+        "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
+        "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
+    },
+}
+
+// Mango usdc token
+export const MANGO_PERP_MARKETS: EndpointConstant = {
+    "https://api.mainnet-beta.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "decimals": 6,
+        "rootKey": "AMzanZxMirPCgGcBoH9kw4Jzi9LFMomyUCXbpzDeL2T8",
+        "nodeKeys": ["BGcwkj1WudQwUUjFk78hAjwd1uAm8trh1N4CJSa51euh"]
+    },
+    "https://api.devnet.solana.com": [
+        {
+            "name": "BTC-PERP",
+            "publicKey": "FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z",
+            "baseSymbol": "BTC",
+            "baseDecimals": 6,
+            "quoteDecimals": 6,
+            "marketIndex": 1,
+            "bidsKey": "F1Dcnq6F8NXR3gXADdsYqrXYBUUwoT7pfCtRuQWSyQFd",
+            "asksKey": "BFEBZsLYmEhj4quWDRKbyMKhW1Q9c7gu3LqsnipNGTVn",
+            "eventsKey": "Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU"
+        },
+        {
+            "name": "ETH-PERP",
+            "publicKey": "8jKPf3KJKWvvSbbYnunwZYv62UoRPpyGb93NWLaswzcS",
+            "baseSymbol": "ETH",
+            "baseDecimals": 6,
+            "quoteDecimals": 6,
+            "marketIndex": 2,
+            "bidsKey": "6jGBscmZgRXk6oVLWbnQDpRftmzrDVu82TARci9VHKuW",
+            "asksKey": "FXSvghvoaWFHRXzWUHi5tjK9YhgcPgMPpypFXBd4Aq3r",
+            "eventsKey": "8WLv5fKLYkyZpFG74kRmp2RALHQFcNKmH7eJn8ebHC13"
+        },
+    ],
+    "https://api.testnet.solana.com": {
+        "symbol": "USDC",
+        "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+        "decimals": 6,
+        "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
+        "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
+    },
+}
+
+
+
+
+// "cluster": "devnet",
+// "name": "devnet.2",
+// "publicKey": "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA",
+
+// "cluster": "devnet",
+// "name": "devnet.3",
+// "publicKey": "5vQp48Wx55Ft1PUAx8qWbsioNaLeXWVkyCq2XpQSv34M",
+
 // Associated token program is constant across all of the clusters
 export const ASSOCIATED_TOKEN_PROGRAM_ID: string = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 
@@ -156,10 +249,26 @@ export const COIN_LOT_SIZE: number = 1; // let's set 1 as one instrument spl tok
 export const PC_LOT_SIZE: number = 1;
 export const PC_DUST_THRESHOLD: number = 2;
 
-export const MAX_COIN_QTY = 500 * COIN_LOT_SIZE;
-export const MAX_PC_QTY = 1000 * PC_LOT_SIZE;
-
 export const USDC_DECIMALS = 6;
 export const SOL_DECIMALS = 9;
 
-export let market = new PublicKey("GHtSNAhYsgPUcg4ZTPjp5g4ttq2cqaJBvt7YiHEVqbwb");
+
+// // The fee for each transaction on the OptiFi system
+// export const TAKER_FEE: number = 0.0010;
+// export const SERUM_TAKER_FEE: number = 0.0004;
+// export const OPTIFI_TAKER_FEE: number = TAKER_FEE - SERUM_TAKER_FEE;
+// // PostOnly order
+// export const MAKER_FEE: number = 0.0005;
+// export const SERUM_MAKER_FEE: number = 0.0;
+// export const OPTIFI_MAKER_FEE: number = MAKER_FEE - SERUM_MAKER_FEE;
+
+
+// FOR DEVNET
+// The fee for each transaction on the OptiFi system
+export const TAKER_FEE: number = 0.0028;
+export const SERUM_TAKER_FEE: number = 0.0022;
+export const OPTIFI_TAKER_FEE: number = TAKER_FEE - SERUM_TAKER_FEE;
+// PostOnly order
+export const MAKER_FEE: number = 0.0027;
+export const SERUM_MAKER_FEE: number = 0.0022;
+export const OPTIFI_MAKER_FEE: number = MAKER_FEE - SERUM_MAKER_FEE;

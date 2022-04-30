@@ -9,8 +9,7 @@ import { findAMMWithIdx } from "../../utils/amm";
 import { findOptifiExchange } from "../../utils/accounts";
 import { PublicKey } from "@solana/web3.js";
 import addInstrumentToAmm from "../../instructions/addInstrumentToAmm";
-
-let ammIndex = 1;
+import { ammIndex } from "./constants";
 
 export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
     try {
@@ -26,7 +25,7 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
         let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
         let instrumentInfos = instrumentRawInfos as Chain[]
         instrumentInfos.forEach((instrument, i) => {
-            if (instrument.asset == ammInfo.asset) {
+            if (instrument.asset == ammInfo.asset && !ammInfo.tradingInstruments.map(e => e.toString()).includes(instrumentAddresses[i].toString())) {
                 optifiMarketsToAdd.push(optifiMarkets[i][1])
             }
         })

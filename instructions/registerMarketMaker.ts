@@ -1,6 +1,6 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import {PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, TransactionSignature} from "@solana/web3.js";
+import {PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionSignature} from "@solana/web3.js";
 import {findExchangeAccount, findMarketMakerAccount, findUserAccount} from "../utils/accounts";
 import {findOrCreateAssociatedTokenAccount} from "../utils/token";
 import {USDC_TOKEN_MINT} from "../constants";
@@ -20,10 +20,9 @@ export default function registerMarketMaker(context: Context): Promise<Instructi
                                     optifiExchange: exchangeAddress,
                                     userAccount: userAccountAddress,
                                     marketMakerAccount: marketMakerAccount,
-                                    liquidityPool: liquidityPoolAccount,
-                                    owner: context.provider.wallet.publicKey,
+                                    user: context.provider.wallet.publicKey,
                                     systemProgram: SystemProgram.programId,
-                                    clock: SYSVAR_CLOCK_PUBKEY
+                                    rent: SYSVAR_RENT_PUBKEY,
                                 }
                         });
                             signAndSendTransaction(context, registerMarketMakerTx).then((txRes) => {

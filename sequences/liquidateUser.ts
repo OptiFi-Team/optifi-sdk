@@ -8,90 +8,167 @@ import { findLiquidationState } from "../utils/accounts";
 import { LiquidationState, UserAccount } from "../types/optifi-exchange-types";
 import liquidatePosition from "../instructions/liquidatePosition";
 import { marginCalculate } from "../instructions/userMarginCalculate";
+import liquidationSettleOrder from "../instructions/liquidation/liquidationSettleOrder";
+import { getSerumMarket } from "../utils/serum";
+import { findOptifiMarkets, getTokenAmount, watchGetTokenUiAmount } from "../utils/market";
+import { sleep } from "../utils/generic";
+import { sortAndDeduplicateDiagnostics } from "typescript";
+import { resolve } from "path";
+import { rejects } from "assert";
+
+export async function sortMarketsFromValues(liquidationMarkets: PublicKey[], liquidationValues: number[])
+    : Promise<[PublicKey[], number[]]> {
+    return new Promise((resolve, rejects) => {
+        try {
+            if (liquidationMarkets.length != liquidationValues.length) {
+                console.log("liquidationMarkets is not equal to liquidationValues");
+            }
+
+            for (let i = 0; i < liquidationValues.length; i++) {
+
+                let min = liquidationValues[i];
+                let marketsMinValues = liquidationMarkets[i];
+                let minIndex = i;
+
+                for (let j = i; j < liquidationValues.length; j++) {
+                    if (liquidationValues[j] < min) {
+                        min = liquidationValues[j];
+                        marketsMinValues = liquidationMarkets[j];
+
+                        minIndex = j;
+                    }
+                }
+
+                [liquidationValues[minIndex], liquidationValues[i]] = [liquidationValues[i], liquidationValues[minIndex]];
+                [liquidationMarkets[minIndex], liquidationMarkets[i]] = [liquidationMarkets[i], liquidationMarkets[minIndex]];
+            }
+            resolve([liquidationMarkets, liquidationValues]);
+        } catch (err) {
+            rejects(err)
+        }
+    })
+
+
+}
 
 export default async function liquidateUser(context: Context, userToLiquidate: PublicKey)
-    : Promise<TransactionSignature[]> {
-    let sigs: TransactionSignature[] = [];
+    : Promise<void> {
+    // update margin requirement
+    // TODO add this ix into init liquidation
+    await marginCalculate(context, userToLiquidate);
+
     // initLiquidation
-    {
-        await marginCalculate(context, userToLiquidate);
+    console.log("Start initialize liquidation...");
 
-        console.log("Start initialize liquidation...");
-        let res = await initLiquidation(context, userToLiquidate);
+    let [liquidationStateAddress, _] = await findLiquidationState(context, userToLiquidate);
+    let res = await context.program.account.liquidationState.fetch(liquidationStateAddress);
+    // @ts-ignore
+    let liquidationState = res as LiquidationState;
+    console.log("liquidationState: " + Object.keys(liquidationState.status)[0]);
 
-        if (res.successful) {
-            console.log("Initialized")
-            sigs.push(res.data as TransactionSignature)
-        } else {
-            console.log("Initialization was unsuccessful");
-            console.error(res);
-        }
+    if (Object.keys(liquidationState.status)[0] == 'healthy') {
+        await initLiquidation(context, userToLiquidate).then((res) => {
+            console.log("Got initLiquidation res", res);
+        }).catch((err) => {
+            console.error(err);
+        });
+        console.log("Wait 20 secs...");
+        await sleep(20000);
     }
 
-    let tradingMarkets: PublicKey[] = [];
+    res = await context.program.account.liquidationState.fetch(liquidationStateAddress);
+    // @ts-ignore
+    let liquidationState = res as LiquidationState;
+    console.log("liquidationState: " + Object.keys(liquidationState.status)[0]);
 
     // registerLiquidationMarket
-    let register = async () => {
+    if (Object.keys(liquidationState.status)[0] == 'cancelOrder') {
         console.log("Start register markets and cancel orders...");
-        let res = await context.program.account.userAccount.fetch(userToLiquidate);
+        res = await context.program.account.userAccount.fetch(userToLiquidate);
         let userAccount = res as unknown as UserAccount;
-        tradingMarkets = userAccount.tradingMarkets;
+        let tradingMarkets = userAccount.tradingMarkets;
 
         for (let marketAddress of tradingMarkets) {
-            console.log(marketAddress.toString());
-            let res = await registerLiquidationMarket(context, userToLiquidate, marketAddress);
-
-            if (res.successful) {
-                console.log("Register")
-                sigs.push(res.data as TransactionSignature)
-            } else {
-                console.log("Register was unsuccessful");
-                console.error(res);
-            }
+            await registerLiquidationMarket(context, userToLiquidate, marketAddress).then((res) => {
+                console.log("Got registerLiquidationMarket res", res, "on market", marketAddress.toString());
+            }).catch((err) => {
+                console.error(err);
+            })
         }
+        console.log("Wait 20 secs...");
+        await sleep(20000);
     }
-    await register();
-    let liquidate = async () => {
-        console.log("Start liquidate positions...");
-        let [liquidationStateAddress, _] = await findLiquidationState(context, userToLiquidate);
-        let res = await context.program.account.liquidationState.fetch(liquidationStateAddress);
-        let liquidationState = res as unknown as LiquidationState;
-        let liquidationMarkets = liquidationState.markets;
-        if (liquidationMarkets.length > 0) {
-            for (let marketAddress of liquidationMarkets) {
-                console.log(marketAddress.toString());
-                // registerLiquidationMarket
-                let res = await liquidatePosition(context, userToLiquidate, marketAddress);
 
-                if (res.successful) {
-                    console.log("Register")
-                    sigs.push(res.data as TransactionSignature)
-                } else {
-                    console.log("Register was unsuccessful");
-                    console.error(res);
+    res = await context.program.account.liquidationState.fetch(liquidationStateAddress);
+    // @ts-ignore
+    let liquidationState = res as LiquidationState;
+    console.log("liquidationState: " + Object.keys(liquidationState.status)[0]);
+
+    if (Object.keys(liquidationState.status)[0] == 'placeOrder' || 'settleOrder') {
+        let liquidate = async () => {
+            let res = await context.program.account.liquidationState.fetch(liquidationStateAddress);
+            // @ts-ignore
+            let liquidationState = res as LiquidationState;
+            let liquidationMarkets = liquidationState.markets;
+            let liquidationValues = liquidationState.values.map(v => v.toNumber());
+            // sort the liquidationMarkets by values
+            // console.log("liquidationMarkets before: " + liquidationMarkets);
+            // console.log("liquidationValues before: " + liquidationValues);
+            [liquidationMarkets, liquidationValues] = await sortMarketsFromValues(liquidationMarkets, liquidationValues);
+            console.log("liquidationMarkets: " + liquidationMarkets);
+            console.log("liquidationValues: " + liquidationValues);
+            console.log("Wait 10 secs...");
+            await sleep(10000);
+
+            let marketsWithKeys = await findOptifiMarkets(context, liquidationMarkets);
+            // the length of marketsWithKeys should not be zero
+            console.log("Start liquidate positions with ", marketsWithKeys.length, " markets");
+            for (let market of marketsWithKeys) {
+                let marketAddress = market[1];
+                console.log("marketAddress: " + marketAddress + " liquidationState: " + Object.keys(liquidationState.status)[0]);
+                let shortAmount = await getTokenAmount(context, market[0].instrumentShortSplToken, userToLiquidate);
+                if (Object.keys(liquidationState.status)[0] == 'placeOrder') {
+                    // Liquidation Place Order
+                    console.log("Place liquidation order...");
+                    await liquidationPlaceOrder(context, userToLiquidate, marketAddress).then((res) => {
+                        console.log("Got liquidationPlaceOrder res", res, " on market ", marketAddress.toString());
+                    }).catch((err) => {
+                        console.error(err);
+                    });
                 }
-                // Update margin requirement
-                await marginCalculate(context, userToLiquidate);
-            }
-        } else {
-            console.log("Finish liquidation...");
-            let marketAddress = tradingMarkets[0];
-            // registerLiquidationMarket
-            console.log("start to run liquidatePosition")
-            let res = await liquidatePosition(context, userToLiquidate, marketAddress);
+                // Wait for order filled
+                console.log("Wait for liquidation settlement...");
+                let serumMarket = await getSerumMarket(context, market[0].serumMarket);
+                await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount);
 
-            if (res.successful) {
-                console.log("Register")
-                sigs.push(res.data as TransactionSignature)
-            } else {
-                console.log("Register was unsuccessful");
-                console.error(res);
+                console.log("Wating 10 secs for next market...");
+                await sleep(10000);
             }
-            // Update margin requirement
-            console.log("start to run marginCalculate")
-            await marginCalculate(context, userToLiquidate);
         }
+        await liquidate();
     }
-    await liquidate();
-    return sigs;
+    console.log("Finish liquidate user!");
+}
+
+
+async function waitForSettle(context: Context, serumMarket: Market, userToLiquidate: PublicKey, marketAddress: PublicKey, shortAmount: number) {
+
+    const openOrdersRes = await serumMarket.findOpenOrdersAccountsForOwner(
+        context.connection,
+        userToLiquidate
+    );
+
+    console.log("Already filled: ", openOrdersRes[0].baseTokenFree.toNumber(), "Target amount: ", shortAmount);
+
+    if (openOrdersRes[0].baseTokenFree.toNumber() == shortAmount) {
+        console.log("Find unsettle options: ", openOrdersRes[0].baseTokenFree.toNumber());
+        liquidationSettleOrder(context, userToLiquidate, marketAddress).then((res) => {
+            console.log("Got liquidationSettleOrder res", res);
+        }).catch((err) => {
+            console.error(err);
+        });
+    };
+    console.log("Wating 10 secs for order filled...");
+    await sleep(10000);
+    await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount)
 }

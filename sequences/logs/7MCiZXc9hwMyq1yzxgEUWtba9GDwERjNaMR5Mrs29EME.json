@@ -1,0 +1,294 @@
+{
+    "network": "https://api.devnet.solana.com",
+    "programId": "DeVoPfWrDn2UTA1MbSfagvpQxA91MpNFQnhHRw19dK34",
+    "exchangeUUID": "211213",
+    "exchangeAddress": "7MCiZXc9hwMyq1yzxgEUWtba9GDwERjNaMR5Mrs29EME",
+    "instruments": [
+        {
+            "address": "7yiyTL4KapAHs18cHK2KTLfVqZnaUEEfaKmZHAGxgdJ3",
+            "isInUse": true
+        },
+        {
+            "address": "AZ4Ne4rRRNfAWdERtTH13veX66CXVwkPoeKmeZRZLVPK",
+            "isInUse": true
+        },
+        {
+            "address": "HNwNHUWunQHBFS7rNEq4jea3NgBKs61XtQ9Q2tvwUz4u",
+            "isInUse": true
+        },
+        {
+            "address": "8zQFpufB4xkYhb1oCuBU7jnFNNT6dydzNFEC8pRY2Rdw",
+            "isInUse": true
+        },
+        {
+            "address": "J2jTcvZNrbF8A1W3FCatBvzBTq4ZNGZ1QMVbSFY6b27B",
+            "isInUse": true
+        },
+        {
+            "address": "6F6QyGpE8ydHb1jG6vcTjbGB5gdygrosTuNCUdWHoAnf",
+            "isInUse": true
+        },
+        {
+            "address": "EcP5bZBLkeFzyX7pcVKhJcNfHZHYBAxDFyeBveeTpc3n",
+            "isInUse": true
+        },
+        {
+            "address": "3w8nAr7zpyck8BpTaGgCTQNCL3n3BSqsxbEByByszd9D",
+            "isInUse": true
+        },
+        {
+            "address": "2DuSxgRNuGztpUG5e7m72pP3kQf5t9PPT6x9s7KP273J",
+            "isInUse": true
+        },
+        {
+            "address": "DetoTAGhpBNcQHESTDJscxgpYFL3bcGTo2Fzvr8DciT",
+            "isInUse": true
+        },
+        {
+            "address": "3XSFKT7MzdVsSHE7XSEE4pAmrtEs6waaQecV1oe9mq1r",
+            "isInUse": true
+        },
+        {
+            "address": "ATAPYSuNxskLbU72bzEoUdQb4vqefeb2EAybv2xrYFeV",
+            "isInUse": true
+        },
+        {
+            "address": "31CiMJbXiEJYq6TGNJevsm5dtyzKtLrg1hktmkFNTkpZ",
+            "isInUse": true
+        },
+        {
+            "address": "53iJMd7QcKAf7b82KDuL1gPkuRXpsWuwGqtmcENXdVDk",
+            "isInUse": true
+        },
+        {
+            "address": "AdHHvgHVmoC8qjotgoHodEncZdSKwYsZ14zzqAhb1P4t",
+            "isInUse": true
+        },
+        {
+            "address": "34DqStzjeGBctDakJ7qvcp2xsPDsz7U5KgJMKzPhdmvR",
+            "isInUse": true
+        },
+        {
+            "address": "H5v6aYdjQdDFENEW8xzHX969MPQjG2FnuVwbkjVoFpmz",
+            "isInUse": true
+        },
+        {
+            "address": "AsVKHwKVoRax67TfWBwqPx4XVQcJm98yAtJRxRq3y6Yz",
+            "isInUse": true
+        },
+        {
+            "address": "EzYNtniZPhxNQJtBuQqaDVcd7d1JzLSixHEzD14q8DQo",
+            "isInUse": true
+        },
+        {
+            "address": "DXnicyTRNmqe9Uri61JYMjpbdLHYKTWv7LiaWTXuyJnH",
+            "isInUse": true
+        }
+    ],
+    "serumMarkets": [
+        {
+            "address": "ChGqNUZP26JroJL5HnhPR8RSTZv71jtqFtkRG9mGfPL3",
+            "isInUse": true
+        },
+        {
+            "address": "23Vh7Ynd85o1o18es1jWvtDeoNbdUYVC7UVyDaALiToQ",
+            "isInUse": true
+        },
+        {
+            "address": "5psxPmyQ27QpLpsPBtwr5igghGiYEp3FBN3Mg4trjb4i",
+            "isInUse": true
+        },
+        {
+            "address": "473bX7Z2XndMRdVynhWjZFDZz7c7wjHEVTJgWmz7kCgq",
+            "isInUse": true
+        },
+        {
+            "address": "HucAhuEa2MtdjasEJusHXcJVgpQMYugdFgHENRtuyX9V",
+            "isInUse": true
+        },
+        {
+            "address": "7J3Cj1j3iJvJfUpP2GVhtqMY8QKpLXA8q6V2AbCcuiPE",
+            "isInUse": true
+        },
+        {
+            "address": "3M3H2wdGmGzbWpMzZFipRfpGU58qmCZN8E8EpdAVWgRD",
+            "isInUse": true
+        },
+        {
+            "address": "Hv3DF5cUVFh7GAemKLq5JuwgnfoUQC9hEdBmdRPD2u6M",
+            "isInUse": true
+        },
+        {
+            "address": "MPt31CqwVeDAzqyHvMkFYgnJkbB7aUmagdjiH84hW8G",
+            "isInUse": true
+        },
+        {
+            "address": "FLnqKP64zQDWBHjQ4HFtLHhpDfinCJCjaMXBoQbRyMLx",
+            "isInUse": true
+        },
+        {
+            "address": "Hiw8uGoF39hpRKfrT5rP3sG9o4wJusFPkVSJx9ny19e7",
+            "isInUse": true
+        },
+        {
+            "address": "B6ja2UVALyo3qnm7vyhr8PsqLRw241Ufc93s7zuawCM9",
+            "isInUse": true
+        },
+        {
+            "address": "5grr1GDz3XLkaBncfDd2e6P4jbJVXNVuNRhabCHmxtbA",
+            "isInUse": true
+        },
+        {
+            "address": "EnnnWzau5ynRQ4jFLw6CMT2dZUiHmpXx7o8DmYyAw4QL",
+            "isInUse": true
+        },
+        {
+            "address": "AWE2WvmKSxfqjbeTdw25otTYcpmhsKhk2dJcy4BK1CGy",
+            "isInUse": true
+        },
+        {
+            "address": "5TGLK6rbUUhMWPv2ZqwFbBDajMSn1AwVFE546TTGaDpD",
+            "isInUse": true
+        },
+        {
+            "address": "HofoahUZ6ooCjvvTb9fXfrSVnKp9ZfJJLwDQff8Zo5uy",
+            "isInUse": true
+        },
+        {
+            "address": "CTkUePWMTRCDayH5JnhWQpE6c8h4FEGqJiLi8kwKPLio",
+            "isInUse": true
+        },
+        {
+            "address": "5f2GSXFvKq5Yf5Wy5PhV3QHLow7jb2MrapvtZoSPhLLV",
+            "isInUse": true
+        },
+        {
+            "address": "5n6c6Btavra1Su7ycWvEBfifimnByW5VcD7ZeaXbv1zQ",
+            "isInUse": true
+        }
+    ],
+    "optifiMarkets": [
+        {
+            "marketId": 1,
+            "address": "BKaKjNmmF85p1rKazAN2DsDwGjbensrV9ejqxKQZVxdv",
+            "instrument": "7yiyTL4KapAHs18cHK2KTLfVqZnaUEEfaKmZHAGxgdJ3",
+            "serumMarket": "ChGqNUZP26JroJL5HnhPR8RSTZv71jtqFtkRG9mGfPL3"
+        },
+        {
+            "marketId": 2,
+            "address": "CvzPsN5UNtDkkyR6avDs8951CkJrLaoSjkkHhwhgL1G5",
+            "instrument": "AZ4Ne4rRRNfAWdERtTH13veX66CXVwkPoeKmeZRZLVPK",
+            "serumMarket": "23Vh7Ynd85o1o18es1jWvtDeoNbdUYVC7UVyDaALiToQ"
+        },
+        {
+            "marketId": 3,
+            "address": "GAXRk1zF4ZSWwRHHd7Yt6u7pVorwxbPeByUzz5QfcMzh",
+            "instrument": "HNwNHUWunQHBFS7rNEq4jea3NgBKs61XtQ9Q2tvwUz4u",
+            "serumMarket": "5psxPmyQ27QpLpsPBtwr5igghGiYEp3FBN3Mg4trjb4i"
+        },
+        {
+            "marketId": 4,
+            "address": "EESP8pcHTu5uQQUsuP1tbpzSvj4S8koQmNBmTB68ovjP",
+            "instrument": "8zQFpufB4xkYhb1oCuBU7jnFNNT6dydzNFEC8pRY2Rdw",
+            "serumMarket": "473bX7Z2XndMRdVynhWjZFDZz7c7wjHEVTJgWmz7kCgq"
+        },
+        {
+            "marketId": 5,
+            "address": "42hTr67dY637jnz3JTrPYYWnuArDNrbN8iLMQ3LFQ7rV",
+            "instrument": "J2jTcvZNrbF8A1W3FCatBvzBTq4ZNGZ1QMVbSFY6b27B",
+            "serumMarket": "HucAhuEa2MtdjasEJusHXcJVgpQMYugdFgHENRtuyX9V"
+        },
+        {
+            "marketId": 6,
+            "address": "GbH7YRHCpaASyeLtUueP6tpcMd6HwfXbrw45s8zJ3AbB",
+            "instrument": "6F6QyGpE8ydHb1jG6vcTjbGB5gdygrosTuNCUdWHoAnf",
+            "serumMarket": "7J3Cj1j3iJvJfUpP2GVhtqMY8QKpLXA8q6V2AbCcuiPE"
+        },
+        {
+            "marketId": 7,
+            "address": "4e3XdWrkT8ns4qRcuUsWwLs9FxcHxovQ3rgvAMbyWgNH",
+            "instrument": "EcP5bZBLkeFzyX7pcVKhJcNfHZHYBAxDFyeBveeTpc3n",
+            "serumMarket": "3M3H2wdGmGzbWpMzZFipRfpGU58qmCZN8E8EpdAVWgRD"
+        },
+        {
+            "marketId": 8,
+            "address": "GKpdyZFs85nVvyFHppDy4uikfRr8r6Hkm7UTBJFUcEgi",
+            "instrument": "3w8nAr7zpyck8BpTaGgCTQNCL3n3BSqsxbEByByszd9D",
+            "serumMarket": "Hv3DF5cUVFh7GAemKLq5JuwgnfoUQC9hEdBmdRPD2u6M"
+        },
+        {
+            "marketId": 9,
+            "address": "3ALWkXHVbwbZgww81C3B9wbrtXNfq9FgD2MFRNyPG4aZ",
+            "instrument": "2DuSxgRNuGztpUG5e7m72pP3kQf5t9PPT6x9s7KP273J",
+            "serumMarket": "MPt31CqwVeDAzqyHvMkFYgnJkbB7aUmagdjiH84hW8G"
+        },
+        {
+            "marketId": 10,
+            "address": "9t8YjpMSZYZ1p7i4q9Bnge4ZNYwkmVdSpQVZTwJuTrqx",
+            "instrument": "DetoTAGhpBNcQHESTDJscxgpYFL3bcGTo2Fzvr8DciT",
+            "serumMarket": "FLnqKP64zQDWBHjQ4HFtLHhpDfinCJCjaMXBoQbRyMLx"
+        },
+        {
+            "marketId": 11,
+            "address": "DLv52ZUVzvhKMFL9te7D8LWaCUnCxFQ7tcB3YTNjJQ8G",
+            "instrument": "3XSFKT7MzdVsSHE7XSEE4pAmrtEs6waaQecV1oe9mq1r",
+            "serumMarket": "Hiw8uGoF39hpRKfrT5rP3sG9o4wJusFPkVSJx9ny19e7"
+        },
+        {
+            "marketId": 12,
+            "address": "Guzcig37NBuaLb12WF9WrqMMgXLxGQo3MZ8CGvFuno1R",
+            "instrument": "ATAPYSuNxskLbU72bzEoUdQb4vqefeb2EAybv2xrYFeV",
+            "serumMarket": "B6ja2UVALyo3qnm7vyhr8PsqLRw241Ufc93s7zuawCM9"
+        },
+        {
+            "marketId": 13,
+            "address": "4bubVdXAHdSH5N8bZ8sBNmA2y2jTtnuVKRFssrPrEsig",
+            "instrument": "31CiMJbXiEJYq6TGNJevsm5dtyzKtLrg1hktmkFNTkpZ",
+            "serumMarket": "5grr1GDz3XLkaBncfDd2e6P4jbJVXNVuNRhabCHmxtbA"
+        },
+        {
+            "marketId": 14,
+            "address": "EKvctVB4qe4PXCv3xh3QKMjvVpgFQ4mX2c8DsaATzkMP",
+            "instrument": "53iJMd7QcKAf7b82KDuL1gPkuRXpsWuwGqtmcENXdVDk",
+            "serumMarket": "EnnnWzau5ynRQ4jFLw6CMT2dZUiHmpXx7o8DmYyAw4QL"
+        },
+        {
+            "marketId": 15,
+            "address": "3ez6bCdoDVjoAT4E1WhLsZrFbhzQuxJNnwzgD6de6qnp",
+            "instrument": "AdHHvgHVmoC8qjotgoHodEncZdSKwYsZ14zzqAhb1P4t",
+            "serumMarket": "AWE2WvmKSxfqjbeTdw25otTYcpmhsKhk2dJcy4BK1CGy"
+        },
+        {
+            "marketId": 16,
+            "address": "9WRsX6t2pepZavkYTbqXoSy91DQr5EPzNKrYW18r1N2t",
+            "instrument": "34DqStzjeGBctDakJ7qvcp2xsPDsz7U5KgJMKzPhdmvR",
+            "serumMarket": "5TGLK6rbUUhMWPv2ZqwFbBDajMSn1AwVFE546TTGaDpD"
+        },
+        {
+            "marketId": 17,
+            "address": "C5LAs3gP38YGASHfhSL8FekJD7pmYD4xBysuczZqiTd7",
+            "instrument": "H5v6aYdjQdDFENEW8xzHX969MPQjG2FnuVwbkjVoFpmz",
+            "serumMarket": "HofoahUZ6ooCjvvTb9fXfrSVnKp9ZfJJLwDQff8Zo5uy"
+        },
+        {
+            "marketId": 18,
+            "address": "6qQGbiL6UFjLyUykEA43ntB774GTDTJPbkSmNQUUMUsh",
+            "instrument": "AsVKHwKVoRax67TfWBwqPx4XVQcJm98yAtJRxRq3y6Yz",
+            "serumMarket": "CTkUePWMTRCDayH5JnhWQpE6c8h4FEGqJiLi8kwKPLio"
+        },
+        {
+            "marketId": 19,
+            "address": "FeYc6aP2jTFe5UfDrNSmXTJzYg6Ke6QBh8u65bUN7h8J",
+            "instrument": "EzYNtniZPhxNQJtBuQqaDVcd7d1JzLSixHEzD14q8DQo",
+            "serumMarket": "5f2GSXFvKq5Yf5Wy5PhV3QHLow7jb2MrapvtZoSPhLLV"
+        },
+        {
+            "marketId": 20,
+            "address": "s7BgUntb5KbP9UU1QfKGfnqtEzbYGyZVocMm1XpaHBr",
+            "instrument": "DXnicyTRNmqe9Uri61JYMjpbdLHYKTWv7LiaWTXuyJnH",
+            "serumMarket": "5n6c6Btavra1Su7ycWvEBfifimnByW5VcD7ZeaXbv1zQ"
+        }
+    ],
+    "marginStressAccounts": [],
+    "amms": []
+}

@@ -2,7 +2,7 @@ import { initializeContext } from "../index";
 import { OrderSide } from "../types/optifi-exchange-types";
 import { findUserAccount } from "../utils/accounts";
 import { findOptifiInstruments, findOptifiMarkets, findOptifiMarketsWithFullData, isUserInitializedOnMarket } from '../utils/market'
-import { getAllOpenOrdersForUser, getAllOpenOrdersForUserV1, getOrdersOnMarket } from "../utils/orders";
+import { getAllOpenOrdersForUser, getOrdersOnMarket } from "../utils/orders";
 import { getSerumMarket } from '../utils/serum'
 import { getAllOrdersForAccount } from '../utils/orderHistory'
 

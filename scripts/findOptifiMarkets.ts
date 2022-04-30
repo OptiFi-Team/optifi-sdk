@@ -1,17 +1,23 @@
-import {initializeContext} from "../index";
-import {findOptifiMarkets} from "../utils/market";
-import {formatExplorerAddress, SolanaEntityType} from "../utils/debug";
-import {Chain} from "../types/optifi-exchange-types";
-import {getSerumMarketPrice} from "../utils/serum";
+import { initializeContext } from "../index";
+import { findExpiredMarkets, findOptifiMarkets, findStoppableOptifiMarkets } from "../utils/market";
+import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
+import { Chain } from "../types/optifi-exchange-types";
+import { getSerumMarketPrice } from "../utils/serum";
 
 
 let seenAssets = new Set();
 
-initializeContext().then((context) => {
+initializeContext().then(async (context) => {
+    // let res = await context.program.account.optifiMarket.fetch("9S5cPERFvK26PkVtgv9mb7UjgWpPRoSSM4fj6wtZdUA6")
+    // console.log(res)
+
+    // let res = await findStoppableOptifiMarkets(context)
+    // console.log("findStoppableOptifiMarkets res: ", res)
+
     findOptifiMarkets(context).then(async (res) => {
         console.log(`Found ${res.length} optifi markets - `);
         for (let market of res) {
-            console.log("Market - address: ",market[1].toString(), "market info: ", market[0], "Solana explorer: ", formatExplorerAddress(
+            console.log("Market - address: ", market[1].toString(), "market info: ", market[0], "Solana explorer: ", formatExplorerAddress(
                 context, market[1].toString(),
                 SolanaEntityType.Account)
             );

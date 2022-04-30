@@ -41,11 +41,13 @@ initializeContext().then(async (context) => {
     let marketPrices: number[] = []
     userPositions.forEach(position => {
         let market = marketsInfos.find(market => market.marketAddress.toString() == position.marketId.toString())!
-        marketPrices.push(market.askPrice + market.bidPrice / 2)
+        marketPrices.push((market.askPrice + market.bidPrice) / 2)
     })
 
     // prepare trade history
     let userTradesHistory = await getAllTradesForAccount(context, userAccountAddress)
+
+    console.log("userTradesHistory:", userTradesHistory)
 
     // get the PnLs for each position
     let pnls = await calcPnLForUserPositions(context, userAccountAddress, userPositions, marketPrices, userTradesHistory)

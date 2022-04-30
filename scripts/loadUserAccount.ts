@@ -4,14 +4,21 @@ import { PublicKey } from "@solana/web3.js";
 import { UserAccount } from "../types/optifi-exchange-types";
 import { findUserAccount } from "../utils/accounts";
 
-let userAccountAddress = new PublicKey("6z8HVptWedAnugg35SM7XMGt7ZQVzExjphBiYvm5RnAZ");
+let userAccountAddress = new PublicKey("2HmuhmAQ74JRhzn2TVKCdfKvpcNvmZn8iTmaB1utfxWo");
 
 initializeContext().then((context) => {
-    findUserAccount(context).then(([userAccountAddress,]) => {
-        context.program.account.userAccount.fetch(userAccountAddress).then((res) => {
-            // @ts-ignore
-            let userAccount = res as UserAccount;
-            console.log("userAccount is", userAccount);
-        })
+    context.program.account.userAccount.fetch(userAccountAddress).then((res) => {
+        // @ts-ignore
+        let userAccount = res as UserAccount;
+        console.log("userAccount is", userAccount);
+        // @ts-ignore
+        console.log("userAccount temp pnl amount:", userAccount.tempPnl.amount.toNumber());
+        // @ts-ignore
+        console.log("userAccount temp pnl epoch:", new Date(userAccount.tempPnl.epoch.toNumber() * 1000));
+
+        console.log("userMarginAccountUsdc is", userAccount.userMarginAccountUsdc.toString());
     })
+
+
+
 })

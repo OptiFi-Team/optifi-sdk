@@ -2,7 +2,7 @@ import Context from "../types/context";
 import { GetProgramAccountsFilter, PublicKey, TransactionResponse } from "@solana/web3.js";
 import { AmmAccount } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount } from "./accounts";
-import { AMM_PREFIX, SOL_DECIMALS } from "../constants";
+import { AMM_PREFIX, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
 import Position from "../types/position";
 import { retrievRecentTxs } from "./orderHistory";
 import { decodeIdlAccount } from "@project-serum/anchor/dist/cjs/idl";
@@ -164,7 +164,9 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
             let userLpAccounts: PublicKey[] = []
             let assets: number[] = []
             let tradedAmmLpMints: PublicKey[] = []
-            let tradedAmmUsdcVaults: PublicKey[] = []
+            // let tradedAmmUsdcMints: PublicKey[] = []
+            // let tradedAmmUsdcVaults: PublicKey[] = []
+            let tradedAmmUsdcLiquidity: number[] = []
 
             for (let amm of allAmm) {
                 let [account, _] = await findAssociatedTokenAccount(context, amm[0].lpTokenMint)
@@ -175,7 +177,8 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
                     userLpAccounts.push(account)
                     assets.push(amm[0].asset)
                     tradedAmmLpMints.push(amm[0].lpTokenMint)
-                    tradedAmmUsdcVaults.push(amm[0].quoteTokenVault)
+                    // tradedAmmUsdcMints.push(amm[0].quoteTokenMint)
+                    tradedAmmUsdcLiquidity.push(amm[0].totalLiquidityUsdc.toNumber())
                 }
             }
 
@@ -200,13 +203,15 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
                 let userLpTokenBalance = userLpTokenAccountInfo.amount
                 let lpTokenMintInfo = await getMint(context.connection, tradedAmmLpMints[assets.indexOf(asset)])
                 let lpSupply = lpTokenMintInfo.supply
-                let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)])
-                let ammUsdcVaultBalance = ammUsdcVaultInfo.amount
-                let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint)
+                // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)])
+                let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
+                // let usdcMintInfo = await getMint(context.connection, tradedAmmUsdcMints[assets.indexOf(asset)])
 
                 let actualBalance = new Decimal(userLpTokenBalance.toString())
                     .dividedBy(new Decimal(lpSupply.toString()))
-                    .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
+                    .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** USDC_DECIMALS).toNumber()
+                // .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
+
                 equity.set(asset, {
                     lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                     lpToeknValueInUsdc: actualBalance,
@@ -221,7 +226,8 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
 }
 interface AmmEquity {
     ammUsdcVaultBalance: number, // each amm's usdc vault balance
-    ammLpTokenSupply: number // each amm's lp token total supply
+    ammLpTokenSupply: number, // each amm's lp token total supply
+    delta: number, // amm's delta based on btc
 }
 
 export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> {
@@ -230,25 +236,33 @@ export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> 
             let allAmm = await findAMMAccounts(context)
             let assets: number[] = []
             let tradedAmmLpMints: PublicKey[] = []
-            let tradedAmmUsdcVaults: PublicKey[] = []
+            // let tradedAmmUsdcVaults: PublicKey[] = []
+            let tradedAmmUsdcLiquidity: number[] = []
+
+            let deltas: number[] = []
 
             for (let amm of allAmm) {
                 assets.push(amm[0].asset)
                 tradedAmmLpMints.push(amm[0].lpTokenMint)
-                tradedAmmUsdcVaults.push(amm[0].quoteTokenVault)
+                // tradedAmmUsdcVaults.push(amm[0].quoteTokenVault)
+                tradedAmmUsdcLiquidity.push(amm[0].totalLiquidityUsdc.toNumber())
+                deltas.push(new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber())
             }
             let equity = new Map<number, AmmEquity>()
 
             for (let asset of assets) {
                 let lpTokenMintInfo = await getMint(context.connection, tradedAmmLpMints[assets.indexOf(asset)]);
                 let lpSupply = lpTokenMintInfo.supply;
-                let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)]);
-                let ammUsdcVaultBalance = ammUsdcVaultInfo.amount;
-                let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint);
+                // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)]);
+                // let ammUsdcVaultBalance = ammUsdcVaultInfo.amount;
+                let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
+
+                // let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint);
 
                 equity.set(asset, {
-                    ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** usdcMintInfo.decimals).toNumber(),
+                    ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** USDC_DECIMALS).toNumber(),
                     ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
+                    delta: deltas[assets.indexOf(asset)]
                 })
             }
             resolve(equity)
@@ -346,22 +360,22 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
 
                     if (decoded) {
                         if (decoded.name == "ammDeposit") {
-                            let userUsdcAccountIndex = inx.accounts[4]
+                            let userUsdcAccountIndex = inx.accounts[3]
                             // console.log("userUsdcAccountIndex:", userUsdcAccountIndex)
-                            let userLpAccountIndex = inx.accounts[7]
+                            let userLpAccountIndex = inx.accounts[6]
                             // console.log("userLpAccountIndex:", userLpAccountIndex)
 
                             let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
                             let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
 
-                            let usdcAmount = new Decimal(postTokenAccount.uiTokenAmount.uiAmount!).minus(
-                                new Decimal(preTokenAccount.uiTokenAmount.uiAmount!)).toNumber()
+                            let usdcAmount = new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(
+                                new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
                             let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
                             let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
 
-                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmount!).minus(
-                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmount!)).toNumber()
-                                : postTokenAccount2.uiTokenAmount.uiAmount!
+                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
+                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
+                                : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
 
                             res.push(new AmmTx({
                                 type: "Deposit",
@@ -378,18 +392,18 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                         } else if (decoded.name == "ammWithdraw") {
 
 
-                            let userUsdcAccountIndex = inx.accounts[4]
+                            let userUsdcAccountIndex = inx.accounts[3]
                             // console.log("userUsdcAccountIndex:", userUsdcAccountIndex)
-                            let userLpAccountIndex = inx.accounts[7]
+                            let userLpAccountIndex = inx.accounts[6]
                             // console.log("userLpAccountIndex:", userLpAccountIndex)
 
                             let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)
                             let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
 
                             // Decimal lib handles float precision
-                            let usdcAmount = preTokenAccount ? new Decimal(postTokenAccount.uiTokenAmount.uiAmount!).minus(
-                                new Decimal(preTokenAccount.uiTokenAmount.uiAmount!)).toNumber()
-                                : postTokenAccount.uiTokenAmount.uiAmount!
+                            let usdcAmount = preTokenAccount ? new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(
+                                new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
+                                : new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).toNumber()
 
                             let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
                             let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
@@ -397,9 +411,9 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                             // console.log("preTokenAccount2: ", preTokenAccount2)
                             // console.log("postTokenAccount2: ", postTokenAccount2)
 
-                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmount!).minus(
-                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmount!)).toNumber()
-                                : postTokenAccount2.uiTokenAmount.uiAmount!
+                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
+                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
+                                : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
 
                             res.push(new AmmTx({
                                 type: "Withdraw",

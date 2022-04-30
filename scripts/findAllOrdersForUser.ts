@@ -11,7 +11,7 @@ import { getOrdersOnMarket } from "../utils/orders";
 // let market = new PublicKey("EdsJP7dzK3TfBSHbjDwNpXUXupgqkXn8yBvSQHwgm1A7");
 let market = new PublicKey("5QCyCgJb6W1wzdtFN53RKpDmuVRoJuGrsh4BAb6tUZJ6");
 
-initializeContext()
+initializeContext(undefined, undefined, undefined,undefined, {commitment: "confirmed"} )
   .then((context) => {
     findUserAccount(context)
       .then(([userAccount, _]) => {

@@ -1,17 +1,10 @@
-import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
-import InstructionResult from "../types/instructionResult";
+import { PublicKey } from "@solana/web3.js";
 import { Chain, OrderSide } from "../types/optifi-exchange-types";
-import { OptifiMarket } from "../types/optifi-exchange-types";
 import { findUserAccount } from './accounts'
 import { calculateMargin, stress_function, option_intrinsic_value, reshap } from "./calculateMargin";
-import { getPosition, findOptifiMarkets, getTokenAmount } from "./market";
-import UserPosition from "../types/user";
 import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
 import { SWITCHBOARD, USDC_DECIMALS } from "../constants";
-import { getAccount } from "@solana/spl-token";
-import { numberAssetToDecimal } from "./generic";
 
 export const r = 0;
 export const q = 0;
@@ -270,6 +263,23 @@ export function isMarginSufficientForNewOrder(
             reject(err)
         }
     })
+}
+
+export async function getSpotnIv(context: Context) {
+    let spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
+    spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
+
+    let ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+    ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+
+    let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
+
+    let spot = spotRes.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
+    let iv = ivRes.lastRoundResult?.result! / 100
+
+    let result = [spotRes, ivRes];
+
+    return result
 }
 
 async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: number, strikeRaw: number[], isCallRaw: number[], userPositionsRaw: number[], tRaw: number[]): Promise<number> {

@@ -15,5 +15,8 @@ initializeContext().then(async (context) => {
     let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, optifiAssetToNumber(optifiAsset));
     let marginStressAccount = await context.program.account.marginStressAccount.fetch(marginStressAddress)
     console.log("marginStressAccount info: ", marginStressAccount.state,marginStressAccount.flags )
+    console.log("marginStressAccount.strikes: ", marginStressAccount.strikes.map(e=> e.toNumber()) )
+    console.log("marginStressAccount.spotPrice: ", marginStressAccount.spotPrice.toNumber() )
+    console.log("marginStressAccount ", marginStressAccount)
 
 })

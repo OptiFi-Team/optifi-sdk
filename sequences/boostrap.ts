@@ -14,8 +14,11 @@ import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { createInstruments } from "./createInstruments";
 import { createNextOptifiMarket, createOptifiMarketWithIdx } from "../instructions/createOptifiMarket";
 import { numberAssetToDecimal, readJsonFile, sleep } from "../utils/generic";
-import { findOptifiMarkets } from "../utils/market";
+import { findOptifiMarkets, findOptifiMarketWithIdx } from "../utils/market";
 import { createMarginStress } from "./createMarginStress";
+import fs from "fs";
+import path from "path";
+import createAMMAccounts from "./createAMMAccounts";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -86,7 +89,7 @@ function createOrFetchInstruments(context: Context): Promise<PublicKey[]> {
  *
  * @param context Program context
  */
-async function createSerumMarkets(context: Context, instrumentKeys: PublicKey[]): Promise<PublicKey[]> {
+async function createSerumMarketsV1(context: Context, instrumentKeys: PublicKey[]): Promise<PublicKey[]> {
     let createdMarkets: PublicKey[] = [];
     // Intentionally do this the slow way because creating the serum markets is a super expensive process -
     // if there's a problem, we want to know before we've committed all our capital
@@ -111,6 +114,27 @@ async function createSerumMarkets(context: Context, instrumentKeys: PublicKey[])
     return createdMarkets;
 }
 
+async function createSerumMarkets(context: Context, initialInstrument: PublicKey): Promise<PublicKey> {
+    // Intentionally do this the slow way because creating the serum markets is a super expensive process -
+    // if there's a problem, we want to know before we've committed all our capital
+    try {
+        let instrument_res = await context.program.account.chain.fetch(initialInstrument);
+        let instrument = instrument_res as unknown as Chain;
+        let decimal = numberAssetToDecimal(instrument.asset)!;
+        let res = await initializeSerumMarket(context, decimal);
+        if (res.successful) {
+            return res.data as PublicKey;
+        } else {
+            console.error(res);
+            throw new Error("Couldn't create markets")
+        }
+    } catch (e: unknown) {
+        console.error(e);
+        throw new Error(e as string | undefined);
+    }
+}
+
+
 function createOrRetreiveSerumMarkets(context: Context, instrumentKeys: PublicKey[]): Promise<PublicKey[]> {
     return new Promise((resolve, reject) => {
         if (process.env.SERUM_KEYS !== undefined) {
@@ -118,7 +142,7 @@ function createOrRetreiveSerumMarkets(context: Context, instrumentKeys: PublicKe
             let serumKeysInit: string[] = readJsonFile<string[]>(process.env.SERUM_KEYS);
             resolve(serumKeysInit.map((i) => new PublicKey(i)));
         } else {
-            createSerumMarkets(context, instrumentKeys).then((res) => resolve(res)).catch((err) => reject(err));
+            createSerumMarketsV1(context, instrumentKeys).then((res) => resolve(res)).catch((err) => reject(err));
         }
     })
 }
@@ -190,12 +214,128 @@ function createOptifiMarkets(context: Context,
     })
 }
 
+
 /**
  * Bootstrap the optifi exchange entirely, creating new instruments, etc.
  *
  * @param context The program context
  */
 export default function boostrap(context: Context): Promise<InstructionResult<BootstrapResult>> {
+    console.log("Exchange ID is ", context.exchangeUUID);
+    return new Promise(async (resolve, reject) => {
+        let [exchangeAddress,] = await findExchangeAccount(context);
+        console.log("Exchange is ", exchangeAddress.toString());
+        createMaterailsForExchangeIfNotExist(context, exchangeAddress);
+
+        // Find or create the addresses of both the exchange and user accounts,
+        // and make sure that our user is an authority
+        console.log("Finding or initializing a new Optifi exchange...")
+        await createOrFetchExchange(context)
+        console.log("Created exchange")
+
+        // save the created exchange address to material
+        let materials = readMaterailsForExchange(exchangeAddress);
+        console.log(materials)
+        materials.exchangeAddress = exchangeAddress.toString();
+        saveMaterailsForExchange(exchangeAddress, materials);
+
+
+        // create new instruments
+        console.debug("Creating Instruments")
+        let instrumentKeys = await createOrFetchInstruments(context);
+        console.debug("Created Instruments")
+        let existingInstruments = materials.instruments.map(e => e.address)
+        instrumentKeys.forEach(e => {
+            if (!existingInstruments.includes(e.toString())) {
+                materials.instruments.push({ address: e.toString(), isInUse: false })
+            }
+        })
+        saveMaterailsForExchange(exchangeAddress, materials);
+
+
+        // create new serum markets
+        console.log("Creating serum markets");
+        console.log("Waiting 5 seconds to create Serum Markets");
+        await sleep(5000);
+        for (let instrumentKey of materials.instruments) {
+            if (!instrumentKey.isInUse) {
+                let serumMarketKey = await createSerumMarkets(context, new PublicKey(instrumentKey.address))
+                materials.serumMarkets.push({
+                    address: serumMarketKey.toString(),
+                    isInUse: false
+                })
+                materials.instruments.forEach(e => {
+                    if (e.address == instrumentKey.address) {
+                        e.isInUse = true
+                    }
+                })
+                saveMaterailsForExchange(exchangeAddress, materials);
+            }
+        }
+
+        console.log("Created serum markets");
+        saveMaterailsForExchange(exchangeAddress, materials);
+
+        //console.log("String serum market keys are, ", marketKeys.map((i) => i.toString()))
+        console.log("Creating optifi markets")
+
+        let existingMarkets = await findOptifiMarkets(context);
+
+        existingMarkets.forEach((market, i) => {
+            materials.optifiMarkets[i] = {
+                marketId: market[0].optifiMarketId,
+                address: market[1].toString(),
+                instrument: market[0].instrument.toString(),
+                serumMarket: market[0].serumMarket.toString(),
+            }
+            let serumMarketIdx = materials.serumMarkets.findIndex(e => e.address == market[0].serumMarket.toString())
+            if (serumMarketIdx >= 0) {
+                materials.serumMarkets[serumMarketIdx].isInUse = true
+            }
+        })
+
+        saveMaterailsForExchange(exchangeAddress, materials);
+
+        console.log("materials.optifiMarkets: ", materials.optifiMarkets)
+        let existingMarketsLen = materials.optifiMarkets.length;
+        for (let i = existingMarketsLen; i < 20; i++) {
+            await createOptifiMarketWithIdx(context,
+                new PublicKey(materials.serumMarkets[i].address),
+                new PublicKey(materials.instruments[i].address),
+                i + 1,
+            )
+
+            materials.serumMarkets[i].isInUse = true
+            let [optifiMarketAddress,] = await findOptifiMarketWithIdx(context, exchangeAddress, i + 1)
+            materials.optifiMarkets[i] = {
+                marketId: i + 1,
+                address: optifiMarketAddress.toString(),
+                instrument: materials.instruments[i].address,
+                serumMarket: materials.serumMarkets[i].address,
+            }
+            saveMaterailsForExchange(exchangeAddress, materials);
+
+            await sleep(5 * 1000)
+        }
+        console.log("Created optifi markets")
+
+        console.log("Creating MarginStress accounts");
+        await createMarginStress(context);
+        console.log("Created MarginStress accounts");
+
+        // console.log("Creating AMM accounts");
+        // await createAMMAccounts(context)
+        // console.log("Created AMM accounts");
+    })
+}
+
+
+/**
+ * Bootstrap the optifi exchange entirely, creating new instruments, etc.
+ *
+ * @param context The program context
+ */
+export function boostrapV1(context: Context): Promise<InstructionResult<BootstrapResult>> {
     console.log("Exchange ID is ", context.exchangeUUID);
     return new Promise((resolve, reject) => {
         // Find or create the addresses of both the exchange and user accounts,
@@ -243,4 +383,78 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
             })
         }).catch((err) => reject(err))
     })
+}
+
+interface ExchangeMaterialInstruments {
+    address: string,
+    isInUse: boolean,
+}
+interface ExchangeMaterialSerumMarkets {
+    address: string,
+    isInUse: boolean,
+}
+
+interface ExchangeMaterialMarginStress {
+    address: string,
+    asset: number
+}
+
+interface ExchangeMaterialOptifiMarkets {
+    address: string,
+    marketId: number,
+    instrument: string,
+    serumMarket: string,
+}
+
+interface ExchangeMaterialAmms {
+    address: string,
+    asset: number,
+    index: number
+}
+
+interface ExchangeMaterial {
+    network: string,
+    programId: string,
+    exchangeUUID: string,
+    exchangeAddress: string,
+    instruments: ExchangeMaterialInstruments[],
+    serumMarkets: ExchangeMaterialSerumMarkets[],
+    optifiMarkets: ExchangeMaterialOptifiMarkets[],
+    marginStressAccounts: ExchangeMaterialMarginStress[],
+    amms: ExchangeMaterialAmms[],
+}
+
+
+const logsDirPrefix = "logs"
+function readMaterailsForExchange(exchangeAddress: PublicKey): ExchangeMaterial {
+    let filePath = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
+    return JSON.parse(
+        fs.readFileSync(
+            filePath,
+            "utf-8"
+        )
+    )
+}
+
+function saveMaterailsForExchange(exchangeAddress: PublicKey, data: ExchangeMaterial) {
+    let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
+    fs.writeFileSync(filename, JSON.stringify(data, null, 4));
+}
+
+function createMaterailsForExchangeIfNotExist(context: Context, exchangeAddress: PublicKey) {
+    let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
+    if (!fs.existsSync(filename)) {
+        let data: ExchangeMaterial = {
+            network: context.endpoint.toString(),
+            programId: context.program.programId.toString(),
+            exchangeUUID: context.exchangeUUID,
+            exchangeAddress: exchangeAddress.toString(),
+            instruments: [],
+            serumMarkets: [],
+            optifiMarkets: [],
+            marginStressAccounts: [],
+            amms: []
+        }
+        fs.writeFileSync(filename, JSON.stringify(data, null, 4));
+    }
 }
