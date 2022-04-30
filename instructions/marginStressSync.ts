@@ -4,7 +4,7 @@ import InstructionResult from "../types/instructionResult";
 
 import Asset from "../types/asset";
 import { findMarginStressWithAsset } from "../utils/margin";
-import { findExchangeAccount, findOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
+import { findExchangeAccount, findParseOptimizedOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
 import { assetToOptifiAsset, numberToOptifiAsset, optifiAssetToNumber } from "../utils/generic";
 import {
     Asset as OptifiAsset,
@@ -23,14 +23,14 @@ export default function marginStressSync(context: Context,
         let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, optifiAssetToNumber(optifiAsset));
 
         let spotOracle =
-            findOracleAccountFromAsset(
+            await findParseOptimizedOracleAccountFromAsset(
                 context,
                 numberToOptifiAsset(
                     asset
                 )
             );
         let ivOracle =
-            findOracleAccountFromAsset(
+            await findParseOptimizedOracleAccountFromAsset(
                 context,
                 numberToOptifiAsset(
                     asset
@@ -38,7 +38,7 @@ export default function marginStressSync(context: Context,
                 OracleAccountType.Iv
             );
         let usdcSpotOracle =
-            findOracleAccountFromAsset(
+            await findParseOptimizedOracleAccountFromAsset(
                 context,
                 OptifiAsset.USDC,
                 OracleAccountType.Spot

@@ -1,7 +1,7 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
 import { Connection, PublicKey, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findOracleAccountFromAsset, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
+import { findExchangeAccount, findParseOptimizedOracleAccountFromAsset, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
 import { AmmAccount, OptifiMarket } from "../../types/optifi-exchange-types";
 import { MANGO_GROUP_ID, MANGO_PROGRAM_ID, MANGO_USDC_CONFIG, SERUM_DEX_PROGRAM_ID } from "../../constants";
 import { findInstrumentIndexFromAMM } from "../../utils/amm";
@@ -63,19 +63,19 @@ export default function ammUpdateFuturesPositions(context: Context,
 
                         const perpMarketInfo = getMangoPerpMarketInfoByAsset(context, amm.asset)!;
                         const perpMarket = new PublicKey(perpMarketInfo["publicKey"])
-                        const bids =  new PublicKey(perpMarketInfo["bidsKey"])
-                        const asks =  new PublicKey(perpMarketInfo["asksKey"])
-                        const eventQueue =  new PublicKey(perpMarketInfo["eventsKey"])
-                        
+                        const bids = new PublicKey(perpMarketInfo["bidsKey"])
+                        const asks = new PublicKey(perpMarketInfo["asksKey"])
+                        const eventQueue = new PublicKey(perpMarketInfo["eventsKey"])
+
                         let spotOracle =
-                            findOracleAccountFromAsset(
+                            await findParseOptimizedOracleAccountFromAsset(
                                 context,
                                 numberToOptifiAsset(
                                     amm.asset
                                 )
                             );
                         let ivOracle =
-                            findOracleAccountFromAsset(
+                            await findParseOptimizedOracleAccountFromAsset(
                                 context,
                                 numberToOptifiAsset(
                                     amm.asset
@@ -83,12 +83,11 @@ export default function ammUpdateFuturesPositions(context: Context,
                                 OracleAccountType.Iv
                             );
                         let usdcSpotOracle =
-                            findOracleAccountFromAsset(
+                            await findParseOptimizedOracleAccountFromAsset(
                                 context,
                                 OptifiAsset.USDC,
                                 OracleAccountType.Spot
                             );
-
 
                         context.program.rpc.ammUpdateFutureOrders(
                             {

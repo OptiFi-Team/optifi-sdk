@@ -1,7 +1,7 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
 import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findOracleAccountFromInstrument, findUserAccount, getDexOpenOrders } from "../../utils/accounts";
+import { findExchangeAccount, findOracleAccountFromInstrument, findParseOptimizedOracleAccountFromInstrument, findUserAccount, getDexOpenOrders } from "../../utils/accounts";
 import { AmmAccount } from "../../types/optifi-exchange-types";
 import { deriveVaultNonce, findMarketInstrumentContext } from "../../utils/market";
 import { SERUM_DEX_PROGRAM_ID, SWITCHBOARD } from "../../constants";
@@ -23,7 +23,7 @@ export default function recordPnlForAmm(context: Context,
             findExchangeAccount(context).then(([exchangeAddress, _]) => {
                 findMarketInstrumentContext(context, market).then((marketContext) => {
                     findSerumAuthorityPDA(context).then(([serumMarketAuthorityAddress, _]) => {
-                        findOracleAccountFromInstrument(context, marketContext.optifiMarket.instrument).then((oracleSpotAccount) =>
+                        findParseOptimizedOracleAccountFromInstrument(context, marketContext.optifiMarket.instrument).then((oracleSpotAccount) =>
                             deriveVaultNonce(marketContext.optifiMarket.serumMarket, new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]))
                                 .then(([vaultAddress, nonce]) => {
                                     getSerumMarket(context, marketContext.optifiMarket.serumMarket).then((serumMarket) => {

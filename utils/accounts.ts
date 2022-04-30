@@ -26,6 +26,8 @@ import {
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "./token";
 import { initializeUserAccount } from "../index";
+import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api";
+import base58 from "bs58";
 
 /**
  * Helper function for finding an account with a list of seeds
@@ -201,6 +203,62 @@ export function findInstrument(context: Context,
 export enum OracleAccountType {
     Spot,
     Iv,
+}
+
+export async function findParseOptimizedOracleAccountFromAsset(context: Context,
+    asset: OptifiAsset,
+    oracleAccountType: OracleAccountType = OracleAccountType.Spot): Promise<PublicKey> {
+    switch (asset) {
+        case OptifiAsset.Bitcoin:
+            if (oracleAccountType === OracleAccountType.Spot) {
+
+                let btcSpotOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
+                let btcSpotOracle = new PublicKey(base58.encode(btcSpotOracleRaw.parseOptimizedResultAddress).toString())
+                return btcSpotOracle;
+            } else {
+                let btcIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV));
+                let btcIvOracle = new PublicKey(base58.encode(btcIvOracleRaw.parseOptimizedResultAddress).toString())
+                return btcIvOracle
+            }
+        case OptifiAsset.Ethereum:
+            if (oracleAccountType === OracleAccountType.Spot) {
+                let ethSpotOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD));
+                let ethSpotOracle = new PublicKey(base58.encode(ethSpotOracleRaw.parseOptimizedResultAddress).toString())
+                return ethSpotOracle
+            } else {
+                let ethIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV));
+                let ethIvOracle = new PublicKey(base58.encode(ethIvOracleRaw.parseOptimizedResultAddress).toString())
+                return ethIvOracle
+            }
+        case OptifiAsset.USDC:
+            if (oracleAccountType === OracleAccountType.Iv) {
+                console.warn("No IV account for USDC, returning spot");
+            }
+            let usdcSpotOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD));
+            let usdcSpotOracle = new PublicKey(base58.encode(usdcSpotOracleRaw.parseOptimizedResultAddress).toString())
+            return usdcSpotOracle
+        default:
+            console.log("Asset is ", asset);
+            throw new Error(`Unsupported asset ${asset}`);
+    }
+
+}
+
+export function findParseOptimizedOracleAccountFromInstrument(context: Context,
+    instrumentAddress: PublicKey,
+    oracleAccountType: OracleAccountType = OracleAccountType.Spot): Promise<PublicKey> {
+    return new Promise((resolve, reject) => {
+        context.program.account.chain.fetch(instrumentAddress).then(async (chainRes) => {
+            // @ts-ignore
+            let chain = chainRes as Chain;
+            try {
+                resolve(await findParseOptimizedOracleAccountFromAsset(context, numberToOptifiAsset(chain.asset), oracleAccountType))
+            } catch (e) {
+                console.error(e);
+                reject(e);
+            }
+        })
+    })
 }
 
 export function findOracleAccountFromAsset(context: Context,

@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import * as anchor from "@project-serum/anchor";
-import { findExchangeAccount } from "../utils/accounts";
+import { findExchangeAccount, findParseOptimizedOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
 import {
     Keypair,
     PublicKey,
@@ -15,6 +15,9 @@ import { signAndSendTransaction, TransactionResult, TransactionResultType } from
 import { findOptifiUSDCPoolAuthPDA } from "../utils/pda";
 import { AccountLayout, createInitializeAccountInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { SWITCHBOARD, USDC_TOKEN_MINT } from "../constants";
+import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api";
+import base58 from "bs58";
+import { Asset, OracleDataType } from "../types/optifi-exchange-types";
 
 /**
  * Create a new optifi exchange - the first instruction that will be run in the Optifi system
@@ -25,30 +28,15 @@ export default function initialize(context: Context): Promise<InstructionResult<
 
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, bump]) => {
-            findOptifiUSDCPoolAuthPDA(context).then(([poolAuthPDAAddress, poolBump]) => {
+            findOptifiUSDCPoolAuthPDA(context).then(async ([poolAuthPDAAddress, poolBump]) => {
                 const usdcCentralPoolWallet = anchor.web3.Keypair.generate();
                 const usdcFeePoolWallet = anchor.web3.Keypair.generate();
-                // try {
-                //     let tx = new Transaction();
-                //     tx.add(
-                //         SystemProgram.createAccount({
-                //             fromPubkey: context.provider.wallet.publicKey,
-                //             newAccountPubkey: exchangeAddress,
-                //             lamports: await context.connection.getMinimumBalanceForRentExemption(
-                //                 102400
-                //             ),
-                //             space: 102400,
-                //             programId: context.program.programId,
-                //         })
-                //     );
-                //     let res = await context.provider.wallet.signTransaction(tx);
 
-                //     console.log("Successfully created exchange account, ", res);
-                // }
-                // catch (e) {
-                //     console.error("Got error while trying to create exchange account ", e);
-                //     reject(e)
-                // }
+                let btcSpotOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Bitcoin, OracleAccountType.Spot)
+                let ethSpotOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Ethereum, OracleAccountType.Spot)
+                let usdcSpotOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot)
+                let btcIvOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Bitcoin, OracleAccountType.Iv)
+                let ethIvOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Ethereum, OracleAccountType.Iv)
 
                 context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then((min) => {
                     context.program.rpc.initialize(
@@ -59,11 +47,16 @@ export default function initialize(context: Context): Promise<InstructionResult<
                             exchangeAuthority: context.provider.wallet.publicKey,
                             owner: context.provider.wallet.publicKey,
                             usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
-                            btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD),
-                            ethSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD),
-                            usdcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD),
-                            btcIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV),
-                            ethIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV),
+                            // btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD),
+                            // ethSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD),
+                            // usdcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD),
+                            // btcIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV),
+                            // ethIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV),
+                            btcSpotOracle,
+                            ethSpotOracle,
+                            usdcSpotOracle,
+                            btcIvOracle,
+                            ethIvOracle,
                         },
                         {
                             accounts: {

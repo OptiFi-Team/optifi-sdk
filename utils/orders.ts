@@ -10,8 +10,6 @@ import {
   findUserAccount,
   getDexOpenOrders,
   userAccountExists,
-  findOracleAccountFromAsset,
-  OracleAccountType,
 } from "./accounts";
 import {
   Exchange,

@@ -1,7 +1,7 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
 import { Connection, PublicKey, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findOracleAccountFromAsset, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
+import { findExchangeAccount, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
 import { AmmAccount, OptifiMarket } from "../../types/optifi-exchange-types";
 import { MANGO_GROUP_ID, MANGO_PROGRAM_ID, MANGO_USDC_CONFIG, SERUM_DEX_PROGRAM_ID } from "../../constants";
 import { findInstrumentIndexFromAMM } from "../../utils/amm";
@@ -62,7 +62,7 @@ export default function ammSyncFuturesPositions(context: Context,
                     // console.log("mangoGroupAccountInfo.mangoCache: ", mangoGroupAccountInfo.mangoCache.toString())
                     const perpMarketInfo = getMangoPerpMarketInfoByAsset(context, amm.asset)!;
                     const perpMarket = new PublicKey(perpMarketInfo["publicKey"])
-                    const eventQueue =  new PublicKey(perpMarketInfo["eventsKey"])
+                    const eventQueue = new PublicKey(perpMarketInfo["eventsKey"])
 
                     let perpMarketIndex = mangoGroupAccountInfo.perpMarkets.findIndex(e => e.perpMarket.equals(perpMarket))
                     if (mangoGroupAccountInfo.perpMarkets[perpMarketIndex]) {
@@ -83,28 +83,6 @@ export default function ammSyncFuturesPositions(context: Context,
                             let vault = filteredNodeBanks[0]!.vault
 
                             // console.log(mangoGroupAccountInfo.tokens.forEach(e => console.log(e.mint.toString(), " ", e.rootBank.toString())))
-
-                            let spotOracle =
-                                findOracleAccountFromAsset(
-                                    context,
-                                    numberToOptifiAsset(
-                                        amm.asset
-                                    )
-                                );
-                            let ivOracle =
-                                findOracleAccountFromAsset(
-                                    context,
-                                    numberToOptifiAsset(
-                                        amm.asset
-                                    ),
-                                    OracleAccountType.Iv
-                                );
-                            let usdcSpotOracle =
-                                findOracleAccountFromAsset(
-                                    context,
-                                    OptifiAsset.USDC,
-                                    OracleAccountType.Spot
-                                );
 
                             context.program.rpc.ammSyncFuturePositions(
                                 perpMarketIndex,

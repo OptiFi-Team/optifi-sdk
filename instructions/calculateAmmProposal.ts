@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
-import { findExchangeAccount, findOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
+import { findExchangeAccount } from "../utils/accounts";
 import { AmmAccount } from "../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
