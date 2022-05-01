@@ -1,3 +1,4 @@
+import { USDC_DECIMALS } from "../../constants";
 import { initializeContext } from "../../index";
 import { MarketMakerAccount } from "../../types/optifi-exchange-types";
 import { findMarketMakerAccount } from "../../utils/accounts";
@@ -17,6 +18,8 @@ initializeContext().then((context) => {
         for (let openOrders of openOrdersData) {
 
             console.log(openOrders)
+
+            console.log("penalty:" + openOrders.penalty.toString() / (10 ** USDC_DECIMALS))
 
         }
     })
