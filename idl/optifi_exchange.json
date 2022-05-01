@@ -3675,6 +3675,34 @@
       }
     },
     {
+      "name": "Position",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "instruments",
+            "type": "publicKey"
+          },
+          {
+            "name": "longTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "shortTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "latestPosition",
+            "type": "i64"
+          },
+          {
+            "name": "usdcBalance",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "ChainData",
       "type": {
         "kind": "struct",
@@ -4138,34 +4166,6 @@
           },
           {
             "name": "clientOrderId",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Position",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "instruments",
-            "type": "publicKey"
-          },
-          {
-            "name": "longTokenVault",
-            "type": "publicKey"
-          },
-          {
-            "name": "shortTokenVault",
-            "type": "publicKey"
-          },
-          {
-            "name": "latestPosition",
-            "type": "i64"
-          },
-          {
-            "name": "usdcBalance",
             "type": "u64"
           }
         ]
