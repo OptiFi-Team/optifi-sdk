@@ -1,8 +1,8 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
 import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findOracleAccountFromInstrument, findParseOptimizedOracleAccountFromInstrument, findUserAccount, getDexOpenOrders } from "../../utils/accounts";
-import { AmmAccount } from "../../types/optifi-exchange-types";
+import { findExchangeAccount, findOracleAccountFromInstrument, findParseOptimizedOracleAccountFromAsset, findParseOptimizedOracleAccountFromInstrument, findUserAccount, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
+import { AmmAccount, Asset } from "../../types/optifi-exchange-types";
 import { deriveVaultNonce, findMarketInstrumentContext } from "../../utils/market";
 import { SERUM_DEX_PROGRAM_ID, SWITCHBOARD } from "../../constants";
 import { findSerumAuthorityPDA, findSerumPruneAuthorityPDA, getAmmLiquidityAuthPDA } from "../../utils/pda";
@@ -29,7 +29,7 @@ export default function recordPnlForAmm(context: Context,
                                     getSerumMarket(context, marketContext.optifiMarket.serumMarket).then((serumMarket) => {
                                         getDexOpenOrders(context, marketContext.optifiMarket.serumMarket, ammLiquidityAuth).then(([openOrdersAccount, _]) => {
                                             findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentLongSplToken, ammLiquidityAuth).then(([userLongTokenVault, _]) => {
-                                                findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentShortSplToken, ammLiquidityAuth).then(([userShortTokenVault, _]) => {
+                                                findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentShortSplToken, ammLiquidityAuth).then(async ([userShortTokenVault, _]) => {
                                                     let recordPnlForAmmTx = context.program.rpc.recordPnlForAmm(
                                                         ammLiquidityAuthBump,
                                                         {
@@ -56,7 +56,7 @@ export default function recordPnlForAmm(context: Context,
                                                                 tokenProgram: TOKEN_PROGRAM_ID,
                                                                 clock: SYSVAR_CLOCK_PUBKEY,
                                                                 assetSpotPriceOracleFeed: oracleSpotAccount,
-                                                                usdcSpotPriceOracleFeed: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD),
+                                                                usdcSpotPriceOracleFeed: await findParseOptimizedOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot),
                                                                 ammLiquidityAuth: ammLiquidityAuth,
                                                             }
                                                         })

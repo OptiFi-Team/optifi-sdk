@@ -1,7 +1,7 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
 import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findOracleAccountFromInstrument, findParseOptimizedOracleAccountFromInstrument, findUserAccount, getDexOpenOrders } from "../../utils/accounts";
+import { findExchangeAccount, findOracleAccountFromInstrument, findParseOptimizedOracleAccountFromAsset, findParseOptimizedOracleAccountFromInstrument, findUserAccount, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
 import { Asset, Chain, OptifiMarket, UserAccount } from "../../types/optifi-exchange-types";
 import { deriveVaultNonce, findMarketInstrumentContext } from "../../utils/market";
 import { SERUM_DEX_PROGRAM_ID, SWITCHBOARD } from "../../constants";
@@ -30,7 +30,7 @@ export default function recordPnl(context: Context,
                                         getSerumMarket(context, marketContext.optifiMarket.serumMarket).then((serumMarket) => {
                                             getDexOpenOrders(context, marketContext.optifiMarket.serumMarket, userToSettle).then(([openOrdersAccount, _]) => {
                                                 findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentLongSplToken, userAccountAddress).then(([userLongTokenVault, _]) => {
-                                                    findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentShortSplToken, userAccountAddress).then(([userShortTokenVault, _]) => {     
+                                                    findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentShortSplToken, userAccountAddress).then(async([userShortTokenVault, _]) => {     
                                                         let settlementTx = context.program.rpc.recordPnlForOneUser({
                                                             accounts: {
                                                                 optifiExchange: exchangeAddress,
@@ -55,7 +55,7 @@ export default function recordPnl(context: Context,
                                                                 tokenProgram: TOKEN_PROGRAM_ID,
                                                                 clock: SYSVAR_CLOCK_PUBKEY,
                                                                 assetSpotPriceOracleFeed: oracleSpotAccount,
-                                                                usdcSpotPriceOracleFeed: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD)
+                                                                usdcSpotPriceOracleFeed: await findParseOptimizedOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot)
                                                             }
                                                         })
                                                         settlementTx.then((settlementRes) => {
