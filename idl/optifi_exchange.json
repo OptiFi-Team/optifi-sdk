@@ -2135,11 +2135,6 @@
           "isSigner": false
         },
         {
-          "name": "optifiMarket",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "instrument",
           "isMut": false,
           "isSigner": false
@@ -2150,12 +2145,7 @@
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "instrumentIndex",
-          "type": "u16"
-        }
-      ]
+      "args": []
     },
     {
       "name": "ammAddInstrument",
@@ -4640,6 +4630,6 @@
     }
   ],
   "metadata": {
-    "address": "DeVoPfWrDn2UTA1MbSfagvpQxA91MpNFQnhHRw19dK34"
+    "address": "Gw3Pw2jYaZd8DHgLBTZ5m2NJGCXf2sb7zWcV6RgUn8Rb"
   }
 }
