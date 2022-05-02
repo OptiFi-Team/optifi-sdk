@@ -11,6 +11,7 @@ import { findAssociatedTokenAccount } from "../utils/token";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { getSerumMarket } from "../utils/serum";
+import marginStress from "./marginStress";
 
 export function ammUpdateOrders(context: Context,
     orderLimit: number,
@@ -40,11 +41,13 @@ export function ammUpdateOrders(context: Context,
                                             //         findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, userAccountAddress).then(([userShortTokenVault, _]) => {
                                             findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, ammLiquidityAuth).then(([ammLongTokenVault, _]) => {
                                                 findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammLiquidityAuth).then(([ammShortTokenVault, _]) => {
-                                                    getAmmLiquidityAuthPDA(context).then(([ammLiquidityAuth, bump]) => {
+                                                    getAmmLiquidityAuthPDA(context).then(async ([ammLiquidityAuth, bump]) => {
                                                         // let [position, instrumentIdx] = findInstrumentIndexFromAMM(context,
                                                         //     amm,
                                                         //     optifiMarket.instrument
                                                         // );
+                                                        let updateMarginStressInx = await marginStress(context, amm.asset);
+
                                                         context.program.rpc.ammUpdateOrders(
                                                             orderLimit,
                                                             instrumentIdx,
@@ -75,7 +78,8 @@ export function ammUpdateOrders(context: Context,
                                                                     serumDexProgramId: serumId,
                                                                     tokenProgram: TOKEN_PROGRAM_ID,
                                                                     rent: SYSVAR_RENT_PUBKEY
-                                                                }
+                                                                },
+                                                                instructions: updateMarginStressInx
                                                             }
                                                         ).then((res) => {
                                                             resolve({
