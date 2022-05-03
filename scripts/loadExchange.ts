@@ -14,6 +14,7 @@ initializeContext().then(async (context) => {
     let common = optifiExchange.instrumentCommon;
     console.log("Got instrument groups ", common);
     console.log("Got instrument uniques ", optifiExchange.instrumentUnique);
+    console.log("usdcFeePool: ", optifiExchange.usdcFeePool.toString());
 
     let a = await getAllUsersOnExchange(context)
     console.log(`\n OMG, Found ${a.length} users on OptiFi Exchange!!!`)

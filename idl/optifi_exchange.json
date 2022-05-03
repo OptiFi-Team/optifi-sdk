@@ -3015,6 +3015,47 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "withdrawUsdcFeePool",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "centralUsdcPoolAuth",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawDest",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -3297,94 +3338,6 @@
             "name": "values",
             "type": {
               "vec": "i64"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "MarginStressAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "optifiExchange",
-            "type": "publicKey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
-          },
-          {
-            "name": "spotPrice",
-            "type": "u64"
-          },
-          {
-            "name": "iv",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "u64"
-          },
-          {
-            "name": "state",
-            "type": {
-              "defined": "MarginStressState"
-            }
-          },
-          {
-            "name": "flags",
-            "type": {
-              "vec": "bool"
-            }
-          },
-          {
-            "name": "instruments",
-            "type": {
-              "vec": "publicKey"
-            }
-          },
-          {
-            "name": "strikes",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "isCall",
-            "type": "bytes"
-          },
-          {
-            "name": "expiryDate",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "optionPrice",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "intrinsicValue",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "optionPriceDeltaInStressPrice",
-            "type": {
-              "vec": {
-                "vec": "i64"
-              }
             }
           }
         ]
@@ -4490,196 +4443,201 @@
     },
     {
       "code": 302,
+      "name": "InvalidMarginAccount",
+      "msg": "the margin account is invalid"
+    },
+    {
+      "code": 303,
       "name": "UnauthorizedAccount",
       "msg": "the account is not owned by the payer"
     },
     {
-      "code": 303,
+      "code": 304,
       "name": "InsufficientFund",
       "msg": "the account balance is insufficient"
     },
     {
-      "code": 304,
+      "code": 305,
       "name": "TokenTransferFailed",
       "msg": "Token transfer failed"
     },
     {
-      "code": 305,
+      "code": 306,
       "name": "UnauthorizedTokenVault",
       "msg": "the token vault is not owned by the payer"
     },
     {
-      "code": 306,
+      "code": 307,
       "name": "InvalidPDA",
       "msg": "the provided pda is invalid"
     },
     {
-      "code": 307,
+      "code": 308,
       "name": "UuidMustBeExactly6Length",
       "msg": "Uuid must be exactly of 6 length"
     },
     {
-      "code": 308,
+      "code": 309,
       "name": "NumericalOverflowError",
       "msg": "Numerical overflow error!"
     },
     {
-      "code": 309,
+      "code": 310,
       "name": "InsufficientMargin",
       "msg": "Insufficient Margin!"
     },
     {
-      "code": 310,
+      "code": 311,
       "name": "IncorrectCoinMint",
       "msg": "Incorrect coin mint!"
     },
     {
-      "code": 311,
+      "code": 312,
       "name": "CannotRecordPnLBeforeMarketsExpired",
       "msg": "Cannot record pnl befor markets is expired!"
     },
     {
-      "code": 312,
+      "code": 313,
       "name": "CannotSettleFundBeforeMarketsStopped",
       "msg": "Cannot settle fund befor markets has been stopped!"
     },
     {
-      "code": 313,
+      "code": 314,
       "name": "IncorrectOracleAccount",
       "msg": "Incorrect oracle account"
     },
     {
-      "code": 314,
+      "code": 315,
       "name": "WrongState",
       "msg": "the working state is wrong"
     },
     {
-      "code": 315,
+      "code": 316,
       "name": "WrongInstrument",
       "msg": "the instrument has already been done"
     },
     {
-      "code": 316,
+      "code": 317,
       "name": "NoEnoughOrdersInProposal",
       "msg": "no enough orders in proposal to execute"
     },
     {
-      "code": 317,
+      "code": 318,
       "name": "CannotRemoveInstrumentForAMM",
       "msg": "cannot remove the instrument for amm"
     },
     {
-      "code": 318,
+      "code": 319,
       "name": "DuplicateInstrumentForAMM",
       "msg": "cannot add the instrument for amm due to duplication"
     },
     {
-      "code": 319,
+      "code": 320,
       "name": "UserNotInLiquidation",
       "msg": "User is not in liquidation"
     },
     {
-      "code": 320,
+      "code": 321,
       "name": "UserNotInCancelOrder",
       "msg": "User is not in cancel order status"
     },
     {
-      "code": 321,
+      "code": 322,
       "name": "UserAlreadyInLiquidation",
       "msg": "User was already in liquidation"
     },
     {
-      "code": 322,
+      "code": 323,
       "name": "InstrumentAlreadyRegisteredForLiquidation",
       "msg": "Instrument was already registered for liquidation"
     },
     {
-      "code": 323,
+      "code": 324,
       "name": "CannotPlaceOrdersInLiquidation",
       "msg": "Users cannot place manual orders while their accounts are in liquidation"
     },
     {
-      "code": 324,
+      "code": 325,
       "name": "CannotCancelOrdersInLiquidation",
       "msg": "Users cannot cancel manual orders while their accounts are in liquidation"
     },
     {
-      "code": 325,
+      "code": 326,
       "name": "PoolNotCentralUSDCPool",
       "msg": "Provided USDC pool is not central pool"
     },
     {
-      "code": 326,
+      "code": 327,
       "name": "InvalidSerumAuthority",
       "msg": "Invalid open orders market authority"
     },
     {
-      "code": 327,
+      "code": 328,
       "name": "WithdrawRequestInvalid",
       "msg": "Only one withdraw request allowed at one time"
     },
     {
-      "code": 328,
+      "code": 329,
       "name": "UserIsMarketMaker",
       "msg": "User is already registered as market maker"
     },
     {
-      "code": 329,
+      "code": 330,
       "name": "MMWithdrawNotInWindow",
       "msg": "Market maker withdraw outside of valid window"
     },
     {
-      "code": 330,
+      "code": 331,
       "name": "WrongAsset",
       "msg": "Wrong asset"
     },
     {
-      "code": 331,
+      "code": 332,
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
     },
     {
-      "code": 332,
+      "code": 333,
       "name": "OrderFailed",
       "msg": "The order is failed"
     },
     {
-      "code": 333,
+      "code": 334,
       "name": "WrongFeeAccount",
       "msg": "Wrong USDC fee account"
     },
     {
-      "code": 334,
+      "code": 335,
       "name": "InvalidMangoAccount",
       "msg": "the mango account is invalid"
     },
     {
-      "code": 335,
+      "code": 336,
       "name": "InvalidMangoToken",
       "msg": "the mango token index is invalid"
     },
     {
-      "code": 336,
+      "code": 337,
       "name": "IncorrectOpenOrdersAccountsLength",
       "msg": "the length of open orders accounts is incorrect"
     },
     {
-      "code": 337,
+      "code": 338,
       "name": "WrongPerpMarketIndex",
       "msg": "wrong perp market index"
     },
     {
-      "code": 338,
+      "code": 339,
       "name": "MismatchedAsset",
       "msg": "asset of amm and the instrument are mismatched"
     },
     {
-      "code": 339,
+      "code": 340,
       "name": "InstrumentExpired",
       "msg": "the instrument is expired"
     },
     {
-      "code": 340,
+      "code": 341,
       "name": "MismatchedDuration",
       "msg": "duration of amm and the instrument are mismatched"
     }
