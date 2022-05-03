@@ -8,7 +8,6 @@ import syncPositions from "../../instructions/syncPositions";
 import ammSyncFuturesPositions from "../../instructions/amm/ammSyncFuturesPositions";
 import calculateAmmDelta from "../../instructions/calculateAmmDelta";
 import calculateAmmProposal from "../../instructions/calculateAmmProposal";
-// import { ammCancelOrders } from "../../instructions/ammCancelOrders";
 import { ammUpdateOrders } from "../../instructions/ammUpdateOrders";
 import ammUpdateFuturesPositions from "../../instructions/amm/ammUpdateFutureOrders";
 import { MANGO_PERP_MARKETS } from "../../constants";
@@ -121,7 +120,7 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
 }
 
 
-export async function executeAmmOrderProposalV2(context: Context, ammIndex: number) {
+export async function executeAmmOrderProposal(context: Context, ammIndex: number) {
     try {
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
@@ -161,63 +160,6 @@ export async function executeAmmOrderProposalV2(context: Context, ammIndex: numb
         console.error(err);
     }
 }
-
-
-export async function executeAmmOrderProposal(context: Context, ammIndex: number) {
-    try {
-        let [optifiExchange, _bump1] = await findOptifiExchange(context)
-        let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
-        let ammInfo = await context.program.account.ammAccount.fetch(ammAddress)
-
-        let optifiMarketsToAdd: PublicKey[] = []
-        let optifiMarkets = await findOptifiMarkets(context)
-        console.log(`Found ${optifiMarkets.length} optifi markets in total `);
-        let tradingMarkets = optifiMarkets.filter(market => ammInfo.tradingInstruments.map(e => e.toString()).includes(market[0].instrument.toString()))
-
-        // @ts-ignore
-        for (let i = 0; i < ammInfo.proposals.length; i++) {
-            // @ts-ignore
-            if (!ammInfo.flags[i]) {
-                // @ts-ignore
-                let proposalsForOneInstrument = ammInfo.proposals[i]
-                console.log("ammInfo.quoteTokenVault: ", ammInfo.quoteTokenVault.toString())
-                console.log(`proposalsForOneInstrument for instrument: ${proposalsForOneInstrument.instrument.toString()} with flag ${i}`,)
-                console.log(proposalsForOneInstrument)
-                proposalsForOneInstrument.askOrdersPrice.forEach((e, i) => {
-                    console.log("askOrdersPrice", e.toString())
-                    console.log("askOrdersSize: ", proposalsForOneInstrument.askOrdersSize[i].toString())
-                });
-                proposalsForOneInstrument.bidOrdersPrice.forEach((e, i) => {
-                    console.log("bidOrdersPrice", e.toString())
-                    console.log("bidOrdersSize: ", proposalsForOneInstrument.bidOrdersSize[i].toString())
-                });
-
-                // for (let proposal of proposalsForOneInstrument) {
-                let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
-
-                if (!proposalsForOneInstrument.isStarted) {
-                    // console.log(`start to cancel previous orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
-                    // // to prune all preivious orders 
-                    // let res = await ammCancelOrders(context, ammAddress, market[1])
-                    // console.log(`successfully cancelled orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
-                    // console.log(res)
-                } else {
-                    console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
-                    // execute all the proposal orders
-                    for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length; j++) {
-                        let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
-                        console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
-                        console.log(res)
-                    }
-                }
-            }
-            // }
-        };
-    } catch (err) {
-        console.error(err);
-    }
-}
-
 
 export function getMangoPerpMarketInfoByAsset(context: Context, asset: number) {
     let configs = MANGO_PERP_MARKETS[context.endpoint]

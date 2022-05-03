@@ -72,6 +72,7 @@ export const MarginStressState = {
 export type MmState = Record<string, Record<string, any>>
 export const MmState = {
   Calculation: { calculation: {} },
+  Settle: { settle: {} },
   Available: { available: {} }
 }
 

@@ -1,6 +1,6 @@
 import Context from "../types/context";
 import { TransactionSignature } from "@solana/web3.js";
-import { SUPPORTED_ASSETS, SUPPORTED_DURATION } from "../constants";
+import { SUPPORTED_ASSETS, SUPPORTED_DURATION, USDC_DECIMALS } from "../constants";
 import { initializeAmm } from "../instructions/initializeAmm";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 
@@ -12,7 +12,7 @@ export default function createAMMAccounts(context: Context): Promise<Transaction
                 for (let j = 1; j <= SUPPORTED_DURATION.length; j++) {
                     let asset = SUPPORTED_ASSETS[i - 1];
                     let duration = SUPPORTED_DURATION[i - 1];
-                    let contractSize = 0.01 * 10000; // TBD
+                    let contractSize = 0.01 * 10 ** USDC_DECIMALS;
                     console.log(`Creating AMM with IDX ${i}, asset `, asset);
                     let ammRes = await initializeAmm(context, asset, i, duration, contractSize);
                     if (ammRes.successful) {
