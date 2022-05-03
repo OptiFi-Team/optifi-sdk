@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import { GetProgramAccountsFilter, PublicKey, TransactionResponse } from "@solana/web3.js";
-import { AmmAccount } from "../types/optifi-exchange-types";
-import { findAccountWithSeeds, findExchangeAccount } from "./accounts";
+import { AmmAccount, UserAccount } from "../types/optifi-exchange-types";
+import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
 import { AMM_PREFIX, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
 import Position from "../types/position";
 import { retrievRecentTxs } from "./orderHistory";
@@ -129,8 +129,9 @@ export function getUserTxsOnAllAMM(context: Context): Promise<AmmTx[]> {
             let allAmm = await findAMMAccounts(context)
             let userLpAccounts: PublicKey[] = []
             let assets: number[] = []
+            let [userAccount] = await findUserAccount(context)
             for (let amm of allAmm) {
-                let [account, _] = await findAssociatedTokenAccount(context, amm[0].lpTokenMint)
+                let [account, _] = await findAssociatedTokenAccount(context, amm[0].lpTokenMint, userAccount)
                 // check if user initialized the account before
                 // TODO: how about thoes users who don't use an ATA to interact with on-chain program?
                 let accountInfo = await context.connection.getAccountInfo(account)
@@ -156,7 +157,7 @@ interface UserEquity {
     earnedValueInUsdc: number, // user's earned value in usdc
 }
 
-// return a user's equity on each AMM
+// return a user's equity on each AMM, based on user's amm tx history
 export function getUserEquity(context: Context): Promise<Map<number, UserEquity>> {
     return new Promise(async (resolve, reject) => {
         try {
@@ -168,8 +169,9 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
             // let tradedAmmUsdcVaults: PublicKey[] = []
             let tradedAmmUsdcLiquidity: number[] = []
 
+            let [userAccount] = await findUserAccount(context)
             for (let amm of allAmm) {
-                let [account, _] = await findAssociatedTokenAccount(context, amm[0].lpTokenMint)
+                let [account, _] = await findAssociatedTokenAccount(context, amm[0].lpTokenMint, userAccount)
                 // check if user initialized the account before
                 // TODO: how about thoes users who don't use an ATA to interact with on-chain program?
                 let accountInfo = await context.connection.getAccountInfo(account)
@@ -224,6 +226,89 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
         }
     })
 }
+
+
+// return a user's equity on each AMM - based on data in user account.
+// it may not be correct because it doesn't take withdraw fees into consideration
+export function getUserEquityV2(context: Context): Promise<Map<number, UserEquity>> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let allAmm = await findAMMAccounts(context)
+            let userLpAccounts: PublicKey[] = []
+            let assets: number[] = []
+            let tradedAmmLpMints: PublicKey[] = []
+            // let tradedAmmUsdcMints: PublicKey[] = []
+            // let tradedAmmUsdcVaults: PublicKey[] = []
+            let tradedAmmUsdcLiquidity: number[] = []
+            let [userAccount] = await findUserAccount(context)
+            let userAccountInfo = await context.program.account.userAccount.fetch(userAccount)
+
+            for (let amm of allAmm) {
+                let [account, _] = await findAssociatedTokenAccount(context, amm[0].lpTokenMint, userAccount)
+                // check if user initialized the account before
+                // TODO: how about thoes users who don't use an ATA to interact with on-chain program?
+                let accountInfo = await context.connection.getAccountInfo(account)
+                if (accountInfo) {
+                    userLpAccounts.push(account)
+                    assets.push(amm[0].asset)
+                    tradedAmmLpMints.push(amm[0].lpTokenMint)
+                    // tradedAmmUsdcMints.push(amm[0].quoteTokenMint)
+                    tradedAmmUsdcLiquidity.push(amm[0].totalLiquidityUsdc.toNumber())
+                }
+            }
+
+            let equity = new Map<number, UserEquity>()
+
+            // get the user's notional usdc balance
+            let notionalBalance = new Map<number, number>()
+            for (let amm of allAmm) {
+                // @ts-ignore
+                let ammEquity = userAccountInfo.ammEquities[amm[0].ammIdx - 1]
+                let depositTotal = new Decimal(ammEquity.depositTotal / 10 ** USDC_DECIMALS)
+                let withdrawTotal = new Decimal(ammEquity.withdrawTotal / 10 ** USDC_DECIMALS)
+
+                // @ts-ignore
+                notionalBalance.set(amm[0].ammIdx - 1, depositTotal.sub(withdrawTotal).toNumber())
+            }
+
+
+            console.log("notionalBalance: ", notionalBalance)
+
+            // get actual usdc balance according to user lp token balance
+            for (let asset of notionalBalance.keys()) {
+                let userLpTokenAccountInfo = await getAccount(context.connection, userLpAccounts[assets.indexOf(asset)])
+                let userLpTokenBalance = userLpTokenAccountInfo.amount
+                console.log("cp1: ", userLpTokenAccountInfo)
+                let lpTokenMintInfo = await getMint(context.connection, tradedAmmLpMints[assets.indexOf(asset)])
+                let lpSupply = lpTokenMintInfo.supply
+                console.log("cp2: ", lpTokenMintInfo)
+
+                // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)])
+                let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
+                // let usdcMintInfo = await getMint(context.connection, tradedAmmUsdcMints[assets.indexOf(asset)])
+
+                let actualBalance = new Decimal(userLpTokenBalance.toString())
+                    .dividedBy(new Decimal(lpSupply.toString()))
+                    .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** USDC_DECIMALS).toNumber()
+                // .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
+                console.log("cp3")
+
+                equity.set(asset, {
+                    lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
+                    lpToeknValueInUsdc: actualBalance,
+                    earnedValueInUsdc: new Decimal(actualBalance).sub(new Decimal(notionalBalance.get(asset)!)).toNumber(),
+                })
+                console.log("cp4")
+            }
+            console.log("cp5")
+            console.log(equity)
+            resolve(equity)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
 interface AmmEquity {
     ammUsdcVaultBalance: number, // each amm's usdc vault balance
     ammLpTokenSupply: number, // each amm's lp token total supply
@@ -392,9 +477,9 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                         } else if (decoded.name == "ammWithdraw") {
 
 
-                            let userUsdcAccountIndex = inx.accounts[3]
+                            let userUsdcAccountIndex = inx.accounts[4]
                             // console.log("userUsdcAccountIndex:", userUsdcAccountIndex)
-                            let userLpAccountIndex = inx.accounts[6]
+                            let userLpAccountIndex = inx.accounts[7]
                             // console.log("userLpAccountIndex:", userLpAccountIndex)
 
                             let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)

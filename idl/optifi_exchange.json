@@ -3693,9 +3693,14 @@
             "type": "u64"
           },
           {
-            "name": "ammEquity",
+            "name": "ammEquities",
             "type": {
-              "defined": "UserAmmEquity"
+              "array": [
+                {
+                  "defined": "UserAmmEquity"
+                },
+                20
+              ]
             }
           }
         ]
