@@ -3015,6 +3015,58 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "generateNextInstrument",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrument",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetSpotPriceOracleFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetIvOracleFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "data",
+          "type": {
+            "defined": "ChainData"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -3391,94 +3443,6 @@
       }
     },
     {
-      "name": "MarginStressAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "optifiExchange",
-            "type": "publicKey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
-          },
-          {
-            "name": "spotPrice",
-            "type": "u64"
-          },
-          {
-            "name": "iv",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "u64"
-          },
-          {
-            "name": "state",
-            "type": {
-              "defined": "MarginStressState"
-            }
-          },
-          {
-            "name": "flags",
-            "type": {
-              "vec": "bool"
-            }
-          },
-          {
-            "name": "instruments",
-            "type": {
-              "vec": "publicKey"
-            }
-          },
-          {
-            "name": "strikes",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "isCall",
-            "type": "bytes"
-          },
-          {
-            "name": "expiryDate",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "optionPrice",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "intrinsicValue",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "optionPriceDeltaInStressPrice",
-            "type": {
-              "vec": {
-                "vec": "i64"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "Market",
       "type": {
         "kind": "struct",
@@ -3735,6 +3699,54 @@
           {
             "name": "usdcBalance",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ChainDataWithAuth",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": "u8"
+          },
+          {
+            "name": "instrumentType",
+            "type": "u8"
+          },
+          {
+            "name": "strike",
+            "type": "u64"
+          },
+          {
+            "name": "expiryDate",
+            "type": "u64"
+          },
+          {
+            "name": "duration",
+            "type": "u8"
+          },
+          {
+            "name": "start",
+            "type": "u64"
+          },
+          {
+            "name": "expiryType",
+            "type": "u8"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "contractSize",
+            "type": "u64"
+          },
+          {
+            "name": "instrumentIdx",
+            "type": "u8"
           }
         ]
       }
