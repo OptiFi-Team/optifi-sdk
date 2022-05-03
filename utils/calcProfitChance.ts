@@ -90,7 +90,7 @@ export async function calcProfitChance(
 
             let tBTC = reshap(tBTCTmp);
             let tETH = reshap(tETHTmp);
-  
+
             let BTCbreakEvenAskPriceArr = reshap(BTCbreakEvenArr[0])
             let BTCbreakEvenBidPriceArr = reshap(BTCbreakEvenArr[1])
             let ETHbreakEvenAskPriceArr = reshap(ETHbreakEvenArr[0])
@@ -165,9 +165,11 @@ function getMarketData(
 
             let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
 
-            let spot_btc = spotRes_btc.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
+            // let spot_btc = spotRes_btc.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
+            // let spot_eth = spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
+            let spot_btc = Math.round(spotRes_btc.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result! * 100) / 100
+            let spot_eth = Math.round(spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result! * 100) / 100
             let iv_btc = ivRes_btc.lastRoundResult?.result! / 100
-            let spot_eth = spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
             let iv_eth = ivRes_eth.lastRoundResult?.result! / 100
 
             let today = new Date().getTime();
