@@ -198,18 +198,6 @@
       ],
       "args": [
         {
-          "name": "authorityPk",
-          "type": {
-            "option": "publicKey"
-          }
-        },
-        {
-          "name": "pruneAuthorityPk",
-          "type": {
-            "option": "publicKey"
-          }
-        },
-        {
           "name": "coinLotSize",
           "type": "u64"
         },
@@ -573,11 +561,6 @@
         {
           "name": "usdcFeePool",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "centralUsdcPoolAuth",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -2764,16 +2747,6 @@
           "isSigner": false
         },
         {
-          "name": "usdcFeePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "centralUsdcPoolAuth",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "instrumentShortSplTokenMint",
           "isMut": true,
           "isSigner": false
@@ -2976,16 +2949,6 @@
         },
         {
           "name": "vaultSigner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcFeePool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "centralUsdcPoolAuth",
           "isMut": false,
           "isSigner": false
         },
@@ -3468,10 +3431,6 @@
           },
           {
             "name": "withdrawalAmount",
-            "type": "u64"
-          },
-          {
-            "name": "outstandingPenalty",
             "type": "u64"
           },
           {
@@ -4137,6 +4096,14 @@
           {
             "name": "penalty",
             "type": "u64"
+          },
+          {
+            "name": "askReward",
+            "type": "u64"
+          },
+          {
+            "name": "bidReward",
+            "type": "u64"
           }
         ]
       }
@@ -4340,7 +4307,7 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Settle"
+            "name": "Calculation"
           },
           {
             "name": "Available"
@@ -4628,8 +4595,5 @@
       "name": "MismatchedDuration",
       "msg": "duration of amm and the instrument are mismatched"
     }
-  ],
-  "metadata": {
-    "address": "Gw3Pw2jYaZd8DHgLBTZ5m2NJGCXf2sb7zWcV6RgUn8Rb"
-  }
+  ]
 }
