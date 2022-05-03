@@ -2976,6 +2976,47 @@
       "args": []
     },
     {
+      "name": "mmSettlePenaltyReward",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marketMakerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "centralUsdcPoolAuth",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "scheduleMarketMakerWithdrawal",
       "accounts": [
         {
@@ -3015,6 +3056,47 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "executeMarketMakerWithdrawal",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccountUsdc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawDest",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marketMakerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "withdrawUsdcFeePool",
