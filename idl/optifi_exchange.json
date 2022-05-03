@@ -1628,7 +1628,12 @@
           "isSigner": false
         },
         {
-          "name": "user",
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
           "isMut": false,
           "isSigner": true
         },
@@ -1651,6 +1656,11 @@
         {
           "name": "optifiExchange",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeePool",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1684,7 +1694,12 @@
           "isSigner": false
         },
         {
-          "name": "user",
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
           "isMut": false,
           "isSigner": true
         },
@@ -3676,6 +3691,12 @@
           {
             "name": "clientOrderIdCounter",
             "type": "u64"
+          },
+          {
+            "name": "ammEquity",
+            "type": {
+              "defined": "UserAmmEquity"
+            }
           }
         ]
       }
@@ -4282,6 +4303,22 @@
           },
           {
             "name": "epoch",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserAmmEquity",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "depositTotal",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawTotal",
             "type": "u64"
           }
         ]
