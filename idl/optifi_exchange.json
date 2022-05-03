@@ -1628,7 +1628,12 @@
           "isSigner": false
         },
         {
-          "name": "user",
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
           "isMut": false,
           "isSigner": true
         },
@@ -1651,6 +1656,11 @@
         {
           "name": "optifiExchange",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeePool",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1684,7 +1694,12 @@
           "isSigner": false
         },
         {
-          "name": "user",
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
           "isMut": false,
           "isSigner": true
         },
@@ -3391,94 +3406,6 @@
       }
     },
     {
-      "name": "MarginStressAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "optifiExchange",
-            "type": "publicKey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
-          },
-          {
-            "name": "spotPrice",
-            "type": "u64"
-          },
-          {
-            "name": "iv",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "u64"
-          },
-          {
-            "name": "state",
-            "type": {
-              "defined": "MarginStressState"
-            }
-          },
-          {
-            "name": "flags",
-            "type": {
-              "vec": "bool"
-            }
-          },
-          {
-            "name": "instruments",
-            "type": {
-              "vec": "publicKey"
-            }
-          },
-          {
-            "name": "strikes",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "isCall",
-            "type": "bytes"
-          },
-          {
-            "name": "expiryDate",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "optionPrice",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "intrinsicValue",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "optionPriceDeltaInStressPrice",
-            "type": {
-              "vec": {
-                "vec": "i64"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "Market",
       "type": {
         "kind": "struct",
@@ -3641,6 +3568,12 @@
           {
             "name": "clientOrderIdCounter",
             "type": "u64"
+          },
+          {
+            "name": "ammEquity",
+            "type": {
+              "defined": "UserAmmEquity"
+            }
           }
         ]
       }
@@ -4247,6 +4180,22 @@
           },
           {
             "name": "epoch",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserAmmEquity",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "depositTotal",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawTotal",
             "type": "u64"
           }
         ]
