@@ -15,44 +15,46 @@ export default function ammWithdraw(context: Context,
     amount: number): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            getAmmLiquidityAuthPDA(context).then(([liquidityAuthPDA, _]) => {
-                context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
-                    // @ts-ignore
-                    let amm = ammRes as Amm;
-                    findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
-                        findAssociatedTokenAccount(context, amm.lpTokenMint).then(([userLpTokenVault, _]) => {
-
-                            getMint(context.connection, amm.lpTokenMint).then(tokenMintInfo => {
-                                context.program.rpc.ammWithdraw(
-                                    new anchor.BN(amount * (10 ** tokenMintInfo.decimals)),
-                                    {
-                                        accounts: {
-                                            optifiExchange: exchangeAddress,
-                                            amm: ammAddress,
-                                            ammQuoteTokenVault: amm.quoteTokenVault,
-                                            userQuoteTokenVault: userQuoteTokenVault,
-                                            lpTokenMint: amm.lpTokenMint,
-                                            userLpTokenVault: userLpTokenVault,
-                                            user: context.provider.wallet.publicKey,
-                                            tokenProgram: TOKEN_PROGRAM_ID,
-                                            ammLiquidityAuth: liquidityAuthPDA
+            findUserAccount(context).then(([userAccount, _]) => {
+                getAmmLiquidityAuthPDA(context).then(([liquidityAuthPDA, _]) => {
+                    context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
+                        // @ts-ignore
+                        let amm = ammRes as Amm;
+                        findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
+                            findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(([userLpTokenVault, _]) => {
+                                getMint(context.connection, amm.lpTokenMint).then(tokenMintInfo => {
+                                    context.program.rpc.ammWithdraw(
+                                        new anchor.BN(amount * (10 ** tokenMintInfo.decimals)),
+                                        {
+                                            accounts: {
+                                                optifiExchange: exchangeAddress,
+                                                amm: ammAddress,
+                                                ammQuoteTokenVault: amm.quoteTokenVault,
+                                                userQuoteTokenVault: userQuoteTokenVault,
+                                                lpTokenMint: amm.lpTokenMint,
+                                                userLpTokenVault: userLpTokenVault,
+                                                userAccount: userAccount,
+                                                owner: context.provider.wallet.publicKey,
+                                                tokenProgram: TOKEN_PROGRAM_ID,
+                                                ammLiquidityAuth: liquidityAuthPDA
+                                            }
                                         }
-                                    }
-                                ).then((res) => {
-                                    resolve({
-                                        successful: true,
-                                        data: res as TransactionSignature
-                                    })
+                                    ).then((res) => {
+                                        resolve({
+                                            successful: true,
+                                            data: res as TransactionSignature
+                                        })
+                                    }).catch((err) => reject(err))
                                 }).catch((err) => reject(err))
-                            }).catch((err) => reject(err))
+                            }).catch((err) => {
+                                console.error(err);
+                                reject(err);
+                            })
                         }).catch((err) => {
                             console.error(err);
-                            reject(err);
+                            reject(err)
                         })
-                    }).catch((err) => {
-                        console.error(err);
-                        reject(err)
-                    })
+                    }).catch((err) => reject(err))
                 }).catch((err) => reject(err))
             }).catch((err) => reject(err))
         }).catch((err) => reject(err))
