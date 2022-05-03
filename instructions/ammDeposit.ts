@@ -15,11 +15,12 @@ export default function ammDeposit(context: Context,
     amount: number): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
+            findUserAccount(context).then(([userAccount, _]) => {
                 context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                     // @ts-ignore
                     let amm = ammRes as AmmAccount;
                     findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
-                        findAssociatedTokenAccount(context, amm.lpTokenMint).then(async ([userLpTokenVault, _]) => {
+                        findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
                             let instructions: TransactionInstruction[] = []
                             try {
                                 let accountInfo = await getAccount(context.connection, userLpTokenVault, "processed")
@@ -32,7 +33,7 @@ export default function ammDeposit(context: Context,
                                         createAssociatedTokenAccountInstruction(
                                             context.provider.wallet.publicKey,
                                             userLpTokenVault,
-                                            context.provider.wallet.publicKey,
+                                            userAccount,
                                             ammRes.lpTokenMint,
                                         )
                                     )
@@ -53,10 +54,11 @@ export default function ammDeposit(context: Context,
                                                 lpTokenMint: amm.lpTokenMint,
                                                 ammLiquidityAuth: liquidityAuthPDA,
                                                 userLpTokenVault: userLpTokenVault,
-                                                user: context.provider.wallet.publicKey,
+                                                userAccount: userAccount,
+                                                owner: context.provider.wallet.publicKey,
                                                 tokenProgram: TOKEN_PROGRAM_ID
                                             },
-                                            instructions: instructions
+                                            instructions: instructions,
                                         }
                                     ).then((res) => {
                                         resolve({
@@ -67,6 +69,7 @@ export default function ammDeposit(context: Context,
                                 }).catch((err) => reject(err))
                             }).catch((err) => reject(err))
                         }).catch((err) => reject(err))
+                    }).catch((err) => reject(err))
                 }).catch((err) => reject(err))
             }).catch((err) => reject(err))
         }).catch((err) => reject(err))
