@@ -52,8 +52,8 @@ export default function marketMakerCalculation(
                                                                                     bids: serumMarket.bidsAddress,
                                                                                     asks: serumMarket.asksAddress,
                                                                                     serumDexProgramId: serumProgramId,
-                                                                                    usdcFeePool: exchangeInfo.usdcFeePool,
-                                                                                    centralUsdcPoolAuth: centralUsdcPoolAuth,
+                                                                                    // usdcFeePool: exchangeInfo.usdcFeePool,
+                                                                                    // centralUsdcPoolAuth: centralUsdcPoolAuth,
                                                                                 }
                                                                             });
                                                                         marketMakerCalculationTx.then((res) => {
