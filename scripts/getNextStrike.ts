@@ -1,0 +1,43 @@
+import { initializeContext } from "../index";
+import { getNextStrike,instrumentIdx } from "../instructions/getNextStrike";
+import { InstrumentContext } from "../instructions/initializeChain";
+import Asset from "../types/asset";
+import instrumentType from "../types/instrumentType";
+import { Duration } from "../types/optifi-exchange-types";
+import ExpiryType from "../types/expiryType";
+import { SUPPORTED_MATURITIES } from "../constants";
+import { generateExpirations } from "../utils/chains";
+import { findInstrument } from "../utils/accounts";
+import {
+  assetToOptifiAsset,
+  expiryTypeToOptifiExpiryType,
+  instrumentTypeToOptifiInstrumentType,
+} from "../utils/generic";
+import { PublicKey } from "@solana/web3.js";
+
+initializeContext().then(async (context) => {
+  let expirations = generateExpirations();
+  let maturity = SUPPORTED_MATURITIES[0];
+  let expirationDate = expirations[maturity];
+
+  let instrumentContext: InstrumentContext = {
+    asset: Asset.Bitcoin,
+    instrumentType: instrumentType.Call,
+    duration: Duration.Weekly,
+    start: new Date(),
+    expiryType: ExpiryType.Standard,
+    expirationDate: expirationDate,
+  };
+  let res = await findInstrument(
+    context,
+    assetToOptifiAsset(instrumentContext.asset),
+    instrumentTypeToOptifiInstrumentType(instrumentContext.instrumentType),
+    expiryTypeToOptifiExpiryType(instrumentContext.expiryType),
+    instrumentIdx, 
+    instrumentContext.expirationDate
+  );
+  let instrument: PublicKey = res[0];
+  let bump:number = res[1];
+
+  let result = await getNextStrike(context, instrument, instrumentContext,bump);
+});
