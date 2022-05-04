@@ -2,7 +2,6 @@ import Context from "../types/context";
 import { AccountInfo, PublicKey } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import {
-    ASSOCIATED_TOKEN_PROGRAM_ID,
     EXCHANGE_PREFIX,
     INSTRUMENT_PREFIX, LIQUIDATION_STATE_PREFIX, MARKET_MAKER_PREFIX,
     SERUM_OPEN_ORDERS_PREFIX,

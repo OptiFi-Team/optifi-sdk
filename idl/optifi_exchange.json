@@ -1006,7 +1006,7 @@
         },
         {
           "name": "owner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -3143,6 +3143,58 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "generateNextInstrument",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrument",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetSpotPriceOracleFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetIvOracleFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "data",
+          "type": {
+            "defined": "ChainData"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -3314,10 +3366,6 @@
             "type": {
               "defined": "ExpiryType"
             }
-          },
-          {
-            "name": "authority",
-            "type": "publicKey"
           },
           {
             "name": "isListedOnMarket",
@@ -3787,6 +3835,50 @@
       }
     },
     {
+      "name": "ChainDataWithAuth",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": "u8"
+          },
+          {
+            "name": "instrumentType",
+            "type": "u8"
+          },
+          {
+            "name": "strike",
+            "type": "u64"
+          },
+          {
+            "name": "expiryDate",
+            "type": "u64"
+          },
+          {
+            "name": "duration",
+            "type": "u8"
+          },
+          {
+            "name": "start",
+            "type": "u64"
+          },
+          {
+            "name": "expiryType",
+            "type": "u8"
+          },
+          {
+            "name": "contractSize",
+            "type": "u64"
+          },
+          {
+            "name": "instrumentIdx",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
       "name": "ChainData",
       "type": {
         "kind": "struct",
@@ -3814,10 +3906,6 @@
           {
             "name": "expiryType",
             "type": "u8"
-          },
-          {
-            "name": "authority",
-            "type": "publicKey"
           },
           {
             "name": "contractSize",

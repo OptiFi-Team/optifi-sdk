@@ -27,7 +27,7 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
             }
 
             // Derive the address the new user account will be at
-            findUserAccount(context).then((newUserAccount) => {
+            findUserAccount(context).then(([newUserAccount, newUserAccountBump]) => {
                 findExchangeAccount(context).then(([exchangeId, _]) => {
                     // Create a new account with no seeds for the PDA
                     let newUserMarginAccount = anchor.web3.Keypair.generate();
@@ -65,15 +65,15 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                         }
 
                         // Actually initialize the account
-                        findLiquidationState(context, newUserAccount[0]).then(([liquidationAddress, liquidationBump]) => {
+                        findLiquidationState(context, newUserAccount).then(([liquidationAddress, liquidationBump]) => {
                             context.program.rpc.initUserAccount(
                                 {
-                                    userAccount: newUserAccount[1],
+                                    userAccount: newUserAccountBump,
                                     liquidationAccount: liquidationBump
                                 },
                                 {
                                     accounts: {
-                                        userAccount: newUserAccount[0],
+                                        userAccount: newUserAccount,
                                         optifiExchange: exchangeId,
                                         userMarginAccountUsdc: newUserMarginAccount.publicKey,
                                         owner: context.provider.wallet.publicKey,

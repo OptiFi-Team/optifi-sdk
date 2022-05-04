@@ -113,7 +113,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111302",
+    "https://api.devnet.solana.com": "111305",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://solana-api.projectserum.com": "dmeWlh",
 }
@@ -190,13 +190,30 @@ export const MANGO_USDC_CONFIG: EndpointConstant = {
 
 // Mango usdc token
 export const MANGO_PERP_MARKETS: EndpointConstant = {
-    "https://solana-api.projectserum.com": {
-        "symbol": "USDC",
-        "mintKey": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-        "decimals": 6,
-        "rootKey": "AMzanZxMirPCgGcBoH9kw4Jzi9LFMomyUCXbpzDeL2T8",
-        "nodeKeys": ["BGcwkj1WudQwUUjFk78hAjwd1uAm8trh1N4CJSa51euh"]
-    },
+    "https://solana-api.projectserum.com": [
+        {
+            "name": "BTC-PERP",
+            "publicKey": "DtEcjPLyD4YtTBB4q8xwFZ9q49W89xZCZtJyrGebi5t8",
+            "baseSymbol": "BTC",
+            "baseDecimals": 6,
+            "quoteDecimals": 6,
+            "marketIndex": 1,
+            "bidsKey": "Bc8XaK5UTuDSCBtiESSUxBSb9t6xczhbAJnesPamMRir",
+            "asksKey": "BkWRiarqxP5Gwx7115LQPbjRmr3NjuSRXWBnduXXLGWR",
+            "eventsKey": "7t5Me8RieYKsFpfLEV8jnpqcqswNpyWD95ZqgUXuLV8Z"
+        },
+        {
+            "name": "ETH-PERP",
+            "publicKey": "DVXWg6mfwFvHQbGyaHke4h3LE9pSkgbooDSDgA4JBC8d",
+            "baseSymbol": "ETH",
+            "baseDecimals": 6,
+            "quoteDecimals": 6,
+            "marketIndex": 2,
+            "bidsKey": "DQv2sWhaHYbKrobHH6jAdkAXw13mnDdM9hVfRQtrUcMe",
+            "asksKey": "8NhLMV6huneGAqijuUgUFSshbAfXxdNj6ZMHSLb9aW8K",
+            "eventsKey": "9vDfKNPJkCvQv9bzR4JNTGciQC2RVHPVNMMHiVDgT1mw"
+        }
+    ],
     "https://api.devnet.solana.com": [
         {
             "name": "BTC-PERP",
@@ -230,19 +247,6 @@ export const MANGO_PERP_MARKETS: EndpointConstant = {
     },
 }
 
-
-
-
-// "cluster": "devnet",
-// "name": "devnet.2",
-// "publicKey": "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA",
-
-// "cluster": "devnet",
-// "name": "devnet.3",
-// "publicKey": "5vQp48Wx55Ft1PUAx8qWbsioNaLeXWVkyCq2XpQSv34M",
-
-// Associated token program is constant across all of the clusters
-export const ASSOCIATED_TOKEN_PROGRAM_ID: string = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 
 // Serum market constants
 export const COIN_LOT_SIZE: number = 1; // let's set 1 as one instrument spl token represents 1 contract

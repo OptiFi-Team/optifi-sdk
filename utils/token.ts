@@ -8,8 +8,7 @@ import {
     TransactionInstruction,
     TransactionSignature
 } from "@solana/web3.js";
-import { Account, AccountState, AccountLayout, ACCOUNT_SIZE, TokenAccountNotFoundError, TokenInvalidAccountOwnerError, TokenInvalidAccountSizeError, TOKEN_PROGRAM_ID, MintLayout, Mint, MINT_SIZE, TokenInvalidMintError } from "@solana/spl-token";
-import { ASSOCIATED_TOKEN_PROGRAM_ID } from "../constants";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Account, AccountState, AccountLayout, ACCOUNT_SIZE, TokenAccountNotFoundError, TokenInvalidAccountOwnerError, TokenInvalidAccountSizeError, TOKEN_PROGRAM_ID, MintLayout, Mint, MINT_SIZE, TokenInvalidMintError } from "@solana/spl-token";
 import * as anchor from "@project-serum/anchor";
 import { signAndSendTransaction, TransactionResultType } from "./transactions";
 import { formatExplorerAddress, SolanaEntityType } from "./debug";

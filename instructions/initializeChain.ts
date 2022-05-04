@@ -72,7 +72,6 @@ export function initializeChain(context: Context,
                                 duration: optifiDurationToNumber(instrumentContext.duration),
                                 start: dateToAnchorTimestamp(instrumentContext.start),
                                 expiryType: expiryTypeToNumber(expiryTypeToOptifiExpiryType(instrumentContext.expiryType)),
-                                authority: context.provider.wallet.publicKey,
                                 contractSize: new anchor.BN(0.01 * 10000),
                                 instrumentIdx: i
                             },
