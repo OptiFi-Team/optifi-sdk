@@ -590,6 +590,7 @@ export interface Order {
   clientId?: BN;
   marketAddress?: string;
   instrumentType?: string;
+  strike?: number;
   expiryDate?: number;
   originalSize?: number;
   status: string;
