@@ -45,7 +45,6 @@ export default function initialize(context: Context): Promise<InstructionResult<
                             uuid: context.exchangeUUID,
                             version: 1,
                             exchangeAuthority: context.provider.wallet.publicKey,
-                            owner: context.provider.wallet.publicKey,
                             usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
                             // btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD),
                             // ethSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD),

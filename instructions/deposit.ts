@@ -21,7 +21,6 @@ export default function deposit(context: Context, amount: number): Promise<Instr
                                 {
                                     accounts: {
                                         userAccount: userAccountAddress,
-                                        depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
                                         userMarginAccountUsdc: acct.userMarginAccountUsdc,
                                         depositSource: userUSDCAddress,
                                         user: context.provider.wallet.publicKey,

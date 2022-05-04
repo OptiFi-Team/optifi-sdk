@@ -1044,17 +1044,12 @@
       "accounts": [
         {
           "name": "userAccount",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "userMarginAccountUsdc",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "depositTokenMint",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -1090,16 +1085,11 @@
         },
         {
           "name": "userAccount",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "userMarginAccountUsdc",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "depositTokenMint",
           "isMut": true,
           "isSigner": false
         },
@@ -3358,10 +3348,6 @@
             "type": "publicKey"
           },
           {
-            "name": "owner",
-            "type": "publicKey"
-          },
-          {
             "name": "usdcMint",
             "type": "publicKey"
           },
@@ -3950,10 +3936,6 @@
           },
           {
             "name": "exchangeAuthority",
-            "type": "publicKey"
-          },
-          {
-            "name": "owner",
             "type": "publicKey"
           },
           {

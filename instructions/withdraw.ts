@@ -25,7 +25,6 @@ export default function withdraw(context: Context,
                                         accounts: {
                                             optifiExchange: exchangeAddress,
                                             userAccount: userAccountAddress,
-                                            depositTokenMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
                                             userMarginAccountUsdc: acct.userMarginAccountUsdc,
                                             withdrawDest: userUSDCAddress,
                                             user: context.provider.wallet.publicKey,
