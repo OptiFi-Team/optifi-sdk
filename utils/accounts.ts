@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { AccountInfo, PublicKey } from "@solana/web3.js";
+import { AccountInfo, GetProgramAccountsFilter, PublicKey } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import {
     EXCHANGE_PREFIX,
@@ -389,21 +389,25 @@ export async function getFilteredProgramAccounts(
 }
 
 export async function getAllUsersOnExchange(context: Context)
-    : Promise<{ publicKey: PublicKey; accountInfo: AccountInfo<Buffer> }[]> {
+    : Promise<{ publicKey: PublicKey; accountInfo: UserAccount }[]> {
 
-    let [exchangeId, _] = await findExchangeAccount(context);
-
-    const userAccountFilter = [
+    let [exchangeAddress, _] = await findExchangeAccount(context);
+    const filters: GetProgramAccountsFilter[] = [
         {
             memcmp: {
                 offset: 8,
-                bytes: exchangeId.toBase58(),
+                bytes: exchangeAddress.toBase58(),
             }
         },
-        {
-            dataSize: 3200,
-        },
-    ];
+    ]
+    let allUsers = await context.program.account.userAccount.all(filters)
 
-    return getFilteredProgramAccounts(context, context.program.programId, userAccountFilter)
+    // @ts-ignore
+    return allUsers.map(e => {
+        return {
+            publickey: e.publicKey,
+            // @ts-ignore
+            accountInfo: e.account as UserAccount
+        }
+    })
 }

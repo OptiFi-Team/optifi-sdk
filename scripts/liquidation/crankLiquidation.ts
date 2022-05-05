@@ -19,9 +19,7 @@ const liquidationLoop = async (context: Context) => {
 
             let userToLiquidate = user.publicKey;
 
-            let decoded = context.program.coder.accounts.decode("UserAccount", user.accountInfo.data)!;
-
-            let userAccount = decoded as UserAccount;
+            let userAccount =user.accountInfo;
 
             let tokenAmount = await context.connection.getTokenAccountBalance(userAccount.userMarginAccountUsdc);
 

@@ -1,10 +1,6 @@
 import { initializeContext } from "../../index";
 import { market } from "../constants"
-import { Connection, PublicKey } from "@solana/web3.js";
 import { findOpenOrdersForSerumMarket, getSerumMarket } from "../../utils/serum";
-import { findUserAccount, findUserUSDCAddress, getAllUsersOnExchange, getDexOpenOrders, getFilteredProgramAccounts, userAccountExists } from "../../utils/accounts";
-import { findAssociatedTokenAccount } from "../../utils/token";
-import Context from "../../types/context";
 import { consumeEvents } from "../../instructions/serum/consumeEvents";
 import { sleep } from "@project-serum/common";
 
