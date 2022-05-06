@@ -18,11 +18,9 @@ export interface BootstrapResult {
 
 initializeContext()
   .then((context: Context) => {
-    console.log("Initialized");
     listInstrumentOnMarket(context)
       .then((res) => {
         console.log(res);
-        console.log("Bootstrapped");
       })
       .catch((err) => {
         console.error(err);
@@ -76,10 +74,19 @@ export default function listInstrumentOnMarket(
       //@ts-ignore
       optifiExchange.instrumentUnique[0][5].instrumentPubkeys[0].toString();
 
+    let newInstrumentAddress2 =
+      //@ts-ignore
+      optifiExchange.instrumentUnique[0][5].instrumentPubkeys[1].toString();
+
     let materials = readMaterailsForExchange(exchangeAddress);
 
     materials.instruments.push({
       address: newInstrumentAddress,
+      isInUse: false,
+    });
+
+    materials.instruments.push({
+      address: newInstrumentAddress2,
       isInUse: false,
     });
     saveMaterailsForExchange(exchangeAddress, materials);
@@ -95,6 +102,22 @@ export default function listInstrumentOnMarket(
     });
     materials.instruments.forEach((e) => {
       if (e.address == newInstrumentAddress) {
+        e.isInUse = true;
+      }
+    });
+    saveMaterailsForExchange(exchangeAddress, materials);
+
+    // create new serum markets2
+    let serumMarketKey2 = await createSerumMarkets(
+      context,
+      new PublicKey(newInstrumentAddress2)
+    );
+    materials.serumMarkets.push({
+      address: serumMarketKey2.toString(),
+      isInUse: false,
+    });
+    materials.instruments.forEach((e) => {
+      if (e.address == newInstrumentAddress2) {
         e.isInUse = true;
       }
     });
@@ -121,8 +144,11 @@ export default function listInstrumentOnMarket(
     saveMaterailsForExchange(exchangeAddress, materials);
 
     let existingMarketsLen = materials.optifiMarkets.length;
+    console.log("existingMarketsLen: "+existingMarketsLen);
+    console.log(materials.serumMarkets.length);
+    console.log(materials.instruments.length);
 
-    for (let i = existingMarketsLen; i < 20 + 1; i++) {
+    for (let i = 20; i < 20 + 2; i++) {
       await createOptifiMarketWithIdx(
         context,
         new PublicKey(materials.serumMarkets[i].address),
