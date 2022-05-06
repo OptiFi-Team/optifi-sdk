@@ -1,9 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import initLiquidation from "../instructions/liquidation/initLiquidation";
 import Context from "../types/context";
-import { TransactionSignature } from "@solana/web3.js";
 import { Market } from "@project-serum/serum";
-
 import registerLiquidationMarket from "../instructions/liquidation/registerLiquidationMarket";
 import { findLiquidationState } from "../utils/accounts";
 import { LiquidationState, UserAccount } from "../types/optifi-exchange-types";
@@ -11,11 +9,8 @@ import liquidationPlaceOrder from "../instructions/liquidation/liquidationPlaceO
 import { marginCalculate } from "../instructions/userMarginCalculate";
 import liquidationSettleOrder from "../instructions/liquidation/liquidationSettleOrder";
 import { getSerumMarket } from "../utils/serum";
-import { findOptifiMarkets, getTokenAmount, watchGetTokenUiAmount } from "../utils/market";
+import { findOptifiMarkets, getTokenAmount } from "../utils/market";
 import { sleep } from "../utils/generic";
-import { sortAndDeduplicateDiagnostics } from "typescript";
-import { resolve } from "path";
-import { rejects } from "assert";
 
 export async function sortMarketsFromValues(liquidationMarkets: PublicKey[], liquidationValues: number[])
     : Promise<[PublicKey[], number[]]> {
@@ -139,8 +134,10 @@ export default async function liquidateUser(context: Context, userToLiquidate: P
                 }
                 // Wait for order filled
                 console.log("Wait for liquidation settlement...");
+                await sleep(10000);
+
                 let serumMarket = await getSerumMarket(context, market[0].serumMarket);
-                await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount);
+                await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount, 0);
 
                 console.log("Wating 10 secs for next market...");
                 await sleep(10000);
@@ -152,7 +149,7 @@ export default async function liquidateUser(context: Context, userToLiquidate: P
 }
 
 
-async function waitForSettle(context: Context, serumMarket: Market, userToLiquidate: PublicKey, marketAddress: PublicKey, shortAmount: number) {
+async function waitForSettle(context: Context, serumMarket: Market, userToLiquidate: PublicKey, marketAddress: PublicKey, shortAmount: number, round: number) {
 
     const openOrdersRes = await serumMarket.findOpenOrdersAccountsForOwner(
         context.connection,
@@ -171,5 +168,18 @@ async function waitForSettle(context: Context, serumMarket: Market, userToLiquid
     };
     console.log("Wating 10 secs for order filled...");
     await sleep(10000);
-    await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount)
+
+    if (round < 6) {
+        await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount, round + 1)
+    } else {
+        // Liquidation Place Order
+        console.log("Update liquidation order...");
+        await liquidationPlaceOrder(context, userToLiquidate, marketAddress).then((res) => {
+            console.log("Got liquidationPlaceOrder res", res, " on market ", marketAddress.toString());
+        }).catch((err) => {
+            console.error(err);
+        });
+        await sleep(10000);
+        await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount, 0)
+    }
 }
