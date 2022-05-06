@@ -17,7 +17,7 @@ import {
   optifiDurationToNumber,
 } from "../utils/generic";
 import * as anchor from "@project-serum/anchor";
-export const instrumentIdx = 6; //if instrument address is already in use, plus 1
+export const instrumentIdx = 5; //if instrument address is already in use, plus 1
 
 export function getNextStrike(
   context: Context,

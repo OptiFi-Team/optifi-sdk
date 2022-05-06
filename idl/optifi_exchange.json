@@ -4694,6 +4694,11 @@
       "code": 340,
       "name": "MismatchedDuration",
       "msg": "duration of amm and the instrument are mismatched"
+    },
+    {
+      "code": 341,
+      "name": "DontNeedGenerateNextInstrument",
+      "msg": "spot price is in strike interval"
     }
   ]
 }
