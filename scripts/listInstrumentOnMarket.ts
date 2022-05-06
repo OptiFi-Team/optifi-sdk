@@ -72,8 +72,6 @@ export default function listInstrumentOnMarket(
     let res = await context.program.account.exchange.fetch(exchangeAddress);
     let optifiExchange = res as Exchange;
 
-    // call:  optifiExchange.instrumentUnique[0][5].instrumentPubkeys[0]
-    // put:  optifiExchange.instrumentUnique[0][5].instrumentPubkeys[1] ???
     let newInstrumentAddress =
       //@ts-ignore
       optifiExchange.instrumentUnique[0][5].instrumentPubkeys[0].toString();
@@ -123,7 +121,7 @@ export default function listInstrumentOnMarket(
     saveMaterailsForExchange(exchangeAddress, materials);
 
     let existingMarketsLen = materials.optifiMarkets.length;
-    console.log("existingMarketsLen: " + existingMarketsLen);
+
     for (let i = existingMarketsLen; i < 20 + 1; i++) {
       await createOptifiMarketWithIdx(
         context,

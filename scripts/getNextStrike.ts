@@ -22,6 +22,15 @@ initializeContext().then(async (context) => {
 
   let instrumentContext: InstrumentContext = {
     asset: Asset.Bitcoin,
+    instrumentType: instrumentType.Put,
+    duration: Duration.Weekly,
+    start: new Date(),
+    expiryType: ExpiryType.Standard,
+    expirationDate: expirationDate,
+  };
+
+  let instrumentContext2: InstrumentContext = {
+    asset: Asset.Bitcoin,
     instrumentType: instrumentType.Call,
     duration: Duration.Weekly,
     start: new Date(),
@@ -39,5 +48,17 @@ initializeContext().then(async (context) => {
   let instrument: PublicKey = res[0];
   let bump:number = res[1];
 
-  let result = await getNextStrike(context, instrument, instrumentContext,bump);
+  let res2 = await findInstrument(
+    context,
+    assetToOptifiAsset(instrumentContext2.asset),
+    instrumentTypeToOptifiInstrumentType(instrumentContext2.instrumentType),
+    expiryTypeToOptifiExpiryType(instrumentContext2.expiryType),
+    instrumentIdx+1, 
+    instrumentContext2.expirationDate
+  );
+  let instrument2: PublicKey = res2[0];
+
+  let bump2:number = res2[1];
+
+  let result = await getNextStrike(context, instrument,instrument2, instrumentContext,instrumentContext2,bump,bump2);
 });
