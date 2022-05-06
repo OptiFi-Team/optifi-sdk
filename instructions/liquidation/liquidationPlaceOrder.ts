@@ -9,6 +9,7 @@ import InstructionResult from "../../types/instructionResult";
 import { getSerumMarket } from "../../utils/serum";
 import { deriveVaultNonce } from "../../utils/market";
 import { findMarginStressWithAsset } from "../../utils/margin";
+import { findSerumAuthorityPDA } from "../../utils/pda";
 
 export default function liquidationPlaceOrder(context: Context,
     userAccountAddress: PublicKey,
@@ -22,59 +23,55 @@ export default function liquidationPlaceOrder(context: Context,
                         findAssociatedTokenAccount(context, market.instrumentShortSplToken, userAccountAddress).then(([userShortTokenAddress, _]) => {
                             findLiquidationState(context, userAccountAddress).then(([liquidationStateAddress, _]) => {
                                 getSerumMarket(context, market.serumMarket).then((serumMarket) => {
-                                    context.program.account.userAccount.fetch(userAccountAddress).then((userAccount) => {
-                                        findOrCreateAssociatedTokenAccount(
-                                            context,
-                                            market.instrumentLongSplToken,
-                                            userAccountAddress
-                                        ).then((longSPLTokenVault) => {
-                                            findOrCreateAssociatedTokenAccount(
-                                                context,
-                                                market.instrumentShortSplToken,
-                                                userAccountAddress
-                                            ).then((shortSPLTokenVault) => {
-                                                let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
-                                                deriveVaultNonce(market.serumMarket, serumId).then(async ([vaultOwner, _]) => {
-                                                    let chainRes = await context.program.account.chain
-                                                        .fetch(marketRes.instrument)
-                                                    // @ts-ignore
-                                                    let chain = chainRes as Chain;
+                                    findSerumAuthorityPDA(context).then(([serumMarketAuthority, _]) => {
+                                        context.program.account.userAccount.fetch(userAccountAddress).then((userAccount) => {
 
-                                                    let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, chain.asset);
+                                            let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+                                            deriveVaultNonce(market.serumMarket, serumId).then(async ([vaultOwner, _]) => {
+                                                let chainRes = await context.program.account.chain
+                                                    .fetch(marketRes.instrument)
+                                                // @ts-ignore
+                                                let chain = chainRes as Chain;
 
-                                                    console.log("liquidatePosition...");
+                                                let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, chain.asset);
 
-                                                    context.program.rpc.liquidationPlaceOrder(
-                                                        {
-                                                            accounts: {
-                                                                optifiExchange: exchangeAddress,
-                                                                marginStressAccount: marginStressAddress,
-                                                                userAccount: userAccountAddress,
-                                                                userMarginAccount: userAccount.userMarginAccountUsdc,
-                                                                liquidationState: liquidationStateAddress,
-                                                                userInstrumentShortTokenVault:
-                                                                    shortSPLTokenVault,
-                                                                optifiMarket: marketAddress,
-                                                                serumMarket: market.serumMarket,
-                                                                openOrders: openOrdersAccount[0],
-                                                                requestQueue: serumMarket.decoded.requestQueue,
-                                                                eventQueue: serumMarket.decoded.eventQueue,
-                                                                bids: serumMarket.bidsAddress,
-                                                                asks: serumMarket.asksAddress,
-                                                                coinVault: serumMarket.decoded.baseVault,
-                                                                pcVault: serumMarket.decoded.quoteVault,
-                                                                serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
-                                                                tokenProgram: TOKEN_PROGRAM_ID,
-                                                                rent: SYSVAR_RENT_PUBKEY,
-                                                                liquidator: context.provider.wallet.publicKey,
-                                                            }
+                                                console.log("liquidatePosition...");
+
+                                                context.program.rpc.liquidationPlaceOrder(
+                                                    {
+                                                        accounts: {
+                                                            optifiExchange: exchangeAddress,
+                                                            marginStressAccount: marginStressAddress,
+                                                            userAccount: userAccountAddress,
+                                                            userMarginAccount: userAccount.userMarginAccountUsdc,
+                                                            liquidationState: liquidationStateAddress,
+                                                            userInstrumentLongTokenVault: userLongTokenAddress,
+                                                            userInstrumentShortTokenVault:
+                                                                userShortTokenAddress,
+                                                            optifiMarket: marketAddress,
+                                                            instrumentLongSplTokenMint: market.instrumentLongSplToken,
+                                                            instrumentShortSplTokenMint: market.instrumentShortSplToken,
+                                                            serumMarket: market.serumMarket,
+                                                            openOrders: openOrdersAccount[0],
+                                                            requestQueue: serumMarket.decoded.requestQueue,
+                                                            eventQueue: serumMarket.decoded.eventQueue,
+                                                            bids: serumMarket.bidsAddress,
+                                                            asks: serumMarket.asksAddress,
+                                                            coinVault: serumMarket.decoded.baseVault,
+                                                            pcVault: serumMarket.decoded.quoteVault,
+                                                            serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
+                                                            tokenProgram: TOKEN_PROGRAM_ID,
+                                                            rent: SYSVAR_RENT_PUBKEY,
+                                                            pruneAuthority: serumMarketAuthority,
+                                                            vaultSigner: vaultOwner,
+                                                            liquidator: context.provider.wallet.publicKey,
                                                         }
-                                                    ).then((res) => {
-                                                        resolve({
-                                                            successful: true,
-                                                            data: res as TransactionSignature
-                                                        })
-                                                    }).catch((err) => reject(err))
+                                                    }
+                                                ).then((res) => {
+                                                    resolve({
+                                                        successful: true,
+                                                        data: res as TransactionSignature
+                                                    })
                                                 }).catch((err) => reject(err))
                                             }).catch((err) => reject(err))
                                         }).catch((err) => reject(err))
@@ -83,6 +80,7 @@ export default function liquidationPlaceOrder(context: Context,
                             }).catch((err) => reject(err))
                         }).catch((err) => reject(err))
                     }).catch((err) => reject(err))
+
                 }).catch((err) => reject(err))
             }).catch((err) => reject(err))
         }).catch((err) => reject(err))
