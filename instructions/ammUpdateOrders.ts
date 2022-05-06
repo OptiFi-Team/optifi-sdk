@@ -74,7 +74,7 @@ export function ammUpdateOrders(context: Context,
                                                                     vaultSigner: vaultSigner,
                                                                     instrumentTokenMintAuthorityPda: mintAuthAddress,
                                                                     instrumentShortSplTokenMint: optifiMarket.instrumentShortSplToken,
-                                                                    // pruneAuthority: serumMarketAuthority,
+                                                                    pruneAuthority: serumMarketAuthority,
                                                                     serumDexProgramId: serumId,
                                                                     tokenProgram: TOKEN_PROGRAM_ID,
                                                                     rent: SYSVAR_RENT_PUBKEY

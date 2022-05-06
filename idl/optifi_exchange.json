@@ -2075,6 +2075,11 @@
           "isSigner": false
         },
         {
+          "name": "pruneAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "serumDexProgramId",
           "isMut": false,
           "isSigner": false
@@ -2379,7 +2384,7 @@
         },
         {
           "name": "vaultSigner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -2444,8 +2449,23 @@
           "isSigner": false
         },
         {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "userInstrumentShortTokenVault",
-          "isMut": false,
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentLongSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -2505,6 +2525,16 @@
         },
         {
           "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pruneAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultSigner",
           "isMut": false,
           "isSigner": false
         },
@@ -2603,6 +2633,97 @@
           "name": "liquidator",
           "isMut": true,
           "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "liquidationToAmm",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userMarginAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liquidationState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentLongTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userInstrumentShortTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "optifiMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "liquidator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentTokenMintAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentLongSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "instrumentShortSplTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammInstrumentLongTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammInstrumentShortTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammLiquidityAuth",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -3460,6 +3581,10 @@
             }
           },
           {
+            "name": "timestamp",
+            "type": "u64"
+          },
+          {
             "name": "markets",
             "type": {
               "vec": "publicKey"
@@ -3727,12 +3852,10 @@
             "type": "u64"
           },
           {
-            "name": "ammEquities",
+            "name": "ammNotioanlWithdrawable",
             "type": {
               "array": [
-                {
-                  "defined": "UserAmmEquity"
-                },
+                "u64",
                 20
               ]
             }

@@ -34,15 +34,23 @@ initializeContext().then(async (context) => {
     }
     // @ts-ignore
     amm.proposals.forEach(e => console.log(
-        "askOrdersSize: ", e.askOrdersSize.map(e => e.toNumber()),
-        "askOrdersPrice: ", e.askOrdersPrice.map(e => e.toNumber()),
-        "bidOrdersSize: ", e.bidOrdersSize.map(e => e.toNumber()),
-        "bidOrdersPrice: ", e.bidOrdersPrice.map(e => e.toNumber())))
-    // @ts-ignore
-    amm.positions.forEach(e => console.log(
-        "latestPosition: ", e.latestPosition.toNumber(),
-        "usdcBalance: ", e.usdcBalance.toNumber()
-    ))
+        "\n askOrdersSize: ", e.askOrdersSize.map(e => e.toNumber()),
+        "\n askOrdersPrice: ", e.askOrdersPrice.map(e => e.toNumber()),
+        "\n bidOrdersSize: ", e.bidOrdersSize.map(e => e.toNumber()),
+        "\n bidOrdersPrice: ", e.bidOrdersPrice.map(e => e.toNumber()),
+        "\n askClientOrderIds: ", e.askClientOrderIds.map(e => e.toNumber()),
+        "\n bidClientOrderIds: ", e.bidClientOrderIds.map(e => e.toNumber()),
+
+        "\n prevAskOrdersPrice: ", e.prevAskOrdersPrice.map(e => e.toNumber()),
+        "\n prevBidOrdersPrice: ", e.prevBidOrdersPrice.map(e => e.toNumber()),
+
+    )),
+
+        // @ts-ignore
+        amm.positions.forEach(e => console.log(
+            "latestPosition: ", e.latestPosition.toNumber(),
+            "usdcBalance: ", e.usdcBalance.toNumber()
+        ))
     console.log("amm.price: ", amm.price.toNumber())
 
 })
