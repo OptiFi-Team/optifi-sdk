@@ -1511,12 +1511,22 @@
           "isSigner": false
         },
         {
+          "name": "withdrawQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "usdcTokenVault",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "lpTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammLiqudityAuth",
           "isMut": false,
           "isSigner": false
         },
@@ -1557,11 +1567,6 @@
         },
         {
           "name": "perpMarket",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ammLiqudityAuth",
           "isMut": false,
           "isSigner": false
         }
@@ -1705,6 +1710,148 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "addWithdrawRequest",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammQuoteTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userQuoteTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lpTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammLiquidityAuth",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userLpTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "consumeWithdrawQueue",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcFeePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammQuoteTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userQuoteTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lpTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ammLiquidityAuth",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userLpTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "ammSyncPositions",
@@ -3445,6 +3592,37 @@
             "type": {
               "defined": "TempPnL"
             }
+          },
+          {
+            "name": "withdrawQueue",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AmmWithdrawRequestQueue",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "head",
+            "type": "u32"
+          },
+          {
+            "name": "tail",
+            "type": "u32"
+          },
+          {
+            "name": "requests",
+            "type": {
+              "array": [
+                {
+                  "defined": "WithdrawRequest"
+                },
+                5000
+              ]
+            }
           }
         ]
       }
@@ -3527,6 +3705,10 @@
           {
             "name": "usdcFeePool",
             "type": "publicKey"
+          },
+          {
+            "name": "userAccountIdCounter",
+            "type": "u64"
           },
           {
             "name": "oracle",
@@ -3791,6 +3973,10 @@
             "type": "publicKey"
           },
           {
+            "name": "id",
+            "type": "u64"
+          },
+          {
             "name": "userMarginAccountUsdc",
             "type": "publicKey"
           },
@@ -3852,10 +4038,12 @@
             "type": "u64"
           },
           {
-            "name": "ammNotioanlWithdrawable",
+            "name": "ammEquities",
             "type": {
               "array": [
-                "u64",
+                {
+                  "defined": "UserAmmEquity"
+                },
                 20
               ]
             }
@@ -3952,6 +4140,26 @@
           },
           {
             "name": "usdcBalance",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WithdrawRequest",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "userAccountId",
+            "type": "u64"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawTimestamp",
             "type": "u64"
           }
         ]
@@ -4512,11 +4720,11 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "depositTotal",
+            "name": "notioanlWithdrawable",
             "type": "u64"
           },
           {
-            "name": "withdrawTotal",
+            "name": "lpAmountInQueue",
             "type": "u64"
           }
         ]
@@ -4957,6 +5165,21 @@
       "code": 341,
       "name": "MismatchedDuration",
       "msg": "duration of amm and the instrument are mismatched"
+    },
+    {
+      "code": 342,
+      "name": "InsufficientWithdrawableLPAmount",
+      "msg": "insufficient withdrawable lp token amount"
+    },
+    {
+      "code": 343,
+      "name": "WithdrawRequestQueueIsFull",
+      "msg": "withdraw request queue is full"
+    },
+    {
+      "code": 344,
+      "name": "WithdrawRequestQueueIsEmpty",
+      "msg": "no withdraw request to process"
     }
   ]
 }

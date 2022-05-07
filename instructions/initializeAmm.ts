@@ -44,6 +44,7 @@ export function initializeAmm(context: Context,
 
                             const perpMarketInfo = getMangoPerpMarketInfoByAsset(context, optifiAssetToNumber(optifiAsset))!;
                             const perpMarket = new PublicKey(perpMarketInfo["publicKey"])
+                            const withdrawQueueWallet = anchor.web3.Keypair.generate();
                             context.program.rpc.initializeAmm(
                                 bump,
                                 {
@@ -59,6 +60,7 @@ export function initializeAmm(context: Context,
                                     accounts: {
                                         optifiExchange: exchangeAddress,
                                         amm: ammAddress,
+                                        withdrawQueue: withdrawQueueWallet.publicKey,
                                         usdcTokenVault: ammUSDCTokenVault.publicKey,
                                         lpTokenMint: ammLPTokenMint.publicKey,
                                         payer: context.provider.wallet.publicKey,
@@ -71,8 +73,9 @@ export function initializeAmm(context: Context,
                                         perpMarket: perpMarket,
                                         ammLiqudityAuth: ammLiquidityAuthAddress
                                     },
-                                    signers: [ammUSDCTokenVault, ammLPTokenMint],
+                                    signers: [withdrawQueueWallet, ammUSDCTokenVault, ammLPTokenMint],
                                     instructions: [
+                                        await context.program.account.ammWithdrawRequestQueue.createInstruction(withdrawQueueWallet),
                                         SystemProgram.createAccount({
                                             fromPubkey: context.provider.wallet.publicKey,
                                             newAccountPubkey: ammUSDCTokenVault.publicKey,
