@@ -53,4 +53,16 @@ initializeContext().then(async (context) => {
         ))
     console.log("amm.price: ", amm.price.toNumber())
 
+
+    let ammWithdrawRequestQueue = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
+    console.log("ammWithdrawRequestQueue.head: ", ammWithdrawRequestQueue.head)
+    console.log("ammWithdrawRequestQueue.tail: ", ammWithdrawRequestQueue.tail)
+    // @ts-ignore
+    console.log("ammWithdrawRequestQueue.tail: ", ammWithdrawRequestQueue.requests.map(e => {
+        return {
+        "userAccountId": e.userAccountId.toNumber(),
+        "amount": e.amount.toNumber(),
+        "withdrawTimestamp": e.withdrawTimestamp.toNumber(),
+    }}))
+
 })

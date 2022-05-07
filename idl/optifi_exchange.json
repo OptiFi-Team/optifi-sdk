@@ -1730,26 +1730,6 @@
           "isSigner": false
         },
         {
-          "name": "ammQuoteTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userQuoteTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "lpTokenMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "ammLiquidityAuth",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "userLpTokenVault",
           "isMut": true,
           "isSigner": false
@@ -5180,6 +5160,16 @@
       "code": 344,
       "name": "WithdrawRequestQueueIsEmpty",
       "msg": "no withdraw request to process"
+    },
+    {
+      "code": 345,
+      "name": "MismatchedWithdrawUserId",
+      "msg": "mismatched withdraw request user id"
+    },
+    {
+      "code": 346,
+      "name": "AmmWithdrawNotInWindow",
+      "msg": "amm withdraw not in correct time window"
     }
   ]
 }
