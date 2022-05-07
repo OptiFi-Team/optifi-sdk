@@ -37,7 +37,8 @@ export default function initialize(context: Context): Promise<InstructionResult<
                 let usdcSpotOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot)
                 let btcIvOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Bitcoin, OracleAccountType.Iv)
                 let ethIvOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Ethereum, OracleAccountType.Iv)
-
+                let ogNftMint = new PublicKey("CiWMLdzriXGbN6hKEFn7D6yuEwmCnDA6qC73mYEWFtci")
+              
                 context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then((min) => {
                     context.program.rpc.initialize(
                         bump,
@@ -56,6 +57,7 @@ export default function initialize(context: Context): Promise<InstructionResult<
                             usdcSpotOracle,
                             btcIvOracle,
                             ethIvOracle,
+                            ogNftMint,
                         },
                         {
                             accounts: {

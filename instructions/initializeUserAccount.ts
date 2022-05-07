@@ -2,7 +2,7 @@ import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import { UserAccount } from "../types/optifi-exchange-types";
 import * as anchor from "@project-serum/anchor";
-import { PublicKey, SystemProgram, TransactionSignature } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findLiquidationState, findUserAccount, userAccountExists } from "../utils/accounts";
 import { AccountLayout, createAssociatedTokenAccountInstruction, createInitializeAccountInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { USDC_TOKEN_MINT } from "../constants";
@@ -27,7 +27,7 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
             }
 
             // Derive the address the new user account will be at
-            findUserAccount(context).then(([newUserAccount, newUserAccountBump]) => {
+            findUserAccount(context).then((newUserAccount) => {
                 findExchangeAccount(context).then(([exchangeId, _]) => {
                     // Create a new account with no seeds for the PDA
                     let newUserMarginAccount = anchor.web3.Keypair.generate();
@@ -63,17 +63,19 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                 usdcMint,
                             ))
                         }
+                        let OGNFTVault = new PublicKey("5UBhterLMTiLxTD3m1feMkRhUWe2wZyqsj9Cgqd9xuES")
+                        let OGNFTMint = new PublicKey("CiWMLdzriXGbN6hKEFn7D6yuEwmCnDA6qC73mYEWFtci")
 
                         // Actually initialize the account
-                        findLiquidationState(context, newUserAccount).then(([liquidationAddress, liquidationBump]) => {
+                        findLiquidationState(context, newUserAccount[0]).then(([liquidationAddress, liquidationBump]) => {
                             context.program.rpc.initUserAccount(
                                 {
-                                    userAccount: newUserAccountBump,
+                                    userAccount: newUserAccount[1],
                                     liquidationAccount: liquidationBump
                                 },
                                 {
                                     accounts: {
-                                        userAccount: newUserAccount,
+                                        userAccount: newUserAccount[0],
                                         optifiExchange: exchangeId,
                                         userMarginAccountUsdc: newUserMarginAccount.publicKey,
                                         owner: context.provider.wallet.publicKey,
@@ -83,6 +85,15 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                                         liquidationAccount: liquidationAddress,
                                     },
+                                    remainingAccounts:[{
+                                        isSigner: false,
+                                        isWritable: true,
+                                        pubkey:OGNFTVault,
+                                    },{
+                                        isSigner: false,
+                                        isWritable: true,
+                                        pubkey:OGNFTMint,
+                                    }],//user nft vault (pubkey [])
                                     signers: [newUserMarginAccount],
                                     // These instructions transfer the necessary lamports to the new user vault
                                     instructions: inxs
