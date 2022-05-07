@@ -11,7 +11,8 @@ import {
 } from '../types/optifi-exchange-types';
 import { debugAnchorAccount } from "../utils/debug";
 import { STRIKE_LADDER_SIZE } from "../constants";
-
+import { Exchange } from "../types/optifi-exchange-types";
+import { findOptifiExchange } from "../utils/accounts";
 
 export default function marginStress(context: Context,
     asset: number
@@ -71,7 +72,14 @@ export default function marginStress(context: Context,
 
             instructions.push(ix1);
 
-            for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
+            //get strike len
+            let [exchange, __] = await findOptifiExchange(context)
+            let res = await context.program.account.exchange.fetch(exchange)
+            let optifiExchange = res as Exchange;
+            //@ts-ignore
+            let strikeLen =  optifiExchange.instrumentUnique[0].length;
+
+            for (let i = 0; i < strikeLen; i++) {
                 instructions.push(ix2);
             }
 
