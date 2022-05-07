@@ -3279,6 +3279,11 @@
           "isSigner": false
         },
         {
+          "name": "instrument2",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -3310,7 +3315,17 @@
           "type": "u8"
         },
         {
+          "name": "bump2",
+          "type": "u8"
+        },
+        {
           "name": "data",
+          "type": {
+            "defined": "ChainData"
+          }
+        },
+        {
+          "name": "data2",
           "type": {
             "defined": "ChainData"
           }
@@ -4957,6 +4972,11 @@
       "code": 341,
       "name": "MismatchedDuration",
       "msg": "duration of amm and the instrument are mismatched"
+    },
+    {
+      "code": 342,
+      "name": "DontNeedGenerateNextInstrument",
+      "msg": "spot price is in strike interval"
     }
   ]
 }
