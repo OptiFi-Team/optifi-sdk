@@ -31,7 +31,7 @@ export interface BootstrapResult {
  *
  * @param context The program context
  */
-function createOrFetchExchange(context: Context): Promise<void> {
+function createOrFetchExchange(context: Context, ogNftMint?: PublicKey): Promise<void> {
     return new Promise((resolve, reject) => {
         exchangeAccountExists(context).then(([exchAcctExists, exchAcct]) => {
             if (exchAcctExists && exchAcct !== undefined) {
@@ -47,7 +47,7 @@ function createOrFetchExchange(context: Context): Promise<void> {
                 }
             } else {
                 console.debug("Creating a new exchange");
-                initialize(context).then((res) => {
+                initialize(context, ogNftMint).then((res) => {
                     console.debug("Initialized")
                     if (res.successful) {
                         let createExchangeTxUrl = formatExplorerAddress(
@@ -230,7 +230,13 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
         // Find or create the addresses of both the exchange and user accounts,
         // and make sure that our user is an authority
         console.log("Finding or initializing a new Optifi exchange...")
-        await createOrFetchExchange(context)
+
+        let ogNftMint = new PublicKey("4bWGR29Mp4rXnC2h1hRWh77Ktj3WzHUMzpxfeukAytsw"); // decimal is zero
+        console.log("please make sure ogNftMint is : ", ogNftMint.toString())
+        console.log("sleep 20 seconds ...")
+        await sleep(20 * 1000)
+        
+        await createOrFetchExchange(context, ogNftMint)
         console.log("Created exchange")
 
         // save the created exchange address to material

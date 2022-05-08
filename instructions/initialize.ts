@@ -24,7 +24,7 @@ import { Asset, OracleDataType } from "../types/optifi-exchange-types";
  *
  * @param context The program context
  */
-export default function initialize(context: Context): Promise<InstructionResult<TransactionSignature>> {
+export default function initialize(context: Context, ogNftMint?: PublicKey): Promise<InstructionResult<TransactionSignature>> {
 
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, bump]) => {
@@ -46,16 +46,12 @@ export default function initialize(context: Context): Promise<InstructionResult<
                             version: 1,
                             exchangeAuthority: context.provider.wallet.publicKey,
                             usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
-                            // btcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD),
-                            // ethSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD),
-                            // usdcSpotOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD),
-                            // btcIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV),
-                            // ethIvOracle: new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV),
                             btcSpotOracle,
                             ethSpotOracle,
                             usdcSpotOracle,
                             btcIvOracle,
                             ethIvOracle,
+                            ogNftMint,
                         },
                         {
                             accounts: {
