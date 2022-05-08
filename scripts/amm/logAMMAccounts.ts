@@ -62,7 +62,7 @@ initializeContext().then(async (context) => {
         return {
         "userAccountId": e.userAccountId.toNumber(),
         "amount": e.amount.toNumber(),
-        "withdrawTimestamp": e.withdrawTimestamp.toNumber(),
+        "withdrawTimestamp": e.requestTimestamp.toNumber(),
     }}))
 
 })
