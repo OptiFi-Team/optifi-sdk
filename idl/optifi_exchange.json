@@ -1053,7 +1053,7 @@
       "accounts": [
         {
           "name": "optifiExchange",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -3387,6 +3387,29 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "updateOgNftMint",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "ogNftMint",
+          "type": {
+            "option": "publicKey"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -3666,6 +3689,12 @@
                   "defined": "InstrumentUnique"
                 }
               }
+            }
+          },
+          {
+            "name": "ogNftMint",
+            "type": {
+              "option": "publicKey"
             }
           }
         ]
@@ -4304,6 +4333,12 @@
           {
             "name": "ethIvOracle",
             "type": "publicKey"
+          },
+          {
+            "name": "ogNftMint",
+            "type": {
+              "option": "publicKey"
+            }
           }
         ]
       }
@@ -5124,9 +5159,26 @@
       "code": 348,
       "name": "WithdrawWouldBreachAmmDelta",
       "msg": "withdrawal would breach amm delta"
+    },
+    {
+      "code": 349,
+      "name": "NoOGNftFound",
+      "msg": "No OG NFT found"
+    },
+    {
+      "code": 350,
+      "name": "InvalidOGNftVault",
+      "msg": "Invalid OG NFT vault"
+    },
+    {
+      "code": 351,
+      "name": "InvalidOGNftMint",
+      "msg": "Invalid OG NFT mint"
+    },
+    {
+      "code": 352,
+      "name": "UnauthorizedOperation",
+      "msg": "unauthorized operation"
     }
-  ],
-  "metadata": {
-    "address": "Gw3Pw2jYaZd8DHgLBTZ5m2NJGCXf2sb7zWcV6RgUn8Rb"
-  }
+  ]
 }
