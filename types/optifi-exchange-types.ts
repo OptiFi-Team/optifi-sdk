@@ -109,6 +109,8 @@ export const AccountState = {
 
 export type AmmAccount = IdlAccounts<OptifiExchangeIDL>["ammAccount"]
 
+export type AmmWithdrawRequestQueue = IdlAccounts<OptifiExchangeIDL>["ammWithdrawRequestQueue"]
+
 export type Chain = IdlAccounts<OptifiExchangeIDL>["chain"]
 
 export type Exchange = IdlAccounts<OptifiExchangeIDL>["exchange"]
