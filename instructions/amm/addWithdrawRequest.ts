@@ -10,42 +10,39 @@ export default function addWithdrawRequest(context: Context,
     ammAddress: PublicKey,
     lpAmount: number): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
-        findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            findUserAccount(context).then(([userAccount, _]) => {
-                context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
-                    // @ts-ignore
-                    let amm = ammRes as Amm;
-                    findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(([userLpTokenVault, _]) => {
-                        getMint(context.connection, amm.lpTokenMint).then(tokenMintInfo => {
-                            context.program.rpc.addWithdrawRequest(
-                                new anchor.BN(lpAmount * (10 ** tokenMintInfo.decimals)),
-                                {
-                                    accounts: {
-                                        optifiExchange: exchangeAddress,
-                                        amm: ammAddress,
-                                        withdrawQueue: amm.withdrawQueue,
-                                        userLpTokenVault: userLpTokenVault,
-                                        userAccount: userAccount,
-                                        owner: context.provider.wallet.publicKey,
-                                        clock: SYSVAR_CLOCK_PUBKEY
-                                    }
+        findUserAccount(context).then(([userAccount, _]) => {
+            context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
+                // @ts-ignore
+                let amm = ammRes as Amm;
+                findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(([userLpTokenVault, _]) => {
+                    getMint(context.connection, amm.lpTokenMint).then(tokenMintInfo => {
+                        context.program.rpc.addWithdrawRequest(
+                            new anchor.BN(lpAmount * (10 ** tokenMintInfo.decimals)),
+                            {
+                                accounts: {
+                                    amm: ammAddress,
+                                    withdrawQueue: amm.withdrawQueue,
+                                    userLpTokenVault: userLpTokenVault,
+                                    userAccount: userAccount,
+                                    owner: context.provider.wallet.publicKey,
+                                    clock: SYSVAR_CLOCK_PUBKEY
                                 }
-                            ).then((res) => {
-                                resolve({
-                                    successful: true,
-                                    data: res as TransactionSignature
-                                })
-                            }).catch((err) => reject(err))
+                            }
+                        ).then((res) => {
+                            resolve({
+                                successful: true,
+                                data: res as TransactionSignature
+                            })
                         }).catch((err) => reject(err))
-                    }).catch((err) => {
-                        console.error(err);
-                        reject(err);
-                    })
+                    }).catch((err) => reject(err))
                 }).catch((err) => {
                     console.error(err);
-                    reject(err)
+                    reject(err);
                 })
-            }).catch((err) => reject(err))
+            }).catch((err) => {
+                console.error(err);
+                reject(err)
+            })
         }).catch((err) => reject(err))
     })
 }
