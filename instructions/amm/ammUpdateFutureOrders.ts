@@ -67,36 +67,36 @@ export default function ammUpdateFuturesPositions(context: Context,
                         const asks = new PublicKey(perpMarketInfo["asksKey"])
                         const eventQueue = new PublicKey(perpMarketInfo["eventsKey"])
 
-                        let spotOracle =
-                            await findParseOptimizedOracleAccountFromAsset(
-                                context,
-                                numberToOptifiAsset(
-                                    amm.asset
-                                )
-                            );
-                        let ivOracle =
-                            await findParseOptimizedOracleAccountFromAsset(
-                                context,
-                                numberToOptifiAsset(
-                                    amm.asset
-                                ),
-                                OracleAccountType.Iv
-                            );
-                        let usdcSpotOracle =
-                            await findParseOptimizedOracleAccountFromAsset(
-                                context,
-                                OptifiAsset.USDC,
-                                OracleAccountType.Spot
-                            );
+                        // let spotOracle =
+                        //     await findParseOptimizedOracleAccountFromAsset(
+                        //         context,
+                        //         numberToOptifiAsset(
+                        //             amm.asset
+                        //         )
+                        //     );
+                        // let ivOracle =
+                        //     await findParseOptimizedOracleAccountFromAsset(
+                        //         context,
+                        //         numberToOptifiAsset(
+                        //             amm.asset
+                        //         ),
+                        //         OracleAccountType.Iv
+                        //     );
+                        // let usdcSpotOracle =
+                        //     await findParseOptimizedOracleAccountFromAsset(
+                        //         context,
+                        //         OptifiAsset.USDC,
+                        //         OracleAccountType.Spot
+                        //     );
 
                         context.program.rpc.ammUpdateFutureOrders(
                             {
                                 accounts: {
-                                    optifiExchange: exchangeAddress,
+                                    // optifiExchange: exchangeAddress,
                                     amm: ammAddress,
                                     mangoProgram: mangoProgramId,
                                     mangoGroup: mangoGroup,
-                                    mangoGroupSigner: mangoGroupAccountInfo.signerKey,
+                                    // mangoGroupSigner: mangoGroupAccountInfo.signerKey,
                                     mangoAccount: ammMangoAccountAddress,
                                     owner: ammLiquidityAuth,
                                     mangoCache: mangoGroupAccountInfo.mangoCache,

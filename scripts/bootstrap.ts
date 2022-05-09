@@ -1,9 +1,12 @@
 import { initializeContext } from "../index";
 import Context from "../types/context";
 import boostrap from "../sequences/boostrap";
+import { PublicKey } from "@solana/web3.js";
 
 initializeContext().then((context: Context) => {
     console.log("Initialized")
+    let ogNftMint = new PublicKey("4bWGR29Mp4rXnC2h1hRWh77Ktj3WzHUMzpxfeukAytsw"); // decimal is zero
+
     boostrap(context).then((res) => {
         console.log(res)
         console.log("Bootstrapped")

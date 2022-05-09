@@ -51,7 +51,7 @@ export default function initialize(context: Context, ogNftMint?: PublicKey): Pro
                             usdcSpotOracle,
                             btcIvOracle,
                             ethIvOracle,
-                            ogNftMint,
+                            ogNftMint: ogNftMint ? ogNftMint : null,
                         },
                         {
                             accounts: {

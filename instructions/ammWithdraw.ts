@@ -24,29 +24,29 @@ export default function ammWithdraw(context: Context,
                             findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
                                 findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(([userLpTokenVault, _]) => {
                                     getMint(context.connection, amm.lpTokenMint).then(tokenMintInfo => {
-                                        // context.program.rpc.ammWithdraw(
-                                        //     new anchor.BN(amount * (10 ** tokenMintInfo.decimals)),
-                                        //     {
-                                        //         accounts: {
-                                        //             optifiExchange: exchangeAddress,
-                                        //             usdcFeePool: exchangeInfo.usdcFeePool,
-                                        //             amm: ammAddress,
-                                        //             ammQuoteTokenVault: amm.quoteTokenVault,
-                                        //             userQuoteTokenVault: userQuoteTokenVault,
-                                        //             lpTokenMint: amm.lpTokenMint,
-                                        //             userLpTokenVault: userLpTokenVault,
-                                        //             userAccount: userAccount,
-                                        //             owner: context.provider.wallet.publicKey,
-                                        //             tokenProgram: TOKEN_PROGRAM_ID,
-                                        //             ammLiquidityAuth: liquidityAuthPDA
-                                        //         }
-                                        // }
-                                        // ).then((res) => {
-                                        //     resolve({
-                                        //         successful: true,
-                                        //         data: res as TransactionSignature
-                                        //     })
-                                        // }).catch((err) => reject(err))
+                                        context.program.rpc.ammWithdraw(
+                                            new anchor.BN(amount * (10 ** tokenMintInfo.decimals)),
+                                            {
+                                                accounts: {
+                                                    optifiExchange: exchangeAddress,
+                                                    usdcFeePool: exchangeInfo.usdcFeePool,
+                                                    amm: ammAddress,
+                                                    ammQuoteTokenVault: amm.quoteTokenVault,
+                                                    userQuoteTokenVault: userQuoteTokenVault,
+                                                    lpTokenMint: amm.lpTokenMint,
+                                                    userLpTokenVault: userLpTokenVault,
+                                                    userAccount: userAccount,
+                                                    owner: context.provider.wallet.publicKey,
+                                                    tokenProgram: TOKEN_PROGRAM_ID,
+                                                    ammLiquidityAuth: liquidityAuthPDA
+                                                }
+                                        }
+                                        ).then((res) => {
+                                            resolve({
+                                                successful: true,
+                                                data: res as TransactionSignature
+                                            })
+                                        }).catch((err) => reject(err))
                                     }).catch((err) => reject(err))
                                 }).catch((err) => {
                                     console.error(err);

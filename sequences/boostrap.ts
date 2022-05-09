@@ -220,7 +220,7 @@ function createOptifiMarkets(context: Context,
  *
  * @param context The program context
  */
-export default function boostrap(context: Context): Promise<InstructionResult<BootstrapResult>> {
+export default function boostrap(context: Context, ogNftMint?: PublicKey): Promise<InstructionResult<BootstrapResult>> {
     console.log("Exchange ID is ", context.exchangeUUID);
     return new Promise(async (resolve, reject) => {
         let [exchangeAddress,] = await findExchangeAccount(context);
@@ -231,12 +231,11 @@ export default function boostrap(context: Context): Promise<InstructionResult<Bo
         // and make sure that our user is an authority
         console.log("Finding or initializing a new Optifi exchange...")
 
-        let ogNftMint = new PublicKey("4bWGR29Mp4rXnC2h1hRWh77Ktj3WzHUMzpxfeukAytsw"); // decimal is zero
-        console.log("please make sure ogNftMint is : ", ogNftMint.toString())
+        console.log("please make sure ogNftMint is : ", ogNftMint ? ogNftMint.toString() : null)
         console.log("sleep 20 seconds ...")
         await sleep(20 * 1000)
-        
         await createOrFetchExchange(context, ogNftMint)
+
         console.log("Created exchange")
 
         // save the created exchange address to material
