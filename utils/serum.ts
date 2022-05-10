@@ -53,7 +53,11 @@ export function settleSerumFundsIfAnyUnsettled(context: Context,
                                     console.log("openOrders.quoteTokenFree.toNumber() ", openOrders.quoteTokenFree.toNumber());
                                     if (openOrders.baseTokenFree.toNumber() > 0 || openOrders.quoteTokenFree.toNumber() > 0) {
                                         // console.log("openOrders ", openOrders);
-                                        settleOrderFunds(context, [marketAddress]).then((res) => {
+                                        let [userAccountAddress, _] = await findUserAccount(context);
+                                        let res = await context.program.account.userAccount.fetch(userAccountAddress);
+                                        // @ts-ignore
+                                        let userAccount = res as UserAccount;
+                                        settleOrderFunds(context, [marketAddress],userAccount).then((res) => {
                                             console.debug(res);
                                             // If any of them were successful, we only need to settle once.
                                             resolve(res.data as TransactionSignature);

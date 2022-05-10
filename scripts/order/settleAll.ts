@@ -18,7 +18,10 @@ initializeContext().then((context) => {
                     userAccountAddressKey
                 );
                 console.log("Check the market: ", market[1].toString());
-
+                let [userAccountAddress, _] = await findUserAccount(context);
+                let res = await context.program.account.userAccount.fetch(userAccountAddress);
+                // @ts-ignore
+                let userAccount = res as UserAccount;
                 openOrdersRes
                     .filter(async ({ baseTokenFree, quoteTokenFree }) => {
                         if (baseTokenFree.toNumber() > 0 || quoteTokenFree.toNumber() > 0) {
@@ -26,7 +29,7 @@ initializeContext().then((context) => {
                             console.log("Find unsettle usdc: ", quoteTokenFree.toNumber());
                             // unsettleMarkets.push(market[1]);
                             let unsettleMarkets = [market[1]];
-                            let res = await settleOrderFunds(context, unsettleMarkets);
+                            let res = await settleOrderFunds(context, unsettleMarkets, userAccount);
                             if (res) {
                                 console.log(res);
                             }

@@ -2,17 +2,18 @@ import InstructionResult from "../types/instructionResult";
 import { PublicKey, Transaction, TransactionSignature } from "@solana/web3.js";
 import Context from "../types/context";
 import { formOrderContext } from "../utils/orders";
-import { OrderSide } from "../types/optifi-exchange-types";
+import { OrderSide ,UserAccount} from "../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 
 export function getSettleOrderTx(
     context: Context,
-    marketAddress: PublicKey):
+    marketAddress: PublicKey,
+    userAccount: UserAccount):
     Promise<Transaction> {
     return new Promise((resolve, reject) => {
-        formOrderContext(context, marketAddress, OrderSide.Bid).then((orderContext) => {
+        formOrderContext(context, marketAddress, OrderSide.Bid,userAccount).then((orderContext) => {
             let tx = context.program.transaction.settleOrderFunds({
                 accounts: {
                     optifiExchange: orderContext.optifiExchange,
@@ -43,13 +44,13 @@ export function getSettleOrderTx(
 
 
 export default function settleOrderFunds(context: Context,
-    marketAddresses: PublicKey[],): Promise<InstructionResult<TransactionSignature>> {
+    marketAddresses: PublicKey[],userAccount: UserAccount): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {
 
         let settleOrderTx = new Transaction();
 
         for (let marketAddress of marketAddresses) {
-            settleOrderTx.add(await getSettleOrderTx(context, marketAddress));
+            settleOrderTx.add(await getSettleOrderTx(context, marketAddress,userAccount));
         };
 
         signAndSendTransaction(context, settleOrderTx).then(async (res) => {

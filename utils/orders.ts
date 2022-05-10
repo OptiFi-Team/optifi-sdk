@@ -8,7 +8,6 @@ import {
   findExchangeAccount,
   findUserAccount,
   getDexOpenOrders,
-  userAccountExists,
 } from "./accounts";
 import {
   Exchange,
@@ -16,7 +15,7 @@ import {
   OrderSide,
   UserAccount,
 } from "../types/optifi-exchange-types";
-import { deriveVaultNonce,  OptifiMarketFullData } from "./market";
+import { deriveVaultNonce, OptifiMarketFullData } from "./market";
 import { MAKER_FEE, TAKER_FEE, SERUM_DEX_PROGRAM_ID, SERUM_MAKER_FEE, SERUM_TAKER_FEE } from "../constants";
 import { findOptifiMarketMintAuthPDA, findOptifiUSDCPoolAuthPDA } from "./pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -78,121 +77,119 @@ export interface CancelOrderContext extends OrderAccountContext {
 export function formOrderContext(
   context: Context,
   marketAddress: PublicKey,
-  side: OrderSide
+  side: OrderSide,
+  userAccount: UserAccount,
 ): Promise<OrderAccountContext> {
   let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
   return new Promise((resolve, reject) => {
+    let acctExists = true;
     findExchangeAccount(context)
       .then(([exchangeAddress, _]) => {
         findUserAccount(context)
           .then(([userAccountAddress, _]) => {
-            userAccountExists(context)
-              .then(([acctExists, userAccount]) => {
-                if (acctExists && userAccount !== undefined) {
-                  context.program.account.optifiMarket
-                    .fetch(marketAddress)
-                    .then((marketRes) => {
-                      let optifiMarket = marketRes as OptifiMarket;
+            if (acctExists && userAccount !== undefined) {
+              context.program.account.optifiMarket
+                .fetch(marketAddress)
+                .then((marketRes) => {
+                  let optifiMarket = marketRes as OptifiMarket;
+                  findAssociatedTokenAccount(
+                    context,
+                    optifiMarket.instrumentLongSplToken,
+                    userAccountAddress
+                  )
+                    .then(([longSPLTokenVault,]) => {
                       findAssociatedTokenAccount(
                         context,
-                        optifiMarket.instrumentLongSplToken,
+                        optifiMarket.instrumentShortSplToken,
                         userAccountAddress
                       )
-                        .then(([longSPLTokenVault,]) => {
-                          findAssociatedTokenAccount(
-                            context,
-                            optifiMarket.instrumentShortSplToken,
-                            userAccountAddress
+                        .then(([shortSPLTokenVault,]) => {
+                          deriveVaultNonce(
+                            optifiMarket.serumMarket,
+                            serumId
                           )
-                            .then(([shortSPLTokenVault,]) => {
-                              deriveVaultNonce(
+                            .then(([vaultOwner, _]) => {
+                              getDexOpenOrders(
+                                context,
                                 optifiMarket.serumMarket,
-                                serumId
+                                userAccountAddress
                               )
-                                .then(([vaultOwner, _]) => {
-                                  getDexOpenOrders(
+                                .then(([openOrdersAccount, _]) => {
+                                  getSerumMarket(
                                     context,
-                                    optifiMarket.serumMarket,
-                                    userAccountAddress
+                                    optifiMarket.serumMarket
                                   )
-                                    .then(([openOrdersAccount, _]) => {
-                                      getSerumMarket(
-                                        context,
-                                        optifiMarket.serumMarket
-                                      )
-                                        .then((serumMarket) => {
-                                          findOptifiUSDCPoolAuthPDA(context).then(([centralUSDCPoolAuth, _]) => {
-                                            context.program.account.exchange
-                                              .fetch(exchangeAddress)
-                                              .then((exchangeRes) => {
-                                                let exchange =
-                                                  exchangeRes as Exchange;
-                                                resolve({
-                                                  optifiExchange:
-                                                    exchangeAddress,
-                                                  user: context.provider
-                                                    .wallet.publicKey,
-                                                  userAccount:
-                                                    userAccountAddress,
-                                                  userMarginAccount:
-                                                    userAccount.userMarginAccountUsdc,
-                                                  userInstrumentLongTokenVault:
-                                                    longSPLTokenVault,
-                                                  userInstrumentShortTokenVault:
-                                                    shortSPLTokenVault,
-                                                  optifiMarket: marketAddress,
-                                                  serumMarket:
-                                                    optifiMarket.serumMarket,
-                                                  openOrders:
-                                                    openOrdersAccount,
-                                                  //    openOrdersOwner: userAccountAddress,
-                                                  requestQueue:
-                                                    serumMarket.decoded
-                                                      .requestQueue,
-                                                  eventQueue:
-                                                    serumMarket.decoded
-                                                      .eventQueue,
-                                                  bids: serumMarket.bidsAddress,
-                                                  asks: serumMarket.asksAddress,
-                                                  coinMint:
-                                                    serumMarket.decoded
-                                                      .baseMint,
-                                                  coinVault:
-                                                    serumMarket.decoded
-                                                      .baseVault,
-                                                  pcVault:
-                                                    serumMarket.decoded
-                                                      .quoteVault,
-                                                  usdcFeePool:
-                                                    exchange.usdcFeePool,
-                                                  centralUsdcPoolAuth: centralUSDCPoolAuth,
-                                                  vaultSigner: vaultOwner,
-                                                  //    orderPayerTokenAccount: (side === OrderSide.Bid ? userAccount.userMarginAccountUsdc : longSPLTokenVault),
-                                                  //    instrumentTokenMintAuthorityPda: mintAuthAddress,
-                                                  instrumentShortSplTokenMint:
-                                                    optifiMarket.instrumentShortSplToken,
-                                                  serumDexProgramId: serumId,
-                                                  tokenProgram:
-                                                    TOKEN_PROGRAM_ID,
-                                                  //    rent: SYSVAR_RENT_PUBKEY
-                                                });
-                                              })
-                                              .catch((err) => {
-                                                console.error(err);
-                                                reject(err);
-                                              });
-                                          })
-                                            .catch((err) => {
-                                              console.error(
-                                                "Got error trying to load serum market info from ",
+                                    .then((serumMarket) => {
+                                      findOptifiUSDCPoolAuthPDA(context).then(([centralUSDCPoolAuth, _]) => {
+                                        context.program.account.exchange
+                                          .fetch(exchangeAddress)
+                                          .then((exchangeRes) => {
+                                            let exchange =
+                                              exchangeRes as Exchange;
+                                            resolve({
+                                              optifiExchange:
+                                                exchangeAddress,
+                                              user: context.provider
+                                                .wallet.publicKey,
+                                              userAccount:
+                                                userAccountAddress,
+                                              userMarginAccount:
+                                                userAccount.userMarginAccountUsdc,
+                                              userInstrumentLongTokenVault:
+                                                longSPLTokenVault,
+                                              userInstrumentShortTokenVault:
+                                                shortSPLTokenVault,
+                                              optifiMarket: marketAddress,
+                                              serumMarket:
                                                 optifiMarket.serumMarket,
-                                                err
-                                              );
-                                              reject(err);
+                                              openOrders:
+                                                openOrdersAccount,
+                                              //    openOrdersOwner: userAccountAddress,
+                                              requestQueue:
+                                                serumMarket.decoded
+                                                  .requestQueue,
+                                              eventQueue:
+                                                serumMarket.decoded
+                                                  .eventQueue,
+                                              bids: serumMarket.bidsAddress,
+                                              asks: serumMarket.asksAddress,
+                                              coinMint:
+                                                serumMarket.decoded
+                                                  .baseMint,
+                                              coinVault:
+                                                serumMarket.decoded
+                                                  .baseVault,
+                                              pcVault:
+                                                serumMarket.decoded
+                                                  .quoteVault,
+                                              usdcFeePool:
+                                                exchange.usdcFeePool,
+                                              centralUsdcPoolAuth: centralUSDCPoolAuth,
+                                              vaultSigner: vaultOwner,
+                                              //    orderPayerTokenAccount: (side === OrderSide.Bid ? userAccount.userMarginAccountUsdc : longSPLTokenVault),
+                                              //    instrumentTokenMintAuthorityPda: mintAuthAddress,
+                                              instrumentShortSplTokenMint:
+                                                optifiMarket.instrumentShortSplToken,
+                                              serumDexProgramId: serumId,
+                                              tokenProgram:
+                                                TOKEN_PROGRAM_ID,
+                                              //    rent: SYSVAR_RENT_PUBKEY
                                             });
-                                        }).catch((err) => reject(err));
-                                    })
-                                    .catch((err) => reject(err));
+                                          })
+                                          .catch((err) => {
+                                            console.error(err);
+                                            reject(err);
+                                          });
+                                      })
+                                        .catch((err) => {
+                                          console.error(
+                                            "Got error trying to load serum market info from ",
+                                            optifiMarket.serumMarket,
+                                            err
+                                          );
+                                          reject(err);
+                                        });
+                                    }).catch((err) => reject(err));
                                 })
                                 .catch((err) => reject(err));
                             })
@@ -200,23 +197,23 @@ export function formOrderContext(
                         })
                         .catch((err) => reject(err));
                     })
-                    .catch((err) => {
-                      console.error(
-                        "Got error trying to load Optifi market info from ",
-                        marketAddress,
-                        err
-                      );
-                      reject(err);
-                    });
-                } else {
+                    .catch((err) => reject(err));
+                })
+                .catch((err) => {
                   console.error(
-                    "Couldn't resolve user account at ",
-                    userAccountAddress
+                    "Got error trying to load Optifi market info from ",
+                    marketAddress,
+                    err
                   );
-                  reject(userAccountAddress);
-                }
-              })
-              .catch((err) => reject(err));
+                  reject(err);
+                });
+            } else {
+              console.error(
+                "Couldn't resolve user account at ",
+                userAccountAddress
+              );
+              reject(userAccountAddress);
+            }
           })
           .catch((err) => reject(err));
       })

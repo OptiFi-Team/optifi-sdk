@@ -1,5 +1,5 @@
 import {initializeContext} from "../index";
-import {findUserAccount, userAccountExists} from "../utils/accounts";
+import {findUserAccount} from "../utils/accounts";
 import * as assert from "assert";
 import * as anchor from "@project-serum/anchor";
 import initUserOnOptifiMarket from "../instructions/initUserOnOptifiMarket";

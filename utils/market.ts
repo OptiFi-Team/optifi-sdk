@@ -403,7 +403,7 @@ export function isUserInitializedOnMarket(context: Context, marketAddress: Publi
 }
 
 export function initializeUserIfNotInitializedOnMarket(context: Context,
-    marketAddress: PublicKey): Promise<void> {
+    marketAddress: PublicKey, userAccount: UserAccount): Promise<void> {
     return new Promise((resolve, reject) => {
         isUserInitializedOnMarket(context, marketAddress).then((userInitialized) => {
             if (userInitialized) {
@@ -411,7 +411,7 @@ export function initializeUserIfNotInitializedOnMarket(context: Context,
                 resolve()
             } else {
                 console.debug("User was not initialized on market, initializing them...");
-                initUserOnOptifiMarket(context, marketAddress).then((res) => {
+                initUserOnOptifiMarket(context, marketAddress, userAccount).then((res) => {
                     if (res.successful) {
                         console.debug("Initialized user on market ", formatExplorerAddress(context,
                             res.data as string,

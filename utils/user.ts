@@ -10,28 +10,27 @@ import Decimal from "decimal.js";
 export function getAmountToReserve(
     context: Context
 ): Promise<number> {
-    return new Promise((resolve, reject) => {
-        userAccountExists(context)
-            .then(([acctExists, res]) => {
-                if (acctExists) {
-                    let userAccount = res as UserAccount;
-                    let total_margin = 0;
-                    for (let x of userAccount.amountToReserve) {
-                        let margin = x.toNumber();
-                        margin /= 10 ** 6; // devided with USDC decimals 6
-                        if (margin > 0) {
-                            total_margin += margin;
-                            console.log(margin);
-                        }
-                    }
-                    console.log("Total Margin Required: ", total_margin);
-                    resolve(total_margin);
-                } else {
-                    reject("User Account not Exists")
+    return new Promise(async (resolve, reject) => {
+        let acctExists = true;
+        let [userAccountAddress, _] = await findUserAccount(context);
+        let res = await context.program.account.userAccount.fetch(userAccountAddress);
+        // @ts-ignore
+        let userAccount = res as UserAccount;
+        if (acctExists) {
+            let total_margin = 0;
+            for (let x of userAccount.amountToReserve) {
+                let margin = x.toNumber();
+                margin /= 10 ** 6; // devided with USDC decimals 6
+                if (margin > 0) {
+                    total_margin += margin;
+                    console.log(margin);
                 }
-            })
-            .catch((err) => reject(err));
-
+            }
+            console.log("Total Margin Required: ", total_margin);
+            resolve(total_margin);
+        } else {
+            reject("User Account not Exists")
+        }
     });
 }
 
