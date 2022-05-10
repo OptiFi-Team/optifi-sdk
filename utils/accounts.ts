@@ -46,13 +46,13 @@ export function findAccountWithSeeds(context: Context, seeds: (Buffer | Uint8Arr
  *
  * @param context The program context
  */
-export function findUserAccount(context: Context): Promise<[PublicKey, number]> {
+export function findUserAccount(context: Context, owner?: PublicKey): Promise<[PublicKey, number]> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeId, _]) => {
             findAccountWithSeeds(context, [
                 Buffer.from(USER_ACCOUNT_PREFIX),
                 exchangeId.toBuffer(),
-                context.provider.wallet.publicKey.toBuffer()
+                owner?.toBuffer() || context.provider.wallet.publicKey.toBuffer()
             ]).then((res) => resolve(res))
                 .catch((err) => reject(err));
         })
