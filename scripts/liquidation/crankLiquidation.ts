@@ -1,9 +1,5 @@
-import { publicKey } from "@project-serum/anchor/dist/cjs/utils";
-import { PublicKey } from "@solana/web3.js";
-import base58 from "bs58";
 import { initializeContext } from "../../index";
 import liquidateUser from "../../sequences/liquidateUser";
-import { UserAccount } from "../../types/optifi-exchange-types";
 import { getAllUsersOnExchange } from "../../utils/accounts";
 import { calcMarginRequirementForUser } from "../../utils/calcMarginRequirementForUser";
 import { sleep } from "../../utils/generic";
@@ -13,13 +9,15 @@ const liquidationLoop = async (context: Context) => {
     try {
         let Users = await getAllUsersOnExchange(context);
 
-        console.log("Find ", Users.length, " user on the exchange...");
+        let dateTime = new Date()
+
+        console.log(dateTime, "find ", Users.length, " user on the exchange...");
 
         for (let user of Users) {
 
             let userToLiquidate = user.publicKey;
 
-            let userAccount =user.accountInfo;
+            let userAccount = user.accountInfo!;
 
             let tokenAmount = await context.connection.getTokenAccountBalance(userAccount.userMarginAccountUsdc);
 
@@ -31,11 +29,7 @@ const liquidationLoop = async (context: Context) => {
             if (margin < marginRequirement * 0.9) {
                 console.log("userToLiquidate: ", userToLiquidate.toString(), "margin:", margin, "marginRequirement: ", marginRequirement)
 
-                liquidateUser(context, userToLiquidate).then((res) => {
-                    console.log("Got liquidateUser res", res);
-                }).catch((err) => {
-                    console.error(err);
-                })
+                liquidateUser(context, userToLiquidate)
             }
             await sleep(1000);
         }
