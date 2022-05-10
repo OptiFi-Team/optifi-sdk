@@ -3,13 +3,14 @@ import Context from "../../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
 import { calculatePcQtyAndFee, formPlaceOrderContext } from "../../utils/orders";
-import { OrderSide } from "../../types/optifi-exchange-types";
+import { OrderSide,UserAccount } from "../../types/optifi-exchange-types";
 import marginStress from "../marginStress";
 import { USDC_DECIMALS } from "../../constants";
-import { numberAssetToDecimal, numberToOptifiAsset } from "../../utils/generic";
+import { numberAssetToDecimal } from "../../utils/generic";
 import OrderType, { orderTypeToNumber } from "../../types/OrderType";
 
 export default function placeOrder(context: Context,
+    userAccount: UserAccount,
     marketAddress: PublicKey,
     side: OrderSide,
     price: number,
@@ -17,7 +18,7 @@ export default function placeOrder(context: Context,
     orderType: OrderType
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
-        formPlaceOrderContext(context, marketAddress).then(async ([orderContext, asset]) => {
+        formPlaceOrderContext(context, marketAddress,userAccount).then(async ([orderContext, asset]) => {
 
             let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(asset)!); // price for 1 lot_size 
 

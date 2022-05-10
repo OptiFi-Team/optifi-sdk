@@ -1,7 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
-import { OrderSide } from "../../types/optifi-exchange-types";
+import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
 import InstructionResult from "../../types/instructionResult";
 import { formCancelOrderContext } from "../../utils/orders";
 import {
@@ -44,12 +44,13 @@ import {
 
 export default function cancelOrderByClientOrderId(
   context: Context,
+  userAccount: UserAccount,
   marketAddress: PublicKey,
   side: OrderSide,
   clientOrderId: anchor.BN
 ): Promise<InstructionResult<TransactionSignature>> {
   return new Promise((resolve, reject) => {
-    formCancelOrderContext(context, marketAddress)
+    formCancelOrderContext(context, marketAddress,userAccount)
       .then((orderContext) => {
         let cancelTx = context.program.transaction.cancelOrderByClientOrderId(
           side,
