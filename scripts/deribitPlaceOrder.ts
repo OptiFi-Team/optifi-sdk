@@ -12,6 +12,7 @@ import {
   Instrument,
   getInstrumentWithMatchStrike,
 } from "../utils/deribitPlaceOrder";
+import { findUserAccount } from "../utils/accounts";
 
 let orderType = OrderType.Limit;
 let tradeIdRecord: String[] = [];
@@ -106,10 +107,14 @@ async function renewTradeAndPlaceOrder(
       );
 
       let context = await initializeContext(wallet);
-
+      let [userAccountAddress, _] = await findUserAccount(context);
+      let res = await context.program.account.userAccount.fetch(userAccountAddress);
+      // @ts-ignore
+      let userAccount = res as UserAccount;
       try {
         let res = await placeOrder(
           context,
+          userAccount,
           market,
           side,
           price,
