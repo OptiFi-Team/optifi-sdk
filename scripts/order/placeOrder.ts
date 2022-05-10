@@ -13,7 +13,6 @@ let side = OrderSide.Bid;
 let orderType = OrderType.ImmediateOrCancel;
 
 initializeContext().then((context) => {
-    userAccountExists(context).then(async ([_, res]) => {
         placeOrder(context, market, side, price, size, orderType).then(async (res) => {
             console.log("Placed order ", res);
             if (res.successful) {
@@ -24,7 +23,4 @@ initializeContext().then((context) => {
         }).catch((err) => {
             console.error(err)
         })
-    }).catch((err) => {
-        console.error(err)
-    })
 });
