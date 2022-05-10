@@ -11,6 +11,8 @@ import liquidationSettleOrder from "../instructions/liquidation/liquidationSettl
 import { getSerumMarket } from "../utils/serum";
 import { findOptifiMarkets, getTokenAmount } from "../utils/market";
 import { sleep } from "../utils/generic";
+import { calcMarginRequirementForUser } from "../utils/calcMarginRequirementForUser";
+import liquidationToAmm from "../instructions/liquidation/liquidationToAmm";
 
 export async function sortMarketsFromValues(liquidationMarkets: PublicKey[], liquidationValues: number[])
     : Promise<[PublicKey[], number[]]> {
@@ -120,25 +122,38 @@ export default async function liquidateUser(context: Context, userToLiquidate: P
             // the length of marketsWithKeys should not be zero
             console.log("Start liquidate positions with ", marketsWithKeys.length, " markets");
             for (let market of marketsWithKeys) {
+                res = await context.program.account.userAccount.fetch(userToLiquidate);
+                let userAccount = res as unknown as UserAccount;
+                let tokenAmount = await context.connection.getTokenAccountBalance(userAccount.userMarginAccountUsdc);
+                let margin = tokenAmount.value.uiAmount!;
+                let marginRequirement = await calcMarginRequirementForUser(context, userToLiquidate);
                 let marketAddress = market[1];
-                console.log("marketAddress: " + marketAddress + " liquidationState: " + Object.keys(liquidationState.status)[0]);
-                let shortAmount = await getTokenAmount(context, market[0].instrumentShortSplToken, userToLiquidate);
-                if (Object.keys(liquidationState.status)[0] == 'placeOrder') {
-                    // Liquidation Place Order
-                    console.log("Place liquidation order...");
-                    await liquidationPlaceOrder(context, userToLiquidate, marketAddress).then((res) => {
-                        console.log("Got liquidationPlaceOrder res", res, " on market ", marketAddress.toString());
+
+                if (margin < marginRequirement * 0.5) {
+                    await liquidationToAmm(context, userToLiquidate, marketAddress).then((res) => {
+                        console.log("Got liquidationToAmm res", res, " on market ", marketAddress.toString());
                     }).catch((err) => {
                         console.error(err);
                     });
+                } else {
+                    console.log("marketAddress: " + marketAddress + " liquidationState: " + Object.keys(liquidationState.status)[0]);
+                    let shortAmount = await getTokenAmount(context, market[0].instrumentShortSplToken, userToLiquidate);
+                    if (Object.keys(liquidationState.status)[0] == 'placeOrder') {
+                        // Liquidation Place Order
+                        console.log("Place liquidation order...");
+                        await liquidationPlaceOrder(context, userToLiquidate, marketAddress).then((res) => {
+                            console.log("Got liquidationPlaceOrder res", res, " on market ", marketAddress.toString());
+                        }).catch((err) => {
+                            console.error(err);
+                        });
+                    }
+                    // Wait for order filled
+                    console.log("Wait for liquidation settlement...");
+                    await sleep(10000);
+
+                    let serumMarket = await getSerumMarket(context, market[0].serumMarket);
+                    await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount, 0);
                 }
-                // Wait for order filled
-                console.log("Wait for liquidation settlement...");
-                await sleep(10000);
-
-                let serumMarket = await getSerumMarket(context, market[0].serumMarket);
-                await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount, 0);
-
                 console.log("Wating 10 secs for next market...");
                 await sleep(10000);
             }

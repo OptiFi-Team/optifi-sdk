@@ -129,11 +129,11 @@ export function calPnLForOnePosition(postion: Position, marketPrice: number, tra
             }
         })
         if (netBaseAmount != 0) {
-            entryUnitPrice = new Decimal(netQuoteAmount).div(new Decimal(netBaseAmount)).toNumber()
+            entryUnitPrice = Math.abs(new Decimal(netQuoteAmount).div(new Decimal(netBaseAmount)).toNumber())
             // console.log("netPosition: ", netPosition, marketPrice, entryUnitPrice)
 
             // calc pnl
-            pnl = netPosition * (marketPrice + entryUnitPrice)
+            pnl = netPosition * (marketPrice - entryUnitPrice)
         }
 
     }
