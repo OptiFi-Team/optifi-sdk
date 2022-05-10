@@ -158,6 +158,8 @@ export interface OptifiMarketFullData {
     serumMarket: Market,
     asksPubkey: PublicKey,
     bidsPubkey: PublicKey,
+    longTokenMint: PublicKey,
+    shortTokenMint: PublicKey,
 }
 
 /**
@@ -226,7 +228,9 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
                         bids: null,
                         serumMarket: market,
                         asksPubkey: market.asksAddress,
-                        bidsPubkey: market.bidsAddress
+                        bidsPubkey: market.bidsAddress,
+                        longTokenMint: marketRes[i][0].instrumentLongSplToken,
+                        shortTokenMint: marketRes[i][0].instrumentShortSplToken
                     })
                 })
                 await getLatestAskNBidForMarkets(context, decodedSerumMarkets, asksAndBidsAddresses, res)
@@ -542,10 +546,8 @@ export function getUserPositions(
         try {
             let allMarkets = await findOptifiMarkets(context)
             let userAccount = await context.program.account.userAccount.fetch(userAccountAddress);
-            // // @ts-ignore
-            // let userAccount = res as UserAccount;
-            let positions = userAccount.positions as UserPosition[];
-            let tradingMarkets = allMarkets.filter(market => positions.map(e => e.instrument.toString()).includes(market[0].instrument.toString()));
+            let userTradingMarkets = userAccount.tradingMarkets;
+            let tradingMarkets = allMarkets.filter(market => userTradingMarkets.map(e => e.toString()).includes(market[1].toString()));
             let instrumentAddresses = tradingMarkets.map(e => e[0].instrument)
             let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
             let instrumentInfos = instrumentRawInfos as Chain[]
@@ -600,30 +602,32 @@ export function loadPositionsFromUserAccount(
 ): Promise<Position[]> {
     return new Promise(async (resolve, reject) => {
         try {
-            let positions = userAccount.positions as UserPosition[];
-            let tradingMarkets = optifiMarkets.filter(market => positions.map(e => e.instrument.toString()).includes(market.instrumentAddress.toString()));
-            let vaultBalances: number[] = []
-            //follow the order of tradingMarkets 
-            let positionsWithTradingMarkets: UserPosition[] = [];
+
+            let [userAccountAddress] = await findUserAccount(context)
+            // let positions = userAccount.positions as UserPosition[];
+            // let tradingMarkets = optifiMarkets.filter(market => positions.map(e => e.instrument.toString()).includes(market.instrumentAddress.toString()));
+            let userTradingMarkets = userAccount.tradingMarkets;
+            let tradingMarkets = optifiMarkets.filter(market => userTradingMarkets.map(e => e.toString()).includes(market.marketAddress.toString()));
+
+            let longAndShortVaults: PublicKey[] = []
             for (let i = 0; i < tradingMarkets.length; i++) {
-                for (let j = 0; j < positions.length; j++) {
-                    if (positions[j].instrument.toString() == (tradingMarkets[i].instrumentAddress.toString()))
-                        positionsWithTradingMarkets.push(positions[j]);
-                }
+                let market = tradingMarkets[i]
+                let [userLongTokenVault,] = await findAssociatedTokenAccount(context, market.longTokenMint, userAccountAddress)
+                let [userShortTokenVault,] = await findAssociatedTokenAccount(context, market.shortTokenMint, userAccountAddress)
+                longAndShortVaults.push(userLongTokenVault, userShortTokenVault)
             }
 
-            for (let i = 0; i < positionsWithTradingMarkets.length; i++) {
-                // @ts-ignore
-                vaultBalances.push(positionsWithTradingMarkets[i].longQty.toNumber());
-                // @ts-ignore
-                vaultBalances.push(positionsWithTradingMarkets[i].shortQty.toNumber());
+            let tokenAccountsInfos = await context.connection.getMultipleAccountsInfo(longAndShortVaults)
+            let vaultBalances: number[] = []
+            for (let i = 0; i < tokenAccountsInfos.length; i++) {
+                let account = await getTokenAccountFromAccountInfo(tokenAccountsInfos[i]!, longAndShortVaults[i])
+                vaultBalances.push((new anchor.BN(account.amount.toString())).toNumber())
             }
 
             let res: Position[] = tradingMarkets.map((market, i) => {
-                // decimals = numberAssetToDecimal(instrumentInfos[i].asset)!
-
-                let longAmount = vaultBalances[2 * i] / 10 ** DECIMAL
-                let shortAmount = vaultBalances[2 * i + 1] / 10 ** DECIMAL
+                let decimals = numberAssetToDecimal(market.asset == "BTC" ? 0 : 1)!
+                let longAmount = vaultBalances[2 * i] / 10 ** decimals
+                let shortAmount = vaultBalances[2 * i + 1] / 10 ** decimals
 
                 let position: Position = {
                     marketId: market.marketAddress,

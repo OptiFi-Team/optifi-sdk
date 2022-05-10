@@ -15,7 +15,7 @@ initializeContext().then((context) => {
                 optifiMarket,
                 userAccountAddress,
             );
-            console.log(`market: ${optifiMarket[1]}\n`);
+            console.log(`market: ${market}\n`);
             console.log(`long tokens: ${longAmount}\n`);
             console.log(`short tokens: ${shortAmount}\n`);
 

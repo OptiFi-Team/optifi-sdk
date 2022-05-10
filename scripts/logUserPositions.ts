@@ -7,7 +7,7 @@ import UserPosition from "../types/user";
 import { calcPnLForUserPositions } from "../utils/user";
 import { getAllTradesForAccount } from "../utils/tradeHistory";
 
-initializeContext().then(async (context) => {
+initializeContext(undefined, undefined, undefined, undefined, {commitment: "confirmed"}).then(async (context) => {
     // findUserAccount(context).then(([userAccountAddress, _]) => {
     // findOptifiMarkets(context).then(async (markets) => {
     //     let res = await context.program.account.userAccount.fetch(userAccountAddress);
