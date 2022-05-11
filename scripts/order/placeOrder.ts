@@ -7,8 +7,8 @@ import { findUserAccount } from "../../utils/accounts";
 import { market } from "../constants"
 import OrderType from "../../types/OrderType";
 
-let price = 20000;
-let size = 1;
+let price = 2000;
+let size = 0.1;
 let side = OrderSide.Bid;
 let orderType = OrderType.Limit;
 
