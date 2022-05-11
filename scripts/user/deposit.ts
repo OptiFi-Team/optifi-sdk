@@ -1,7 +1,7 @@
 import { initializeContext } from "../../index";
 import deposit from "../../instructions/deposit";
 import { findUserAccount } from "../../utils/accounts";
-let amount = 100000; // already including decimals
+let amount = 3000; // already including decimals
 
 initializeContext().then(async(context) => {
     let [userAccountAddress, _] = await findUserAccount(context);

@@ -113,7 +113,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111309",
+    "https://api.devnet.solana.com": "111311",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://solana-api.projectserum.com": "dmeWlh",
 }
@@ -276,3 +276,6 @@ export const OPTIFI_TAKER_FEE: number = 0.0006;
 export const MAKER_FEE: number = 0.0028;
 export const SERUM_MAKER_FEE: number = 0.0022;
 export const OPTIFI_MAKER_FEE: number = 0.0006;
+
+// user margin deposit limit
+export const DEPOSIT_LIMIT: number = 3000 * (10 ** USDC_DECIMALS);

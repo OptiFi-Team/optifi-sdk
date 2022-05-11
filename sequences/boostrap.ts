@@ -31,7 +31,7 @@ export interface BootstrapResult {
  *
  * @param context The program context
  */
-function createOrFetchExchange(context: Context, ogNftMint?: PublicKey): Promise<void> {
+function createOrFetchExchange(context: Context, ogNftMint?: PublicKey, depositLimit?: number): Promise<void> {
     return new Promise((resolve, reject) => {
         exchangeAccountExists(context).then(([exchAcctExists, exchAcct]) => {
             if (exchAcctExists && exchAcct !== undefined) {
@@ -47,7 +47,7 @@ function createOrFetchExchange(context: Context, ogNftMint?: PublicKey): Promise
                 }
             } else {
                 console.debug("Creating a new exchange");
-                initialize(context, ogNftMint).then((res) => {
+                initialize(context, ogNftMint, depositLimit).then((res) => {
                     console.debug("Initialized")
                     if (res.successful) {
                         let createExchangeTxUrl = formatExplorerAddress(
@@ -220,7 +220,7 @@ function createOptifiMarkets(context: Context,
  *
  * @param context The program context
  */
-export default function boostrap(context: Context, ogNftMint?: PublicKey): Promise<InstructionResult<BootstrapResult>> {
+export default function boostrap(context: Context, ogNftMint?: PublicKey, depositLimit?: number): Promise<InstructionResult<BootstrapResult>> {
     console.log("Exchange ID is ", context.exchangeUUID);
     return new Promise(async (resolve, reject) => {
         let [exchangeAddress,] = await findExchangeAccount(context);
@@ -234,7 +234,7 @@ export default function boostrap(context: Context, ogNftMint?: PublicKey): Promi
         console.log("please make sure ogNftMint is : ", ogNftMint ? ogNftMint.toString() : null)
         console.log("sleep 20 seconds ...")
         await sleep(20 * 1000)
-        await createOrFetchExchange(context, ogNftMint)
+        await createOrFetchExchange(context, ogNftMint, depositLimit)
 
         console.log("Created exchange")
 

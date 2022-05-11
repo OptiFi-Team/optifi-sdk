@@ -8,6 +8,7 @@ import InstructionResult from "../../types/instructionResult";
 import { getSerumMarket } from "../../utils/serum";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { findOptifiMarketMintAuthPDA, getAmmLiquidityAuthPDA } from "../../utils/pda";
+import { findAMMAccounts } from "../../utils/amm";
 
 export default function liquidationToAmm(context: Context,
     userAccountAddress: PublicKey,
@@ -46,12 +47,16 @@ export default function liquidationToAmm(context: Context,
                                     let [ammShortTokenVault] = await findAssociatedTokenAccount(context, market.instrumentShortSplToken, ammLiquidityAuth);
 
                                     console.log("liquidationToAmm...");
-
+                                    let ammAccounts = await findAMMAccounts(context)
+                                    let ammForLiquidation = ammAccounts.filter(amm => {
+                                        amm[0].tradingInstruments.map(e => e.toString()).includes(market.instrument.toString())
+                                    })
                                     context.program.rpc.liquidationToAmm(
                                         {
                                             accounts: {
                                                 optifiExchange: exchangeAddress,
                                                 marginStressAccount: marginStressAddress,
+                                                amm: ammForLiquidation[0],
                                                 userAccount: userAccountAddress,
                                                 userMarginAccount: userAccount.userMarginAccountUsdc,
                                                 liquidationState: liquidationStateAddress,

@@ -1,8 +1,8 @@
 
 import { PublicKey } from "@solana/web3.js";
-import { initializeContext } from "../index";
-import updateOgNftMint from "../instructions/authUpdateNftMint";
-import { findOptifiExchange } from "../utils/accounts";
+import { initializeContext } from "../../index";
+import updateOgNftMint from "../../instructions/authority/authUpdateNftMint";
+import { findOptifiExchange } from "../../utils/accounts";
 
 initializeContext().then(async (context) => {
     let ogNftMint = new PublicKey("4bWGR29Mp4rXnC2h1hRWh77Ktj3WzHUMzpxfeukAytsw");

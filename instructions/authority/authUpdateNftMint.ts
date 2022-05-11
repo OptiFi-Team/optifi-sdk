@@ -1,7 +1,7 @@
-import Context from "../types/context";
-import InstructionResult from "../types/instructionResult";
+import Context from "../../types/context";
+import InstructionResult from "../../types/instructionResult";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount } from "../utils/accounts";
+import { findExchangeAccount } from "../../utils/accounts";
 
 export default function updateOgNftMint(context: Context,
     ogNftMint?: PublicKey,

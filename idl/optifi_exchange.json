@@ -677,170 +677,6 @@
       ]
     },
     {
-      "name": "closePosition",
-      "accounts": [
-        {
-          "name": "optifiExchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "marginStressAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "user",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "userAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userMarginAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userInstrumentLongTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "userInstrumentShortTokenVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "optifiMarket",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "serumMarket",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "openOrders",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "requestQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "eventQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "bids",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "asks",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "coinMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "coinVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "pcVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vaultSigner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "instrumentTokenMintAuthorityPda",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcFeePool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "centralUsdcPoolAuth",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "usdcCentralPool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "instrumentShortSplTokenMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "instrumentLongSplTokenMint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "serumDexProgramId",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "side",
-          "type": {
-            "defined": "OrderSide"
-          }
-        },
-        {
-          "name": "limit",
-          "type": "u64"
-        },
-        {
-          "name": "maxCoinQty",
-          "type": "u64"
-        },
-        {
-          "name": "maxPcQty",
-          "type": "u64"
-        },
-        {
-          "name": "clientOrderId",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "cancelOrderByClientOrderId",
       "accounts": [
         {
@@ -1110,8 +946,13 @@
       "name": "deposit",
       "accounts": [
         {
-          "name": "userAccount",
+          "name": "optifiExchange",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -2903,6 +2744,11 @@
           "name": "ammLiquidityAuth",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -3466,6 +3312,29 @@
           }
         }
       ]
+    },
+    {
+      "name": "updateUserDepositLimit",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAmount",
+          "type": {
+            "option": "u64"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -3752,6 +3621,12 @@
             "type": {
               "option": "publicKey"
             }
+          },
+          {
+            "name": "userDepositLimit",
+            "type": {
+              "option": "u64"
+            }
           }
         ]
       }
@@ -4031,6 +3906,15 @@
             }
           },
           {
+            "name": "netOptionValue",
+            "type": {
+              "array": [
+                "i64",
+                10
+              ]
+            }
+          },
+          {
             "name": "tradingMarkets",
             "type": {
               "vec": "publicKey"
@@ -4056,6 +3940,18 @@
                 20
               ]
             }
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "tradingValue",
+            "type": "u64"
+          },
+          {
+            "name": "totalDeposit",
+            "type": "u64"
           }
         ]
       }
@@ -4394,6 +4290,12 @@
             "name": "ogNftMint",
             "type": {
               "option": "publicKey"
+            }
+          },
+          {
+            "name": "userDepositLimit",
+            "type": {
+              "option": "u64"
             }
           }
         ]
@@ -5235,6 +5137,16 @@
       "code": 352,
       "name": "UnauthorizedOperation",
       "msg": "unauthorized operation"
+    },
+    {
+      "code": 353,
+      "name": "InsufficientAmmCapacity",
+      "msg": "amm trading capacity is not enough"
+    },
+    {
+      "code": 354,
+      "name": "CannotDepositMoreThanLimit",
+      "msg": "cannot deposit more than the deposit limit"
     }
   ]
 }

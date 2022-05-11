@@ -24,7 +24,7 @@ import { Asset, OracleDataType } from "../types/optifi-exchange-types";
  *
  * @param context The program context
  */
-export default function initialize(context: Context, ogNftMint?: PublicKey): Promise<InstructionResult<TransactionSignature>> {
+export default function initialize(context: Context, ogNftMint?: PublicKey, depositLimit?: number): Promise<InstructionResult<TransactionSignature>> {
 
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, bump]) => {
@@ -52,6 +52,7 @@ export default function initialize(context: Context, ogNftMint?: PublicKey): Pro
                             btcIvOracle,
                             ethIvOracle,
                             ogNftMint: ogNftMint ? ogNftMint : null,
+                            userDepositLimit: depositLimit ? new anchor.BN(depositLimit) : null,
                         },
                         {
                             accounts: {
