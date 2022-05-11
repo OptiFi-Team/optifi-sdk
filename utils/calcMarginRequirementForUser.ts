@@ -16,7 +16,7 @@ export const stress = 0.3;
 export function calcMarginRequirementForUser(
     context: Context,
     userAccountAddressInput?: PublicKey,
-): Promise<number> {
+): Promise<[number, number]> {
     return new Promise(async (resolve, reject) => {
         try {
             let netPositionsBTC: number[] = [];
@@ -74,22 +74,25 @@ export function calcMarginRequirementForUser(
             let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
             let marginForBTC = 0
             let marginForETH = 0
+            let netOptionForBTC = 0
+            let netOptionForETH = 0
             if (netPositionsBTC.length > 0) {
                 // calc margin requriement for BTC postions
-                marginForBTC = await calcMarginForOneAsset(context, 0, usdcSpot.lastRoundResult?.result!, strikeBTC, isCallBTC, netPositionsBTC, tBTC)
+                [marginForBTC, netOptionForBTC] = await calcMarginForOneAsset(context, 0, usdcSpot.lastRoundResult?.result!, strikeBTC, isCallBTC, netPositionsBTC, tBTC)
                 // console.log("marginForBTC: ", marginForBTC)
 
             }
             if (netPositionsETH.length > 0) {
                 // calc margin requriement for ETH postions
-                marginForETH = await calcMarginForOneAsset(context, 1, usdcSpot.lastRoundResult?.result!, strikeETH, isCallETH, netPositionsETH, tETH)
+                [marginForETH, netOptionForETH] = await calcMarginForOneAsset(context, 1, usdcSpot.lastRoundResult?.result!, strikeETH, isCallETH, netPositionsETH, tETH)
                 // console.log("marginForETH: ", marginForETH)
             }
 
             // get the total margin
-            let res = Math.abs(marginForBTC) + Math.abs(marginForETH)
+            let margin_requirement = -marginForBTC - marginForETH
+            let netOptionValue = Math.max(netOptionForBTC + netOptionForETH, 0)
 
-            resolve(res)
+            resolve([margin_requirement, netOptionValue])
         } catch (err) {
             reject(err)
         }
@@ -105,7 +108,7 @@ export function preCalcMarginForNewOrder(
     marketAddress: PublicKey,
     side: OrderSide,
     maxCoinQty: number,
-): Promise<number> {
+): Promise<[number, number]> {
     return new Promise(async (resolve, reject) => {
         try {
             let netPositionsBTC: number[] = [];
@@ -197,22 +200,25 @@ export function preCalcMarginForNewOrder(
             let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
             let marginForBTC = 0
             let marginForETH = 0
+            let netOptionForBTC = 0
+            let netOptionForETH = 0
             if (netPositionsBTC.length > 0) {
                 // calc margin requriement for BTC postions
-                marginForBTC = await calcMarginForOneAsset(context, 0, usdcSpot.lastRoundResult?.result!, strikeBTC, isCallBTC, netPositionsBTC, tBTC)
+                [marginForBTC, netOptionForBTC] = await calcMarginForOneAsset(context, 0, usdcSpot.lastRoundResult?.result!, strikeBTC, isCallBTC, netPositionsBTC, tBTC)
                 console.log("marginForBTC: ", marginForBTC)
 
             }
             if (netPositionsETH.length > 0) {
                 // calc margin requriement for ETH postions
-                marginForETH = await calcMarginForOneAsset(context, 1, usdcSpot.lastRoundResult?.result!, strikeETH, isCallETH, netPositionsETH, tETH)
+                [marginForETH, netOptionForETH] = await calcMarginForOneAsset(context, 1, usdcSpot.lastRoundResult?.result!, strikeETH, isCallETH, netPositionsETH, tETH)
                 console.log("marginForETH: ", marginForETH)
             }
 
             // get the total margin
-            let res = Math.abs(marginForBTC) + Math.abs(marginForETH)
+            let margin_requirement = -marginForBTC - marginForETH
+            let netOptionValue = Math.max(netOptionForBTC + netOptionForETH, 0)
 
-            resolve(res)
+            resolve([margin_requirement, netOptionValue])
         } catch (err) {
             reject(err)
         }
@@ -240,11 +246,11 @@ export function isMarginSufficientForNewOrder(
         try {
             let userAccountInfo = await context.program.account.userAccount.fetch(userAccountAddress);
             let userMarginBalance = (await context.connection.getTokenAccountBalance(userAccountInfo.userMarginAccountUsdc)).value.uiAmount!
-            let marginRequirement = await preCalcMarginForNewOrder(
+            let [marginRequirement, netOptionValue] = await preCalcMarginForNewOrder(
                 context, userAccountAddress, marketAddress, side, maxCoinQty,
             )
 
-            if (userMarginBalance < marginRequirement) {
+            if (userMarginBalance + netOptionValue < marginRequirement) {
                 resolve({
                     isSufficient: false,
                     marginBalance: userMarginBalance,
@@ -282,7 +288,7 @@ export async function getSpotnIv(context: Context) {
     return result
 }
 
-async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: number, strikeRaw: number[], isCallRaw: number[], userPositionsRaw: number[], tRaw: number[]): Promise<number> {
+async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: number, strikeRaw: number[], isCallRaw: number[], userPositionsRaw: number[], tRaw: number[]): Promise<[number, number]> {
     let strike = reshap(strikeRaw)
     let t = reshap(tRaw)
     let isCall = reshap(isCallRaw)
@@ -318,6 +324,7 @@ async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: 
 
     // console.log("userPositions, spot, t, price, intrinsic, stress_price_change", userPositions, spot, t, price, intrinsic, stress_price_change)
     let margin_result = calculateMargin(userPositions, spot, t, price, intrinsic, stress_price_change);
-    let margin = margin_result["Total Margin"]
-    return margin
+    let margin = Math.min(margin_result["Total Margin"], 0)
+    let net_option_value = margin_result["Total Net Premium Value"]
+    return [margin, net_option_value]
 }

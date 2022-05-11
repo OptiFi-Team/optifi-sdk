@@ -126,10 +126,10 @@ export default async function liquidateUser(context: Context, userToLiquidate: P
                 let userAccount = res as unknown as UserAccount;
                 let tokenAmount = await context.connection.getTokenAccountBalance(userAccount.userMarginAccountUsdc);
                 let margin = tokenAmount.value.uiAmount!;
-                let marginRequirement = await calcMarginRequirementForUser(context, userToLiquidate);
+                let [marginRequirement, netOptionValue] = await calcMarginRequirementForUser(context, userToLiquidate);
                 let marketAddress = market[1];
 
-                if (margin < marginRequirement * 0.5) {
+                if (margin + netOptionValue < marginRequirement * 0.5) {
                     await liquidationToAmm(context, userToLiquidate, marketAddress).then((res) => {
                         console.log("Got liquidationToAmm res", res, " on market ", marketAddress.toString());
                     }).catch((err) => {

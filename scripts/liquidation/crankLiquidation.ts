@@ -29,11 +29,11 @@ const liquidationLoop = async (context: Context) => {
             let margin = tokenAmount.value.uiAmount!;
 
             // check user's margin requirement for all existing positions
-            let marginRequirement = await calcMarginRequirementForUser(context, userToLiquidate);
+            let [marginRequirement, netOptionValue] = await calcMarginRequirementForUser(context, userToLiquidate);
 
-            // console.log("userToLiquidate: " + userToLiquidate.toString() + ", margin ratio: " + margin / marginRequirement)
+            // console.log("userToLiquidate: " + userToLiquidate.toString() + ", margin ratio: " + (margin + netOptionValue) / marginRequirement)
 
-            if (margin < marginRequirement * 0.9) {
+            if (margin + netOptionValue < marginRequirement * 0.9) {
                 console.log("userToLiquidate: " + userToLiquidate.toString() + ", margin: " + margin + ", liquidation: " + marginRequirement * 0.9)
 
                 liquidateUser(context, userToLiquidate)
