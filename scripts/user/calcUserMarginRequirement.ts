@@ -7,11 +7,12 @@ import { market } from "../constants"
 
 initializeContext().then(async (context) => {
     try {
+        let [userAccount,] = await findUserAccount(context)
+
         // check user's margin requirement for all existing positions
-        let res = await calcMarginRequirementForUser(context)
+        let res = await calcMarginRequirementForUser(context, userAccount)
         console.log("calcMarginRequirementForUser res: ", res)
 
-        let [userAccount,] = await findUserAccount(context)
 
         // check if user's margin is sufficient for the comming new order
         let res2 = await isMarginSufficientForNewOrder(context, userAccount, market, OrderSide.Ask, 2)

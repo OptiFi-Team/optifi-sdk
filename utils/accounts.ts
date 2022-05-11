@@ -405,7 +405,7 @@ export async function getAllUsersOnExchange(context: Context)
     // @ts-ignore
     return allUsers.map(e => {
         return {
-            publickey: e.publicKey,
+            publicKey: e.publicKey,
             // @ts-ignore
             accountInfo: e.account as UserAccount
         }
