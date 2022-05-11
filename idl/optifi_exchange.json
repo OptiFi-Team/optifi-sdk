@@ -2040,6 +2040,11 @@
           "isSigner": false
         },
         {
+          "name": "instrument",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "openOrders",
           "isMut": true,
           "isSigner": false
@@ -4945,206 +4950,216 @@
     },
     {
       "code": 314,
+      "name": "CannotRecordPnLForStoppedMarket",
+      "msg": "Cannot record pnl when market is stopped!"
+    },
+    {
+      "code": 315,
+      "name": "InstrumetIsDelisted",
+      "msg": "Cannot record pnl for delisted instrument!"
+    },
+    {
+      "code": 316,
       "name": "IncorrectOracleAccount",
       "msg": "Incorrect oracle account"
     },
     {
-      "code": 315,
+      "code": 317,
       "name": "WrongState",
       "msg": "the working state is wrong"
     },
     {
-      "code": 316,
+      "code": 318,
       "name": "WrongInstrument",
       "msg": "the instrument has already been done"
     },
     {
-      "code": 317,
+      "code": 319,
       "name": "NoEnoughOrdersInProposal",
       "msg": "no enough orders in proposal to execute"
     },
     {
-      "code": 318,
+      "code": 320,
       "name": "CannotRemoveInstrumentForAMM",
       "msg": "cannot remove the instrument for amm"
     },
     {
-      "code": 319,
+      "code": 321,
       "name": "DuplicateInstrumentForAMM",
       "msg": "cannot add the instrument for amm due to duplication"
     },
     {
-      "code": 320,
+      "code": 322,
       "name": "UserNotInLiquidation",
       "msg": "User is not in liquidation"
     },
     {
-      "code": 321,
+      "code": 323,
       "name": "UserNotInCancelOrder",
       "msg": "User is not in cancel order status"
     },
     {
-      "code": 322,
+      "code": 324,
       "name": "UserAlreadyInLiquidation",
       "msg": "User was already in liquidation"
     },
     {
-      "code": 323,
+      "code": 325,
       "name": "InstrumentAlreadyRegisteredForLiquidation",
       "msg": "Instrument was already registered for liquidation"
     },
     {
-      "code": 324,
+      "code": 326,
       "name": "CannotPlaceOrdersInLiquidation",
       "msg": "Users cannot place manual orders while their accounts are in liquidation"
     },
     {
-      "code": 325,
+      "code": 327,
       "name": "CannotCancelOrdersInLiquidation",
       "msg": "Users cannot cancel manual orders while their accounts are in liquidation"
     },
     {
-      "code": 326,
+      "code": 328,
       "name": "PoolNotCentralUSDCPool",
       "msg": "Provided USDC pool is not central pool"
     },
     {
-      "code": 327,
+      "code": 329,
       "name": "InvalidSerumAuthority",
       "msg": "Invalid open orders market authority"
     },
     {
-      "code": 328,
+      "code": 330,
       "name": "WithdrawRequestInvalid",
       "msg": "Only one withdraw request allowed at one time"
     },
     {
-      "code": 329,
+      "code": 331,
       "name": "UserIsMarketMaker",
       "msg": "User is already registered as market maker"
     },
     {
-      "code": 330,
+      "code": 332,
       "name": "MMWithdrawNotInWindow",
       "msg": "Market maker withdraw outside of valid window"
     },
     {
-      "code": 331,
+      "code": 333,
       "name": "WrongAsset",
       "msg": "Wrong asset"
     },
     {
-      "code": 332,
+      "code": 334,
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
     },
     {
-      "code": 333,
+      "code": 335,
       "name": "OrderFailed",
       "msg": "The order is failed"
     },
     {
-      "code": 334,
+      "code": 336,
       "name": "WrongFeeAccount",
       "msg": "Wrong USDC fee account"
     },
     {
-      "code": 335,
+      "code": 337,
       "name": "InvalidMangoAccount",
       "msg": "the mango account is invalid"
     },
     {
-      "code": 336,
+      "code": 338,
       "name": "InvalidMangoToken",
       "msg": "the mango token index is invalid"
     },
     {
-      "code": 337,
+      "code": 339,
       "name": "IncorrectOpenOrdersAccountsLength",
       "msg": "the length of open orders accounts is incorrect"
     },
     {
-      "code": 338,
+      "code": 340,
       "name": "WrongPerpMarketIndex",
       "msg": "wrong perp market index"
     },
     {
-      "code": 339,
+      "code": 341,
       "name": "MismatchedAsset",
       "msg": "asset of amm and the instrument are mismatched"
     },
     {
-      "code": 340,
+      "code": 342,
       "name": "InstrumentExpired",
       "msg": "the instrument is expired"
     },
     {
-      "code": 341,
+      "code": 343,
       "name": "MismatchedDuration",
       "msg": "duration of amm and the instrument are mismatched"
     },
     {
-      "code": 342,
+      "code": 344,
       "name": "DontNeedGenerateNextInstrument",
       "msg": "spot price is in strike interval"
     },
     {
-      "code": 343,
+      "code": 345,
       "name": "InsufficientWithdrawableLPAmount",
       "msg": "insufficient withdrawable lp token amount"
     },
     {
-      "code": 344,
+      "code": 346,
       "name": "WithdrawRequestQueueIsFull",
       "msg": "withdraw request queue is full"
     },
     {
-      "code": 345,
+      "code": 347,
       "name": "WithdrawRequestQueueIsEmpty",
       "msg": "no withdraw request to process"
     },
     {
-      "code": 346,
+      "code": 348,
       "name": "MismatchedWithdrawUserId",
       "msg": "mismatched withdraw request user id"
     },
     {
-      "code": 347,
+      "code": 349,
       "name": "AmmWithdrawNotInWindow",
       "msg": "amm withdraw not in correct time window"
     },
     {
-      "code": 348,
+      "code": 350,
       "name": "WithdrawWouldBreachAmmDelta",
       "msg": "withdrawal would breach amm delta"
     },
     {
-      "code": 349,
+      "code": 351,
       "name": "NoOGNftFound",
       "msg": "No OG NFT found"
     },
     {
-      "code": 350,
+      "code": 352,
       "name": "InvalidOGNftVault",
       "msg": "Invalid OG NFT vault"
     },
     {
-      "code": 351,
+      "code": 353,
       "name": "InvalidOGNftMint",
       "msg": "Invalid OG NFT mint"
     },
     {
-      "code": 352,
+      "code": 354,
       "name": "UnauthorizedOperation",
       "msg": "unauthorized operation"
     },
     {
-      "code": 353,
+      "code": 355,
       "name": "InsufficientAmmCapacity",
       "msg": "amm trading capacity is not enough"
     },
     {
-      "code": 354,
+      "code": 356,
       "name": "CannotDepositMoreThanLimit",
       "msg": "cannot deposit more than the deposit limit"
     }
