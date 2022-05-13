@@ -1,5 +1,5 @@
 {
-    "network": "https://api-switchboard.devnet.rpcpool.com",
+    "network": "https://api.devnet.solana.com",
     "programId": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord",
     "exchangeUUID": "111311",
     "exchangeAddress": "Gio1p7hcR6pw29Ea58XJN14nUY7dioszHjyFeJ1BeppZ",
