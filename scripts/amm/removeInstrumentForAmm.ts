@@ -27,7 +27,6 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
         let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
 
         let instrumentInfos = instrumentRawInfos as Chain[]
-        console.log("cp1")
 
         let now = new Date().getTime()
         let optifiMarketsToRemove = ammInfo.tradingInstruments.slice(1).filter(instrument => {

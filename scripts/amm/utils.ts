@@ -149,7 +149,7 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
                 console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                 // execute all the proposal orders
-                for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length; j++) {
+                for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length + 1; j++) {
                     let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
                     console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
                     console.log(res)
