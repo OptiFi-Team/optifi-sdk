@@ -23,7 +23,7 @@ initializeContext().then(async (context) => {
     optifiExchange.instrumentUnique[0].forEach(e => {
         console.log("put and call option: ", e.strike, e.instrumentPubkeys.map(e => e.toString()))
     });
-
+    console.log("usdcCentralPool: ", optifiExchange.usdcCentralPool.toString());
     console.log("usdcFeePool: ", optifiExchange.usdcFeePool.toString());
     console.log("exchangeAuthority: ", optifiExchange.exchangeAuthority.toString());
 
