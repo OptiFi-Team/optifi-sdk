@@ -3483,6 +3483,10 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "requestIdCounter",
+            "type": "u32"
+          },
+          {
             "name": "head",
             "type": "u32"
           },
@@ -4061,8 +4065,12 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "requestId",
+            "type": "u32"
+          },
+          {
             "name": "userAccountId",
-            "type": "u64"
+            "type": "u32"
           },
           {
             "name": "amount",

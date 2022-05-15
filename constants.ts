@@ -278,4 +278,4 @@ export const SERUM_MAKER_FEE: number = 0.0022;
 export const OPTIFI_MAKER_FEE: number = 0.0006;
 
 // user margin deposit limit
-export const DEPOSIT_LIMIT: number = 3000 * (10 ** USDC_DECIMALS);
+export const DEPOSIT_LIMIT: number = 10000 * (10 ** USDC_DECIMALS);
