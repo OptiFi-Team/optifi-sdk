@@ -129,22 +129,7 @@ export function maturing_liquidity(t, user, intrinsic, min_t) {
 
 // margin_1 = np.min([stress_result + np.min([net_intrinsic, net_premium]), 0])
 export function margin_1(stress_result, net_intrinsic, net_premium) {
-    if (net_intrinsic > net_premium) {
-        if ((stress_result + net_premium) > 0) {
-            return 0;
-        }
-        else {
-            return stress_result + net_premium;
-        }
-    }
-    else {
-        if ((stress_result + net_intrinsic) > 0) {
-            return 0;
-        }
-        else {
-            return stress_result + net_intrinsic;
-        }
-    }
+    return Math.min(stress_result + Math.min(net_intrinsic, net_premium), 0)
 }
 
 // margin_2 = maturing_liquidity - net_intrinsic if maturing_liquidity < net_intrinsic and maturing_liquidity < 0 else 0
@@ -280,7 +265,7 @@ export function cdf(arr) {
     return result;
 }
 
-export function cdf_num(num) {
+export function cdf_num(num: number) {
     return (erf(num / Math.sqrt(2.0)) + 1.0) / 2.0;
 }
 
@@ -527,43 +512,44 @@ export function option_price(spot, strike, iv, r, q, t, isCall) {
     }
     else {
         // spot == stress_spot == [[ 33880,  36784,  39688,  42592,  45496,  48400,  51304, 54208,  57112,  60016,  62920]]
-        var call = [] as any;
-        var put = [] as any;
         var result = [] as any;
 
         for (let i = 0; i < strike.length; i++) {
             // stress_spot / strike
             var div_stress_spot = [] as any;
             for (let j = 0; j < spot[0].length; j++) {
+                // ((spot / strike).ln() 
                 div_stress_spot.push(Math.log(spot[0][j] / strike[i]));
             }
-            call.push(div_stress_spot);
-            put.push(div_stress_spot);
             result.push(div_stress_spot);
         }
 
         var val1 = arrmul((r - q + iv * iv / 2), t);
-        var val2 = arrmul(iv, arrsqrt(t));
+        var iv_tsqrt = arrmul(iv, arrsqrt(t));
 
         // np.exp(-q * t)
-        var val3 = arrexp(arrmul(((-q)), t));
+        var eqt = arrexp(arrmul(((-q)), t));
         // np.exp(-r * t)
-        var val4 = arrexp(arrmul(((-r)), t));
+        var ert = arrexp(arrmul(((-r)), t));
 
-        // get call
-        for (let i = 0; i < call.length; i++) { //28
-            for (let j = 0; j < call[0].length; j++) { // 11
-                // call value
-                call[i][j] += val1[i][0];
-                call[i][j] = spot[0][j] * val3[i][0] * cdf_num(call[i][j] / val2[i][0]) - strike[i][0] * val4[i][0] * cdf_num(call[i][j] / val2[i][0] - val2[i][0]);
+        for (let i = 0; i < result.length; i++) { //28
+            for (let j = 0; j < result[0].length; j++) { // 11
+                let d1 = (result[i][j] + val1[i][0]) / iv_tsqrt[i][0] //  + (r - q + iv * iv * 0.5) * t) / (iv * t.sqrt())
+                let d2 = d1 - iv_tsqrt[i][0]
 
-                // put value
-                put[i][j] = call[i][j] + strike[i][0] * val4[i][0] - spot[0][j] * val4[i][0];
-
-                result[i][j] = isCall[i][0] * call[i][j] + (1 - isCall[i][0]) * put[i][j];
+                if (isCall[i][0] == 1) {
+                    let cdf_d1 = cdf_num(d1)
+                    let cdf_d2 = cdf_num(d2)
+                    result[i][j] = spot[0][j] * eqt[i][0] * cdf_d1 - strike[i][0] * ert[i][0] * cdf_d2;
+                } else if (isCall[i][0] == 0) {
+                    let cdf_md2 = cdf_num(-d2);
+                    let cdf_md1 = cdf_num(-d1);
+                    result[i][j] = strike[i][0] * ert[i][0] * cdf_md2 - spot[0][j] * eqt[i][0] * cdf_md1;
+                } else {
+                    console.error("isCall error...")
+                }
             }
         }
-
         return result;
     }
 }
