@@ -368,6 +368,7 @@ export class AmmTx {
     timestamp: Date
     status: string
     userWalletAddress: string
+    requestId: number
     constructor({
         type,
         asset,
@@ -377,7 +378,8 @@ export class AmmTx {
         txid,
         timestamp,
         status,
-        userWalletAddress
+        userWalletAddress,
+        requestId
     }: {
         type: "Deposit" | "Withdraw"
         asset: number,
@@ -388,6 +390,7 @@ export class AmmTx {
         timestamp: Date,
         status: string,
         userWalletAddress: string
+        requestId: number
     }) {
         this.type = type
         this.asset = asset
@@ -398,6 +401,7 @@ export class AmmTx {
         this.timestamp = timestamp
         this.status = status
         this.userWalletAddress = userWalletAddress
+        this.requestId = requestId
     }
 }
 
@@ -413,7 +417,7 @@ export function retrieveAmmTxsForByAccounts(context: Context, accounts: PublicKe
             }
 
             // parse the txs
-            let parsedTxs = parseAmmDepositAndWithdrawTx(context, allTxs)
+            let parsedTxs = await parseAmmDepositAndWithdrawTx(context, allTxs)
 
             parsedTxs.sort((a, b) => {
                 if (a.timestamp < b.timestamp) return 1;
@@ -427,96 +431,277 @@ export function retrieveAmmTxsForByAccounts(context: Context, accounts: PublicKe
     })
 }
 
-export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<number, TransactionResponse[]>): AmmTx[] {
-    let res: AmmTx[] = []
-    txsMap.forEach((txs, asset) => {
-        for (let tx of txs) {
-            // tx.transaction.message.instructions
-            // tx.meta?.innerInstructions[0].instructions
-            // console.log("txid: ", tx.transaction.signatures[0].toString())
-            // console.log("tx.transaction.message.instructions: ", tx.transaction.message.instructions)
-            // console.log("tx.meta?.innerInstructions", tx.meta?.innerInstructions?.[0].instructions)
-            tx.transaction.message.instructions.forEach(inx => {
-                let programId =
-                    tx.transaction.message.accountKeys[inx.programIdIndex];
-                if (programId.toString() == context.program.programId.toString()) {
-                    // console.log("inx.data: ", inx.data)
-                    let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
+//refer :logAMMAccounts
+async function getLpAmount(logs: string[]) {
+    let amountStringLen = 14 + 1 + 2 + 1;//"lp_token_amount" + " " + "is" + " "
+    let stringRes;
+    for (let log of logs) {
+        if (log.search("lp_token_amount") != -1) {//Program log: lp_token_amount is 100000000
+            stringRes = log.substring(log.search("lp_token_amount") + amountStringLen, log.search("!"))
+        }
+    }
+    // let [optifiExchange, _bump1] = await findOptifiExchange(context)
+    // let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
+    // let amm = await context.program.account.ammAccount.fetch(ammAddress)
+    // let tokenMintInfo = await getMint(context.connection, amm.lpTokenMint)
+    // let ammWithdrawRequestQueue = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
+    // // @ts-ignore
+    // let ammWithdrawRequestQueueWithAmount = await ammWithdrawRequestQueue.requests.filter(e => e.userAccountId != 0)
+    // let decimal = tokenMintInfo.decimals;
+    // return ammWithdrawRequestQueueWithAmount[historyId]?.amount?.toNumber() / Math.pow(10, decimal);
+    let decimal = 6;
+    return parseInt(stringRes) / (10 ** decimal);
+}
+//refer :logAMMAccounts
+async function getRequestId(logs: string[]) {
+    // let [optifiExchange, _bump1] = await findOptifiExchange(context)
+    // let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
+    // let amm = await context.program.account.ammAccount.fetch(ammAddress)
+    // let ammWithdrawRequestQueue = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
 
-                    if (decoded) {
-                        if (decoded.name == "ammDeposit") {
-                            let userUsdcAccountIndex = inx.accounts[3]
-                            // console.log("userUsdcAccountIndex:", userUsdcAccountIndex)
-                            let userLpAccountIndex = inx.accounts[6]
-                            // console.log("userLpAccountIndex:", userLpAccountIndex)
+    // // @ts-ignore
+    // let ammWithdrawRequestQueueWithAmount: any[] = await ammWithdrawRequestQueue.requests.filter(e => e.userAccountId != 0)
+    // console.log("ammWithdrawRequestQueueWithAmount: ")
+    // for (let e of ammWithdrawRequestQueueWithAmount) {
+    //     console.log(e);
+    // }
+    // return ammWithdrawRequestQueueWithAmount[historyId]?.requestId;
+    let requestStringLen = 7 + 1;//"request" + " "
+    let stringRes;
+    for (let log of logs) {
+        if (log.search("request") != -1) {//Program log: Successfully added withdraw request 2 to withdraw queue
+            stringRes = log.substring(log.search("request") + requestStringLen, log.search("to"))
+        }
+    }
+    return parseInt(stringRes);
+}
 
-                            let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
-                            let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
+//refer :logAMMAccounts
+async function getRequestIdAfterConsume(logs: string[]) {
+    let requestStringLen = 10 + 1;//"request_id:" + " "
+    let stringRes;
+    for (let log of logs) {
+        //Program log: Successfully processed withdraw request: request_id: 1, user_account_id: 1,
+        //burned lp token amount: 100000000, withdraw_usdc_amount: 100000000, total fee: 100000, 
+        //final_withdraw_usdc_amount: 99900000'
+        if (log.search("request_id") != -1) {
+            stringRes = log.substring(log.search("request_id") + requestStringLen, log.search("user_account_id") - 1)
+        }
+    }
+    return parseInt(stringRes);
+}
+//refer :logAMMAccounts
+async function getUsdcAfterConsume(logs: string[]) {
+    let usdcStringLen = 20 + 1;//"request_id:" + " "
+    let stringRes;
+    for (let log of logs) {
+        //Program log: Successfully processed withdraw request: request_id: 1, 
+        //user_account_id: 1, burned lp token amount: 100000000, withdraw_usdc_amount: 100000000, 
+        //total fee: 100000, xr: 99900000',
+        if (log.search("withdraw_usdc_amount") != -1) {
+            stringRes = log.substring(log.search("withdraw_usdc_amount") + usdcStringLen, log.search("total") - 1)
+        }
+    }
+    let decimal = 6;
+    return parseInt(stringRes) / (10 ** decimal);
+}
 
-                            let usdcAmount = new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(
-                                new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
-                            let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
-                            let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
+//refer :logAMMAccounts
+async function getLpAmountAfterConsume(logs: string[]) {
+    let requestStringLen = 22 + 1;//"request_id:" + " "
+    let stringRes;
+    for (let log of logs) {
+        //Program log: Successfully processed withdraw request: request_id: 1, user_account_id: 1,
+        //burned lp token amount: 100000000, withdraw_usdc_amount: 100000000, total fee: 100000, 
+        //final_withdraw_usdc_amount: 99900000'
+        if (log.search("burned lp token amount") != -1) {
+            stringRes = log.substring(log.search("burned lp token amount") + requestStringLen, log.search("withdraw_usdc_amount") - 1)
+        }
+    }
+    let decimal = 6;
+    return parseInt(stringRes) / (10 ** decimal);
+}
 
-                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
-                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
-                                : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
+//refer :logAMMAccounts
+async function getUserWalletAddress(logs: string[]) {
+    let ownerStringLen = 9
+    let stringRes: string;
+    for (let log of logs) {
+        //Program log: owner is BoMyXkJdsuoB9VepzeMHYB1SgNJPCQDnzDjvUqAo328X!
+        if (log.search("owner") != -1) {
+            stringRes = log.substring(log.search("owner") + ownerStringLen, log.search("!"))
+        }
+    }
+    //@ts-ignore
+    return stringRes
+}
 
-                            res.push(new AmmTx({
-                                type: "Deposit",
-                                asset: asset,
-                                usdcAmount,
-                                lpAmount,
-                                gasFee: tx.meta?.fee! / Math.pow(10, SOL_DECIMALS),
-                                txid: tx.transaction.signatures[0],
-                                timestamp: new Date(tx.blockTime! * 1000),
-                                status: "Completed",
-                                // @ts-ignore
-                                userWalletAddress: postTokenAccount2.owner
-                            }))
-                        } else if (decoded.name == "ammWithdraw") {
+export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<number, TransactionResponse[]>): Promise<AmmTx[]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let res: AmmTx[] = []
+            let requestIdArray: number[] = [];
+            let lpAmountConsumed: number[] = new Array(5000);
+            for (let i = 0; i < lpAmountConsumed.length; i++) {
+                lpAmountConsumed[i] = 0;
+            }
+
+            for (const [asset, txs] of txsMap) {
+                for (let tx of txs) {//number of transactions people send
+
+                    for (let inx of tx.transaction.message.instructions) {
+                        let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
+                        if (programId.toString() == context.program.programId.toString()) {
+                            let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
+
+                            if (decoded) {
+                                if (decoded.name == "ammDeposit") {
+                                    let userUsdcAccountIndex = inx.accounts[3]
+
+                                    let userLpAccountIndex = inx.accounts[6]
+
+                                    let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
+                                    let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
+
+                                    let usdcAmount = new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(
+                                        new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
+                                    let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
+                                    let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
+
+                                    let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
+                                        new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
+                                        : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
+
+                                    res.push(new AmmTx({
+                                        type: "Deposit",
+                                        asset: asset,
+                                        usdcAmount,
+                                        lpAmount,
+                                        gasFee: tx.meta?.fee! / Math.pow(10, SOL_DECIMALS),
+                                        txid: tx.transaction.signatures[0],
+                                        timestamp: new Date(tx.blockTime! * 1000),
+                                        status: "Completed",
+                                        // @ts-ignore
+                                        userWalletAddress: postTokenAccount2.owner,
+                                        requestId: -1,
+                                    }))
+                                } else if (decoded.name == "ammWithdraw") {
 
 
-                            let userUsdcAccountIndex = inx.accounts[4]
-                            // console.log("userUsdcAccountIndex:", userUsdcAccountIndex)
-                            let userLpAccountIndex = inx.accounts[7]
-                            // console.log("userLpAccountIndex:", userLpAccountIndex)
+                                    let userUsdcAccountIndex = inx.accounts[4]//user_quote_token_vault
+                                    // console.log("userUsdcAccountIndex:", userUsdcAccountIndex)
+                                    let userLpAccountIndex = inx.accounts[7]//user_lp_token_vault
+                                    // console.log("userLpAccountIndex:", userLpAccountIndex)
 
-                            let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)
-                            let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
+                                    let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)
+                                    let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
 
-                            // Decimal lib handles float precision
-                            let usdcAmount = preTokenAccount ? new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(
-                                new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
-                                : new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).toNumber()
+                                    // Decimal lib handles float precision
+                                    let usdcAmount = preTokenAccount ? new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(
+                                        new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
+                                        : new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).toNumber()
 
-                            let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
-                            let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
+                                    let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
+                                    let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
 
-                            // console.log("preTokenAccount2: ", preTokenAccount2)
-                            // console.log("postTokenAccount2: ", postTokenAccount2)
+                                    // console.log("preTokenAccount2: ", preTokenAccount2)
+                                    // console.log("postTokenAccount2: ", postTokenAccount2)
 
-                            let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
-                                new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
-                                : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
+                                    let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
+                                        new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
+                                        : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
 
-                            res.push(new AmmTx({
-                                type: "Withdraw",
-                                asset: asset,
-                                usdcAmount,
-                                lpAmount,
-                                gasFee: tx.meta?.fee! / Math.pow(10, SOL_DECIMALS),
-                                txid: tx.transaction.signatures[0],
-                                timestamp: new Date(tx.blockTime! * 1000),
-                                status: "Completed",
-                                // @ts-ignore
-                                userWalletAddress: postTokenAccount2.owner
-                            }))
+                                    res.push(new AmmTx({
+                                        type: "Withdraw",
+                                        asset: asset,
+                                        usdcAmount,
+                                        lpAmount,
+                                        gasFee: tx.meta?.fee! / Math.pow(10, SOL_DECIMALS),
+                                        txid: tx.transaction.signatures[0],
+                                        timestamp: new Date(tx.blockTime! * 1000),
+                                        status: "Completed",
+                                        // @ts-ignore
+                                        userWalletAddress: postTokenAccount2.owner
+                                    }))
+                                } else if (decoded.name == "addWithdrawRequest") {
+                                    // console.log(tx.meta?.logMessages)
+                                    /* 
+                                    there is no preTokenBalances and postTokenBalances here, 
+                                    means that can't get usdc amount / lpAmount / userWalletAddress here 
+                                    */
+
+                                    let usdcAmount = 0;
+                                    //@ts-ignore
+                                    let lpAmount = await getLpAmount(tx.meta?.logMessages);
+                                    //@ts-ignore
+                                    let requestId = await getRequestId(tx.meta?.logMessages);
+                                    //@ts-ignore
+                                    let userWalletAddress = await getUserWalletAddress(tx.meta?.logMessages)
+                                    // console.log(tx.meta?.logMessages)
+                                    requestIdArray.push(requestId);
+                                    res.push(new AmmTx({
+                                        type: "Withdraw",
+                                        asset: asset,
+                                        usdcAmount,
+                                        lpAmount,
+                                        gasFee: tx.meta?.fee! / Math.pow(10, SOL_DECIMALS),
+                                        txid: tx.transaction.signatures[0],
+                                        timestamp: new Date(tx.blockTime! * 1000),
+                                        status: "Pending",
+                                        // @ts-ignore
+                                        userWalletAddress: userWalletAddress, //from program inx.accounts[4], but there is nothing in meta
+                                        requestId: requestId
+                                    }))
+
+                                }
+                            } else console.log("can't decode")
                         }
                     }
                 }
-            })
+
+                for (let tx of txs) {//number of transactions people send
+                    for (let inx of tx.transaction.message.instructions) {
+                        let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
+                        if (programId.toString() == context.program.programId.toString()) {
+                            let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
+
+                            if (decoded) {
+                                if (decoded.name == "consumeWithdrawQueue") {
+                                    //@ts-ignore
+                                    let requestId = await getRequestIdAfterConsume(tx.meta?.logMessages)
+                                    for (let e of res) {
+                                        if (e.requestId == requestId) {
+
+                                            //@ts-ignore
+                                            let usdcAmount = await getUsdcAfterConsume(tx.meta?.logMessages)
+                                            //@ts-ignore
+                                            let userBurnLpAmountAfterConsume = await getLpAmountAfterConsume(tx.meta?.logMessages)
+
+                                            e.usdcAmount += usdcAmount;
+                                            let percentage = 0;
+
+                                            // finish consume
+                                            if (userBurnLpAmountAfterConsume == e.lpAmount) {
+                                                e.status = "Completed"
+                                            } else {
+                                                lpAmountConsumed[requestId] += userBurnLpAmountAfterConsume;
+                                                percentage = lpAmountConsumed[requestId] * 100 / e.lpAmount
+                                                e.status = "Processing(" + percentage.toString() + "%)"
+                                            }
+
+
+                                        }
+                                    }
+                                }
+                            } else console.log("can't decode")
+                        }
+                    }
+                }
+            }
+            resolve(res)
+        }
+        catch (err) {
+            reject(err)
         }
     })
-    return res
 }

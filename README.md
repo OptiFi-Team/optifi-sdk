@@ -99,7 +99,7 @@ npx ts-node scripts/amm/findAMMs.ts
 - to deposit USDC into an AMM, set the `amm address` and `amount to deposit`, and run:
 
 ```bash
-npx ts-node scripts/amm/deposit.ts
+npx ts-node scripts/amm/ammDeposit.ts
 ```
 
 - add the optifi markets to an AMM so that it can trade on that market

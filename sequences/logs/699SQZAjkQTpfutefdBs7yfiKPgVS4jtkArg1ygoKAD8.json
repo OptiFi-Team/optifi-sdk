@@ -1,0 +1,11 @@
+{
+    "network": "https://api.devnet.solana.com",
+    "programId": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdorc",
+    "exchangeUUID": "111313",
+    "exchangeAddress": "699SQZAjkQTpfutefdBs7yfiKPgVS4jtkArg1ygoKAD8",
+    "instruments": [],
+    "serumMarkets": [],
+    "optifiMarkets": [],
+    "marginStressAccounts": [],
+    "amms": []
+}

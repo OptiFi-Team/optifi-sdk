@@ -4,7 +4,7 @@ import { findOptifiExchange } from "../../utils/accounts";
 import { findAMMWithIdx } from "../../utils/amm";
 import { ammIndex } from "./constants";
 
-let lpAmount = 10000; // already including decimals
+let lpAmount = 10; // already including decimals
 
 
 initializeContext().then(async (context) => {
@@ -12,7 +12,7 @@ initializeContext().then(async (context) => {
     let [ammAddress,] = await findAMMWithIdx(context, optifiExchange, ammIndex)
     
     addWithdrawRequest(context, ammAddress, lpAmount).then((res) => {
-        console.log("Got deposit res", res);
+        console.log("Got withdraw res", res);
     }).catch((err) => {
         console.error(err);
     })
