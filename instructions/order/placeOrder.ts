@@ -3,7 +3,7 @@ import Context from "../../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
 import { calculatePcQtyAndFee, formPlaceOrderContext } from "../../utils/orders";
-import { OrderSide,UserAccount } from "../../types/optifi-exchange-types";
+import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
 import marginStress from "../marginStress";
 import { USDC_DECIMALS } from "../../constants";
 import { numberAssetToDecimal } from "../../utils/generic";
@@ -18,7 +18,7 @@ export default function placeOrder(context: Context,
     orderType: OrderType
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
-        formPlaceOrderContext(context, marketAddress,userAccount).then(async ([orderContext, asset]) => {
+        formPlaceOrderContext(context, marketAddress, userAccount).then(async ([orderContext, asset]) => {
 
             let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(asset)!); // price for 1 lot_size 
 
@@ -26,7 +26,7 @@ export default function placeOrder(context: Context,
 
             let PcQty = limit * maxCoinQty;
 
-            let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(PcQty, side, orderType, false)!;
+            let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(context, PcQty, side, orderType, false)!;
 
             console.log("side: ", side);
             console.log("limit: ", limit);

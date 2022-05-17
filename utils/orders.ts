@@ -823,30 +823,30 @@ function filterForOpenOrders2(bids: Orderbook, asks: Orderbook, openOrdersAccoun
 
 
 // Fee Calculator
-function getTotalFee(orderType: OrderType, is_registered_maker: Boolean): number {
+function getTotalFee(context: Context, orderType: OrderType, is_registered_maker: Boolean): number {
   switch (orderType) {
     case OrderType.PostOnly: {
-      return MAKER_FEE;
+      return MAKER_FEE[context.endpoint];
     }
     default: {
-      return TAKER_FEE;
+      return TAKER_FEE[context.endpoint];
     }
   }
 }
-function getSerumFee(orderType: OrderType, is_registered_maker: Boolean): number {
+function getSerumFee(context: Context, orderType: OrderType, is_registered_maker: Boolean): number {
   switch (orderType) {
     case OrderType.PostOnly: {
-      return SERUM_MAKER_FEE;
+      return SERUM_MAKER_FEE[context.endpoint];
     }
     default: {
-      return SERUM_TAKER_FEE;
+      return SERUM_TAKER_FEE[context.endpoint];
     }
   }
 }
-export function calculatePcQtyAndFee(maxPcQty: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
+export function calculatePcQtyAndFee(context: Context, maxPcQty: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
 
-  let totalFee = maxPcQty * getTotalFee(orderType, is_registered_maker);
-  let serumFee = maxPcQty * getSerumFee(orderType, is_registered_maker);
+  let totalFee = maxPcQty * getTotalFee(context, orderType, is_registered_maker);
+  let serumFee = maxPcQty * getSerumFee(context, orderType, is_registered_maker);
 
   switch (orderSide) {
     case OrderSide.Ask:

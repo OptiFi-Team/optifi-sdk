@@ -256,25 +256,29 @@ export const PC_DUST_THRESHOLD: number = 2;
 export const USDC_DECIMALS = 6;
 export const SOL_DECIMALS = 9;
 
-
-// // The fee for each transaction on the OptiFi system
-// export const TAKER_FEE: number = 0.0010;
-// export const SERUM_TAKER_FEE: number = 0.0004;
-// export const OPTIFI_TAKER_FEE: number = 0.0006;
-// // PostOnly order
-// export const MAKER_FEE: number = 0.0006;
-// export const SERUM_MAKER_FEE: number = 0.0;
-// export const OPTIFI_MAKER_FEE: number = 0.0006;
-
-
-// FOR DEVNET
 // The fee for each transaction on the OptiFi system
-export const TAKER_FEE: number = 0.0028;
-export const SERUM_TAKER_FEE: number = 0.0022;
+export const TAKER_FEE: EndpointConstant = {
+    "https://api.devnet.solana.com": 0.0028,
+    "https://solana-api.projectserum.com": 0.0010,
+    "https://api.testnet.solana.com": undefined
+}
+export const SERUM_TAKER_FEE: EndpointConstant = {
+    "https://api.devnet.solana.com": 0.0022,
+    "https://solana-api.projectserum.com": 0.0004,
+    "https://api.testnet.solana.com": undefined
+}
 export const OPTIFI_TAKER_FEE: number = 0.0006;
 // PostOnly order
-export const MAKER_FEE: number = 0.0028;
-export const SERUM_MAKER_FEE: number = 0.0022;
+export const MAKER_FEE: EndpointConstant = {
+    "https://api.devnet.solana.com": 0.0028,
+    "https://solana-api.projectserum.com": 0.0006,
+    "https://api.testnet.solana.com": undefined
+}
+export const SERUM_MAKER_FEE: EndpointConstant = {
+    "https://api.devnet.solana.com": 0.0022,
+    "https://solana-api.projectserum.com": 0.0,
+    "https://api.testnet.solana.com": undefined
+}
 export const OPTIFI_MAKER_FEE: number = 0.0006;
 
 // user margin deposit limit
