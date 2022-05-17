@@ -13,7 +13,17 @@ initializeContext().then(async (context) => {
 
     let common = optifiExchange.instrumentCommon;
     console.log("Got instrument groups ", common);
+    // @ts-ignore
+    common.forEach(e => {
+        console.log("expiry date in group: ", new Date(e.expiryDate.toNumber() * 1000))
+    });
+
     console.log("Got instrument uniques ", optifiExchange.instrumentUnique);
+    // @ts-ignore
+    optifiExchange.instrumentUnique[0].forEach(e => {
+        console.log("put and call option: ", e.strike, e.instrumentPubkeys.map(e => e.toString()))
+    });
+    console.log("usdcCentralPool: ", optifiExchange.usdcCentralPool.toString());
     console.log("usdcFeePool: ", optifiExchange.usdcFeePool.toString());
     console.log("exchangeAuthority: ", optifiExchange.exchangeAuthority.toString());
 

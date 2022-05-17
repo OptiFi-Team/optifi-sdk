@@ -3296,6 +3296,27 @@
       ]
     },
     {
+      "name": "updateExchangeAuthority",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "updateOgNftMint",
       "accounts": [
         {

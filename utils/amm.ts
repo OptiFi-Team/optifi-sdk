@@ -278,10 +278,10 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
             for (let asset of notionalBalance.keys()) {
                 let userLpTokenAccountInfo = await getAccount(context.connection, userLpAccounts[assets.indexOf(asset)])
                 let userLpTokenBalance = userLpTokenAccountInfo.amount
-                console.log("cp1: ", userLpTokenAccountInfo)
+                // console.log("cp1: ", userLpTokenAccountInfo)
                 let lpTokenMintInfo = await getMint(context.connection, tradedAmmLpMints[assets.indexOf(asset)])
                 let lpSupply = lpTokenMintInfo.supply
-                console.log("cp2: ", lpTokenMintInfo)
+                // console.log("cp2: ", lpTokenMintInfo)
 
                 // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)])
                 let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]

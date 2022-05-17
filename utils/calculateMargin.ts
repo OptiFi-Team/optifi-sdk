@@ -129,22 +129,7 @@ export function maturing_liquidity(t, user, intrinsic, min_t) {
 
 // margin_1 = np.min([stress_result + np.min([net_intrinsic, net_premium]), 0])
 export function margin_1(stress_result, net_intrinsic, net_premium) {
-    if (net_intrinsic > net_premium) {
-        if ((stress_result + net_premium) > 0) {
-            return 0;
-        }
-        else {
-            return stress_result + net_premium;
-        }
-    }
-    else {
-        if ((stress_result + net_intrinsic) > 0) {
-            return 0;
-        }
-        else {
-            return stress_result + net_intrinsic;
-        }
-    }
+    return Math.min(stress_result + Math.min(net_intrinsic, net_premium), 0)
 }
 
 // margin_2 = maturing_liquidity - net_intrinsic if maturing_liquidity < net_intrinsic and maturing_liquidity < 0 else 0
@@ -280,7 +265,7 @@ export function cdf(arr) {
     return result;
 }
 
-export function cdf_num(num) {
+export function cdf_num(num: number) {
     return (erf(num / Math.sqrt(2.0)) + 1.0) / 2.0;
 }
 
@@ -527,43 +512,44 @@ export function option_price(spot, strike, iv, r, q, t, isCall) {
     }
     else {
         // spot == stress_spot == [[ 33880,  36784,  39688,  42592,  45496,  48400,  51304, 54208,  57112,  60016,  62920]]
-        var call = [] as any;
-        var put = [] as any;
         var result = [] as any;
 
         for (let i = 0; i < strike.length; i++) {
             // stress_spot / strike
             var div_stress_spot = [] as any;
             for (let j = 0; j < spot[0].length; j++) {
+                // ((spot / strike).ln() 
                 div_stress_spot.push(Math.log(spot[0][j] / strike[i]));
             }
-            call.push(div_stress_spot);
-            put.push(div_stress_spot);
             result.push(div_stress_spot);
         }
 
         var val1 = arrmul((r - q + iv * iv / 2), t);
-        var val2 = arrmul(iv, arrsqrt(t));
+        var iv_tsqrt = arrmul(iv, arrsqrt(t));
 
         // np.exp(-q * t)
-        var val3 = arrexp(arrmul(((-q)), t));
+        var eqt = arrexp(arrmul(((-q)), t));
         // np.exp(-r * t)
-        var val4 = arrexp(arrmul(((-r)), t));
+        var ert = arrexp(arrmul(((-r)), t));
 
-        // get call
-        for (let i = 0; i < call.length; i++) { //28
-            for (let j = 0; j < call[0].length; j++) { // 11
-                // call value
-                call[i][j] += val1[i][0];
-                call[i][j] = spot[0][j] * val3[i][0] * cdf_num(call[i][j] / val2[i][0]) - strike[i][0] * val4[i][0] * cdf_num(call[i][j] / val2[i][0] - val2[i][0]);
+        for (let i = 0; i < result.length; i++) { //28
+            for (let j = 0; j < result[0].length; j++) { // 11
+                let d1 = (result[i][j] + val1[i][0]) / iv_tsqrt[i][0] //  + (r - q + iv * iv * 0.5) * t) / (iv * t.sqrt())
+                let d2 = d1 - iv_tsqrt[i][0]
 
-                // put value
-                put[i][j] = call[i][j] + strike[i][0] * val4[i][0] - spot[0][j] * val4[i][0];
-
-                result[i][j] = isCall[i][0] * call[i][j] + (1 - isCall[i][0]) * put[i][j];
+                if (isCall[i][0] == 1) {
+                    let cdf_d1 = cdf_num(d1)
+                    let cdf_d2 = cdf_num(d2)
+                    result[i][j] = spot[0][j] * eqt[i][0] * cdf_d1 - strike[i][0] * ert[i][0] * cdf_d2;
+                } else if (isCall[i][0] == 0) {
+                    let cdf_md2 = cdf_num(-d2);
+                    let cdf_md1 = cdf_num(-d1);
+                    result[i][j] = strike[i][0] * ert[i][0] * cdf_md2 - spot[0][j] * eqt[i][0] * cdf_md1;
+                } else {
+                    console.error("isCall error...")
+                }
             }
         }
-
         return result;
     }
 }
@@ -573,329 +559,3 @@ export function option_reg_t_margin(spot, strike, stress, isCall) {
     var put = clip(minus((stress * spot), clip(minus(spot, strike), 0)), (stress * spot / 2));
     return arrplusarr(arrmularr(isCall, call), arrmularr(minus(1, isCall), put));
 }
-
-export function imp_vol_call(spot, strike, price, r, q, t) {
-    var C = price;
-    var S = spot;
-    var X = strike;
-    var T = t;
-
-    var NC = C.length;
-    var NX = X.length;
-
-    // console.log('C: ', C)
-    // console.log('S: ', S)
-    // console.log('X: ', X)
-    // console.log('T: ', T)
-
-    if(NC === NX) {
-        var ff: number[] = [];
-
-        for(let nc = 0 ; nc < NC; nc++) {
-            var sigma = 0.3;
-            var error = 0.00001;
-
-            var dv = error + 1;
-            var tic = (new Date()).getTime() / 1000;
-
-            while(Math.abs(dv) > error) {
-
-                var d1_val = (Math.log(S / X[nc][0]) + (r - q + sigma**2/2.)*(T[nc][0])) / (sigma*Math.sqrt(T[nc][0]));
-                var d2_val = d1_val - sigma*Math.sqrt(T[nc]);
-                // [Math.round((erf(arr[i] / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000]
-                var nd1 = Math.round((erf(d1_val / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000;
-                var nd2 = Math.round((erf(d2_val / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000;
-
-                var npd1 = Math.exp((-d1_val)**2/2) / Math.sqrt(2*Math.PI);
-
-                var PriceError = S*Math.exp(-q*(T[nc]))*nd1-X[nc]*Math.exp(-r*(T[nc]))*nd2-C[nc];
-                var Vega = S*Math.sqrt(T[nc])*Math.exp(-q*(T[nc]))*npd1;
-
-                if(Vega === 0 ) {   // 
-                    console.log('No Volatility can be found');
-                    sigma = NaN;
-                    break;
-                }
-
-                var dv = PriceError/Vega;
-                sigma = sigma - dv;
-                var time2 = (new Date()).getTime() / 1000 - tic;
-
-                // console.log('dv: ', dv)
-
-                if(time2 > 60) {
-                    console.log('the routine did not converge within 60 seconds')
-                    sigma = NaN;
-                    break;
-                }
-            }
-            ff.push(sigma);
-        }
-        return ff;
-    }
-    else {
-        console.log('P and X are not of equal size')
-        console.log('P', C)
-        console.log('X', X)
-        return NaN;
-    }
-}
-
-export function imp_vol_put(spot, strike, price, r, q, t) {
-    // console.log(`imp_vol_put function's params: `, spot, strike, price, r, q, t)
-    var P = price;
-    var S = spot;
-    var X = strike;
-    var T = t;
-
-    var NP = P.length;
-    var NX = X.length;
-
-    if(NP === NX) {
-        var ff: number[] = [];
-
-        for(let np = 0 ; np < NP; np++) {
-            var sigma = 0.3;
-            var error = 0.00001;
-
-            var dv = error + 1;
-            var tic = (new Date()).getTime() / 1000;
-
-            while(Math.abs(dv) > error) {
-                // console.log('Math.abs(dv): ', Math.abs(dv))
-                // console.log('error: ', error)
-                // d1=(log(S/X[np])+(r-q+sigma**2/2.)*T[np])/(sigma*sqrt(T[np]))
-				
-				// d2= d1-sigma*sqrt(T)
-				// nd1= nm.cdf(-d1)
-				// nd2= nm.cdf(-d2)
-				// npd1= nm.pdf(d1)
-                // var d1_val = d1(S, X, sigma, r, q, T);
-                // console.log(`-----------------------${np}`)
-                // console.log('S:',S)
-                // console.log('X[np]:',X[np][0])
-                // console.log('r:',r)
-                // console.log('q:',q)
-                // console.log('sigma:',sigma)
-                // console.log('T[np]:',T[np][0])
-
-
-                var d1_val = (Math.log(S / X[np][0]) + (r - q + sigma**2/2.)*(T[np][0])) / (sigma*Math.sqrt(T[np][0]));
-                var d2_val = d1_val - sigma*Math.sqrt(T[np]);
-                // [Math.round((erf(arr[i] / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000]
-                var nd1 = Math.round((erf(d1_val / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000;
-                var nd2 = Math.round((erf(d2_val / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000;
-
-                var npd1 = Math.exp((-d1_val)**2/2) / Math.sqrt(2*Math.PI);
-
-                //PriceError=-S*exp(-q*T)*nd1+X[np]*exp(-r*T)*nd2-P[np]
-				// Vega=S*sqrt(T)*exp(-q*T)*npd1
-                var PriceError = S*Math.exp(-q*(T[np]))*nd1-X[np]*Math.exp(-r*(T[np]))*nd2-P[np];
-                var Vega = S*Math.sqrt(T[np])*Math.exp(-q*(T[np]))*npd1;
-
-                // console.log('d1_val: ', d1_val)
-                // console.log('d2_val: ', d2_val)
-                // console.log('nd1: ', nd1)
-                // console.log('nd2: ', nd2)
-                // console.log('npd1: ', npd1)
-                // console.log('PriceErr: ', PriceError)
-                // console.log('Vega: ', Vega)
-
-                if(Vega === 0 ) {   // 
-                    console.log('No Volatility can be found');
-                    sigma = NaN;
-                    break;
-                }
-
-                var dv = PriceError/Vega;
-                sigma = sigma - dv;
-                var time2 = (new Date()).getTime() / 1000 - tic;
-
-                // console.log('dv: ', dv)
-
-                if(time2 > 60) {
-                    console.log('the routine did not converge within 60 seconds')
-                    sigma = NaN;
-                    break;
-                }
-            }
-            ff.push(sigma);
-        }
-        return ff;
-    }
-    else {
-        console.log('P and X are not of equal size')
-        console.log('P', P)
-        console.log('X', X)
-        return NaN;
-    }
-}
-
-export function imp_vol_call_v2(spot, strike, price, r, q, t) {
-    var C = price;
-    var S = spot;
-    var X = strike;
-    var T = t;
-
-    var NC = C.length;
-    var NX = X.length;
-
-    // console.log('C: ', C)
-    // console.log('S: ', S)
-    // console.log('X: ', X)
-    // console.log('T: ', T)
-
-    if (NC === NX) {
-        var ff: number[] = [];
-
-        for (let nc = 0; nc < NC; nc++) {
-            var sigma = 0.6;
-            var error = 0.00001;
-
-            var dv = error + 1;
-            var tic = (new Date()).getTime() / 1000;
-
-            while (Math.abs(dv) > error || sigma >= 5.0) {
-
-                var d1_val = (Math.log(S / X[nc][0]) + (r - q + sigma ** 2 / 2.) * (T[nc][0])) / (sigma * Math.sqrt(T[nc][0]));
-                var d2_val = d1_val - sigma * Math.sqrt(T[nc]);
-                // [Math.round((erf(arr[i] / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000]
-                var nd1 = erf((d1_val) / Math.sqrt(2.0)) * 0.5 + 0.5;
-                var nd2 = erf((d2_val) / Math.sqrt(2.0)) * 0.5 + 0.5;
-
-                var npd1 = Math.exp((d1_val) ** 2 / 2) / Math.sqrt(2 * Math.PI);
-
-                var PriceError = S * Math.exp(-q * (T[nc])) * nd1 - X[nc] * Math.exp(-r * (T[nc])) * nd2 - C[nc];
-                var Vega = S * Math.sqrt(T[nc]) * Math.exp(-q * (T[nc])) * npd1;
-
-                if (Vega === 0) {   // 
-                    console.log('No Volatility can be found');
-                    sigma = NaN;
-                    break;
-                }
-
-                var dv = PriceError / Vega;
-                sigma = sigma - dv;
-                var time2 = (new Date()).getTime() / 1000 - tic;
-
-                if (sigma > 5) {
-                    sigma = 5;
-                }
-                // console.log('dv: ', dv)
-
-                if (time2 > 60) {
-                    console.log('the routine did not converge within 60 seconds')
-                    sigma = NaN;
-                    break;
-                }
-            }
-            ff.push(sigma);
-        }
-        return ff;
-    }
-    else {
-        console.log('P and X are not of equal size')
-        console.log('P', C)
-        console.log('X', X)
-        return NaN;
-    }
-}
-
-export function imp_vol_put_v2(spot, strike, price, r, q, t) {
-    var P = price;
-    var S = spot;
-    var X = strike;
-    var T = t;
-
-    var NP = P.length;
-    var NX = X.length;
-
-    if (NP === NX) {
-        var ff: number[] = [];
-
-        for (let np = 0; np < NP; np++) {
-            var sigma = 0.6;
-            var error = 0.00001;
-
-            var dv = error + 1;
-            var tic = (new Date()).getTime() / 1000;
-
-            while ((Math.abs(dv) > error) || (sigma >= 5.0)) {
-                var d1_val = (Math.log(S / X[np][0]) + (r - q + sigma ** 2 / 2.) * (T[np][0])) / (sigma * Math.sqrt(T[np][0]));
-                // console.log('d1_val: ', d1_val)
-
-                var d2_val = d1_val - sigma * Math.sqrt(T[np]);
-                // console.log('d2_val: ', d2_val)
-
-                // result.push([Math.round((erf(arr[i] / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000]);
-
-                // [Math.round((erf(arr[i] / Math.sqrt(2.0)) + 1.0) / 2.0 * 100000000) / 100000000]
-                // erf(x / SQRT_2) * 0.5 + 0.5
-                var nd1 = erf((-d1_val) / Math.sqrt(2.0)) * 0.5 + 0.5;
-                var nd2 = erf((-d2_val) / Math.sqrt(2.0)) * 0.5 + 0.5;
-
-                // norm.pdf(x) = exp(-x**2/2)/sqrt(2*pi)
-                var npd1 = Math.exp(-(d1_val ** 2) / 2) / Math.sqrt(2 * Math.PI);
-                // console.log('nd1: ', nd1)
-                // console.log('nd2: ', nd2)
-                // console.log('npd1: ', npd1)
-
-                //PriceError=-S*exp(-q*T)*nd1+X[np]*exp(-r*T)*nd2-P[np]
-                // Vega=S*sqrt(T)*exp(-q*T)*npd1
-                var PriceError = (-S) * Math.exp(-q * (T[np])) * nd1 + X[np] * Math.exp(-r * (T[np])) * nd2 - P[np];
-                var Vega = S * Math.sqrt(T[np]) * Math.exp(-q * (T[np])) * npd1;
-
-                // console.log('nd1: ', nd1)
-                // console.log('nd2: ', nd2)
-                // console.log('q: ', q)
-                // console.log('r: ', r)
-                // console.log('T[np]: ', T[np])
-                // console.log('X[np]: ', X[np])
-                // console.log('P[np]: ', P[np])
-                // console.log('PriceErr: ', PriceError)
-                // console.log('Vega: ', Vega)
-
-                if (Vega === 0) {   // 
-                    console.log('No Volatility can be found');
-                    sigma = NaN;
-                    break;
-                }
-
-                var dv = PriceError / Vega;
-                sigma = sigma - dv;
-                var time2 = ((new Date()).getTime() / 1000) - tic;
-
-                // console.log('dv: ', dv)
-                // console.log('sigma: ', sigma)
-
-                // console.log('tic: ', tic)
-                // console.log('time2: ', time2)
-
-                if (sigma > 5) {
-                    sigma = 5;
-                }
-
-                if (time2 > 60) {
-                    console.log('the routine did not converge within 60 seconds')
-                    sigma = NaN;
-                    break;
-                }
-                // console.log('------------------')
-            }
-            ff.push(sigma);
-        }
-        return ff;
-    }
-    else {
-        // console.log('P and X are not of equal size')
-        // console.log('P', P)
-        // console.log('X', X)
-        return NaN;
-    }
-}
-
-// console.log(imp_vol_put([41000], [[35000]], [[1000]], 0, 0, [[0.0027397260273972603]]))
-// console.log(imp_vol_put(41000, [[35000]], [[1000]], 0, 0, [[0.0027397260273972603]]))
-
-// norm.pdf(x) = exp(-x**2/2)/sqrt(2*pi)
-// console.log(Math.exp(-(3 ** 2) / 2) / Math.sqrt(2 * Math.PI))

@@ -12,7 +12,7 @@ import addInstrumentToAmm from "../../instructions/addInstrumentToAmm";
 import { ammIndex } from "./constants";
 import removeInstrumentFromAmm from "../../instructions/removeInstrumentFromAmm";
 
-export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
+export async function removeInstrumentsFromAmm(context: Context, ammIndex: number) {
     try {
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
@@ -27,7 +27,6 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
         let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
 
         let instrumentInfos = instrumentRawInfos as Chain[]
-        console.log("cp1")
 
         let now = new Date().getTime()
         let optifiMarketsToRemove = ammInfo.tradingInstruments.slice(1).filter(instrument => {
@@ -38,7 +37,7 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
             console.log( ammAddress.toString(), market.toString())
 
             let res = await removeInstrumentFromAmm(context, ammAddress, market)
-            console.log(`successfully added optifi market ${market.toString()} to amm ${ammAddress.toString()} with id ${ammIndex}`)
+            console.log(`successfully removed optifi market ${market.toString()} from amm ${ammAddress.toString()} with id ${ammIndex}`)
             console.log(res)
         }
     } catch (err) {
@@ -47,5 +46,5 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
 }
 
 initializeContext().then((context) => {
-    addInstrumentsToAmm(context, ammIndex)
+    removeInstrumentsFromAmm(context, ammIndex)
 })

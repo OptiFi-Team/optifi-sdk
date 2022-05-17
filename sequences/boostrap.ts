@@ -35,16 +35,16 @@ function createOrFetchExchange(context: Context, ogNftMint?: PublicKey, depositL
     return new Promise((resolve, reject) => {
         exchangeAccountExists(context).then(([exchAcctExists, exchAcct]) => {
             if (exchAcctExists && exchAcct !== undefined) {
-                if (exchAcct.exchangeAuthority.toString() == context.provider.wallet.publicKey.toString()) {
-                    console.debug("Successfully fetched existing exchange account, and validated that user is the " +
-                        "authority.")
-                    resolve();
-                } else {
-                    reject(new Error(`Exchange authority ${exchAcct.exchangeAuthority} is not user 
-                    ${context.provider.wallet.publicKey} - in order to make markets, this must be run
-                    as the exchange authority. By specifying a new UUID, you may create a new exchange with yourself 
-                    as the authority`))
-                }
+                // if (exchAcct.exchangeAuthority.toString() == context.provider.wallet.publicKey.toString()) {
+                //     console.debug("Successfully fetched existing exchange account, and validated that user is the " +
+                //         "authority.")
+                resolve();
+                // } else {
+                //     reject(new Error(`Exchange authority ${exchAcct.exchangeAuthority} is not user 
+                //     ${context.provider.wallet.publicKey} - in order to make markets, this must be run
+                //     as the exchange authority. By specifying a new UUID, you may create a new exchange with yourself 
+                //     as the authority`))
+                // }
             } else {
                 console.debug("Creating a new exchange");
                 initialize(context, ogNftMint, depositLimit).then((res) => {
@@ -276,6 +276,8 @@ export default function boostrap(context: Context, ogNftMint?: PublicKey, deposi
                 })
                 saveMaterailsForExchange(exchangeAddress, materials);
             }
+            console.log("sleep for 5s")
+            await sleep(5 * 1000)
         }
 
         console.log("Created serum markets");
@@ -320,7 +322,7 @@ export default function boostrap(context: Context, ogNftMint?: PublicKey, deposi
             }
             saveMaterailsForExchange(exchangeAddress, materials);
 
-            await sleep(5 * 1000)
+            await sleep(15 * 1000)
         }
         console.log("Created optifi markets")
 
@@ -431,7 +433,7 @@ interface ExchangeMaterial {
 
 
 const logsDirPrefix = "logs"
-function readMaterailsForExchange(exchangeAddress: PublicKey): ExchangeMaterial {
+export function readMaterailsForExchange(exchangeAddress: PublicKey): ExchangeMaterial {
     let filePath = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
     return JSON.parse(
         fs.readFileSync(
@@ -441,7 +443,7 @@ function readMaterailsForExchange(exchangeAddress: PublicKey): ExchangeMaterial 
     )
 }
 
-function saveMaterailsForExchange(exchangeAddress: PublicKey, data: ExchangeMaterial) {
+export function saveMaterailsForExchange(exchangeAddress: PublicKey, data: ExchangeMaterial) {
     let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
     fs.writeFileSync(filename, JSON.stringify(data, null, 4));
 }
