@@ -14,6 +14,10 @@ const liquidationLoop = async (context: Context) => {
 
         console.log(dateTime, "find ", Users.length, " user on the exchange...");
 
+        let inLiquidation: PublicKey[] = [];
+
+        console.log("Users in Liquidation: " + inLiquidation)
+
         for (let user of Users) {
 
             // console.log(user)
@@ -33,13 +37,17 @@ const liquidationLoop = async (context: Context) => {
 
             // console.log("userToLiquidate: " + userToLiquidate.toString() + ", margin ratio: " + (margin + netOptionValue) / marginRequirement)
 
-            if (margin + netOptionValue < marginRequirement * 0.9) {
+            if (margin + netOptionValue < marginRequirement * 0.9 && !inLiquidation.includes(userToLiquidate)) {
                 console.log("userToLiquidate: " + userToLiquidate.toString() + ", margin: " + margin + ", liquidation: " + marginRequirement * 0.9)
 
-                liquidateUser(context, userToLiquidate)
+                inLiquidation.push(userToLiquidate)
+
+                liquidateUser(context, userToLiquidate).then(() => {
+                    inLiquidation = inLiquidation.filter((user) => user != userToLiquidate)
+                })
             }
         }
-        await sleep(30000);
+        await sleep(3000);
     } catch (e) {
         console.log(e);
         await sleep(600000);
