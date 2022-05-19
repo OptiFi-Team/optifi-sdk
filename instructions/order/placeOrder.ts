@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../../types/context";
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { ComputeBudgetInstruction, ComputeBudgetProgram, LAMPORTS_PER_SOL, PublicKey, Transaction, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
 import { calculatePcQtyAndFee, formPlaceOrderContext } from "../../utils/orders";
 import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
@@ -37,6 +37,17 @@ export default function placeOrder(context: Context,
 
 
             let ix = await marginStress(context, asset);
+
+            // // Add computing units, but currently no use in devnet 
+
+            // const params = {
+            //     units: 2000000,
+            //     additionalFee: 4 * LAMPORTS_PER_SOL,
+            // };
+
+            // let addComputeIx = ComputeBudgetProgram.requestUnits(params);
+
+            // ix.unshift(addComputeIx)
 
             context.program.rpc.placeOrder(
                 side,
