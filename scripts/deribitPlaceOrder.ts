@@ -75,11 +75,28 @@ async function renewTradeAndPlaceOrder(
   start_timestamp: number,
   end_timestamp: number
 ) {
+
+  /* trade example:
+  {
+    trade_seq: 1,
+    trade_id: '105806573',
+    timestamp: 1652343306545,
+    tick_direction: 1,
+    price: 0.06,
+    mark_price: 0.08984349,
+    iv: 80.51,
+    instrument_name: 'BTC-30SEP22-20000-P',
+    index_price: 27882.01,
+    direction: 'sell',
+    amount: 0.1
+  }
+  */
   let trades = await getTrades(
     instrumentWithMatchStrike,
     start_timestamp,
     end_timestamp
   );
+
   let isTheWalletCanPlaceOrder: boolean[] = [true, true, true];
   let tradesId = trades.map((e) => e.trade_id);
 
@@ -162,13 +179,13 @@ async function renewTradeAndPlaceOrder(
         aLotOfTradesTimestamp -
         timeRangeToGetNewTrades + // before then endTime for timeRangeToGetNewTrades
         timeRangeToGetNewTrades * i;
-      let endTime = aLotOfTradesTimestamp + timeRangeToGetNewTrades * i;
+      let endTime = startTime + timeRangeToGetNewTrades;
 
       await renewTradeAndPlaceOrder(
         instrumentWithMatchStrike,
         startTime,
         endTime
       );
-    }, msToRunAgain * i);
+    }, msToRunAgain * i);//renew every 5s
   }
 })();

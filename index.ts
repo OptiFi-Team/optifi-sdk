@@ -119,7 +119,7 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
 function initializeContext(wallet?: string | WalletProvider,
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Mainnet,
+    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet,
     // commitmentLevel: Commitment = "recent",
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
@@ -157,7 +157,7 @@ function initializeContext(wallet?: string | WalletProvider,
         } else {
             let keypair: Keypair;
             if (wallet === undefined) {
-                keypair = Keypair.fromSecretKey(new Uint8Array(readJsonFile<any>(process.env.OPTIFI_WALLET as string)))
+                keypair = Keypair.fromSecretKey(new Uint8Array(readJsonFile<any>(process.env.PLACEORDERTEST3 as string)))
             } else {
                 // Initialize the wallet
                 // The wallet was provided as a path
@@ -187,7 +187,7 @@ function initializeContext(wallet?: string | WalletProvider,
 function initializeContextWithoutWallet(
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Mainnet,
+    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet,
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
         disableRetryOnRateLimit: true,

@@ -131,19 +131,26 @@ async function getTradesByNameAndTime(
   });
 }
 
-export async function getInstrumentWithMatchStrike(): Promise<Instrument[]> {
+async function getOptifiStrike(): Promise<number[]> {
   return new Promise(async (resolve, rejects) => {
-    //get all deribit instrument
-    let allInstrument = await getInstruments();
-    console.log("all instrument amount: " + allInstrument.length);
-
-    //get optifi market strike
     let context = await initializeContext();
     let instruments = await findOptifiInstruments(context);
     let optifiStrike: number[] = [];
     for (let i of instruments) {
       optifiStrike.push(i[0].strike.toNumber());
     }
+    resolve(optifiStrike)
+  })
+}
+
+export async function getInstrumentWithMatchStrike(): Promise<Instrument[]> {
+  return new Promise(async (resolve, rejects) => {
+    //get all deribit instrument
+    let allInstrument = await getInstruments();
+    console.log("all instrument amount: " + allInstrument.length);
+    
+    //get optifi market strike
+    let optifiStrike = await getOptifiStrike();
 
     //use all deribit instrument and optifi strike to get instrument with match strike
     let instrumentWithMatchStrike = await matchStrike(
@@ -172,7 +179,7 @@ export function getTrades(
     let trades: Trade[] = [];
     //console.log("time range: " + start_timestamp + " - " + end_timestamp);
     for (let i of instrumentWithMatchStrike) {
-  
+
       //instrument_name example:"BTC-21JAN22-42000-P" / "BTC-PERPETUAL"
       let trade = await getTradesByNameAndTime(
         i.instrument_name,
@@ -182,15 +189,8 @@ export function getTrades(
       if (trade) {
         trades.push(trade);
       }
-      // else {
-      //   console.log("this instrument can't find trades: ");
-      //   console.log(i)
-      // };
     }
     resolve(trades);
   });
 }
 
-//1650960932000
-//1590480022768
-//1589780436099
