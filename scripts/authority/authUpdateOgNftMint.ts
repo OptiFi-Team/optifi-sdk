@@ -5,7 +5,8 @@ import updateOgNftMint from "../../instructions/authority/authUpdateNftMint";
 import { findOptifiExchange } from "../../utils/accounts";
 
 initializeContext().then(async (context) => {
-    let ogNftMint = new PublicKey("4bWGR29Mp4rXnC2h1hRWh77Ktj3WzHUMzpxfeukAytsw");
+    let ogNftMint = new PublicKey("u5vbDPVKUJMDXimVzT46FqCZzj1MvozGjhQ4LuwXMFr")
+
     let res = await updateOgNftMint(context, ogNftMint);
     console.log("updateOgNftMint res: ", res)
 
