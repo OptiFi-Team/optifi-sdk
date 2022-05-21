@@ -71,4 +71,9 @@ initializeContext().then(async (context) => {
     Promise.all(
         ammIdxs.map(idx => ammLoop(context, optifiExchange, idx))
     )
+
+    process.on('uncaughtException', err => {
+        console.log(`Uncaught Exception: ${err.message}`)
+        // process.exit(1)
+    })
 })

@@ -16,6 +16,11 @@ initializeContext().then((context) => {
             consumeEventsLoop2(context, market[1])
         }
     })
+
+    process.on('uncaughtException', err => {
+        console.log(`Uncaught Exception: ${err.message}`)
+        // process.exit(1)
+    })
 })
 
 const consumeEventsLoop2 = async (context: Context, market: PublicKey) => {
