@@ -1,5 +1,5 @@
 {
-  "version": "0.0.0",
+  "version": "1.1.5",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -4908,287 +4908,287 @@
   ],
   "errors": [
     {
-      "code": 300,
+      "code": 6000,
       "name": "AccountCannotInit",
       "msg": "the user account cannot be initialized"
     },
     {
-      "code": 301,
+      "code": 6001,
       "name": "InvalidAccount",
       "msg": "the user account is invalid"
     },
     {
-      "code": 302,
+      "code": 6002,
       "name": "InvalidMarginAccount",
       "msg": "the margin account is invalid"
     },
     {
-      "code": 303,
+      "code": 6003,
       "name": "UnauthorizedAccount",
       "msg": "the account is not owned by the payer"
     },
     {
-      "code": 304,
+      "code": 6004,
       "name": "InsufficientFund",
       "msg": "the account balance is insufficient"
     },
     {
-      "code": 305,
+      "code": 6005,
       "name": "TokenTransferFailed",
       "msg": "Token transfer failed"
     },
     {
-      "code": 306,
+      "code": 6006,
       "name": "UnauthorizedTokenVault",
       "msg": "the token vault is not owned by the payer"
     },
     {
-      "code": 307,
+      "code": 6007,
       "name": "InvalidPDA",
       "msg": "the provided pda is invalid"
     },
     {
-      "code": 308,
+      "code": 6008,
       "name": "UuidMustBeExactly6Length",
       "msg": "Uuid must be exactly of 6 length"
     },
     {
-      "code": 309,
+      "code": 6009,
       "name": "NumericalOverflowError",
       "msg": "Numerical overflow error!"
     },
     {
-      "code": 310,
+      "code": 6010,
       "name": "InsufficientMargin",
       "msg": "Insufficient Margin!"
     },
     {
-      "code": 311,
+      "code": 6011,
       "name": "IncorrectCoinMint",
       "msg": "Incorrect coin mint!"
     },
     {
-      "code": 312,
+      "code": 6012,
       "name": "CannotRecordPnLBeforeMarketsExpired",
       "msg": "Cannot record pnl befor markets is expired!"
     },
     {
-      "code": 313,
+      "code": 6013,
       "name": "CannotSettleFundBeforeMarketsStopped",
       "msg": "Cannot settle fund befor markets has been stopped!"
     },
     {
-      "code": 314,
+      "code": 6014,
       "name": "CannotRecordPnLForStoppedMarket",
       "msg": "Cannot record pnl when market is stopped!"
     },
     {
-      "code": 315,
+      "code": 6015,
       "name": "InstrumetIsDelisted",
       "msg": "Cannot record pnl for delisted instrument!"
     },
     {
-      "code": 316,
+      "code": 6016,
       "name": "IncorrectOracleAccount",
       "msg": "Incorrect oracle account"
     },
     {
-      "code": 317,
+      "code": 6017,
       "name": "WrongState",
       "msg": "the working state is wrong"
     },
     {
-      "code": 318,
+      "code": 6018,
       "name": "WrongInstrument",
       "msg": "the instrument has already been done"
     },
     {
-      "code": 319,
+      "code": 6019,
       "name": "NoEnoughOrdersInProposal",
       "msg": "no enough orders in proposal to execute"
     },
     {
-      "code": 320,
+      "code": 6020,
       "name": "CannotRemoveInstrumentForAMM",
       "msg": "cannot remove the instrument for amm"
     },
     {
-      "code": 321,
+      "code": 6021,
       "name": "DuplicateInstrumentForAMM",
       "msg": "cannot add the instrument for amm due to duplication"
     },
     {
-      "code": 322,
+      "code": 6022,
       "name": "UserNotInLiquidation",
       "msg": "User is not in liquidation"
     },
     {
-      "code": 323,
+      "code": 6023,
       "name": "UserNotInCancelOrder",
       "msg": "User is not in cancel order status"
     },
     {
-      "code": 324,
+      "code": 6024,
       "name": "UserAlreadyInLiquidation",
       "msg": "User was already in liquidation"
     },
     {
-      "code": 325,
+      "code": 6025,
       "name": "InstrumentAlreadyRegisteredForLiquidation",
       "msg": "Instrument was already registered for liquidation"
     },
     {
-      "code": 326,
+      "code": 6026,
       "name": "CannotPlaceOrdersInLiquidation",
       "msg": "Users cannot place manual orders while their accounts are in liquidation"
     },
     {
-      "code": 327,
+      "code": 6027,
       "name": "CannotCancelOrdersInLiquidation",
       "msg": "Users cannot cancel manual orders while their accounts are in liquidation"
     },
     {
-      "code": 328,
+      "code": 6028,
       "name": "PoolNotCentralUSDCPool",
       "msg": "Provided USDC pool is not central pool"
     },
     {
-      "code": 329,
+      "code": 6029,
       "name": "InvalidSerumAuthority",
       "msg": "Invalid open orders market authority"
     },
     {
-      "code": 330,
+      "code": 6030,
       "name": "WithdrawRequestInvalid",
       "msg": "Only one withdraw request allowed at one time"
     },
     {
-      "code": 331,
+      "code": 6031,
       "name": "UserIsMarketMaker",
       "msg": "User is already registered as market maker"
     },
     {
-      "code": 332,
+      "code": 6032,
       "name": "MMWithdrawNotInWindow",
       "msg": "Market maker withdraw outside of valid window"
     },
     {
-      "code": 333,
+      "code": 6033,
       "name": "WrongAsset",
       "msg": "Wrong asset"
     },
     {
-      "code": 334,
+      "code": 6034,
       "name": "TimeOut",
       "msg": "Should update the margin stress again"
     },
     {
-      "code": 335,
+      "code": 6035,
       "name": "OrderFailed",
       "msg": "The order is failed"
     },
     {
-      "code": 336,
+      "code": 6036,
       "name": "WrongFeeAccount",
       "msg": "Wrong USDC fee account"
     },
     {
-      "code": 337,
+      "code": 6037,
       "name": "InvalidMangoAccount",
       "msg": "the mango account is invalid"
     },
     {
-      "code": 338,
+      "code": 6038,
       "name": "InvalidMangoToken",
       "msg": "the mango token index is invalid"
     },
     {
-      "code": 339,
+      "code": 6039,
       "name": "IncorrectOpenOrdersAccountsLength",
       "msg": "the length of open orders accounts is incorrect"
     },
     {
-      "code": 340,
+      "code": 6040,
       "name": "WrongPerpMarketIndex",
       "msg": "wrong perp market index"
     },
     {
-      "code": 341,
+      "code": 6041,
       "name": "MismatchedAsset",
       "msg": "asset of amm and the instrument are mismatched"
     },
     {
-      "code": 342,
+      "code": 6042,
       "name": "InstrumentExpired",
       "msg": "the instrument is expired"
     },
     {
-      "code": 343,
+      "code": 6043,
       "name": "MismatchedDuration",
       "msg": "duration of amm and the instrument are mismatched"
     },
     {
-      "code": 344,
+      "code": 6044,
       "name": "DontNeedGenerateNextInstrument",
       "msg": "spot price is in strike interval"
     },
     {
-      "code": 345,
+      "code": 6045,
       "name": "InsufficientWithdrawableLPAmount",
       "msg": "insufficient withdrawable lp token amount"
     },
     {
-      "code": 346,
+      "code": 6046,
       "name": "WithdrawRequestQueueIsFull",
       "msg": "withdraw request queue is full"
     },
     {
-      "code": 347,
+      "code": 6047,
       "name": "WithdrawRequestQueueIsEmpty",
       "msg": "no withdraw request to process"
     },
     {
-      "code": 348,
+      "code": 6048,
       "name": "MismatchedWithdrawUserId",
       "msg": "mismatched withdraw request user id"
     },
     {
-      "code": 349,
+      "code": 6049,
       "name": "AmmWithdrawNotInWindow",
       "msg": "amm withdraw not in correct time window"
     },
     {
-      "code": 350,
+      "code": 6050,
       "name": "WithdrawWouldBreachAmmDelta",
       "msg": "withdrawal would breach amm delta"
     },
     {
-      "code": 351,
+      "code": 6051,
       "name": "NoOGNftFound",
       "msg": "No OG NFT found"
     },
     {
-      "code": 352,
+      "code": 6052,
       "name": "InvalidOGNftVault",
       "msg": "Invalid OG NFT vault"
     },
     {
-      "code": 353,
+      "code": 6053,
       "name": "InvalidOGNftMint",
       "msg": "Invalid OG NFT mint"
     },
     {
-      "code": 354,
+      "code": 6054,
       "name": "UnauthorizedOperation",
       "msg": "unauthorized operation"
     },
     {
-      "code": 355,
+      "code": 6055,
       "name": "InsufficientAmmCapacity",
       "msg": "amm trading capacity is not enough"
     },
     {
-      "code": 356,
+      "code": 6056,
       "name": "CannotDepositMoreThanLimit",
       "msg": "cannot deposit more than the deposit limit"
     },

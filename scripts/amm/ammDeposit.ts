@@ -5,7 +5,7 @@ import { findOptifiExchange } from "../../utils/accounts";
 import { findAMMWithIdx } from "../../utils/amm";
 import { ammIndex } from "./constants";
 
-let amount = 100000; // already including decimals
+let amount = 350; // already including decimals
 
 // let ammAddress = new PublicKey("BqCCiwsymyNu66fiTiJ7UCBQqexZpNZpAF2QF18nkDnR");
 

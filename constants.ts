@@ -113,7 +113,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    "https://api.devnet.solana.com": "111313",
+    "https://api.devnet.solana.com": "111317",
     "https://api.testnet.solana.com": "dmeWlh",
     "https://solana-api.projectserum.com": "210001",
 }
