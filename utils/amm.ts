@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { GetProgramAccountsFilter, PublicKey, TransactionResponse } from "@solana/web3.js";
+import { Connection, GetProgramAccountsFilter, PublicKey, TransactionResponse } from "@solana/web3.js";
 import { AmmAccount, UserAccount } from "../types/optifi-exchange-types";
 import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
 import { AMM_PREFIX, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
@@ -15,6 +15,8 @@ import { BN } from "@project-serum/anchor";
 import Decimal from "decimal.js";
 import { findAssociatedTokenAccount } from "./token";
 import { getAccount, getMint } from "@solana/spl-token";
+import { resolve } from "path/posix";
+
 
 export const DELTA_LIMIT = 0.05;
 export const WITHDRAW_FEE_PERCENTAGE = 0.001;
@@ -721,54 +723,74 @@ export function getAmmWithdrawCapacity(amm: AmmAccount, spotPrice: number): numb
 // convert given amount of lp tokens to usdc amount - decimals not considered
 export function lpToUsdcAmount(
     lpTokenAmount: number,
-    lpTokenMintSupply: number,
+    lpTokenSupply: number,
     totalLiquidityUsdc: number,
 ): number {
     let rawAmount =
-        totalLiquidityUsdc * (lpTokenAmount / lpTokenMintSupply);
+        totalLiquidityUsdc * (lpTokenAmount / lpTokenSupply);
     let amount = (rawAmount - rawAmount % 1);
     return amount
 }
 
+// calculate amm withdraw fees - decimals considered
+export async function calcAmmWithdrawFees(
+    connection: Connection,
+    amm: AmmAccount,
+    userAccount: UserAccount,
+    lpAmountToWithdraw: number
+): Promise<[withdrawAmountInUSDC: number, withdrawFee: number, performanceFee: number]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // get amm lp token mint supply - note that no need to consider decimals of lp token, just use raw amount for calculation
+            let lpMint = await getMint(connection, amm.lpTokenMint)
+            let lpTokenSupply = new BN(lpMint.supply.toString()).toNumber();
 
-// calculate amm withdraw fees - decimals not considered
-export function calcAmmWithdrawFees(amm: AmmAccount, lpTokenMintSupply: number, userAccount: UserAccount, lpAmountToWithdraw: number): [withdrawAmountInUSDC: number, withdrawFee: number, performanceFee: number] {
+            //@ts-ignore
+            let notioanlWithdrawableRaw = userAccount.ammEquities[amm.ammIdx].notioanlWithdrawable;
+            let notioanlWithdrawable = notioanlWithdrawableRaw / (10 ** USDC_DECIMALS)
 
-    //@ts-ignore
-    let notioanlWithdrawable = userAccount.ammEquities[amm.ammIdx].notioanlWithdrawable;
+            // console.log("notioanlWithdrawable: ", notioanlWithdrawable)
+            // console.log("lpAmountToWithdraw: ", lpAmountToWithdraw)
 
-    // withdraw amount in usdc
-    let withdrawAmount = lpToUsdcAmount(lpAmountToWithdraw, lpTokenMintSupply, amm.totalLiquidityUsdc)
+            // withdraw amount in usdc
+            let withdrawAmountRaw = lpToUsdcAmount(lpAmountToWithdraw * 10 ** lpMint.decimals, lpTokenSupply, amm.totalLiquidityUsdc)
+            let withdrawAmount = withdrawAmountRaw / (10 ** USDC_DECIMALS)
+            // console.log("withdrawAmount: ", withdrawAmount)
 
-    // calc withdraw fee: 0.1%
-    let withdrawFee = withdrawAmount * WITHDRAW_FEE_PERCENTAGE;
-    console.log("withdraw fee: ", withdrawFee);
+            // calc withdraw fee: 0.1%
+            let withdrawFee = withdrawAmount * WITHDRAW_FEE_PERCENTAGE;
+            // console.log("withdraw fee: ", withdrawFee);
 
-    let profit: number = 0;
-    let performanceFee: number = 0;
+            let profit: number = 0;
+            let performanceFee: number = 0;
 
-    // calc performance fee: 10%
-    if (withdrawAmount > notioanlWithdrawable) {
-        console.log("calculating performance fee");
+            // calc performance fee: 10%
+            if (withdrawAmount > notioanlWithdrawable) {
+                console.log("calculating performance fee");
 
-        // clac user's profit
-        profit = withdrawAmount - notioanlWithdrawable;
+                // clac user's profit
+                profit = withdrawAmount - notioanlWithdrawable;
 
-        // calc performance fee
-        performanceFee = profit * PERFORMANCE_FEE_PERCENTAGE;
-    }
+                // calc performance fee
+                performanceFee = profit * PERFORMANCE_FEE_PERCENTAGE;
+            }
 
-    let totalFee = withdrawFee + performanceFee;
+            let totalFee = withdrawFee + performanceFee;
 
-    //     // round up to integer
-    //     let fee = if fee_f % 1f64 == 0f64 {
-    //         fee_f as u64
-    //     } else {
-    //         (fee_f - (fee_f % 1f64) + 1f64) as u64
-    //     };
-    //     return fee;
+            //     // round up to integer
+            //     let fee = if fee_f % 1f64 == 0f64 {
+            //         fee_f as u64
+            //     } else {
+            //         (fee_f - (fee_f % 1f64) + 1f64) as u64
+            //     };
+            //     return fee;
 
-    console.log(`withdraw amount in usdc: ${withdrawAmount}, withdraw fee: ${withdrawFee}, total profit: ${profit}, performance fee: ${performanceFee}, total fee: ${totalFee}`);
+            console.log(`withdraw amount in usdc: ${withdrawAmount}, withdraw fee: ${withdrawFee}, total profit: ${profit}, performance fee: ${performanceFee}, total fee: ${totalFee}`);
 
-    return [withdrawAmount, withdrawFee, performanceFee]
+            resolve([withdrawAmount, withdrawFee, performanceFee])
+
+        } catch (err) {
+            reject(err)
+        }
+    })
 }
