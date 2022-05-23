@@ -1,12 +1,12 @@
-import { Transaction, PublicKey } from "@solana/web3.js";
-import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import Context from "../../types/context";
+import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import path from "path/posix";
 import fs from "fs"
+import { OG_NFT_MINT } from "../../constants";
+import { airdropNft } from "../../utils/ogNft";
 
 initializeContext().then(async (context) => {
-    let nftMint = new PublicKey("u5vbDPVKUJMDXimVzT46FqCZzj1MvozGjhQ4LuwXMFr")
+    let nftMint = new PublicKey(OG_NFT_MINT[context.endpoint])
     let airdropAmount = 1
 
     let filePath = path.resolve(__dirname, "addresses.json");
@@ -24,37 +24,3 @@ initializeContext().then(async (context) => {
     }
 })
 
-
-export default async function airdropNft(context: Context, nftMint: PublicKey, toWallet: PublicKey, airdropAmount: number) {
-    let fromWallet = context.provider.wallet
-
-    let tx = new Transaction();
-    let fromAta = await getAssociatedTokenAddress(nftMint, fromWallet.publicKey)
-
-    let toAta = await getAssociatedTokenAddress(nftMint, toWallet)
-    // console.log("fromAta: ", fromAta.toString())
-    // console.log("toAta: ", toAta.toString())
-
-    let acctInfo = await context.connection.getAccountInfo(toAta)
-    if (acctInfo == null) {
-        console.log(`Associated Token Account at ${toAta.toString()} did not exist, trying to create for user`);
-        tx.add(createAssociatedTokenAccountInstruction(
-            fromWallet.publicKey,
-            toAta,
-            toWallet,
-            nftMint,
-        ))
-    }
-
-    tx.add(
-        createTransferInstruction(
-            fromAta,
-            toAta,
-            fromWallet.publicKey,
-            airdropAmount,
-        )
-    );
-
-    let txid = await context.provider.send(tx)
-    return txid;
-}

@@ -283,3 +283,10 @@ export const OPTIFI_MAKER_FEE: number = 0.0006;
 
 // user margin deposit limit
 export const DEPOSIT_LIMIT: number = 10000 * (10 ** USDC_DECIMALS);
+
+// OG NFT token mint address
+export const OG_NFT_MINT = {
+    "https://api.devnet.solana.com": "u5vbDPVKUJMDXimVzT46FqCZzj1MvozGjhQ4LuwXMFr",
+    "https://solana-api.projectserum.com": "",
+    "https://api.testnet.solana.com": ""
+}
