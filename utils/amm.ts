@@ -522,7 +522,7 @@ async function getLpAmountAfterConsume(logs: string[]) {
     return parseInt(stringRes) / (10 ** decimal);
 }
 
-//refer :logAMMAccounts
+//refer:logAMMAccounts
 async function getUserWalletAddress(logs: string[]) {
     let ownerStringLen = 9
     let stringRes: string;
