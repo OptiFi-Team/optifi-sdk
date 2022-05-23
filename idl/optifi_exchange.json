@@ -5191,6 +5191,11 @@
       "code": 356,
       "name": "CannotDepositMoreThanLimit",
       "msg": "cannot deposit more than the deposit limit"
+    },
+    {
+      "code": 357,
+      "name": "MismatchedInstrument",
+      "msg": "Instrument index is wrong"
     }
   ]
 }

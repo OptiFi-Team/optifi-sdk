@@ -8,6 +8,7 @@ import marginStress from "../marginStress";
 import { USDC_DECIMALS } from "../../constants";
 import { numberAssetToDecimal } from "../../utils/generic";
 import OrderType, { orderTypeToNumber } from "../../types/OrderType";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export default function placeOrder(context: Context,
     userAccount: UserAccount,
@@ -49,7 +50,7 @@ export default function placeOrder(context: Context,
 
             // ix.unshift(addComputeIx)
 
-            context.program.rpc.placeOrder(
+            let placeOrderIx = context.program.instruction.placeOrder(
                 side,
                 new anchor.BN(limit),
                 new anchor.BN(maxCoinQty),
@@ -57,9 +58,31 @@ export default function placeOrder(context: Context,
                 new anchor.BN(orderTypeToNumber(orderType)),
                 {
                     accounts: orderContext,
-                    instructions: ix
                 }
-            ).then((res) => {
+            );
+
+            ix.push(placeOrderIx);
+
+            context.program.rpc.settleOrderFunds({
+                accounts: {
+                    optifiExchange: orderContext.optifiExchange,
+                    userAccount: orderContext.userAccount,
+                    optifiMarket: marketAddress,
+                    serumMarket: orderContext.serumMarket,
+                    userSerumOpenOrders: orderContext.openOrders,
+                    coinVault: orderContext.coinVault,
+                    pcVault: orderContext.pcVault,
+                    instrumentLongSplTokenMint: orderContext.coinMint,
+                    instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
+                    userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
+                    userInstrumentShortTokenVault: orderContext.userInstrumentShortTokenVault,
+                    userMarginAccount: orderContext.userMarginAccount,
+                    vaultSigner: orderContext.vaultSigner,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    serumDexProgramId: orderContext.serumDexProgramId
+                },
+                instructions: ix
+            }).then((res) => {
                 resolve({
                     successful: true,
                     data: res as TransactionSignature

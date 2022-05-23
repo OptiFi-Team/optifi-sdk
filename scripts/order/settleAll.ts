@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
-import settleOrderFunds from "../../instructions/settleOrderFunds";
+import settleOrderFunds from "../../instructions/order/settleOrderFunds";
 import { findUserAccount } from "../../utils/accounts";
 import { findOptifiMarkets } from "../../utils/market";
 import { getSerumMarket, settleSerumFundsIfAnyUnsettled } from "../../utils/serum";

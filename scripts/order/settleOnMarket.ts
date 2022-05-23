@@ -1,5 +1,5 @@
 import { initializeContext } from "../../index";
-import settleOrderFunds from "../../instructions/settleOrderFunds";
+import settleOrderFunds from "../../instructions/order/settleOrderFunds";
 import { market } from "../constants"
 import { findUserAccount } from "../../utils/accounts";
 import { getSerumMarket } from "../../utils/serum";

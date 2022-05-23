@@ -18,7 +18,7 @@ export default function settleFunds(context: Context,
                 findOptifiUSDCPoolAuthPDA(context).then(([centralUSDCPoolAuth, _]) => {
                     context.program.account.exchange.fetch(exchangeAddress).then((exchangeRes) => {
                         let exchange = exchangeRes as Exchange;
-                        let settleTx = context.program.transaction.settleFundForOneUser({
+                        context.program.rpc.settleFundForOneUser({
                             accounts: {
                                 optifiExchange: exchangeAddress,
                                 userAccount: userToSettle,
@@ -28,17 +28,11 @@ export default function settleFunds(context: Context,
                                 usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
                                 tokenProgram: TOKEN_PROGRAM_ID
                             }
-                        });
-                        signAndSendTransaction(context, settleTx).then((settleRes) => {
-                            if (settleRes.resultType === TransactionResultType.Successful) {
-                                resolve({
-                                    successful: true,
-                                    data: settleRes.txId as TransactionSignature
-                                })
-                            } else {
-                                console.error(settleRes);
-                                reject(settleRes);
-                            }
+                        }).then((res) => {
+                            resolve({
+                                successful: true,
+                                data: res as TransactionSignature
+                            })
                         }).catch((err) => reject(err))
                     }).catch((err) => reject(err))
                 }).catch((err) => reject(err))

@@ -4,7 +4,7 @@ import { Market, OpenOrders } from "@project-serum/serum";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { OptifiMarket } from "../types/optifi-exchange-types";
 import { findUserAccount, getFilteredProgramAccounts } from "./accounts";
-import settleOrderFunds from "../instructions/settleOrderFunds";
+import settleOrderFunds from "../instructions/order/settleOrderFunds";
 
 export function getSerumMarket(context: Context, marketAddress: PublicKey): Promise<Market> {
     return Market.load(context.connection, marketAddress, {}, new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]))
@@ -57,7 +57,7 @@ export function settleSerumFundsIfAnyUnsettled(context: Context,
                                         let res = await context.program.account.userAccount.fetch(userAccountAddress);
                                         // @ts-ignore
                                         let userAccount = res as UserAccount;
-                                        settleOrderFunds(context, [marketAddress],userAccount).then((res) => {
+                                        settleOrderFunds(context, [marketAddress], userAccount).then((res) => {
                                             console.debug(res);
                                             // If any of them were successful, we only need to settle once.
                                             resolve(res.data as TransactionSignature);
