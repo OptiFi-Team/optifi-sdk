@@ -16,6 +16,11 @@ import Decimal from "decimal.js";
 import { findAssociatedTokenAccount } from "./token";
 import { getAccount, getMint } from "@solana/spl-token";
 
+export const DELTA_LIMIT = 0.05;
+export const WITHDRAW_FEE_PERCENTAGE = 0.001;
+export const PERFORMANCE_FEE_PERCENTAGE = 0.1;
+
+
 export function findAMMWithIdx(context: Context,
     exchangeAddress: PublicKey,
     idx: number): Promise<[PublicKey, number]> {
@@ -704,4 +709,66 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
             reject(err)
         }
     })
+}
+
+
+// get the maximum withdrawable usdc amount of an AMM
+export function getAmmWithdrawCapacity(amm: AmmAccount, spotPrice: number): number {
+    let maxWithdrawable = amm.totalLiquidityUsdc / (10 ** USDC_DECIMALS) - (Math.abs(amm.netDelta) / (10 ** USDC_DECIMALS)) * spotPrice / DELTA_LIMIT
+    return maxWithdrawable
+}
+
+// convert given amount of lp tokens to usdc amount - decimals not considered
+export function lpToUsdcAmount(
+    lpTokenAmount: number,
+    lpTokenMintSupply: number,
+    totalLiquidityUsdc: number,
+): number {
+    let rawAmount =
+        totalLiquidityUsdc * (lpTokenAmount / lpTokenMintSupply);
+    let amount = (rawAmount - rawAmount % 1);
+    return amount
+}
+
+
+// calculate amm withdraw fees - decimals not considered
+export function calcAmmWithdrawFees(amm: AmmAccount, lpTokenMintSupply: number, userAccount: UserAccount, lpAmountToWithdraw: number): [withdrawAmountInUSDC: number, withdrawFee: number, performanceFee: number] {
+
+    //@ts-ignore
+    let notioanlWithdrawable = userAccount.ammEquities[amm.ammIdx].notioanlWithdrawable;
+
+    // withdraw amount in usdc
+    let withdrawAmount = lpToUsdcAmount(lpAmountToWithdraw, lpTokenMintSupply, amm.totalLiquidityUsdc)
+
+    // calc withdraw fee: 0.1%
+    let withdrawFee = withdrawAmount * WITHDRAW_FEE_PERCENTAGE;
+    console.log("withdraw fee: ", withdrawFee);
+
+    let profit: number = 0;
+    let performanceFee: number = 0;
+
+    // calc performance fee: 10%
+    if (withdrawAmount > notioanlWithdrawable) {
+        console.log("calculating performance fee");
+
+        // clac user's profit
+        profit = withdrawAmount - notioanlWithdrawable;
+
+        // calc performance fee
+        performanceFee = profit * PERFORMANCE_FEE_PERCENTAGE;
+    }
+
+    let totalFee = withdrawFee + performanceFee;
+
+    //     // round up to integer
+    //     let fee = if fee_f % 1f64 == 0f64 {
+    //         fee_f as u64
+    //     } else {
+    //         (fee_f - (fee_f % 1f64) + 1f64) as u64
+    //     };
+    //     return fee;
+
+    console.log(`withdraw amount in usdc: ${withdrawAmount}, withdraw fee: ${withdrawFee}, total profit: ${profit}, performance fee: ${performanceFee}, total fee: ${totalFee}`);
+
+    return [withdrawAmount, withdrawFee, performanceFee]
 }
