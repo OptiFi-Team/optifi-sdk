@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import { Connection, GetProgramAccountsFilter, PublicKey, TransactionResponse } from "@solana/web3.js";
 import { AmmAccount, UserAccount } from "../types/optifi-exchange-types";
-import { findAccountWithSeeds, findExchangeAccount, findUserAccount } from "./accounts";
+import { findAccountWithSeeds, findExchangeAccount, findOptifiExchange, findUserAccount } from "./accounts";
 import { AMM_PREFIX, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
 import Position from "../types/position";
 import { retrievRecentTxs } from "./orderHistory";
@@ -21,7 +21,8 @@ import { resolve } from "path/posix";
 export const DELTA_LIMIT = 0.05;
 export const WITHDRAW_FEE_PERCENTAGE = 0.001;
 export const PERFORMANCE_FEE_PERCENTAGE = 0.1;
-
+// 1 for btc amm, 2 for eth amm
+export const ammIndexes = [1, 2]
 
 export function findAMMWithIdx(context: Context,
     exchangeAddress: PublicKey,
@@ -63,7 +64,7 @@ function iterateFindAMM(context: Context,
     })
 }
 
-export function findAMMAccounts(context: Context): Promise<[AmmAccount, PublicKey][]> {
+export function findAMMAccountsV1(context: Context): Promise<[AmmAccount, PublicKey][]> {
     return new Promise(async (resolve, reject) => {
         // findExchangeAccount(context).then(([exchangeAddress, _]) => {
         // iterateFindAMM(context, exchangeAddress).then((accts) => {
@@ -99,6 +100,36 @@ export function findAMMAccounts(context: Context): Promise<[AmmAccount, PublicKe
         }
     })
 }
+
+
+export async function findAMMAccounts(context: Context): Promise<[AmmAccount, PublicKey][]> {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+
+            const [optifiExchange, _bump1] = await findOptifiExchange(context);
+
+            const ammAddresses: PublicKey[] = []
+            for (let idx of ammIndexes) {
+                const [ammAddress, _bump2] = await findAMMWithIdx(
+                    context,
+                    optifiExchange,
+                    idx
+                );
+                ammAddresses.push(ammAddress)
+            }
+
+            // @ts-ignore
+            const ammAccounts: AmmAccount[] = await Promise.all(ammAddresses.map(e => context.program.account.ammAccount.fetch(e)));
+
+            resolve(ammAccounts.map((e, i) => [e, ammAddresses[i]]));
+        } catch (err) {
+            reject(err)
+        }
+    })
+
+}
+
 
 export function findInstrumentIndexFromAMM(context: Context,
     amm: AmmAccount,
@@ -363,6 +394,50 @@ export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> 
         }
     })
 }
+
+
+export function getAmmEquityV2(context: Context, ammAccounts: [AmmAccount, PublicKey][]): Promise<Map<number, AmmEquity>> {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let assets: number[] = []
+            let tradedAmmLpMints: PublicKey[] = []
+            // let tradedAmmUsdcVaults: PublicKey[] = []
+            let tradedAmmUsdcLiquidity: number[] = []
+
+            let deltas: number[] = []
+
+            for (let amm of ammAccounts) {
+                assets.push(amm[0].asset)
+                tradedAmmLpMints.push(amm[0].lpTokenMint)
+                // tradedAmmUsdcVaults.push(amm.quoteTokenVault)
+                tradedAmmUsdcLiquidity.push(amm[0].totalLiquidityUsdc.toNumber())
+                deltas.push(new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber())
+            }
+            let equity = new Map<number, AmmEquity>()
+
+            for (let asset of assets) {
+                let lpTokenMintInfo = await getMint(context.connection, tradedAmmLpMints[assets.indexOf(asset)]);
+                let lpSupply = lpTokenMintInfo.supply;
+                // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)]);
+                // let ammUsdcVaultBalance = ammUsdcVaultInfo.amount;
+                let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
+
+                // let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint);
+
+                equity.set(asset, {
+                    ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** USDC_DECIMALS).toNumber(),
+                    ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
+                    delta: deltas[assets.indexOf(asset)]
+                })
+            }
+            resolve(equity)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
 
 
 export class AmmTx {
