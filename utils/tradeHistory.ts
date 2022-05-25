@@ -15,8 +15,7 @@ async function getOrders(context: Context): Promise<Order[]> {
     let [userAccountAddress,] = await findUserAccount(context)
 
     let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress)
-    let context2 = await initializeContext(undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" })
-    let orderHistory = await getAllOrdersForAccount(context2, userAccount,)
+    let orderHistory = await getAllOrdersForAccount(context, userAccount,)
     let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
     resolve(orders)
   })
@@ -49,9 +48,9 @@ export function getAllTradesForAccount(
       let ClientIdFilledPercentage: number[] = await getPercentageFillPercentage(context);
       console.log(res)
       res.forEach(order => {
-// divide to three situations: place order / cancel order / fill
-// push to res if place order, pop res if cancel order
-// after that, check if fill order by ClientIdFilledPercentage, then renew res by it
+        // divide to three situations: place order / cancel order / fill
+        // push to res if place order, pop res if cancel order
+        // after that, check if fill order by ClientIdFilledPercentage, then renew res by it
 
         if (order.txType == "place order") {
           trades.push(new Trade({
