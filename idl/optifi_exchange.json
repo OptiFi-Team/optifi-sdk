@@ -1739,11 +1739,6 @@
           "isSigner": false
         },
         {
-          "name": "owner",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false

@@ -411,3 +411,32 @@ export async function getAllUsersOnExchange(context: Context)
         }
     })
 }
+
+// get user account by account id
+export async function getUserAccountById(context: Context, id: number)
+    : Promise<{ publicKey: PublicKey; accountInfo: UserAccount }> {
+    let [exchangeAddress, _] = await findExchangeAccount(context);
+    const filters: GetProgramAccountsFilter[] = [
+        {
+            memcmp: {
+                offset: 8,
+                bytes: exchangeAddress.toBase58(),
+            },
+        },
+        {
+            memcmp: {
+                offset: 72,
+                bytes: base58.encode(new anchor.BN(id).toArrayLike(Buffer, "le", 8)),
+            },
+        },
+    ]
+    let res = await context.program.account.userAccount.all(filters)
+
+    // @ts-ignore
+    return {
+        publicKey: res[0].publicKey,
+        // @ts-ignore
+        accountInfo: res[0].account as UserAccount
+    }
+
+}
