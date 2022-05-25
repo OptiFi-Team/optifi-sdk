@@ -101,6 +101,8 @@ export function calcPnLForUserPositions(
 }
 
 interface PnL {
+    // optifi market address
+    marketAddress: PublicKey
     // user's entry price for the holding position
     avgEntryPrice: number,
     // current market price of user's holding position
@@ -138,6 +140,7 @@ export function calPnLForOnePosition(postion: Position, marketPrice: number, tra
 
     }
     return {
+        marketAddress: postion.marketId,
         marketPrice,
         avgEntryPrice: entryUnitPrice,
         pnl,
