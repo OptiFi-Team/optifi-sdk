@@ -1,3 +1,4 @@
+import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import { AmmAccount, AmmState } from "../../types/optifi-exchange-types";
 import { findOptifiExchange } from "../../utils/accounts";
@@ -54,15 +55,18 @@ initializeContext().then(async (context) => {
     console.log("amm.price: ", amm.price.toNumber())
 
 
-    let ammWithdrawRequestQueue = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
+    console.log("amm.withdrawQueue: ", amm.withdrawQueue.toString())
+    let ammWithdrawRequestQueue = await context.program.account.ammWithdrawRequestQueue.fetch(new PublicKey("6PKeBny7mJn3xNXPuxVKNEu5ivazRA3mwjwgdVqvNAFj"))
     console.log("ammWithdrawRequestQueue.head: ", ammWithdrawRequestQueue.head)
     console.log("ammWithdrawRequestQueue.tail: ", ammWithdrawRequestQueue.tail)
     // @ts-ignore
     console.log("ammWithdrawRequestQueue.tail: ", ammWithdrawRequestQueue.requests.map(e => {
         return {
-        "userAccountId": e.userAccountId.toNumber(),
-        "amount": e.amount.toNumber(),
-        "withdrawTimestamp": e.requestTimestamp.toNumber(),
-    }}))
+            "requestId": e.requestId,
+            "userAccountId": e.userAccountId,
+            "amount": e.amount.toNumber(),
+            "withdrawTimestamp": e.requestTimestamp.toNumber(),
+        }
+    }))
 
 })
