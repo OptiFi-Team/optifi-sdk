@@ -292,22 +292,28 @@ export function reloadOptifiMarketsData(context: Context, optifiMarkets: OptifiM
 
 export function findExpiredMarkets(context: Context): Promise<[OptifiMarket, PublicKey][]> {
     return new Promise((resolve, reject) => {
-        findOptifiMarkets(context).then((markets) => {
+        findOptifiMarkets(context).then(async (markets) => {
             let expiredMarkets: [OptifiMarket, PublicKey][] = [];
             let now = new anchor.BN(Math.floor(Date.now() / 1000));
-            Promise.all(markets.map((m) => new Promise((chainRes) => {
-                context.program.account.chain.fetch(m[0].instrument).then((res) => {
-                    // @ts-ignore
-                    let chain = res as Chain;
-                    if (chain.expiryDate <= now) {
-                        expiredMarkets.push(m);
-                    }
-                    chainRes(chain);
-                }).catch((err) => reject(err));
-            }))).then(() => resolve(
+
+            let instruments = markets.map((m) => m[0].instrument)
+
+            let chains = await context.program.account.chain.fetchMultiple(instruments)
+
+            console.log(chains)
+
+            markets.forEach((m, i) => {   // @ts-ignore
+                let chain = chains[i] as Chain;
+                console.log(chain)
+                if (chain.expiryDate <= now) {
+                    expiredMarkets.push(m);
+                }
+            })
+
+            resolve(
                 expiredMarkets
-            )).catch((err) => reject(err));
-        })
+            )
+        }).catch((err) => reject(err));
     })
 }
 
