@@ -8,6 +8,7 @@ import { findAssociatedTokenAccount } from "../../utils/token";
 import { getAmmLiquidityAuthPDA } from "../../utils/pda";
 import { USDC_TOKEN_MINT } from "../../constants";
 import { findMarginStressWithAsset } from "../../utils/margin";
+import { UserAccount } from "../../types/optifi-exchange-types";
 
 export default function consumeWithdrawRequestQueue(context: Context,
     ammAddress: PublicKey,
@@ -20,38 +21,43 @@ export default function consumeWithdrawRequestQueue(context: Context,
                     context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                         // @ts-ignore
                         let amm = ammRes as Amm;
-                        findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
-                            findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
-                                // let [marginStressAddress,] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
-                                context.program.rpc.consumeWithdrawQueue(
-                                    {
-                                        accounts: {
-                                            optifiExchange: exchangeAddress,
-                                            usdcFeePool: exchangeInfo.usdcFeePool,
-                                            amm: ammAddress,
-                                            // marginStressAccount: marginStressAddress,
-                                            withdrawQueue: amm.withdrawQueue,
-                                            ammQuoteTokenVault: amm.quoteTokenVault,
-                                            userQuoteTokenVault: userQuoteTokenVault,
-                                            lpTokenMint: amm.lpTokenMint,
-                                            ammLiquidityAuth: liquidityAuthPDA,
-                                            userLpTokenVault: userLpTokenVault,
-                                            userAccount: userAccount,
-                                            tokenProgram: TOKEN_PROGRAM_ID,
-                                            clock: SYSVAR_CLOCK_PUBKEY
+                        context.program.account.userAccount.fetch(userAccount).then((userAccountRes) => {
+                            // @ts-ignore
+                            let user = userAccountRes as UserAccount;
+                            // console.log(user.owner.toString())
+
+                            findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint]), user.owner).then(([userQuoteTokenVault, _]) => {
+                                // console.log(userQuoteTokenVault.toString())
+
+                                findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
+                                    // let [marginStressAddress,] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
+                                    context.program.rpc.consumeWithdrawQueue(
+                                        {
+                                            accounts: {
+                                                optifiExchange: exchangeAddress,
+                                                usdcFeePool: exchangeInfo.usdcFeePool,
+                                                amm: ammAddress,
+                                                // marginStressAccount: marginStressAddress,
+                                                withdrawQueue: amm.withdrawQueue,
+                                                ammQuoteTokenVault: amm.quoteTokenVault,
+                                                userQuoteTokenVault: userQuoteTokenVault,
+                                                lpTokenMint: amm.lpTokenMint,
+                                                ammLiquidityAuth: liquidityAuthPDA,
+                                                userLpTokenVault: userLpTokenVault,
+                                                userAccount: userAccount,
+                                                tokenProgram: TOKEN_PROGRAM_ID,
+                                                clock: SYSVAR_CLOCK_PUBKEY
+                                            }
                                         }
-                                    }
-                                ).then((res) => {
-                                    resolve({
-                                        successful: true,
-                                        data: res as TransactionSignature
-                                    })
+                                    ).then((res) => {
+                                        resolve({
+                                            successful: true,
+                                            data: res as TransactionSignature
+                                        })
+                                    }).catch((err) => reject(err))
                                 }).catch((err) => reject(err))
                             }).catch((err) => reject(err))
-                        }).catch((err) => {
-                            console.error(err);
-                            reject(err)
-                        })
+                        }).catch((err) => reject(err))
                     }).catch((err) => reject(err))
                 }).catch((err) => reject(err))
             }).catch((err) => reject(err))

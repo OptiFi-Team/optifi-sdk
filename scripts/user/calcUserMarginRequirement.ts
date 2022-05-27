@@ -15,7 +15,7 @@ initializeContext().then(async (context) => {
 
 
         // check if user's margin is sufficient for the comming new order
-        let res2 = await isMarginSufficientForNewOrder(context, userAccount, market, OrderSide.Ask, 2)
+        let res2 = await isMarginSufficientForNewOrder(context, userAccount, market, OrderSide.Ask, 1000000)
         console.log("isMarginSufficientForNewOrder res: ", res2)
 
         // let res3 = await preCalcMarginForNewOrder(context, userAccount, marketAddress, OrderSide.Ask, 4)

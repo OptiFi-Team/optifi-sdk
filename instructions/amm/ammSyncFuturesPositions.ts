@@ -49,12 +49,15 @@ export default function ammSyncFuturesPositions(context: Context,
                     // prepare the mango account for amm
                     let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.endpoint])
                     let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.endpoint])
+                    // console.log("mangoProgramId: ", mangoProgramId.toString())
+                    // console.log("mangoGroup: ", mangoGroup.toString())
+
                     let [ammMangoAccountAddress,] = await getMangoAccountPDA(mangoProgramId, mangoGroup, ammLiquidityAuth, amm.ammIdx)
                     console.log("ammMangoAccountAddress: ", ammMangoAccountAddress.toString())
 
                     // new MangoAccount(ammMangoAccountAddress,)
                     let mangoAccountInfo = await getMangoAccount(context.connection, ammMangoAccountAddress, mangoProgramId)
-                    console.log("mangoAccountInfo: ", mangoAccountInfo)
+                    // console.log("mangoAccountInfo: ", mangoAccountInfo)
 
                     let client = new MangoClient(context.connection, mangoProgramId);
                     let mangoGroupAccountInfo = await client.getMangoGroup(mangoGroup)
@@ -63,6 +66,8 @@ export default function ammSyncFuturesPositions(context: Context,
                     const perpMarketInfo = getMangoPerpMarketInfoByAsset(context, amm.asset)!;
                     const perpMarket = new PublicKey(perpMarketInfo["publicKey"])
                     const eventQueue = new PublicKey(perpMarketInfo["eventsKey"])
+                    // console.log("perpMarket: ", perpMarket.toString())
+                    // console.log("eventQueue: ", eventQueue.toString())
 
                     let perpMarketIndex = mangoGroupAccountInfo.perpMarkets.findIndex(e => e.perpMarket.equals(perpMarket))
                     if (mangoGroupAccountInfo.perpMarkets[perpMarketIndex]) {
@@ -81,6 +86,32 @@ export default function ammSyncFuturesPositions(context: Context,
                             const filteredNodeBanks = nodeBanks.filter((nodeBank) => !!nodeBank);
                             // expect(filteredNodeBanks.length).to.equal(1);
                             let vault = filteredNodeBanks[0]!.vault
+
+                            // mangoAccountInfo.spotOpenOrders.forEach(s => console.log(s.toString()));
+                            // console.log("filteredNodeBanks[0]!.publicKey: ", filteredNodeBanks[0]!.publicKey.toString())
+                            // console.log("usdcRootBank.publicKey: ", usdcRootBank.publicKey.toString())
+                            // console.log("mangoGroupAccountInfo.mangoCache: ", mangoGroupAccountInfo.mangoCache.toString())
+                            // console.log("mangoGroupAccountInfo.signerKey: ", mangoGroupAccountInfo.signerKey.toString())
+
+                            // let accounts = {
+                            //     optifiExchange: exchangeAddress,
+                            //     amm: ammAddress,
+                            //     mangoProgram: mangoProgramId,
+                            //     mangoGroup: mangoGroup,
+                            //     mangoGroupSigner: mangoGroupAccountInfo.signerKey,
+                            //     mangoAccount: ammMangoAccountAddress,
+                            //     owner: ammLiquidityAuth,
+                            //     mangoCache: mangoGroupAccountInfo.mangoCache,
+                            //     rootBank: usdcRootBank.publicKey,
+                            //     nodeBank: filteredNodeBanks[0]!.publicKey,
+                            //     vault: vault,
+                            //     ownerTokenAccount: amm.quoteTokenVault,
+                            //     payer: context.provider.wallet.publicKey,
+                            //     tokenProgram: TOKEN_PROGRAM_ID,
+                            //     perpMarket: perpMarket,
+                            //     eventQueue: eventQueue,
+                            // };
+                            // Object.values(accounts).forEach(p => console.log(p.toString()));
 
                             // console.log(mangoGroupAccountInfo.tokens.forEach(e => console.log(e.mint.toString(), " ", e.rootBank.toString())))
 
@@ -105,11 +136,13 @@ export default function ammSyncFuturesPositions(context: Context,
                                         perpMarket: perpMarket,
                                         eventQueue: eventQueue,
                                     },
-                                    remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) => ({
-                                        isSigner: false,
-                                        isWritable: false,
-                                        pubkey,
-                                    }))
+                                    remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) =>
+                                    (
+                                        {
+                                            isSigner: false,
+                                            isWritable: false,
+                                            pubkey,
+                                        }))
 
                                 }
 
