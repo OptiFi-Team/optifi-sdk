@@ -33,13 +33,15 @@ export async function removeInstrumentsFromAmm(context: Context, ammIndex: numbe
             let index = instrumentAddresses.findIndex(e => e.toString() == instrument.toString())
             return !(index >= 0 && instrumentInfos[index].expiryDate.toNumber() * 1000 > now)
         });
-        for (let market of optifiMarketsToRemove) {
-            console.log( ammAddress.toString(), market.toString())
+        // for (let market of optifiMarketsToRemove) {
+        optifiMarketsToRemove.forEach(async market => {
+            console.log(ammAddress.toString(), market.toString())
 
             let res = await removeInstrumentFromAmm(context, ammAddress, market)
             console.log(`successfully removed optifi market ${market.toString()} from amm ${ammAddress.toString()} with id ${ammIndex}`)
             console.log(res)
-        }
+        })
+        // }
     } catch (err) {
         console.error(err);
     }
