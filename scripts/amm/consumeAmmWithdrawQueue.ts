@@ -2,28 +2,32 @@ import { initializeContext } from "../../index";
 import consumeWithdrawRequestQueue from "../../instructions/amm/consumeWithdrawRequestQueue";
 import { findOptifiExchange, getUserAccountById } from "../../utils/accounts";
 import { findAMMWithIdx } from "../../utils/amm";
-import { ammIndex } from "./constants";
+// import { ammIndex } from "./constants";
 
+let ammIndexes = [1, 2]
 initializeContext().then(async (context) => {
     let [optifiExchange,] = await findOptifiExchange(context)
-    let [ammAddress,] = await findAMMWithIdx(context, optifiExchange, ammIndex)
-    let amm = await context.program.account.ammAccount.fetch(ammAddress)
+    ammIndexes.forEach(async ammIndex => {
+        let [ammAddress,] = await findAMMWithIdx(context, optifiExchange, ammIndex)
+        let amm = await context.program.account.ammAccount.fetch(ammAddress)
 
-    while (true) {
-        let withdrawRequests = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
+        while (true) {
 
-        if (withdrawRequests.head != withdrawRequests.tail) {
-            // @ts-ignore
-            let userId = withdrawRequests.requests[withdrawRequests.head].userAccountId
+            let withdrawRequests = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
 
-            console.log("userId: ", userId)
-            let userAccount = await getUserAccountById(context, userId)
+            if (withdrawRequests.head != withdrawRequests.tail) {
+                // @ts-ignore
+                let userId = withdrawRequests.requests[withdrawRequests.head].userAccountId
 
-            consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then((res) => {
-                console.log("Got deposit res", res);
-            }).catch((err) => {
-                console.error(err);
-            })
+                console.log("userId: ", userId)
+                let userAccount = await getUserAccountById(context, userId)
+
+                consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then((res) => {
+                    console.log("Got deposit res", res);
+                }).catch((err) => {
+                    console.error(err);
+                })
+            }
         }
-    }
+    })
 })

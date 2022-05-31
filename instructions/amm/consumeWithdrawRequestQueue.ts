@@ -30,14 +30,14 @@ export default function consumeWithdrawRequestQueue(context: Context,
                                 // console.log(userQuoteTokenVault.toString())
 
                                 findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
-                                    // let [marginStressAddress,] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
+                                    let [marginStressAddress,] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
                                     context.program.rpc.consumeWithdrawQueue(
                                         {
                                             accounts: {
                                                 optifiExchange: exchangeAddress,
                                                 usdcFeePool: exchangeInfo.usdcFeePool,
                                                 amm: ammAddress,
-                                                // marginStressAccount: marginStressAddress,
+                                                marginStressAccount: marginStressAddress,
                                                 withdrawQueue: amm.withdrawQueue,
                                                 ammQuoteTokenVault: amm.quoteTokenVault,
                                                 userQuoteTokenVault: userQuoteTokenVault,

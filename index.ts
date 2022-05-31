@@ -114,12 +114,12 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
  * @param customExchangeUUID Optionally supply a custom UUID for the exchange, instead of using the Optifi
  * constant
  *
- * @param endpoint The Solana cluster to connect to. Devnet by default
+ * @param endpoint The Solana cluster to connect to. Mainnet by default
  */
 function initializeContext(wallet?: string | WalletProvider,
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet,
+    endpoint: SolanaEndpoint = SolanaEndpoint.Mainnet,
     // commitmentLevel: Commitment = "recent",
     connectionConfig: ConnectionConfig = {
         commitment: "recent",

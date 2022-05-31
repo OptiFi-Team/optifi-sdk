@@ -1699,6 +1699,11 @@
           "isSigner": false
         },
         {
+          "name": "marginStressAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "withdrawQueue",
           "isMut": true,
           "isSigner": false

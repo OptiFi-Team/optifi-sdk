@@ -5,12 +5,12 @@ import fs from "fs"
 import { OG_NFT_MINT } from "../../constants";
 import { airdropNft } from "../../utils/ogNft";
 
-import * as XLSX from 'xlsx'
+// import * as XLSX from 'xlsx'
 
 
 /* load 'stream' for stream support */
-import { Readable } from 'stream';
-XLSX.stream.set_readable(Readable);
+// import { Readable } from 'stream';
+// XLSX.stream.set_readable(Readable);
 
 // /* load the codepage support library for extended support with older formats  */
 // import * as cpexcel from 'xlsx';
