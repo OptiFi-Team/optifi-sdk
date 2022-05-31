@@ -767,7 +767,7 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                                 e.status = "Completed"
                                             } else {
                                                 lpAmountConsumed[requestId] += userBurnLpAmountAfterConsume;
-                                                percentage = lpAmountConsumed[requestId] * 100 / e.lpAmount
+                                                percentage = Math.round(lpAmountConsumed[requestId] * 100 / e.lpAmount)
                                                 e.status = "Processing(" + percentage.toString() + "%)"
                                             }
 
