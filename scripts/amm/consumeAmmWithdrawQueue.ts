@@ -23,7 +23,7 @@ initializeContext().then(async (context) => {
                 let userAccount = await getUserAccountById(context, userId)
 
                 consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then((res) => {
-                    console.log("Got deposit res", res);
+                    console.log("Got consumeWithdrawRequestQueue res", res);
                 }).catch((err) => {
                     console.error(err);
                 })

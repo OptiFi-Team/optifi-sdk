@@ -14,7 +14,7 @@ initializeContext().then(async (context) => {
     let [ammAddress,] = await findAMMWithIdx(context, optifiExchange, ammIndex)
 
     ammDeposit(context, ammAddress, amount).then((res) => {
-        console.log("Got deposit res", res);
+        console.log("Got ammDeposit res", res);
     }).catch((err) => {
         console.error(err);
     })
