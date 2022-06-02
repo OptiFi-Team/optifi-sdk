@@ -131,8 +131,8 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
         console.log(`Found ${optifiMarkets.length} optifi markets in total `);
 
         // @ts-ignore
-        for (let i = 0; i < ammInfo.proposals.length; i++) {
-            await sleep(0.5 * 1000)
+        Array.from(Array(ammInfo.proposals.length).keys()).forEach(async (e, i) => {
+            // await sleep(0.5 * 1000)
 
             // @ts-ignore
             if (!ammInfo.flags[i + 1]) {
@@ -152,16 +152,12 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
                 console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                 // execute all the proposal orders
-                // for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length + 1; j++) {
-                Array.from(Array(proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length).keys()).forEach(async _ => {
-                    let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
-                    console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
-                    console.log(res)
-                })
-                // }
+                let res = await ammUpdateOrders(context, 5, ammAddress, i, market[1])
+                console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
+                console.log(res)
 
             }
-        };
+        })
     } catch (err) {
         console.error(err);
     }
