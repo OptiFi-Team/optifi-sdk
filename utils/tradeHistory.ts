@@ -1,12 +1,15 @@
-import { OptifiMarket } from "../types/optifi-exchange-types";
 import { PublicKey, Keypair, Connection } from "@solana/web3.js";
 import Context from "../types/context";
 
-import { initializeContext } from "../index";
 import { findUserAccount } from "../utils/accounts";
 import { loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, Order } from "../utils/orders";
 import { findOptifiMarketsWithFullData } from "../utils/market";
 import { getAllOrdersForAccount } from "../utils/orderHistory";
+import { retrievRecentTxs } from "./orderHistory";
+import base58, { decode } from "bs58";
+import Decimal from "decimal.js";
+
+const SIZE_DECIMALS = 2;
 
 async function getOrders(context: Context): Promise<Order[]> {
   return new Promise(async (resolve, reject) => {
@@ -21,7 +24,7 @@ async function getOrders(context: Context): Promise<Order[]> {
   })
 }
 
-async function getPercentageFillPercentage(context: Context): Promise<number[]> {
+async function getFillAmt(context: Context): Promise<number[]> {
   return new Promise(async (resolve, reject) => {
     let orders = await getOrders(context);
 
@@ -29,7 +32,100 @@ async function getPercentageFillPercentage(context: Context): Promise<number[]> 
 
     for (let i = 0; i < orders.length; i++) {
       //@ts-ignore
-      res[orders[i].clientId.toNumber()] = orders[i].fillPercentage;
+      res[orders[i].clientId.toNumber()] = (new Decimal(orders[i].originalSize).minus(new Decimal(orders[i].size).toNumber())).toNumber();
+    }
+    resolve(res);
+  })
+}
+
+//refer:logAMMAccounts
+async function getIOCClientId(logs: string[]) {
+  let stringLen = 20
+  let stringRes: string;
+  for (let log of logs) {
+    if (log.search("get client_order_id") != -1) {
+      stringRes = log.substring(log.search("get client_order_id") + stringLen, log.search("order_type"))
+    }
+  }
+  //@ts-ignore
+  return Number(stringRes)
+}
+
+//refer:logAMMAccounts
+async function getIOCFillAmt(logs: string[]) {
+  let stringLen = 20
+  let stringRes: string;
+  for (let log of logs) {
+    if (log.search("native_coin_total_2") != -1) {
+      stringRes = log.substring(log.search("native_coin_total_2") + stringLen, log.search("native_pc_total"))
+    }
+  }
+  //@ts-ignore
+  return Number(stringRes)
+}
+
+//refer:logAMMAccounts
+async function getIOCSide(logs: string[]) {
+  let stringLen = 6
+  let stringRes: string;
+  for (let log of logs) {
+    if (log.search("Created new order instruction") != -1) {
+      stringRes = log.substring(log.search("side") + stringLen, log.search("price") - 2)
+    }
+  }
+  //@ts-ignore
+  return stringRes
+}
+
+//refer:logAMMAccounts
+async function getIOCSizeForAsk(logs: string[]) {
+  let stringLen = 6
+  let stringRes: string;
+  for (let log of logs) {
+    if (log.search("Created new order instruction") != -1) {
+      stringRes = log.substring(log.search("size") + stringLen, log.search("value") - 2)
+    }
+  }
+  //@ts-ignore
+  return Number(stringRes)
+}
+
+async function getIOCData(context: Context, account: PublicKey): Promise<number[]> {
+  return new Promise(async (resolve, reject) => {
+    let res: number[] = [];
+    let txs = await retrievRecentTxs(context, account)
+    for (let tx of txs) {//number of transactions people send
+      for (let inx of tx.transaction.message.instructions) {
+        let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
+        if (programId.toString() == context.program.programId.toString()) {
+          let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
+          if (decoded) {
+            if (decoded.name == "placeOrder") {
+              //@ts-ignore
+              let types = await getIOCSide(tx.meta?.logMessages)
+              //@ts-ignore
+              let clientId = await getIOCClientId(tx.meta?.logMessages)
+              //@ts-ignore
+              let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
+
+              if (types == "Ask") {
+                //user place Ask: market_open_orders.native_coin_total will be the amt after fill
+                //(ex: open order bid 2, user ask 3,  market_open_orders.native_coin_total will be 1;
+                //user ask 1 ,market_open_orders.native_coin_total will be 0
+                //->ask amt - market_open_orders.native_coin_total = res
+
+                //@ts-ignore
+                let askAmt = await getIOCSizeForAsk(tx.meta?.logMessages)
+                if (clientId)
+                  res[clientId] = (askAmt - fillAmt) / (10 ** SIZE_DECIMALS)
+              } else {
+                if (clientId && fillAmt)
+                  res[clientId] = fillAmt / (10 ** SIZE_DECIMALS)
+              }
+            }
+          }
+        }
+      }
     }
     resolve(res);
   })
@@ -39,18 +135,19 @@ export function getAllTradesForAccount(
   context: Context,
   account: PublicKey
 ): Promise<Trade[]> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     getAllOrdersForAccount(context, account).then(async (res) => {
       // resolve(res)
       res.reverse()
       let trades: Trade[] = []
 
-      let ClientIdFilledPercentage: number[] = await getPercentageFillPercentage(context);
-      console.log(res)
+      let clientIdFillAmt: number[] = await getFillAmt(context);
+      let clientIdIOC: number[] = await getIOCData(context, account)
+      //console.log(res)
       res.forEach(order => {
         // divide to three situations: place order / cancel order / fill
         // push to res if place order, pop res if cancel order
-        // after that, check if fill order by ClientIdFilledPercentage, then renew res by it
+        // after that, check if fill order by clientIdFillAmt, then renew res by it
 
         if (order.txType == "place order") {
           trades.push(new Trade({
@@ -73,16 +170,24 @@ export function getAllTradesForAccount(
         }
       })
 
-      for (let clientId = 0; clientId < ClientIdFilledPercentage.length; clientId++) {
-        if (ClientIdFilledPercentage[clientId] != null) {
-          if (ClientIdFilledPercentage[clientId] == 0) {//totally be filled, so delete from res
+      for (let clientId = 0; clientId < clientIdFillAmt.length; clientId++) {
+        if (clientIdFillAmt[clientId] != null) {
+          if (clientIdFillAmt[clientId] <= 0) {//totally be filled, so delete from res
             let index = trades.findIndex(e => e.clientId == clientId)
             trades.splice(index, 1)
           } else {// fill potential, so renew certain trade
             let trade = trades.find(e => e.clientId == clientId)
             //@ts-ignore
-            trade?.maxBaseQuantity = trade?.maxBaseQuantity * ClientIdFilledPercentage[clientId];
+            trade?.maxBaseQuantity = clientIdFillAmt[clientId];
           }
+        }
+      }
+
+      for (let clientId = 0; clientId < clientIdIOC.length; clientId++) {
+        if (clientIdIOC[clientId]) {
+            let trade = trades.find(e => e.clientId == clientId)
+            //@ts-ignore
+            trade?.maxBaseQuantity = clientIdIOC[clientId];
         }
       }
 
