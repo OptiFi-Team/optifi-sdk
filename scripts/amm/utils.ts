@@ -11,6 +11,7 @@ import calculateAmmProposal from "../../instructions/calculateAmmProposal";
 import { ammUpdateOrders } from "../../instructions/ammUpdateOrders";
 import ammUpdateFuturesPositions from "../../instructions/amm/ammUpdateFutureOrders";
 import { MANGO_PERP_MARKETS } from "../../constants";
+import { sleep } from "../../utils/generic";
 
 
 export async function syncAmmPositions(context: Context, ammIndex: number) {
@@ -35,7 +36,7 @@ export async function syncAmmPositions(context: Context, ammIndex: number) {
                 // console.log(market)
                 if (market) {
                     let res = await syncPositions(context, market[1], ammAddress)
-                    console.log(`successfully synced postions on optifi market ${market[1].toString()} for amm ${ammAddress.toString()} with id ${ammIndex}`)
+                    console.log(`successfully synced postions on optifi market ${market[1].toString()} for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
                     console.log(res)
                 }
             } else {
@@ -109,11 +110,11 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
         let ammInfo = ammInfoRaw as AmmAccount;
         console.log(`to calc proposals for amm: ${ammAddress.toString()} with id ${ammIndex}`)
         // @ts-ignore
-        for (let i = 1; i < ammInfo.flags.length; i++) {
-            let res = calculateAmmProposal(context, ammAddress)
-            console.log(`successfully calc proposals for amm for amm ${ammAddress.toString()} with id ${ammIndex}`)
-            // console.log(res)
-        }
+        ammInfo.flags.forEach(async (_, i) => {
+            let res = await calculateAmmProposal(context, ammAddress)
+            console.log(`successfully calc proposals for amm for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
+            console.log(res)
+        })
     } catch (err) {
         console.error(err);
     }
@@ -131,6 +132,8 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
 
         // @ts-ignore
         for (let i = 0; i < ammInfo.proposals.length; i++) {
+            await sleep(0.5 * 1000)
+
             // @ts-ignore
             if (!ammInfo.flags[i + 1]) {
                 // @ts-ignore
@@ -149,11 +152,14 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
                 console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                 // execute all the proposal orders
-                for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length + 1; j++) {
-                    let res = ammUpdateOrders(context, 1, ammAddress, i, market[1])
+                // for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length + 1; j++) {
+                Array.from(Array(proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length).keys()).forEach(async _ => {
+                    let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
                     console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
-                    // console.log(res)
-                }
+                    console.log(res)
+                })
+                // }
+
             }
         };
     } catch (err) {
