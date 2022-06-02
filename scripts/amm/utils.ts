@@ -110,9 +110,9 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
         console.log(`to calc proposals for amm: ${ammAddress.toString()} with id ${ammIndex}`)
         // @ts-ignore
         for (let i = 1; i < ammInfo.flags.length; i++) {
-            let res = await calculateAmmProposal(context, ammAddress)
+            let res = calculateAmmProposal(context, ammAddress)
             console.log(`successfully calc proposals for amm for amm ${ammAddress.toString()} with id ${ammIndex}`)
-            console.log(res)
+            // console.log(res)
         }
     } catch (err) {
         console.error(err);
@@ -150,9 +150,9 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
                 console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                 // execute all the proposal orders
                 for (let j = 0; j < proposalsForOneInstrument.bidOrdersSize.length + proposalsForOneInstrument.askOrdersSize.length + 1; j++) {
-                    let res = await ammUpdateOrders(context, 1, ammAddress, i, market[1])
+                    let res = ammUpdateOrders(context, 1, ammAddress, i, market[1])
                     console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
-                    console.log(res)
+                    // console.log(res)
                 }
             }
         };
