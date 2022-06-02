@@ -1,12 +1,14 @@
 import Context from "../types/context";
-import { findUserAccount, userAccountExists, } from "./accounts";
-import { UserAccount, } from "../types/optifi-exchange-types";
+import { findUserAccount, userAccountExists, findExchangeAccount } from "./accounts";
+import { Chain, UserAccount } from "../types/optifi-exchange-types";
 import { PublicKey } from "@solana/web3.js";
 import { findOptifiMarketsWithFullData, getUserPositions, Position } from "./market";
 import { getAllTradesForAccount, Trade } from "./tradeHistory";
 import Decimal from "decimal.js";
-
-
+import { BN } from "@project-serum/anchor";
+import {
+    dateToAnchorTimestamp,
+} from "../utils/generic";
 export function getAmountToReserve(
     context: Context
 ): Promise<number> {
@@ -55,6 +57,47 @@ export function getUserBalance(
     });
 }
 
+async function userTradesHistoryFilterByDate(context: Context, userTradesHistory?: Trade[]): Promise<Trade[]> {
+    return new Promise(async (resolve, reject) => {
+        let markets = await findOptifiMarketsWithFullData(context);
+
+        //find all match market address in userTradesHistory
+        //@ts-ignore
+        let marketAddress: string[] = userTradesHistory.map(e => { return e.marketAddress });
+        marketAddress = [...new Set(marketAddress)]//delete repeat element
+
+        //in userTradesHistory, there will be [marketA marketA marketB marketB marketC marketC...],
+        //so before filter trade by time, check the market address is match
+        //marketA -> instrumentA/startA/expiryDateA
+        for (let marketAddressFromUserTradesHistory of marketAddress) {
+            let res = markets.find((e) => e.marketAddress.toString() === marketAddressFromUserTradesHistory)
+            if (res) {
+                let tmpInstrumentAddress: string[] = [];
+                tmpInstrumentAddress.push(res.instrumentAddress.toString());
+                let instrumentRawInfos = await context.program.account.chain.fetchMultiple(tmpInstrumentAddress)
+                let instrumentInfos = instrumentRawInfos as Chain[]
+
+                let start = instrumentInfos[0].start;
+                let expiryDate = instrumentInfos[0].expiryDate;
+
+                //@ts-ignore
+                userTradesHistory = userTradesHistory.filter((e) => {
+                    // number to date example: expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000)
+                    // date to number: dateToAnchorTimestamp()
+                    let historyDate: BN = dateToAnchorTimestamp(e.timestamp);
+
+                    let marketAddressMatch = (e.marketAddress.toString() === marketAddressFromUserTradesHistory) ? true : false;
+                    let historyDateInRange = (historyDate < start || historyDate > expiryDate) ? false : true
+                    return (marketAddressMatch && !historyDateInRange) ? false : true;
+                })
+            }
+        }
+        //@ts-ignore
+        resolve(userTradesHistory)
+
+    })
+}
+
 export function calcPnLForUserPositions(
     context: Context,
     userAccountAddress?: PublicKey,
@@ -78,6 +121,12 @@ export function calcPnLForUserPositions(
             if (!userTradesHistory) {
                 userTradesHistory = await getAllTradesForAccount(context, userAccountAddress)
             }
+
+            //filter and renew userTradesHistory
+            console.log("before filter: " + userTradesHistory.length);
+            if (userTradesHistory)
+                userTradesHistory = await userTradesHistoryFilterByDate(context, userTradesHistory);
+            console.log("after filter: " + userTradesHistory.length);
 
             if (!marketPrices) {
                 // get the current market price
