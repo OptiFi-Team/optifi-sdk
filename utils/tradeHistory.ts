@@ -7,6 +7,7 @@ import { findOptifiMarketsWithFullData } from "../utils/market";
 import { getAllOrdersForAccount } from "../utils/orderHistory";
 import { retrievRecentTxs } from "./orderHistory";
 import base58, { decode } from "bs58";
+import Decimal from "decimal.js";
 
 const SIZE_DECIMALS = 2;
 
@@ -23,7 +24,7 @@ async function getOrders(context: Context): Promise<Order[]> {
   })
 }
 
-async function getPercentageFillPercentage(context: Context): Promise<number[]> {
+async function getFillAmt(context: Context): Promise<number[]> {
   return new Promise(async (resolve, reject) => {
     let orders = await getOrders(context);
 
@@ -31,7 +32,7 @@ async function getPercentageFillPercentage(context: Context): Promise<number[]> 
 
     for (let i = 0; i < orders.length; i++) {
       //@ts-ignore
-      res[orders[i].clientId.toNumber()] = orders[i].fillPercentage;
+      res[orders[i].clientId.toNumber()] = (new Decimal(orders[i].originalSize).minus(new Decimal(orders[i].size).toNumber())).toNumber();
     }
     resolve(res);
   })
@@ -140,13 +141,13 @@ export function getAllTradesForAccount(
       res.reverse()
       let trades: Trade[] = []
 
-      let clientIdFilledPercentage: number[] = await getPercentageFillPercentage(context);
+      let clientIdFillAmt: number[] = await getFillAmt(context);
       let clientIdIOC: number[] = await getIOCData(context, account)
       //console.log(res)
       res.forEach(order => {
         // divide to three situations: place order / cancel order / fill
         // push to res if place order, pop res if cancel order
-        // after that, check if fill order by clientIdFilledPercentage, then renew res by it
+        // after that, check if fill order by clientIdFillAmt, then renew res by it
 
         if (order.txType == "place order") {
           trades.push(new Trade({
@@ -169,21 +170,21 @@ export function getAllTradesForAccount(
         }
       })
 
-      for (let clientId = 0; clientId < clientIdFilledPercentage.length; clientId++) {
-        if (clientIdFilledPercentage[clientId] != null) {
-          if (clientIdFilledPercentage[clientId] == 0) {//totally be filled, so delete from res
+      for (let clientId = 0; clientId < clientIdFillAmt.length; clientId++) {
+        if (clientIdFillAmt[clientId] != null) {
+          if (clientIdFillAmt[clientId] <= 0) {//totally be filled, so delete from res
             let index = trades.findIndex(e => e.clientId == clientId)
             trades.splice(index, 1)
           } else {// fill potential, so renew certain trade
             let trade = trades.find(e => e.clientId == clientId)
             //@ts-ignore
-            trade?.maxBaseQuantity = trade?.maxBaseQuantity * clientIdFilledPercentage[clientId];
+            trade?.maxBaseQuantity = clientIdFillAmt[clientId];
           }
         }
       }
 
       for (let clientId = 0; clientId < clientIdIOC.length; clientId++) {
-        if (clientIdIOC[clientId] != null) {
+        if (clientIdIOC[clientId]) {
             let trade = trades.find(e => e.clientId == clientId)
             //@ts-ignore
             trade?.maxBaseQuantity = clientIdIOC[clientId];
