@@ -71,6 +71,7 @@ async function userTradesHistoryFilterByDate(context: Context, userTradesHistory
         //marketA -> instrumentA/startA/expiryDateA
         for (let marketAddressFromUserTradesHistory of marketAddress) {
             let res = markets.find((e) => e.marketAddress.toString() === marketAddressFromUserTradesHistory)
+            markets = markets.filter((e) => e.marketAddress.toString() != res?.marketAddress.toString())//delete found market 
             if (res) {
                 let tmpInstrumentAddress: string[] = [];
                 tmpInstrumentAddress.push(res.instrumentAddress.toString());
