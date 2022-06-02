@@ -287,6 +287,6 @@ export const DEPOSIT_LIMIT: number = 10000 * (10 ** USDC_DECIMALS);
 // OG NFT token mint address
 export const OG_NFT_MINT = {
     "https://api.devnet.solana.com": "u5vbDPVKUJMDXimVzT46FqCZzj1MvozGjhQ4LuwXMFr",
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": "",
+    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": "GA3oHKD9F8o8peET6p5icmnwtusx7k1dGxvnaT3dVAg1",
     "https://api.testnet.solana.com": ""
 }
