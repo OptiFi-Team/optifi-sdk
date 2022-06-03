@@ -9,6 +9,7 @@ import { USDC_DECIMALS } from "../../constants";
 import { numberAssetToDecimal } from "../../utils/generic";
 import OrderType, { orderTypeToNumber } from "../../types/OrderType";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { DexInstructions } from '@project-serum/serum';
 
 export default function placeOrder(context: Context,
     userAccount: UserAccount,
@@ -18,8 +19,10 @@ export default function placeOrder(context: Context,
     size: number,
     orderType: OrderType
 ): Promise<InstructionResult<TransactionSignature>> {
-    return new Promise((resolve, reject) => {
-        formPlaceOrderContext(context, marketAddress, userAccount).then(async ([orderContext, asset]) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let [orderContext, asset] = await formPlaceOrderContext(context, marketAddress, userAccount)
 
             let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(asset)!); // price for 1 lot_size 
 
@@ -37,7 +40,7 @@ export default function placeOrder(context: Context,
             console.log("totalPcQty: ", totalPcQty);
 
 
-            let ix = await marginStress(context, asset);
+            let ixs = await marginStress(context, asset);
 
             // // Add computing units, but currently no use in devnet 
 
@@ -61,9 +64,21 @@ export default function placeOrder(context: Context,
                 }
             );
 
-            ix.push(placeOrderIx);
+            ixs.push(placeOrderIx);
 
-            context.program.rpc.settleOrderFunds({
+            let consumeEventInx = DexInstructions.consumeEvents({
+                market: orderContext.serumMarket,
+                openOrdersAccounts: [orderContext.openOrders],
+                eventQueue: orderContext.eventQueue,
+                pcFee: orderContext.userMarginAccount,
+                coinFee: orderContext.userInstrumentLongTokenVault,
+                limit: 65535,
+                programId: orderContext.serumDexProgramId,
+            })
+
+            ixs.push(consumeEventInx)
+
+            let placeOrderRes = await context.program.rpc.settleOrderFunds({
                 accounts: {
                     optifiExchange: orderContext.optifiExchange,
                     userAccount: orderContext.userAccount,
@@ -85,14 +100,16 @@ export default function placeOrder(context: Context,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     serumDexProgramId: orderContext.serumDexProgramId
                 },
-                instructions: ix
-            }).then((res) => {
-                resolve({
-                    successful: true,
-                    data: res as TransactionSignature
-                })
-            }).catch((err) => reject(err))
+                instructions: ixs
 
-        }).catch((err) => reject(err))
+            })
+
+            resolve({
+                successful: true,
+                data: placeOrderRes as TransactionSignature
+            })
+        } catch (err) {
+            reject(err)
+        }
     })
 }
