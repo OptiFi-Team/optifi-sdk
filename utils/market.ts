@@ -300,11 +300,9 @@ export function findExpiredMarkets(context: Context): Promise<[OptifiMarket, Pub
 
             let chains = await context.program.account.chain.fetchMultiple(instruments)
 
-            console.log(chains)
-
-            markets.forEach((m, i) => {   // @ts-ignore
+            markets.forEach((m, i) => {
+                // @ts-ignore  
                 let chain = chains[i] as Chain;
-                console.log(chain)
                 if (chain.expiryDate <= now) {
                     expiredMarkets.push(m);
                 }
