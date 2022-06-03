@@ -7,7 +7,7 @@ import { PublicKey } from "@solana/web3.js";
 import syncPositions from "../../instructions/syncPositions";
 import ammSyncFuturesPositions from "../../instructions/amm/ammSyncFuturesPositions";
 import calculateAmmDelta from "../../instructions/calculateAmmDelta";
-import calculateAmmProposal from "../../instructions/calculateAmmProposal";
+import calculateAmmProposal, { calculateAmmProposalInBatch } from "../../instructions/calculateAmmProposal";
 import { ammUpdateOrders } from "../../instructions/ammUpdateOrders";
 import ammUpdateFuturesPositions from "../../instructions/amm/ammUpdateFutureOrders";
 import { MANGO_PERP_MARKETS } from "../../constants";
@@ -109,12 +109,16 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
         // @ts-ignore
         let ammInfo = ammInfoRaw as AmmAccount;
         console.log(`to calc proposals for amm: ${ammAddress.toString()} with id ${ammIndex}`)
+
+        const batchSize = 4;
         // @ts-ignore
-        ammInfo.flags.forEach(async (_, i) => {
-            let res = await calculateAmmProposal(context, ammAddress)
-            console.log(`successfully calc proposals for amm for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
+        const optionFlags: boolean[] = ammInfo.flags.slice(1).filter(e => e == false)
+        for (let i = 0; i < optionFlags.length; i += batchSize) {
+            const batch = optionFlags.slice(i, i + batchSize);
+            let res = await calculateAmmProposalInBatch(context, ammAddress, ammInfo, batch.length)
+            console.log(`successfully calc proposals in batch for amm ${ammAddress.toString()} with id ${ammIndex}, batch id ${i}`)
             console.log(res)
-        })
+        }
     } catch (err) {
         console.error(err);
     }

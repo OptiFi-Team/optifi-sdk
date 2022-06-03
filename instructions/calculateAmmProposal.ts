@@ -37,3 +37,38 @@ export default function calculateAmmProposal(context: Context,
         }).catch((err) => reject(err))
     })
 }
+
+export function calculateAmmProposalInBatch(context: Context,
+    ammAddress: PublicKey,
+    ammAccount: AmmAccount,
+    batchSize: number
+): Promise<InstructionResult<TransactionSignature>> {
+    return new Promise((resolve, reject) => {
+        findExchangeAccount(context).then(async ([exchangeAddress, _]) => {
+            let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, ammAccount.asset)
+            let inxs = await marginStress(context, ammAccount.asset);
+
+            for (let i = 0; i < batchSize - 1; i++) {
+                inxs.push(context.program.instruction.ammCalculateProposal({
+                    accounts: {
+                        marginStressAccount: marginStressAddress,
+                        amm: ammAddress,
+                    },
+                }))
+            }
+
+            context.program.rpc.ammCalculateProposal({
+                accounts: {
+                    marginStressAccount: marginStressAddress,
+                    amm: ammAddress,
+                },
+                instructions: inxs
+            }).then((ammCalculateProposalRes) => {
+                resolve({
+                    successful: true,
+                    data: ammCalculateProposalRes as TransactionSignature
+                })
+            }).catch((err) => reject(err))
+        }).catch((err) => reject(err))
+    })
+}
