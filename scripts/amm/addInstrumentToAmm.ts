@@ -46,8 +46,8 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
         for (let market of optifiMarketsToAdd) {
             console.log(`start to add optifi market ${market.toString()} to amm ${ammAddress.toString()} with id ${ammIndex}`)
             let res = await addInstrumentToAmm(context, ammAddress, market)
+            console.log(res)
             console.log(`successfully added optifi market ${market.toString()} to amm ${ammAddress.toString()} with id ${ammIndex}`)
-            // console.log(res)
         }
     } catch (err) {
         console.error(err);

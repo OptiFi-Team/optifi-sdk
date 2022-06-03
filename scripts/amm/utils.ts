@@ -80,7 +80,6 @@ export async function updateAmmFutureOrders(context: Context, ammIndex: number) 
         let ammInfo = ammInfoRaw as AmmAccount;
         let ammTradingInstruments = ammInfo.tradingInstruments.map(e => e.toString())
 
-        console.log(ammTradingInstruments.length)
         let res = await ammUpdateFuturesPositions(context, ammAddress)
         console.log(`successfully updated futures orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
         console.log(res)
@@ -114,7 +113,7 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
         let ammInfo = ammInfoRaw as AmmAccount;
         console.log(`to calc proposals for amm: ${ammAddress.toString()} with id ${ammIndex}`)
 
-        const batchSize = 4;
+        const batchSize = 3;
         // @ts-ignore
         const optionFlags: boolean[] = ammInfo.flags.slice(1).filter(e => e == false)
         let batches = splitToBatch(optionFlags, batchSize)

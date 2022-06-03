@@ -1,11 +1,8 @@
 import Context from "../types/context";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, Transaction, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import { findExchangeAccount } from "../utils/accounts";
 import { AmmAccount } from "../types/optifi-exchange-types";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
-import * as anchor from "@project-serum/anchor";
 import { findMarginStressWithAsset } from "../utils/margin";
 import marginStress from "./marginStress";
 
@@ -49,8 +46,7 @@ export function calculateAmmProposalInBatch(context: Context,
             let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, ammAccount.asset)
             let inxs = await marginStress(context, ammAccount.asset);
 
-            let tx = new Transaction()
-            for (let i = 0; i < batchSize; i++) {
+            for (let i = 0; i < batchSize - 1; i++) {
                 inxs.push(context.program.instruction.ammCalculateProposal({
                     accounts: {
                         marginStressAccount: marginStressAddress,
@@ -59,8 +55,13 @@ export function calculateAmmProposalInBatch(context: Context,
                 }))
             }
 
-            tx.add(...inxs)
-            let ammCalculateProposalRes = await context.provider.send(tx);
+            let ammCalculateProposalRes = await context.program.rpc.ammCalculateProposal({
+                accounts: {
+                    marginStressAccount: marginStressAddress,
+                    amm: ammAddress,
+                },
+                instructions: inxs
+            })
 
             resolve({
                 successful: true,
