@@ -1,6 +1,6 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, getDexOpenOrders } from "../utils/accounts";
 import { AmmAccount, OptifiMarket } from "../types/optifi-exchange-types";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
@@ -67,5 +67,59 @@ export default function syncPositions(context: Context,
                     // .catch((err) => reject(err))
                 }).catch((err) => reject(err))
         })
+    })
+}
+
+
+export function syncPositionsInBatch(context: Context,
+    exchangeAddress: PublicKey,
+    ammAddress: PublicKey,
+    ammAccount: AmmAccount,
+    optifiMarketInfos: [OptifiMarket, PublicKey][],
+): Promise<InstructionResult<TransactionSignature>> {
+    return new Promise(async (resolve, reject) => {
+
+        let tx = new Transaction()
+        optifiMarketInfos.forEach(async optifiMarketInfo => {
+
+            let optifiMarket = optifiMarketInfo[0]
+            let amm = ammAccount;
+            let [ammLiquidityAuth,] = await getAmmLiquidityAuthPDA(context);
+            let [ammLongTokenVault,] = await findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, ammLiquidityAuth)
+            let [ammShortTokenVault,] = await findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammLiquidityAuth)
+            let [ammOpenOrders,] = await getDexOpenOrders(
+                context,
+                optifiMarket.serumMarket,
+                ammLiquidityAuth)
+
+            let [_, instrumentIdx] = findInstrumentIndexFromAMM(context,
+                amm,
+                optifiMarket.instrument
+            );
+            let inx = context.program.instruction.ammSyncPositions(
+                instrumentIdx,
+                {
+                    accounts: {
+                        optifiExchange: exchangeAddress,
+                        amm: ammAddress,
+                        optifiMarket: optifiMarketInfo[1],
+                        longTokenVault: ammLongTokenVault,
+                        shortTokenVault: ammShortTokenVault,
+                        serumMarket: optifiMarket.serumMarket,
+                        openOrdersAccount: ammOpenOrders,
+                        openOrdersOwner: ammLiquidityAuth
+                    }
+                }
+            )
+
+            tx.add(inx)
+        })
+
+        let syncRes = await context.provider.send(tx);
+        resolve({
+            successful: true,
+            data: syncRes as TransactionSignature
+        })
+
     })
 }

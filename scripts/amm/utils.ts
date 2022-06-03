@@ -4,7 +4,7 @@ import { findOptifiMarkets } from "../../utils/market";
 import { findAMMWithIdx } from "../../utils/amm";
 import { findOptifiExchange } from "../../utils/accounts";
 import { PublicKey } from "@solana/web3.js";
-import syncPositions from "../../instructions/syncPositions";
+import syncPositions, { syncPositionsInBatch } from "../../instructions/syncPositions";
 import ammSyncFuturesPositions from "../../instructions/amm/ammSyncFuturesPositions";
 import calculateAmmDelta from "../../instructions/calculateAmmDelta";
 import calculateAmmProposal, { calculateAmmProposalInBatch } from "../../instructions/calculateAmmProposal";
@@ -28,22 +28,27 @@ export async function syncAmmPositions(context: Context, ammIndex: number) {
         // @ts-ignore
         let optifiMarkets = optifiMarketsRaw as [OptifiMarket, PublicKey][];
         console.log(`Found ${optifiMarkets.length} optifi markets in total `);
+        let optifiMarketsToSync: [OptifiMarket, PublicKey][] = []
         ammTradingInstruments.forEach(async (instrument, i) => {
             // @ts-ignore
             if (!ammInfo.flags[i]) {
                 // @ts-ignore
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == instrument) as [OptifiMarket, PublicKey]
-                // console.log(market)
                 if (market) {
-                    let res = await syncPositions(context, market[1], ammAddress)
-                    console.log(`successfully synced postions on optifi market ${market[1].toString()} for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
-                    console.log(res)
+                    optifiMarketsToSync.push(market)
                 }
             } else {
                 console.log(`found flag: ${i} - instrument: ${instrument} already been done`)
             }
         })
 
+        const batchSize = 5;
+        let batches = splitToBatch(optifiMarketsToSync, batchSize)
+        batches.forEach(async (batch, i) => {
+            let res = await syncPositionsInBatch(context, optifiExchange, ammAddress, ammInfo, batch)
+            console.log(`successfully synced postions in batch for amm ${ammAddress.toString()} with id ${ammIndex}, batch id ${i}`)
+            console.log(res)
+        })
     } catch (err) {
         console.error(err);
     }
@@ -113,12 +118,12 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
         const batchSize = 4;
         // @ts-ignore
         const optionFlags: boolean[] = ammInfo.flags.slice(1).filter(e => e == false)
-        for (let i = 0; i < optionFlags.length; i += batchSize) {
-            const batch = optionFlags.slice(i, i + batchSize);
+        let batches = splitToBatch(optionFlags, batchSize)
+        batches.forEach(async (batch, i) => {
             let res = await calculateAmmProposalInBatch(context, ammAddress, ammInfo, batch.length)
             console.log(`successfully calc proposals in batch for amm ${ammAddress.toString()} with id ${ammIndex}, batch id ${i}`)
             console.log(res)
-        }
+        })
     } catch (err) {
         console.error(err);
     }
@@ -145,14 +150,14 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
                 console.log("ammInfo.quoteTokenVault: ", ammInfo.quoteTokenVault.toString())
                 console.log(`proposalsForOneInstrument for instrument: ${proposalsForOneInstrument.instrument.toString()} with flag ${i}`,)
                 console.log(proposalsForOneInstrument)
-                proposalsForOneInstrument.askOrdersPrice.forEach((e, i) => {
-                    console.log("askOrdersPrice", e.toString())
-                    console.log("askOrdersSize: ", proposalsForOneInstrument.askOrdersSize[i].toString())
-                });
-                proposalsForOneInstrument.bidOrdersPrice.forEach((e, i) => {
-                    console.log("bidOrdersPrice", e.toString())
-                    console.log("bidOrdersSize: ", proposalsForOneInstrument.bidOrdersSize[i].toString())
-                });
+                // proposalsForOneInstrument.askOrdersPrice.forEach((e, i) => {
+                //     console.log("askOrdersPrice", e.toString())
+                //     console.log("askOrdersSize: ", proposalsForOneInstrument.askOrdersSize[i].toString())
+                // });
+                // proposalsForOneInstrument.bidOrdersPrice.forEach((e, i) => {
+                //     console.log("bidOrdersPrice", e.toString())
+                //     console.log("bidOrdersSize: ", proposalsForOneInstrument.bidOrdersSize[i].toString())
+                // });
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
                 console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
                 // execute all the proposal orders
@@ -176,4 +181,13 @@ export function getMangoPerpMarketInfoByAsset(context: Context, asset: number) {
             return configs[1]
         default:
     }
+}
+
+// helper function to split an array into batches, length of each batch is <= batchSize
+export function splitToBatch<Type>(arr: Type[], batchSize: number): Type[][] {
+    let res: Type[][] = []
+    for (let i = 0; i < arr.length; i += batchSize) {
+        res.push(arr.slice(i, i + batchSize));
+    }
+    return res
 }
