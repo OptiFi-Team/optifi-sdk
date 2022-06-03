@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, SYSVAR_CLOCK_PUBKEY, Transaction, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import { findExchangeAccount } from "../utils/accounts";
 import { AmmAccount } from "../types/optifi-exchange-types";
@@ -43,12 +43,14 @@ export function calculateAmmProposalInBatch(context: Context,
     ammAccount: AmmAccount,
     batchSize: number
 ): Promise<InstructionResult<TransactionSignature>> {
-    return new Promise((resolve, reject) => {
-        findExchangeAccount(context).then(async ([exchangeAddress, _]) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let [exchangeAddress, _] = await findExchangeAccount(context)
             let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, ammAccount.asset)
             let inxs = await marginStress(context, ammAccount.asset);
 
-            for (let i = 0; i < batchSize - 1; i++) {
+            let tx = new Transaction()
+            for (let i = 0; i < batchSize; i++) {
                 inxs.push(context.program.instruction.ammCalculateProposal({
                     accounts: {
                         marginStressAccount: marginStressAddress,
@@ -57,18 +59,13 @@ export function calculateAmmProposalInBatch(context: Context,
                 }))
             }
 
-            context.program.rpc.ammCalculateProposal({
-                accounts: {
-                    marginStressAccount: marginStressAddress,
-                    amm: ammAddress,
-                },
-                instructions: inxs
-            }).then((ammCalculateProposalRes) => {
-                resolve({
-                    successful: true,
-                    data: ammCalculateProposalRes as TransactionSignature
-                })
-            }).catch((err) => reject(err))
-        }).catch((err) => reject(err))
+            tx.add(...inxs)
+            let ammCalculateProposalRes = await context.provider.send(tx);
+
+            resolve({
+                successful: true,
+                data: ammCalculateProposalRes as TransactionSignature
+            })
+        } catch (err) { reject(err) }
     })
 }

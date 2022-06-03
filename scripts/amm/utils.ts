@@ -147,9 +147,9 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
             if (!ammInfo.flags[i + 1]) {
                 // @ts-ignore
                 let proposalsForOneInstrument = ammInfo.proposals[i]
-                console.log("ammInfo.quoteTokenVault: ", ammInfo.quoteTokenVault.toString())
-                console.log(`proposalsForOneInstrument for instrument: ${proposalsForOneInstrument.instrument.toString()} with flag ${i}`,)
-                console.log(proposalsForOneInstrument)
+                // console.log("ammInfo.quoteTokenVault: ", ammInfo.quoteTokenVault.toString())
+                // console.log(`proposalsForOneInstrument for instrument: ${proposalsForOneInstrument.instrument.toString()} with flag ${i}`,)
+                // console.log(proposalsForOneInstrument)
                 // proposalsForOneInstrument.askOrdersPrice.forEach((e, i) => {
                 //     console.log("askOrdersPrice", e.toString())
                 //     console.log("askOrdersSize: ", proposalsForOneInstrument.askOrdersSize[i].toString())

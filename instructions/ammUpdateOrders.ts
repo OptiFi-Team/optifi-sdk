@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { PublicKey, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import { AmmAccount, OptifiMarket } from "../types/optifi-exchange-types";
 import { findExchangeAccount, findUserAccount, getDexOpenOrders } from "../utils/accounts";
@@ -12,6 +12,7 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { getSerumMarket } from "../utils/serum";
 import marginStress from "./marginStress";
+import { DexInstructions } from '@project-serum/serum';
 
 export function ammUpdateOrders(context: Context,
     orderLimit: number,
@@ -42,13 +43,14 @@ export function ammUpdateOrders(context: Context,
                                             findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, ammLiquidityAuth).then(([ammLongTokenVault, _]) => {
                                                 findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammLiquidityAuth).then(([ammShortTokenVault, _]) => {
                                                     getAmmLiquidityAuthPDA(context).then(async ([ammLiquidityAuth, bump]) => {
-                                                        // let [position, instrumentIdx] = findInstrumentIndexFromAMM(context,
-                                                        //     amm,
-                                                        //     optifiMarket.instrument
-                                                        // );
-                                                        let updateMarginStressInx = await marginStress(context, amm.asset);
 
-                                                        context.program.rpc.ammUpdateOrders(
+                                                        let tx = new Transaction()
+
+                                                        // prepare margin stress inx
+                                                        let inxs = await marginStress(context, amm.asset);
+
+                                                        // add amm update order inx
+                                                        let ammUpdateOrdersInx = context.program.instruction.ammUpdateOrders(
                                                             orderLimit,
                                                             instrumentIdx,
                                                             bump,
@@ -80,16 +82,29 @@ export function ammUpdateOrders(context: Context,
                                                                     tokenProgram: TOKEN_PROGRAM_ID,
                                                                     rent: SYSVAR_RENT_PUBKEY
                                                                 },
-                                                                instructions: updateMarginStressInx
                                                             }
-                                                        ).then((res) => {
-                                                            resolve({
-                                                                successful: true,
-                                                                data: res as TransactionSignature
-                                                            });
-                                                        }).catch((err) => {
-                                                            console.error(err);
-                                                            reject(err);
+                                                        )
+                                                        inxs.push(ammUpdateOrdersInx)
+
+                                                        // add consume event inx
+                                                        let consumeEventInx = DexInstructions.consumeEvents({
+                                                            market: serumMarket.publicKey,
+                                                            openOrdersAccounts: [ammOpenOrders],
+                                                            eventQueue: serumMarket.decoded.eventQueue,
+                                                            pcFee: amm.quoteTokenVault,
+                                                            coinFee: ammLongTokenVault,
+                                                            limit: 65535,
+                                                            programId: serumId,
+                                                        });
+
+                                                        inxs.push(consumeEventInx);
+
+                                                        tx.add(...inxs)
+                                                        let ammUpdateOrders = await context.provider.send(tx);
+
+                                                        resolve({
+                                                            successful: true,
+                                                            data: ammUpdateOrders as TransactionSignature
                                                         })
                                                     }).catch((err) => {
                                                         console.error(err);
