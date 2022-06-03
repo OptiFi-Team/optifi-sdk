@@ -63,7 +63,6 @@ export async function syncAmmFuturePositions(context: Context, ammIndex: number)
         let ammInfo = ammInfoRaw as AmmAccount;
         let ammTradingInstruments = ammInfo.tradingInstruments.map(e => e.toString())
 
-        console.log(ammTradingInstruments.length)
         let res = await ammSyncFuturesPositions(context, ammAddress)
         console.log(`successfully synced futures postions for amm ${ammAddress.toString()} with id ${ammIndex}`)
         console.log(res)
@@ -159,7 +158,7 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
                 //     console.log("bidOrdersSize: ", proposalsForOneInstrument.bidOrdersSize[i].toString())
                 // });
                 let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
-                console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}`)
+                console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
                 // execute all the proposal orders
                 let res = await ammUpdateOrders(context, 5, ammAddress, i, market[1])
                 console.log(`successfully updated orders for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
