@@ -446,6 +446,7 @@ export class AmmTx {
     usdcAmount: number
     lpAmount: number
     gasFee: number
+    platformFee: number | undefined
     txid: string
     timestamp: Date
     status: string
@@ -457,6 +458,7 @@ export class AmmTx {
         usdcAmount,
         lpAmount,
         gasFee,
+        platformFee,
         txid,
         timestamp,
         status,
@@ -468,6 +470,7 @@ export class AmmTx {
         usdcAmount: number,
         lpAmount: number,
         gasFee: number,
+        platformFee: number | undefined,
         txid: string,
         timestamp: Date,
         status: string,
@@ -479,6 +482,7 @@ export class AmmTx {
         this.usdcAmount = usdcAmount
         this.lpAmount = lpAmount
         this.gasFee = gasFee
+        this.platformFee = platformFee
         this.txid = txid
         this.timestamp = timestamp
         this.status = status
@@ -584,9 +588,53 @@ async function getUsdcAfterConsume(logs: string[]) {
             stringRes = log.substring(log.search("withdraw_usdc_amount") + usdcStringLen, log.search("total") - 1)
         }
     }
-    let decimal = 6;
-    return parseInt(stringRes) / (10 ** decimal);
+    return parseInt(stringRes) / (10 ** USDC_DECIMALS);
 }
+
+//refer :logAMMAccounts
+async function getWtihdrawFeeAfterConsume(logs: string[]) {
+    let fee = 0;
+    for (let log of logs) {
+        if (log.includes("Successfully processed withdraw request")) {
+            let details = getConsumeWithdrawDetailsFromLog(log)
+            fee = details.totalFee
+        }
+
+    }
+
+    return fee / (10 ** USDC_DECIMALS)
+}
+
+function getConsumeWithdrawDetailsFromLog(programLog: string) {
+    // Program log: Created new order instruction, side: Ask, price: 5227813, size: 2, value: 10455626, order_type: Limit, client_order_id: 4475
+    let items = programLog.split(",")
+    let temp = {}
+    items.forEach((item, i) => {
+        if (i > 0) {
+            let key = item.split(":")[0].trim()
+            let value = item.split(":")[1].trim()
+            temp[key] = value
+        }
+    })
+    console.log(
+        {
+            userAccountId: parseInt(temp["user_account_id"]),
+            burnedLpTokenAmount: parseInt(temp["burned lp token amount"]),
+            withdrawUsdcAmount: parseInt(temp["withdraw_usdc_amount"]),
+            totalFee: parseInt(temp["total fee"]),
+            finalWithdrawUsdcAmount: parseInt(temp["final_withdraw_usdc_amount"]),
+        }
+        // temp
+    )
+    return {
+        userAccountId: parseInt(temp["user_account_id"]),
+        burnedLpTokenAmount: parseInt(temp["burned lp token amount"]),
+        withdrawUsdcAmount: parseInt(temp["withdraw_usdc_amount"]),
+        totalFee: parseInt(temp["total fee"]),
+        finalWithdrawUsdcAmount: parseInt(temp["final_withdraw_usdc_amount"]),
+    }
+}
+
 
 //refer :logAMMAccounts
 async function getLpAmountAfterConsume(logs: string[]) {
@@ -727,6 +775,7 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                         usdcAmount,
                                         lpAmount,
                                         gasFee: tx.meta?.fee! / Math.pow(10, SOL_DECIMALS),
+                                        platformFee: 0,
                                         txid: tx.transaction.signatures[0],
                                         timestamp: new Date(tx.blockTime! * 1000),
                                         status: "Pending",
@@ -756,9 +805,11 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
 
                                             //@ts-ignore
                                             let usdcAmount = await getUsdcAfterConsume(tx.meta?.logMessages)
+                                            let feeAmount = await getWtihdrawFeeAfterConsume(tx.meta?.logMessages!)
                                             //@ts-ignore
                                             let userBurnLpAmountAfterConsume = await getLpAmountAfterConsume(tx.meta?.logMessages)
 
+                                            e.platformFee = e.platformFee ? e.platformFee + feeAmount : feeAmount;
                                             e.usdcAmount += usdcAmount;
                                             let percentage = 0;
 
@@ -821,7 +872,7 @@ export async function calcAmmWithdrawFees(
             let lpTokenSupply = new BN(lpMint.supply.toString()).toNumber();
 
             //@ts-ignore
-            let notioanlWithdrawableRaw = userAccount.ammEquities[amm.ammIdx-1].notioanlWithdrawable;
+            let notioanlWithdrawableRaw = userAccount.ammEquities[amm.ammIdx - 1].notioanlWithdrawable;
             let notioanlWithdrawable = notioanlWithdrawableRaw / (10 ** USDC_DECIMALS)
 
             // console.log("notioanlWithdrawable: ", notioanlWithdrawable)
