@@ -49,16 +49,16 @@ const ammLoop = async (context: Context, optifiExchange: PublicKey, idx: number)
         }
     } catch (e) {
         // sleep and skip error
-        await sleep(50000);
+        await sleep(10000);
         await ammLoop(context, optifiExchange, idx);
     }
 
     try {
-        await sleep(30000);
+        await sleep(5000);
         await ammLoop(context, optifiExchange, idx);
     } catch (e) {
         // sleep and skip error
-        await sleep(50000);
+        await sleep(10000);
         await ammLoop(context, optifiExchange, idx);
     }
 }
