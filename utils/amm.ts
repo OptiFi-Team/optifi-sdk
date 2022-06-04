@@ -821,7 +821,7 @@ export async function calcAmmWithdrawFees(
             let lpTokenSupply = new BN(lpMint.supply.toString()).toNumber();
 
             //@ts-ignore
-            let notioanlWithdrawableRaw = userAccount.ammEquities[amm.ammIdx].notioanlWithdrawable;
+            let notioanlWithdrawableRaw = userAccount.ammEquities[amm.ammIdx-1].notioanlWithdrawable;
             let notioanlWithdrawable = notioanlWithdrawableRaw / (10 ** USDC_DECIMALS)
 
             // console.log("notioanlWithdrawable: ", notioanlWithdrawable)
