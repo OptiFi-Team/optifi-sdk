@@ -21,7 +21,7 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         let ammInfo = await context.program.account.ammAccount.fetch(ammAddress)
-        
+
         // @ts-ignore
         let amm = ammInfo as AmmAccount;
 
@@ -33,7 +33,7 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
         let optifiMarkets = await findOptifiMarkets(context)
         console.log(`Found ${optifiMarkets.length} optifi markets in total `);
 
-        let instrumentAddresses =  marginStressAccountInfo.instruments
+        let instrumentAddresses = marginStressAccountInfo.instruments
         // let instrumentRawInfos = await context.program.account.chain.fetchMultiple(instrumentAddresses)
         // let instrumentInfos = instrumentRawInfos as Chain[]
 
@@ -42,7 +42,7 @@ export async function addInstrumentsToAmm(context: Context, ammIndex: number) {
         console.log("ammInfo.tradingInstruments: ", ammInfo.tradingInstruments.map(e => e.toString()))
         instrumentAddresses.forEach((instrument, i) => {
             if (!ammInfo.tradingInstruments.map(e => e.toString()).includes(instrumentAddresses[i].toString())) {
-                let index = optifiMarkets.findIndex(optifiMarket => optifiMarket[0].instrument.toString() == instrument.toString() )
+                let index = optifiMarkets.findIndex(optifiMarket => optifiMarket[0].instrument.toString() == instrument.toString())
                 optifiMarketsToAdd.push(optifiMarkets[index][1])
             }
         })
@@ -197,12 +197,18 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
         const batchSize = 3;
         // @ts-ignore
         const optionFlags: boolean[] = ammInfo.flags.slice(1).filter(e => e == false)
-        let batches = splitToBatch(optionFlags, batchSize)
-        batches.forEach(async (batch, i) => {
-            let res = await calculateAmmProposalInBatch(context, ammAddress, ammInfo, batch.length)
-            console.log(`successfully calc proposals in batch for amm ${ammAddress.toString()} with id ${ammIndex}, batch id ${i}`)
+        if (optionFlags.length == 0) {
+            let res = await calculateAmmProposalInBatch(context, ammAddress, ammInfo, 1)
+            console.log(`successfully calc proposals in batch for amm ${ammAddress.toString()} with id ${ammIndex}, batch id ${0}`)
             console.log(res)
-        })
+        } else {
+            let batches = splitToBatch(optionFlags, batchSize)
+            batches.forEach(async (batch, i) => {
+                let res = await calculateAmmProposalInBatch(context, ammAddress, ammInfo, batch.length)
+                console.log(`successfully calc proposals in batch for amm ${ammAddress.toString()} with id ${ammIndex}, batch id ${i}`)
+                console.log(res)
+            })
+        }
     } catch (err) {
         console.error(err);
     }
