@@ -10,7 +10,7 @@ or provided to `initializeContext` at runtime
 **Optional Environment Variables**:
 
 - `OPTIFI_WALLET`: the filepath of a Solana wallet
-- `OPTIFI_PROGRAM_ID`: The ID of the on chain OptiFi program to interact with. If you don't want to deploy the OptiFi program by yourself, try using the program id deployed on devnet: `2GaTQRMXs8QsDuHsxb1iGzT5SR8PtdYwqPUDrPJmuYat`
+- `OPTIFI_PROGRAM_ID`: The ID of the on chain OptiFi program to interact with. If you don't want to deploy the OptiFi program by yourself, try using the program id deployed on devnet: `DeVoPfWrDn2UTA1MbSfagvpQxA91MpNFQnhHRw19dK34`
 
 ## How to initialize a new OptiFi Exchange
 
@@ -20,7 +20,7 @@ or provided to `initializeContext` at runtime
 npx ts-node scripts/bootstrap.ts
 ```
 
-it will create a new exchange with the OPTIFI_EXCHANGE_ID set in `./constants.ts`, also create OptiFi markets that users can trade on. Each OptiFi market will list one tradable instrument and using a seperate Serum orderbook to place orders.
+it will create a new exchange with the OPTIFI_EXCHANGE_ID set in `./constants.ts`, (if the exchange id is already bootstrapped, just try using another id), also create OptiFi markets that users can trade on. Each OptiFi market will list one tradable instrument and using a seperate Serum orderbook for placing orders.
 
 - load the exchange info
   npx ts-node scripts/loadExchange.ts
@@ -33,7 +33,7 @@ it will create a new exchange with the OPTIFI_EXCHANGE_ID set in `./constants.ts
 npx ts-node scripts/user/createUserAccountIfNotExists.ts
 ```
 
-- deposit fund (OptiFi USDC) to user's margin account (1000 usdc by default)
+- deposit fund (OptiFi USDC) to user's margin account (3000 usdc by default)
 
 ```bash
 npx ts-node scripts/user/deposit.ts
@@ -46,7 +46,8 @@ npx ts-node scripts/findOptifiMarkets.ts
 ```
 
 it will print all the market info, find the address of any OptiFi market.
-`Copy the OptiFi market address you want to trade and paste it to appropriate places in all the the scripts which are going to be used below`
+
+`Copy the OptiFi market address you want to trade and paste it to variable market in scripts/constants.ts`. It will be imported and used in the scripts of later steps
 
 - init the user on the OptiFi market (only for first time)
 
@@ -95,6 +96,8 @@ It will create two AMMs, one for trading BTC options, another for trading ETH op
 ```bash
 npx ts-node scripts/amm/findAMMs.ts
 ```
+
+- change the variable ammIndx in `scripts/amm/constants.ts`, it will be imported and used in later steps. 1 is for BTC amm, 2 for ETH amm
 
 - to deposit USDC into an AMM, set the `amm address` and `amount to deposit`, and run:
 
