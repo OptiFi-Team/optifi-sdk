@@ -3,7 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 import { Chain, OrderSide } from "../types/optifi-exchange-types";
 import { findUserAccount } from './accounts'
 import { calculateMargin, stress_function, option_intrinsic_value, reshap } from "./calculateMargin";
-import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
+import { AggregatorState, parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
 import { SWITCHBOARD, USDC_DECIMALS } from "../constants";
 
 export const r = 0;
@@ -294,8 +294,8 @@ async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: 
     let isCall = reshap(isCallRaw)
     let userPositions = reshap(userPositionsRaw)
 
-    let spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-    let ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+    let spotRes: AggregatorState;
+    let ivRes: AggregatorState;
     switch (asset) {
         case 0:
             spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
