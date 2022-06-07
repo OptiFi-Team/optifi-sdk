@@ -11,6 +11,7 @@ import { deriveVaultNonce } from "../../utils/market";
 import { Chain, OptifiMarket } from "../../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findMarginStressWithAsset } from "../../utils/margin";
+import marginStress from "../marginStress";
 
 export default function marketMakerCancelOrder(
     context: Context,
@@ -39,7 +40,30 @@ export default function marketMakerCancelOrder(
                                                                         .fetch(marketRes.instrument).then(chainRes => {
                                                                             // @ts-ignore
                                                                             let chain = chainRes as Chain;
-                                                                            findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
+                                                                            findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(async ([marginStressAddress, _bump]) => {
+                                                                                let marketMakerCalculationTx = context.program.instruction.mmCalculation(
+                                                                                    {
+                                                                                        accounts: {
+                                                                                            optifiExchange: exchangeAddress,
+                                                                                            marginStressAccount: marginStressAddress,
+                                                                                            userAccount: userAccountAddress,
+                                                                                            userMarginAccount: userAcctRaw.userMarginAccountUsdc,
+                                                                                            marketMakerAccount: marketMakerAccount,
+                                                                                            optifiMarket: marketAddress,
+                                                                                            userInstrumentLongTokenVault: userLongTokenVault,
+                                                                                            serumMarket: optifiMarket.serumMarket,
+                                                                                            openOrders: userOpenOrdersAccount,
+                                                                                            eventQueue: serumMarket.decoded.eventQueue,
+                                                                                            bids: serumMarket.bidsAddress,
+                                                                                            asks: serumMarket.asksAddress,
+                                                                                            serumDexProgramId: serumProgramId,
+                                                                                        }
+                                                                                    });
+
+                                                                                let instructions = await marginStress(context, chain.asset);
+
+                                                                                instructions.push(marketMakerCalculationTx);
+
                                                                                 let marketMakerCancelOrderTx = context.program.rpc.mmCancelOrder({
                                                                                     accounts: {
                                                                                         optifiExchange: exchangeAddress,
@@ -64,7 +88,8 @@ export default function marketMakerCancelOrder(
                                                                                         pruneAuthority: serumMarketAuthority,
                                                                                         serumDexProgramId: serumProgramId,
                                                                                         tokenProgram: TOKEN_PROGRAM_ID,
-                                                                                    }
+                                                                                    },
+                                                                                    instructions
                                                                                 });
                                                                                 marketMakerCancelOrderTx.then((res) => {
                                                                                     console.log("Successfully cancelled market maker order",
