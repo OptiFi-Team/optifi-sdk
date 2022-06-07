@@ -208,6 +208,7 @@ export class OrderInstruction {
   marketAddress: string
   txType: "place order" | "cancel order"
   cancelledQuantity: number | undefined
+  status: string
 
   constructor({
     clientId,
@@ -223,7 +224,8 @@ export class OrderInstruction {
     gasFee,
     marketAddress,
     txType,
-    cancelledQuantity
+    cancelledQuantity,
+    status
   }: {
     clientId: BN;
     limit: number;
@@ -239,6 +241,7 @@ export class OrderInstruction {
     marketAddress: string
     txType: "place order" | "cancel order"
     cancelledQuantity: number | undefined
+    status: string
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -254,6 +257,7 @@ export class OrderInstruction {
     this.marketAddress = marketAddress
     this.txType = txType
     this.cancelledQuantity = cancelledQuantity
+    this.status = status
   }
 
   public get shortForm(): string {
