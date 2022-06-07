@@ -9,7 +9,7 @@ import { retrievRecentTxs } from "./orderHistory";
 import base58, { decode } from "bs58";
 import Decimal from "decimal.js";
 
-const SIZE_DECIMALS = 2;
+export const SIZE_DECIMALS = 2;
 
 async function getOrders(context: Context): Promise<Order[]> {
   return new Promise(async (resolve, reject) => {
