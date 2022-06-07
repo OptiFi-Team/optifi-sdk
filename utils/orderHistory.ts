@@ -7,6 +7,10 @@ import { BN } from "@project-serum/anchor";
 import { findOptifiInstruments } from "./market";
 import { numberAssetToDecimal } from "./generic";
 import Decimal from "decimal.js";
+import { OptifiMarket } from "../types/optifi-exchange-types";
+import { getSerumMarket } from "../utils/serum";
+import { market } from "../scripts/constants";
+import { SIZE_DECIMALS } from "./tradeHistory";
 
 const inxNames = ["placeOrder", "cancelOrderByClientOrderId"];
 
@@ -45,12 +49,37 @@ export const retrievRecentTxsV2 = async (context: Context,
   })
 }
 
+async function getStatus(record: OrderInstruction, context: Context): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    let marketRes = await context.program.account.optifiMarket.fetch(market)
+    let optifiMarket = marketRes as OptifiMarket;
+    let serumMarket = await getSerumMarket(context, optifiMarket.serumMarket);
+    let bids = await serumMarket.loadBids(context.connection);
+    let asks = await serumMarket.loadAsks(context.connection);
+    let bidsEmpty = (bids.getL2(10).length > 0) ? false : true;
+    let asksEmpty = (asks.getL2(10).length > 0) ? false : true;
+
+    let firstBids: number = (!bidsEmpty) ? bids.getL2(10)[0][0] : 0;
+    let firstAsks: number = (!asksEmpty) ? asks.getL2(10)[0][0] : 0;
+
+    if (record.orderType == "limit") {
+      if (record.txType == "cancel order") resolve("Canceled")
+    } else if (record.orderType == "immediateOrCancel") {
+
+    }
+    else {//post only
+
+    }
+    resolve("none")
+  })
+}
+
 const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
 
   for (let tx of txs) {
     let inxs = tx.transaction.message.instructions;
-    inxs.forEach((inx) => {
+    for (let inx of inxs) {
       // console.log("inx.data: ", inx.data)
       // console.log("txid: ", tx.transaction.signatures[0]);
       let decodedInx = context.program.coder.instruction.decode(inx.data, "base58")
@@ -58,8 +87,8 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
       // if (inx.data.includes(placeOrderSignature) || inx.data.includes(cancelOrderByClientOrderIdSignature)) {
       if (decodedInx && inxNames.includes(decodedInx.name)) {
         let innerInxs = tx.meta?.innerInstructions!;
-        innerInxs.forEach((innerInx) => {
-          innerInx.instructions.forEach((inx2) => {
+        for (let innerInx of innerInxs) {
+          for (let inx2 of innerInx.instructions) {
             let programId =
               tx.transaction.message.accountKeys[inx2.programIdIndex];
             // console.log("programId:", programId.toString());
@@ -90,6 +119,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
                   record.marketAddress = marketAddress
                   record.txType = "place order"
+                  record.status = await getStatus(record, context);
                   orderTxs.push(Object.assign({}, record));
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
 
@@ -128,6 +158,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                     record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
                     record.marketAddress = marketAddress
                     record.txType = "cancel order"
+                    record.status = await getStatus(record, context);
                     orderTxs.push(record);
                   }
                 }
@@ -135,10 +166,10 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                 console.log(e);
               }
             }
-          });
-        });
+          }
+        }
       }
-    });
+    }
     // }
   };
   return orderTxs
