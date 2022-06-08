@@ -39,7 +39,7 @@ async function getFillAmt(context: Context): Promise<number[]> {
 }
 
 //refer:logAMMAccounts
-async function getIOCClientId(logs: string[]) {
+export async function getClientId(logs: string[]) {
   let stringLen = 20
   let stringRes: string;
   for (let log of logs) {
@@ -52,7 +52,7 @@ async function getIOCClientId(logs: string[]) {
 }
 
 //refer:logAMMAccounts
-async function getIOCFillAmt(logs: string[]) {
+export async function getIOCFillAmt(logs: string[]) {
   let stringLen = 20
   let stringRes: string;
   for (let log of logs) {
@@ -65,7 +65,7 @@ async function getIOCFillAmt(logs: string[]) {
 }
 
 //refer:logAMMAccounts
-async function getIOCSide(logs: string[]) {
+export async function getIOCSide(logs: string[]) {
   let stringLen = 6
   let stringRes: string;
   for (let log of logs) {
@@ -78,7 +78,7 @@ async function getIOCSide(logs: string[]) {
 }
 
 //refer:logAMMAccounts
-async function getIOCSizeForAsk(logs: string[]) {
+export async function getIOCSizeForAsk(logs: string[]) {
   let stringLen = 6
   let stringRes: string;
   for (let log of logs) {
@@ -104,7 +104,7 @@ async function getIOCData(context: Context, account: PublicKey): Promise<number[
               //@ts-ignore
               let types = await getIOCSide(tx.meta?.logMessages)
               //@ts-ignore
-              let clientId = await getIOCClientId(tx.meta?.logMessages)
+              let clientId = await getClientId(tx.meta?.logMessages)
               //@ts-ignore
               let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
 
