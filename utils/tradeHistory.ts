@@ -53,6 +53,19 @@ export async function getClientId(logs: string[]) {
 }
 
 //refer:logAMMAccounts
+export async function getOrderType(logs: string[]) {
+  let stringLen = 10
+  let stringRes: string;
+  for (let log of logs) {
+    if (log.search("get client_order_id") != -1) {
+      stringRes = log.substring(log.search("get order_type") + stringLen, log.search("native_coin_total"))
+    }
+  }
+  //@ts-ignore
+  return stringRes
+}
+
+//refer:logAMMAccounts
 export async function getIOCFillAmt(logs: string[]) {
   let stringLen = 20
   let stringRes: string;
@@ -114,7 +127,7 @@ async function getIOCData(context: Context, account: PublicKey, trades: Trade[])
               let trade = trades.find(e => e.clientId == clientId)
               let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
               //@ts-ignore
-              let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+              let decimal = (optifiMarket?.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
 
               if (types == "Ask") {
                 //user place Ask: market_open_orders.native_coin_total will be the amt after fill
@@ -145,21 +158,21 @@ export async function checkPostOnlyFail(context: Context, account: PublicKey, cl
 
     let txs = await retrievRecentTxs(context, account)
     for (let tx of txs) {//number of transactions people send
+      //@ts-ignore
+      let idFromProgramLog = await getClientId(tx.meta?.logMessages)
+      if (idFromProgramLog != clientId) continue;
       for (let inx of tx.transaction.message.instructions) {
         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
         if (programId.toString() == context.program.programId.toString()) {
           let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
           if (decoded) {
             if (decoded.name == "placeOrder") {
-              //@ts-ignore
-              let idFromProgramLog = await getClientId(tx.meta?.logMessages)
-              if (idFromProgramLog != clientId) break;
               let logs = tx.meta?.logMessages
               //@ts-ignore
               for (let log of logs) {
                 if (log.search("Order is failed...") != -1) {
                   fail = true;
-                  break;
+                  resolve(fail);
                 }
               }
             }
@@ -180,9 +193,8 @@ export function getAllTradesForAccount(
       // resolve(res)
       res.reverse()
       let trades: Trade[] = []
-
-      //console.log(res)
-      res.forEach(order => {
+      let clientIdFillAmt: number[] = await getFillAmt(context);
+      for (let order of res) {
         // divide to three situations: place order / cancel order / fill
         // push to res if place order, pop res if cancel order
         // after that, check if fill order by clientIdFillAmt, then renew res by it
@@ -206,50 +218,61 @@ export function getAllTradesForAccount(
           let index = trades.findIndex(e => e.clientId == order.clientId)
           trades.splice(index, 1)
         }
-      })
 
-      let clientIdFillAmt: number[] = await getFillAmt(context);
-      let clientIdIOC: number[] = await getIOCData(context, account, trades)
+        //@ts-ignore
+        let trade = trades.find(e => e.clientId == order.clientId);
 
-      //Limit
-      for (let clientId = 0; clientId < clientIdFillAmt.length; clientId++) {
-        if (clientIdFillAmt[clientId] != null) {
-          if (clientIdFillAmt[clientId] <= 0) {//totally be filled, so delete from res
-            let index = trades.findIndex(e => e.clientId == clientId)
-            trades.splice(index, 1)
-          } else {// fill potential, so renew certain trade
-            let trade = trades.find(e => e.clientId == clientId)
-            //@ts-ignore
-            trade?.maxBaseQuantity = clientIdFillAmt[clientId];
+        //@ts-ignore
+        if (trade) {
+
+          //Limit
+          if (trade.orderType == "limit") {
+            if (clientIdFillAmt[order.clientId] != null) {
+              if (clientIdFillAmt[order.clientId] <= 0) {//totally be filled, so delete from res
+                let index = trades.findIndex(e => e.clientId == order.clientId)
+                trades.splice(index, 1)
+              } else {// fill potential, so renew certain trade
+                let trade = trades.find(e => e.clientId == order.clientId)
+                //@ts-ignore
+                trade?.maxBaseQuantity = clientIdFillAmt[order.clientId];
+              }
+            }
           }
-        }
-      }
 
-      //IOC
-      for (let clientId = 0; clientId < clientIdIOC.length; clientId++) {
-        if (clientIdIOC[clientId]) {//IOC success
-          let trade = trades.find(e => e.clientId == clientId)
+          //let clientIdIOC: number[] = await getIOCData(context, account, trades)
+          // //IOC
+          // if (clientIdIOC[order.clientId]) {//IOC success
+          //   let trade = trades.find(e => e.clientId == order.clientId)
+          //   if (trade)
+          //     if (trade.orderType == "ioc") {
+          //       let trade = trades.find(e => e.clientId == order.clientId)
+          //       //@ts-ignore
+          //       trade?.maxBaseQuantity = clientIdIOC[clientId];
+          //     }
+          // }
+          // else {
+          //   let trade = trades.find(e => e.clientId == order.clientId)
+          //   if (trade)
+          //     if (trade.orderType == "ioc") {
+          //       let index = trades.findIndex(e => e.clientId == order.clientId)
+          //       trades.splice(index, 1)
+          //     }
+          // }
+
+          //Post only
+          //when id match and order is failed
           //@ts-ignore
-          trade?.maxBaseQuantity = clientIdIOC[clientId];
-        }
-        else {
-          let trade = trades.find(e => e.clientId == clientId)
-          //@ts-ignore
-          if (trade)
-            if (trade.orderType == "ioc") {//if trade is ioc and there no data in clientIdIOC, then it means fail
-              let index = trades.findIndex(e => e.clientId == clientId)
+          if (trade.orderType == "postOnly") {
+            let postOnlyFail = await checkPostOnlyFail(context, account, order.clientId);//wait for a long time...should be optimized
+            if (postOnlyFail) {
+              console.log(order.clientId + " postOnlyFail!!!")
+              let index = trades.findIndex(e => e.clientId == order.clientId)
               trades.splice(index, 1)
             }
-        }
-      }
+          }
 
-      //Post only
-      for (let clientId = 0; clientId < trades.length; clientId++) {
-        let postOnlyFail = await checkPostOnlyFail(context, account, clientId);//wait for a long time...should be optimized
-        if (postOnlyFail) {
-          let index = trades.findIndex(e => e.clientId == clientId)
-          trades.splice(index, 1)
         }
+
       }
 
       trades.reverse()
