@@ -302,44 +302,35 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
             for (let amm of allAmm) {
                 // @ts-ignore
                 let ammEquity = userAccountInfo.ammEquities[amm[0].ammIdx - 1]
-                console.log("ammEquity.notioanlWithdrawable: ", ammEquity.notioanlWithdrawable)
                 let notioanlWithdrawable = new Decimal(ammEquity.notioanlWithdrawable / 10 ** USDC_DECIMALS)
 
                 // @ts-ignore
                 notionalBalance.set(amm[0].ammIdx - 1, notioanlWithdrawable.toNumber())
             }
 
-
-            // console.log("notionalBalance: ", notionalBalance)
-
             // get actual usdc balance according to user lp token balance
             for (let asset of notionalBalance.keys()) {
-                let userLpTokenAccountInfo = await getAccount(context.connection, userLpAccounts[assets.indexOf(asset)])
-                let userLpTokenBalance = userLpTokenAccountInfo.amount
-                // console.log("cp1: ", userLpTokenAccountInfo)
-                let lpTokenMintInfo = await getMint(context.connection, tradedAmmLpMints[assets.indexOf(asset)])
-                let lpSupply = lpTokenMintInfo.supply
-                // console.log("cp2: ", lpTokenMintInfo)
+                if (userLpAccounts[assets.indexOf(asset)]) {
+                    let userLpTokenAccountInfo = await getAccount(context.connection, userLpAccounts[assets.indexOf(asset)])
+                    let userLpTokenBalance = userLpTokenAccountInfo.amount
+                    let lpTokenMintInfo = await getMint(context.connection, tradedAmmLpMints[assets.indexOf(asset)])
+                    let lpSupply = lpTokenMintInfo.supply
+                    // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)])
+                    let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
+                    // let usdcMintInfo = await getMint(context.connection, tradedAmmUsdcMints[assets.indexOf(asset)])
 
-                // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)])
-                let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
-                // let usdcMintInfo = await getMint(context.connection, tradedAmmUsdcMints[assets.indexOf(asset)])
+                    let actualBalance = new Decimal(userLpTokenBalance.toString())
+                        .dividedBy(new Decimal(lpSupply.toString()))
+                        .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** USDC_DECIMALS).toNumber()
+                    // .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
 
-                let actualBalance = new Decimal(userLpTokenBalance.toString())
-                    .dividedBy(new Decimal(lpSupply.toString()))
-                    .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** USDC_DECIMALS).toNumber()
-                // .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
-                console.log("cp3")
-
-                equity.set(asset, {
-                    lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
-                    lpToeknValueInUsdc: actualBalance,
-                    earnedValueInUsdc: new Decimal(actualBalance).sub(new Decimal(notionalBalance.get(asset)!)).toNumber(),
-                })
-                console.log("cp4")
+                    equity.set(asset, {
+                        lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
+                        lpToeknValueInUsdc: actualBalance,
+                        earnedValueInUsdc: new Decimal(actualBalance).sub(new Decimal(notionalBalance.get(asset)!)).toNumber(),
+                    })
+                }
             }
-            console.log("cp5")
-            console.log(equity)
             resolve(equity)
         } catch (err) {
             reject(err)
