@@ -1,6 +1,6 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findMarketMakerAccount, findUserAccount, getDexOpenOrders } from "../../utils/accounts";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { SERUM_DEX_PROGRAM_ID, USDC_DECIMALS, USDC_TOKEN_MINT } from "../../constants";
@@ -48,7 +48,29 @@ export default function marketMakerPostOnlyOrder(
                                                                             // @ts-ignore
                                                                             let chain = chainRes as Chain;
                                                                             findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(async ([marginStressAddress, _bump]) => {
-                                                                                let ix = await marginStress(context, chain.asset);
+                                                                                let marketMakerCalculationTx = context.program.instruction.mmCalculation(
+                                                                                    {
+                                                                                        accounts: {
+                                                                                            optifiExchange: exchangeAddress,
+                                                                                            marginStressAccount: marginStressAddress,
+                                                                                            userAccount: userAccountAddress,
+                                                                                            userMarginAccount: userAcctRaw.userMarginAccountUsdc,
+                                                                                            marketMakerAccount: marketMakerAccount,
+                                                                                            optifiMarket: marketAddress,
+                                                                                            userInstrumentLongTokenVault: userLongTokenVault,
+                                                                                            serumMarket: optifiMarket.serumMarket,
+                                                                                            openOrders: userOpenOrdersAccount,
+                                                                                            eventQueue: serumMarket.decoded.eventQueue,
+                                                                                            bids: serumMarket.bidsAddress,
+                                                                                            asks: serumMarket.asksAddress,
+                                                                                            serumDexProgramId: serumProgramId,
+                                                                                        }
+                                                                                    });
+
+                                                                                let instructions = await marginStress(context, chain.asset);
+
+                                                                                instructions.push(marketMakerCalculationTx);
+
                                                                                 let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(chain.asset)!); // price for 1 lot_size 
                                                                                 let maxCoinQty = size * (10 ** numberAssetToDecimal(chain.asset)!);
                                                                                 let PcQty = limit * maxCoinQty;
@@ -85,7 +107,7 @@ export default function marketMakerPostOnlyOrder(
                                                                                             tokenProgram: TOKEN_PROGRAM_ID,
                                                                                             rent: SYSVAR_RENT_PUBKEY,
                                                                                         },
-                                                                                        instructions: ix
+                                                                                        instructions
                                                                                     });
                                                                                 marketMakerPostOnlyOrderTx.then((res) => {
                                                                                     console.log("Successfully placed market maker post-only order",

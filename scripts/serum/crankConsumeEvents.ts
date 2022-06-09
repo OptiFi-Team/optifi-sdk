@@ -31,8 +31,11 @@ const consumeEventsLoop2 = async (context: Context, market: PublicKey) => {
 
     let event = await serumMarketInfo.loadEventQueue(context.connection);
 
+    let dateTime = new Date()
+
+    console.log(dateTime, market.toString(), " event.length: ", event.length,)
+
     while (event.length > 0) {
-        console.log("event.length: ", event.length,)
 
         let openOrders = event.map(e => e.openOrders)
 

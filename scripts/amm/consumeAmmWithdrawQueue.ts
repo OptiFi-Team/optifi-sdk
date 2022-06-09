@@ -3,6 +3,8 @@ import consumeWithdrawRequestQueue from "../../instructions/amm/consumeWithdrawR
 import { findOptifiExchange, getUserAccountById } from "../../utils/accounts";
 import { findAMMWithIdx } from "../../utils/amm";
 // import { ammIndex } from "./constants";
+import Context from "../../types/context"
+import { SolanaEndpoint } from "../../constants";
 
 let ammIndexes = [1, 2]
 initializeContext().then(async (context) => {
@@ -18,16 +20,35 @@ initializeContext().then(async (context) => {
             if (withdrawRequests.head != withdrawRequests.tail) {
                 // @ts-ignore
                 let userId = withdrawRequests.requests[withdrawRequests.head].userAccountId
+                // @ts-ignore
+                let requestTimestamp = withdrawRequests.requests[withdrawRequests.head].requestTimestamp.toNumber()
+                if (isReqeustInCorrectTimeWindow(context, requestTimestamp)) {
+                    let userAccount = await getUserAccountById(context, userId)
 
-                console.log("userId: ", userId)
-                let userAccount = await getUserAccountById(context, userId)
-
-                await consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then((res) => {
-                    console.log("Got consumeWithdrawRequestQueue res", res);
-                }).catch((err) => {
-                    console.error(err);
-                })
+                    await consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then((res) => {
+                        console.log("Got consumeWithdrawRequestQueue res", res);
+                    }).catch((err) => {
+                        console.error(err);
+                    })
+                }
             }
         }
     })
 })
+
+function isReqeustInCorrectTimeWindow(context: Context, requestTimestamp: number): boolean {
+    let waitingTimeInSeconds
+    if (context.endpoint == SolanaEndpoint.Mainnet) {
+        waitingTimeInSeconds = 2 * 24 * 60 * 60 // 2 days
+    } else if (context.endpoint == SolanaEndpoint.Devnet) {
+        waitingTimeInSeconds = 10 * 60 // 10 mins
+    }
+
+    let now = new Date().getTime()
+    let validWithdrawTime = new Date((requestTimestamp + waitingTimeInSeconds) * 1000).getTime()
+    if (now >= validWithdrawTime) {
+        return true
+    } else {
+        return false
+    }
+}
