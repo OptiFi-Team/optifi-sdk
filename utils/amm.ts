@@ -302,15 +302,15 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
             for (let amm of allAmm) {
                 // @ts-ignore
                 let ammEquity = userAccountInfo.ammEquities[amm[0].ammIdx - 1]
-                let depositTotal = new Decimal(ammEquity.depositTotal / 10 ** USDC_DECIMALS)
-                let withdrawTotal = new Decimal(ammEquity.withdrawTotal / 10 ** USDC_DECIMALS)
+                console.log("ammEquity.notioanlWithdrawable: ", ammEquity.notioanlWithdrawable)
+                let notioanlWithdrawable = new Decimal(ammEquity.notioanlWithdrawable / 10 ** USDC_DECIMALS)
 
                 // @ts-ignore
-                notionalBalance.set(amm[0].ammIdx - 1, depositTotal.sub(withdrawTotal).toNumber())
+                notionalBalance.set(amm[0].ammIdx - 1, notioanlWithdrawable.toNumber())
             }
 
 
-            console.log("notionalBalance: ", notionalBalance)
+            // console.log("notionalBalance: ", notionalBalance)
 
             // get actual usdc balance according to user lp token balance
             for (let asset of notionalBalance.keys()) {

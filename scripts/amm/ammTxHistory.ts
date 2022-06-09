@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import ammWithdraw from "../../instructions/ammWithdraw";
-import { getAllUsersTxsOnAllAMM, getUserEquity, getUserTxsOnAllAMM } from "../../utils/amm";
+import { getAllUsersTxsOnAllAMM, getUserEquity, getUserEquityV2, getUserTxsOnAllAMM } from "../../utils/amm";
 
 let amount = 100; // already including decimals
 
@@ -22,7 +22,7 @@ initializeContext(undefined, undefined, undefined, undefined, {disableRetryOnRat
     })
 
 
-    await getUserEquity(context).then((res) => {
+    await getUserEquityV2(context).then((res) => {
         console.log("getUserEquity res", res);
     }).catch((err) => {
         console.error(err);
