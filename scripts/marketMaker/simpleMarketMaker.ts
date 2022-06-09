@@ -59,14 +59,20 @@ initializeContext().then(async (context) => {
                     break
             }
 
-            console.log(spot, strike, iv, 0, 0, t, isCall)
+            console.log(market.toString(), strike, isCall)
 
             let price = option_price(spot, [[strike]], [[iv]], 0, 0, [[t]], [[isCall]]);
 
-            console.log(Math.round(price * 100) / 100)
+            console.log("price: ", price[0][0], " ,round price: ", Math.round(price * 10000) / 10000)
             await marketMakerCancelOrder(context, market);
-            await marketMakerPostOnlyOrder(context, market, OrderSide.Ask, Math.round(price * 1.005 * 100) / 100, 10);
-            await marketMakerPostOnlyOrder(context, market, OrderSide.Bid, Math.round(price * 0.995 * 100) / 100, 10);
+            let ask = Math.round(price * 1.005 * 10000) / 10000;
+            let bid = Math.round(price * 0.995 * 10000) / 10000;
+            if (ask > 0) {
+                await marketMakerPostOnlyOrder(context, market, OrderSide.Ask, ask, 10);
+            }
+            if (bid > 0) {
+                await marketMakerPostOnlyOrder(context, market, OrderSide.Bid, bid, 10);
+            }
         }
         await sleep(5 * 1000)
     }
