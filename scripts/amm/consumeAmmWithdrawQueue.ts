@@ -42,12 +42,10 @@ function isReqeustInCorrectTimeWindow(context: Context, requestTimestamp: number
         waitingTimeInSeconds = 2 * 24 * 60 * 60 // 2 days
     } else if (context.endpoint == SolanaEndpoint.Devnet) {
         waitingTimeInSeconds = 10 * 60 // 10 mins
-        console.log("hi")
     }
 
     let now = new Date().getTime()
     let validWithdrawTime = new Date((requestTimestamp + waitingTimeInSeconds) * 1000).getTime()
-    console.log(now, validWithdrawTime)
     if (now >= validWithdrawTime) {
         return true
     } else {
