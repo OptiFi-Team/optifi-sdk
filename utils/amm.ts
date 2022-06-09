@@ -616,16 +616,16 @@ function getConsumeWithdrawDetailsFromLog(programLog: string) {
             temp[key] = value
         }
     })
-    console.log(
-        {
-            userAccountId: parseInt(temp["user_account_id"]),
-            burnedLpTokenAmount: parseInt(temp["burned lp token amount"]),
-            withdrawUsdcAmount: parseInt(temp["withdraw_usdc_amount"]),
-            totalFee: parseInt(temp["total fee"]),
-            finalWithdrawUsdcAmount: parseInt(temp["final_withdraw_usdc_amount"]),
-        }
-        // temp
-    )
+    // console.log(
+    //     {
+    //         userAccountId: parseInt(temp["user_account_id"]),
+    //         burnedLpTokenAmount: parseInt(temp["burned lp token amount"]),
+    //         withdrawUsdcAmount: parseInt(temp["withdraw_usdc_amount"]),
+    //         totalFee: parseInt(temp["total fee"]),
+    //         finalWithdrawUsdcAmount: parseInt(temp["final_withdraw_usdc_amount"]),
+    //     }
+    //     // temp
+    // )
     return {
         userAccountId: parseInt(temp["user_account_id"]),
         burnedLpTokenAmount: parseInt(temp["burned lp token amount"]),
