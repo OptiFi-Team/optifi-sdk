@@ -9,7 +9,7 @@ import {
 } from "@project-serum/serum";
 import { market } from "./constants";
 import { findOptifiMarketsWithFullData } from "../utils/market";
-import { getAllOrdersForAccount } from "../utils/orderHistory";
+import { getAllOrdersForAccount ,addStatusInOrderHistory} from "../utils/orderHistory";
 // let userAccount = new PublicKey("5UiD5WNnGVRuTmhfjhVLYvHV8fDiXH5eUNCoBxwJpkYs")
 
 initializeContext().then(async (context) => {
@@ -57,6 +57,7 @@ initializeContext().then(async (context) => {
   // just call this loadOrdersForOwnerOnAllMarkets again
   let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
   console.log("orders: ", orders)
-
+  let res = await addStatusInOrderHistory(orders,orderHistory,context2,userAccount)
+  console.log(res)
 });
 
