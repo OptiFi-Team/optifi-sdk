@@ -71,11 +71,12 @@ async function getFilledData(context: Context, account: PublicKey,orderHistorys:
               let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
 
               //get decimals
-              let optifiMarkets = await findOptifiMarketsWithFullData(context)
-              let trade = orderHistorys.find(e => e.clientId == clientId)
-              let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
-              //@ts-ignore
-              let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+              // let optifiMarkets = await findOptifiMarketsWithFullData(context)
+              // let trade = orderHistorys.find(e => e.clientId == clientId)
+              // let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
+              // //@ts-ignore
+              // let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+              let decimal = 2;
 
               if (types == "Ask") {
                 //user place Ask: market_open_orders.native_coin_total will be the amt after fill
