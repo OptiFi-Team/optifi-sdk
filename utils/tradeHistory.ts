@@ -104,11 +104,14 @@ export async function getIOCSizeForAsk(logs: string[]) {
   return Number(stringRes)
 }
 
-async function getIOCData(context: Context, account: PublicKey, trades: Trade[]): Promise<number[]> {
+async function getIOCData(context: Context, account: PublicKey, trades: Trade[], clientId: number): Promise<number[]> {
   return new Promise(async (resolve, reject) => {
     let res: number[] = [];
     let txs = await retrievRecentTxs(context, account)
     for (let tx of txs) {//number of transactions people send
+      //@ts-ignore
+      let idFromProgramLog = await getClientId(tx.meta?.logMessages)
+      if (idFromProgramLog != clientId) continue;
       for (let inx of tx.transaction.message.instructions) {
         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
         if (programId.toString() == context.program.programId.toString()) {
@@ -123,11 +126,12 @@ async function getIOCData(context: Context, account: PublicKey, trades: Trade[])
               let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
 
               //get decimals
-              let optifiMarkets = await findOptifiMarketsWithFullData(context)
-              let trade = trades.find(e => e.clientId == clientId)
-              let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
-              //@ts-ignore
-              let decimal = (optifiMarket?.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+              // let optifiMarkets = await findOptifiMarketsWithFullData(context)
+              // let trade = trades.find(e => e.clientId == clientId)
+              // let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
+              // //@ts-ignore
+              // let decimal = (optifiMarket?.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+              let decimal = 2;
 
               if (types == "Ask") {
                 //user place Ask: market_open_orders.native_coin_total will be the amt after fill
@@ -239,25 +243,18 @@ export function getAllTradesForAccount(
             }
           }
 
-          //let clientIdIOC: number[] = await getIOCData(context, account, trades)
-          // //IOC
-          // if (clientIdIOC[order.clientId]) {//IOC success
-          //   let trade = trades.find(e => e.clientId == order.clientId)
-          //   if (trade)
-          //     if (trade.orderType == "ioc") {
-          //       let trade = trades.find(e => e.clientId == order.clientId)
-          //       //@ts-ignore
-          //       trade?.maxBaseQuantity = clientIdIOC[clientId];
-          //     }
-          // }
-          // else {
-          //   let trade = trades.find(e => e.clientId == order.clientId)
-          //   if (trade)
-          //     if (trade.orderType == "ioc") {
-          //       let index = trades.findIndex(e => e.clientId == order.clientId)
-          //       trades.splice(index, 1)
-          //     }
-          // }
+          //IOC
+          if (trade.orderType == "ioc") {
+            let clientIdIOC: number[] = await getIOCData(context, account, trades, order.clientId)
+            if (clientIdIOC[order.clientId]) {//IOC success
+              //@ts-ignore
+              trade?.maxBaseQuantity = clientIdIOC[order.clientId];
+            }
+            else {
+              let index = trades.findIndex(e => e.clientId == order.clientId)
+              trades.splice(index, 1)
+            }
+          }
 
           //Post only
           //when id match and order is failed
@@ -265,14 +262,22 @@ export function getAllTradesForAccount(
           if (trade.orderType == "postOnly") {
             let postOnlyFail = await checkPostOnlyFail(context, account, order.clientId);//wait for a long time...should be optimized
             if (postOnlyFail) {
-              console.log(order.clientId + " postOnlyFail!!!")
+              // console.log(order.clientId + " postOnlyFail!!!")
               let index = trades.findIndex(e => e.clientId == order.clientId)
               trades.splice(index, 1)
             }
           }
 
         }
+      }
 
+      //fix eth decimal problem , can commend it if there isn't any decimal problem
+      for (let trade of trades) {
+        let optifiMarkets = await findOptifiMarketsWithFullData(context)
+        let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
+        //@ts-ignore
+        let decimal = (optifiMarket?.asset == "BTC") ? 0 : 1;
+        trade.maxBaseQuantity = trade.maxBaseQuantity * (10 ** decimal);
       }
 
       trades.reverse()
