@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, SystemProgram } from "@solana/web3.js";
+import { PublicKey, SYSVAR_CLOCK_PUBKEY, SystemProgram, TransactionSignature } from "@solana/web3.js";
 import {
   findExchangeAccount,
   findParseOptimizedOracleAccountFromAsset,
@@ -17,6 +17,7 @@ import {
   optifiDurationToNumber,
 } from "../utils/generic";
 import * as anchor from "@project-serum/anchor";
+import InstructionResult from "../types/instructionResult";
 //TODO: use account.chain.account
 export const instrumentIdx = 5; //if instrument address is already in use, plus 1
 
@@ -28,7 +29,7 @@ export function getNextStrike(
   instrumentContext2: InstrumentContext,
   bump: number,
   bump2: number
-): Promise<number> {
+): Promise<InstructionResult<TransactionSignature>> {
   return new Promise((resolve, reject) => {
     findExchangeAccount(context)
       .then(async ([exchangeAddress, _]) => {
@@ -67,10 +68,10 @@ export function getNextStrike(
           ),
           authority: context.provider.wallet.publicKey,
           contractSize: new anchor.BN(0.01 * 10000),
-          instrumentIdx: instrumentIdx+1,
+          instrumentIdx: instrumentIdx + 1,
         };
 
-        context.program.rpc.generateNextInstrument(bump, bump2, data, data2, {
+        let res = await context.program.rpc.generateNextInstrument(bump, bump2, data, data2, {
           accounts: {
             optifiExchange: exchangeAddress,
             instrument: instrument,
@@ -91,6 +92,11 @@ export function getNextStrike(
             clock: SYSVAR_CLOCK_PUBKEY,
           },
         });
+
+        resolve({
+          successful: true,
+          data: res as TransactionSignature
+        })
       })
       .catch((err) => reject(err));
   });
