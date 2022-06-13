@@ -5,6 +5,7 @@ import { findAMMWithIdx } from "../../utils/amm";
 // import { ammIndex } from "./constants";
 import Context from "../../types/context"
 import { SolanaEndpoint } from "../../constants";
+import { sleep } from "../../utils/generic";
 
 let ammIndexes = [1, 2]
 initializeContext().then(async (context) => {
@@ -32,6 +33,8 @@ initializeContext().then(async (context) => {
                     })
                 }
             }
+
+            await sleep(10 * 1000);
         }
     })
 })
