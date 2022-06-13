@@ -77,8 +77,7 @@ export default function marginStress(context: Context,
             let res = await context.program.account.exchange.fetch(exchange)
             let optifiExchange = res as Exchange;
             //@ts-ignore
-            let strikeLen =  optifiExchange.instrumentUnique[0].length;
-
+            let strikeLen =  optifiExchange.instrumentUnique[asset].length;
             for (let i = 0; i < strikeLen; i++) {
                 instructions.push(ix2);
             }

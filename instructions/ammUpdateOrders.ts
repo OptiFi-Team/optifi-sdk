@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import { AmmAccount, OptifiMarket } from "../types/optifi-exchange-types";
 import { findExchangeAccount, findUserAccount, getDexOpenOrders } from "../utils/accounts";
@@ -46,9 +46,10 @@ export function ammUpdateOrders(context: Context,
 
                                                         let tx = new Transaction()
 
-                                                        // prepare margin stress inx
-                                                        let inxs = await marginStress(context, amm.asset);
+                                                        // // prepare margin stress inx
+                                                        // let inxs = await marginStress(context, amm.asset);
 
+                                                        let inxs: TransactionInstruction[] = []
                                                         // add amm update order inx
                                                         let ammUpdateOrdersInx = context.program.instruction.ammUpdateOrders(
                                                             orderLimit,
