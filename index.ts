@@ -140,9 +140,12 @@ function initializeContext(wallet?: string | WalletProvider,
                 const provider = new anchor.AnchorProvider(connection,
                     walletRes.anchorWallet,
                     anchor.AnchorProvider.defaultOptions());
-                const program = new anchor.Program(optifiExchange as unknown as OptifiExchangeIDL,
+                const idl = optifiExchange as unknown as OptifiExchangeIDL;
+                const program = new anchor.Program(idl,
                     (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)),
-                    provider)
+                    provider,
+                    new anchor.BorshCoder(idl)
+                )
                 resolve({
                     program: program,
                     walletType: walletRes.walletType,
@@ -169,7 +172,9 @@ function initializeContext(wallet?: string | WalletProvider,
             const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
             const program = new anchor.Program(idl,
                 (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)),
-                provider)
+                provider,
+                new anchor.BorshCoder(idl)
+            )
 
             resolve({
                 program: program,

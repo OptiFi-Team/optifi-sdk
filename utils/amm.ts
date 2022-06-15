@@ -6,10 +6,10 @@ import { AMM_PREFIX, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
 import Position from "../types/position";
 import { retrievRecentTxs } from "./orderHistory";
 import base58 from "bs58";
-import { BN } from "@project-serum/anchor";
+import { BN, BorshCoder, BorshEventCoder, eventDiscriminator, EventParser } from "@project-serum/anchor";
 import Decimal from "decimal.js";
 import { findAssociatedTokenAccount } from "./token";
-import { getAccount, getMint } from "@solana/spl-token";
+import { decodeBurnInstruction, getAccount, getMint } from "@solana/spl-token";
 
 
 export const DELTA_LIMIT = 0.05;
@@ -667,9 +667,8 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                     for (let inx of tx.transaction.message.instructions) {
                         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
                         if (programId.toString() == context.program.programId.toString()) {
-                            // let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
-                            let decoded = context.program.coder.events.decode(inx.data)
-                            console.log("===============>", decoded)
+                            let coder = context.program.coder as BorshCoder;
+                            let decoded = coder.instruction.decode(base58.decode(inx.data))
 
                             if (decoded) {
                                 if (decoded.name == "ammDeposit") {
@@ -781,7 +780,8 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                     for (let inx of tx.transaction.message.instructions) {
                         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
                         if (programId.toString() == context.program.programId.toString()) {
-                            let decoded = context.program.coder.events.decode(inx.data)
+                            let coder = context.program.coder as BorshCoder;
+                            let decoded = coder.instruction.decode(base58.decode(inx.data))
 
                             if (decoded) {
                                 if (decoded.name == "consumeWithdrawQueue") {
