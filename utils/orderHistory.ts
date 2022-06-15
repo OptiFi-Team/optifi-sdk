@@ -53,7 +53,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
     inxs.forEach((inx) => {
       // console.log("inx.data: ", inx.data)
       // console.log("txid: ", tx.transaction.signatures[0]);
-      let decodedInx = context.program.coder.instruction.decode(inx.data, "base58")
+      let decodedInx = context.program.coder.events.decode(inx.data)
       // console.log(decodedInx)
       // if (inx.data.includes(placeOrderSignature) || inx.data.includes(cancelOrderByClientOrderIdSignature)) {
       if (decodedInx && inxNames.includes(decodedInx.name)) {

@@ -98,7 +98,7 @@ async function getIOCData(context: Context, account: PublicKey): Promise<number[
       for (let inx of tx.transaction.message.instructions) {
         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
         if (programId.toString() == context.program.programId.toString()) {
-          let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
+          let decoded = context.program.coder.events.decode(inx.data)
           if (decoded) {
             if (decoded.name == "placeOrder") {
               //@ts-ignore
@@ -185,9 +185,9 @@ export function getAllTradesForAccount(
 
       for (let clientId = 0; clientId < clientIdIOC.length; clientId++) {
         if (clientIdIOC[clientId]) {
-            let trade = trades.find(e => e.clientId == clientId)
-            //@ts-ignore
-            trade?.maxBaseQuantity = clientIdIOC[clientId];
+          let trade = trades.find(e => e.clientId == clientId)
+          //@ts-ignore
+          trade?.maxBaseQuantity = clientIdIOC[clientId];
         }
       }
 

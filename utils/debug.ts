@@ -3,7 +3,6 @@ import { SolanaEndpoint } from "../constants";
 import { findUserAccount } from "./accounts";
 import { PublicKey } from "@solana/web3.js";
 import { IdlAccount } from "@project-serum/anchor/src/idl";
-import { AccountsCoder } from "@project-serum/anchor";
 
 export enum SolanaEntityType {
     Transaction = "tx",
@@ -77,9 +76,6 @@ export function debugAnchorAccount(context: Context,
                 console.log("Account data is - ", acctInfo.data);
                 let actualDiscriminator = acctInfo.data.slice(0, 8)
                 console.log("Discriminator bytes are ", actualDiscriminator);
-                let expectedDiscriminator = AccountsCoder.accountDiscriminator(account.name)
-                console.log("Discriminator for account should be ", expectedDiscriminator);
-                console.log("Discriminator === Expected", actualDiscriminator === expectedDiscriminator);
                 // Try to decode anyway
                 let accountsCoder = context.program.coder.accounts;
                 let res = accountsCoder.decode(account.name, acctInfo.data)

@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import {Keypair, PublicKey, Signer, Transaction, TransactionSignature} from "@solana/web3.js";
+import { Keypair, PublicKey, Signer, Transaction, TransactionSignature } from "@solana/web3.js";
 import WalletType from "../types/walletType";
 import * as bs58 from "bs58";
 
@@ -33,7 +33,7 @@ function signSlopeTransaction(context: Context, transaction: Transaction): Promi
                     transaction.serializeMessage()
                 ) as any
             ).then((res) => {
-                const {msg, data} = res as unknown as SlopeTxn;
+                const { msg, data } = res as unknown as SlopeTxn;
                 if (data.publicKey === undefined || data.signature === undefined) {
                     console.error("Transaction signing failed, ", data);
                     reject({
@@ -67,8 +67,8 @@ function signStandardProviderTransaction(context: Context, transaction: Transact
 }
 
 export function signTransaction(context: Context,
-                                transaction: Transaction,
-                                signers?: Signer[]): Promise<Transaction> {
+    transaction: Transaction,
+    signers?: Signer[]): Promise<Transaction> {
     if (signers && signers.length > 0) {
         transaction.partialSign(...signers);
     }
@@ -98,8 +98,8 @@ export function annotateTransactionWithBlockhash(context: Context, transaction: 
 }
 
 export function annotateAndSignTransaction(context: Context,
-                                           transaction: Transaction,
-                                           signers?: Signer[]): Promise<Transaction> {
+    transaction: Transaction,
+    signers?: Signer[]): Promise<Transaction> {
     return new Promise((resolve, reject) => {
         annotateTransactionWithBlockhash(context, transaction).then((res) => {
             signTransaction(context, transaction, signers)
@@ -117,8 +117,8 @@ export function annotateAndSignTransaction(context: Context,
  * @param signers
  */
 export function signAndSendTransaction(context: Context,
-                                       transaction: Transaction,
-                                       signers?: Signer[]): Promise<TransactionResult> {
+    transaction: Transaction,
+    signers?: Signer[]): Promise<TransactionResult> {
 
     // Send the transaction
     return new Promise((resolve, reject) => {

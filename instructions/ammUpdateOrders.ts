@@ -83,7 +83,7 @@ export function ammUpdateOrders(context: Context,
                                                                     tokenProgram: TOKEN_PROGRAM_ID,
                                                                     rent: SYSVAR_RENT_PUBKEY
                                                                 },
-                                                            }
+                                                            },
                                                         )
                                                         inxs.push(ammUpdateOrdersInx)
 
@@ -101,7 +101,7 @@ export function ammUpdateOrders(context: Context,
                                                         inxs.push(consumeEventInx);
 
                                                         tx.add(...inxs)
-                                                        let ammUpdateOrders = await context.provider.send(tx);
+                                                        let ammUpdateOrders = await context.provider.sendAndConfirm(tx);
 
                                                         resolve({
                                                             successful: true,
