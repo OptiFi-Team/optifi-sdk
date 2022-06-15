@@ -1731,12 +1731,12 @@
         },
         {
           "name": "mangoCache",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "rootBank",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1812,7 +1812,7 @@
         },
         {
           "name": "mangoCache",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1837,7 +1837,7 @@
         },
         {
           "name": "rootBank",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
