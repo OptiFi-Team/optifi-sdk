@@ -35,7 +35,7 @@ export async function consumeEventsV2(
                 )
             })
 
-            let res = await context.provider.send(tx1);
+            let res = await context.provider.sendAndConfirm(tx1);
 
             resolve({
                 successful: true,
@@ -75,7 +75,7 @@ export async function consumeEvents(
 
             tx1.add(inx);
 
-            let res = await context.provider.send(tx1);
+            let res = await context.provider.sendAndConfirm(tx1);
 
             resolve({
                 successful: true,

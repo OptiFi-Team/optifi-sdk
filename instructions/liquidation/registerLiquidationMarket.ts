@@ -53,7 +53,7 @@ export default function registerLiquidationMarket(context: Context,
                                                 asks: serumMarket.asksAddress,
                                                 eventQueue: serumMarket.decoded.eventQueue,
                                                 openOrders: openOrdersAccount,
-                                                openOrdersOwner: userAccountAddress, // duplicate, should be removed
+                                                // openOrdersOwner: userAccountAddress, // duplicate, should be removed
                                                 pruneAuthority: serumMarketAuthority,
                                                 coinVault:
                                                     serumMarket.decoded

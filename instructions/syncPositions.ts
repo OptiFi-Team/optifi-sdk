@@ -115,7 +115,7 @@ export function syncPositionsInBatch(context: Context,
                 tx.add(inx)
             })
 
-            let syncRes = await context.provider.send(tx);
+            let syncRes = await context.provider.sendAndConfirm(tx);
             resolve({
                 successful: true,
                 data: syncRes as TransactionSignature

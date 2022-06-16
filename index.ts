@@ -119,7 +119,7 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
 function initializeContext(wallet?: string | WalletProvider,
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Mainnet,
+    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet,
     // commitmentLevel: Commitment = "recent",
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
@@ -137,12 +137,15 @@ function initializeContext(wallet?: string | WalletProvider,
 
             getWalletWrapper(wallet).then((walletRes) => {
                 const connection = new Connection(endpoint, connectionConfig);
-                const provider = new anchor.Provider(connection,
+                const provider = new anchor.AnchorProvider(connection,
                     walletRes.anchorWallet,
-                    anchor.Provider.defaultOptions());
-                const program = new anchor.Program(optifiExchange as unknown as OptifiExchangeIDL,
+                    anchor.AnchorProvider.defaultOptions());
+                const idl = optifiExchange as unknown as OptifiExchangeIDL;
+                const program = new anchor.Program(idl,
                     (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)),
-                    provider)
+                    provider,
+                    new anchor.BorshCoder(idl)
+                )
                 resolve({
                     program: program,
                     walletType: walletRes.walletType,
@@ -166,10 +169,12 @@ function initializeContext(wallet?: string | WalletProvider,
             const idl = optifiExchange as unknown as OptifiExchangeIDL;
             const connection = new Connection(endpoint, connectionConfig);
             const walletWrapper = new anchor.Wallet(keypair);
-            const provider = new anchor.Provider(connection, walletWrapper, anchor.Provider.defaultOptions());
+            const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
             const program = new anchor.Program(idl,
                 (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)),
-                provider)
+                provider,
+                new anchor.BorshCoder(idl)
+            )
 
             resolve({
                 program: program,
@@ -200,7 +205,7 @@ function initializeContextWithoutWallet(
         const connection = new Connection(endpoint, connectionConfig);
         const keypair = Keypair.generate(); // use a temp key
         const walletWrapper = new anchor.Wallet(keypair);
-        const provider = new anchor.Provider(connection, walletWrapper, anchor.Provider.defaultOptions());
+        const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
         const program = new anchor.Program(idl,
             (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)), provider)
         resolve({

@@ -1,9 +1,8 @@
-import { connection } from "@project-serum/common";
 import { PublicKey } from "@solana/web3.js";
 import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { initializeContext } from "../index";
 import { findUserAccount, getDexOpenOrders } from "../utils/accounts";
-import { getOrdersOnMarket, loadOrdersAccountsForOwner, loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, loadUnsettledFundForOwnerOnAllMarkets } from "../utils/orders";
+import { loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, loadUnsettledFundForOwnerOnAllMarkets } from "../utils/orders";
 import {
   OpenOrders
 } from "@project-serum/serum";

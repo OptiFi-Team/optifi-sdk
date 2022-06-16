@@ -3,7 +3,7 @@ import Context from "../types/context";
 import { Market, decodeInstruction } from "@project-serum/serum";
 import { SERUM_DEX_PROGRAM_ID, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
 import bs58 from "bs58";
-import { BN } from "@project-serum/anchor";
+import { BN, BorshCoder } from "@project-serum/anchor";
 import { findOptifiInstruments } from "./market";
 import { numberAssetToDecimal } from "./generic";
 import Decimal from "decimal.js";
@@ -53,7 +53,8 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
     inxs.forEach((inx) => {
       // console.log("inx.data: ", inx.data)
       // console.log("txid: ", tx.transaction.signatures[0]);
-      let decodedInx = context.program.coder.instruction.decode(inx.data, "base58")
+      let coder = context.program.coder as BorshCoder;
+      let decodedInx = coder.instruction.decode(bs58.decode(inx.data))
       // console.log(decodedInx)
       // if (inx.data.includes(placeOrderSignature) || inx.data.includes(cancelOrderByClientOrderIdSignature)) {
       if (decodedInx && inxNames.includes(decodedInx.name)) {
