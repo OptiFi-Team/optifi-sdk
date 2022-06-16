@@ -2292,11 +2292,6 @@
           "isSigner": false
         },
         {
-          "name": "openOrdersOwner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "pruneAuthority",
           "isMut": false,
           "isSigner": false
@@ -2535,7 +2530,7 @@
         },
         {
           "name": "vaultSigner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
