@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import { findExchangeAccount } from "../utils/accounts";
 import { AmmAccount } from "../types/optifi-exchange-types";
@@ -44,8 +44,8 @@ export function calculateAmmProposalInBatch(context: Context,
         try {
             let [exchangeAddress, _] = await findExchangeAccount(context)
             let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, ammAccount.asset)
-            let inxs = await marginStress(context, ammAccount.asset);
 
+            let inxs: TransactionInstruction[] = []
             for (let i = 0; i < batchSize - 1; i++) {
                 inxs.push(context.program.instruction.ammCalculateProposal({
                     accounts: {
