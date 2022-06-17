@@ -125,7 +125,7 @@ function initializeAccountsWithLayouts(context: Context,
                 )
             )
 
-            context.provider.send(marketTransaction, [coinMintAccount,
+            context.provider.sendAndConfirm(marketTransaction, [coinMintAccount,
                 coinVaultAccount,
                 pcVaultAccount,
                 marketAccount,

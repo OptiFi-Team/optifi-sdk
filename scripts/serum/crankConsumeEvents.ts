@@ -4,7 +4,7 @@ import { getSerumMarket, findOpenOrdersForSerumMarket } from "../../utils/serum"
 import { getAllUsersOnExchange, getDexOpenOrders } from "../../utils/accounts";
 import Context from "../../types/context";
 import { consumeEvents, consumeEventsV2 } from "../../instructions/serum/consumeEvents";
-import { sleep } from "@project-serum/common";
+import { sleep } from "../../utils/generic";
 import { findOptifiMarkets } from "../../utils/market";
 
 

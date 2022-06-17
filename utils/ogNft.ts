@@ -50,7 +50,7 @@ export async function airdropNft(context: Context, nftMint: PublicKey, toWallet:
                 airdropAmount,
             )
         );
-        let txid = await context.provider.send(tx)
+        let txid = await context.provider.sendAndConfirm(tx)
         return txid;
     } else {
         let tokenAccount = await getTokenAccountFromAccountInfo(acctInfo!, toAta)
@@ -64,7 +64,7 @@ export async function airdropNft(context: Context, nftMint: PublicKey, toWallet:
                 )
             );
 
-            let txid = await context.provider.send(tx)
+            let txid = await context.provider.sendAndConfirm(tx)
             return txid;
 
         } else {

@@ -45,6 +45,6 @@ export default async function airdropUSDC(context: Context) {
         )
     );
 
-    let txid = await context.provider.send(tx, [fromWallet])
+    let txid = await context.provider.sendAndConfirm(tx, [fromWallet])
     return txid;
 }

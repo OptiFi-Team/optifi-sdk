@@ -8,6 +8,7 @@ import { getAllOrdersForAccount } from "../utils/orderHistory";
 import { retrievRecentTxs } from "./orderHistory";
 import base58, { decode } from "bs58";
 import Decimal from "decimal.js";
+import { BorshCoder } from "@project-serum/anchor";
 
 const SIZE_DECIMALS = 2;
 
@@ -98,7 +99,8 @@ async function getIOCData(context: Context, account: PublicKey): Promise<number[
       for (let inx of tx.transaction.message.instructions) {
         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
         if (programId.toString() == context.program.programId.toString()) {
-          let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
+          let coder = context.program.coder as BorshCoder;
+          let decoded = coder.instruction.decode(base58.decode(inx.data))
           if (decoded) {
             if (decoded.name == "placeOrder") {
               //@ts-ignore
@@ -185,9 +187,9 @@ export function getAllTradesForAccount(
 
       for (let clientId = 0; clientId < clientIdIOC.length; clientId++) {
         if (clientIdIOC[clientId]) {
-            let trade = trades.find(e => e.clientId == clientId)
-            //@ts-ignore
-            trade?.maxBaseQuantity = clientIdIOC[clientId];
+          let trade = trades.find(e => e.clientId == clientId)
+          //@ts-ignore
+          trade?.maxBaseQuantity = clientIdIOC[clientId];
         }
       }
 

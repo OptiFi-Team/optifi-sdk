@@ -2,7 +2,7 @@ import { initializeContext } from "../../index";
 import { market } from "../constants"
 import { findOpenOrdersForSerumMarket, getSerumMarket } from "../../utils/serum";
 import { consumeEvents } from "../../instructions/serum/consumeEvents";
-import { sleep } from "@project-serum/common";
+import { sleep } from "../../utils/generic";
 
 
 // consume Events for all OpenOrders Accounts on a market

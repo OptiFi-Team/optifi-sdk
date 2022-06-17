@@ -56,7 +56,7 @@ export default function liquidationToAmm(context: Context,
                                             accounts: {
                                                 optifiExchange: exchangeAddress,
                                                 marginStressAccount: marginStressAddress,
-                                                amm: ammForLiquidation[0],
+                                                amm: ammForLiquidation[0][1],
                                                 userAccount: userAccountAddress,
                                                 userMarginAccount: userAccount.userMarginAccountUsdc,
                                                 liquidationState: liquidationStateAddress,
