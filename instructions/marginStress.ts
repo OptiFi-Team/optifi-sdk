@@ -69,7 +69,7 @@ export default function marginStress(context: Context,
                 }
             );
 
-            let instructions: TransactionInstruction[] = [increaseComputeUnitsIx]
+            let instructions: TransactionInstruction[] = []
 
             instructions.push(ix1);
 
