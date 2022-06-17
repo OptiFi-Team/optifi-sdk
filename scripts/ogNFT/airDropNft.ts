@@ -5,7 +5,7 @@ import fs from "fs"
 import { OG_NFT_MINT } from "../../constants";
 import { airdropNft } from "../../utils/ogNft";
 
-// import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx'
 
 
 /* load 'stream' for stream support */
@@ -35,10 +35,13 @@ initializeContext().then(async (context) => {
     // }
 
 
-    // var workbook = XLSX.readFile("/Users/princegao/Desktop/optifi-sdk/scripts/ogNFT/OptiFi_OG_NFT_20220527.xlsx");
+    // var workbook = XLSX.readFile("OptiFi OG NFT_20220610.xlsx");
 
-    // let ogList = XLSX.utils.sheet_to_json(workbook.Sheets["1st batch"])
-    let filePath = path.resolve(__dirname, "addresses-20220527.json");
+    // let ogList = XLSX.utils.sheet_to_json(workbook.Sheets["2nd batch on 20220610"])
+    // console.log("ogList: ", ogList)
+
+    let filePath = path.resolve(__dirname, "addresses-20220610.json");
+    // fs.writeFileSync(filePath, JSON.stringify(ogList))
     let addresses = JSON.parse(
         fs.readFileSync(
             filePath,
