@@ -9,6 +9,7 @@ import { getSerumMarket } from "../../utils/serum";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { findOptifiMarketMintAuthPDA, getAmmLiquidityAuthPDA } from "../../utils/pda";
 import { findAMMAccounts } from "../../utils/amm";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function liquidationToAmm(context: Context,
     userAccountAddress: PublicKey,
@@ -77,7 +78,8 @@ export default function liquidationToAmm(context: Context,
                                                 ammInstrumentLongTokenVault: ammLongTokenVault,
                                                 ammInstrumentShortTokenVault: ammShortTokenVault,
                                                 ammLiquidityAuth: ammLiquidityAuth,
-                                            }
+                                            },
+                                            preInstructions: [increaseComputeUnitsIx]
                                         }
                                     ).then((res) => {
                                         resolve({

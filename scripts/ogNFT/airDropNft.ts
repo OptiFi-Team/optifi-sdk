@@ -5,7 +5,7 @@ import fs from "fs"
 import { OG_NFT_MINT } from "../../constants";
 import { airdropNft } from "../../utils/ogNft";
 
-import * as XLSX from 'xlsx'
+// import * as XLSX from 'xlsx'
 
 
 /* load 'stream' for stream support */

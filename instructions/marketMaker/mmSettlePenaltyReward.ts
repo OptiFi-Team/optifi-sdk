@@ -5,6 +5,7 @@ import { findExchangeAccount, findMarketMakerAccount, findUserAccount } from "..
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findOptifiUSDCPoolAuthPDA } from "../../utils/pda";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function mmSettlePenaltyReward(context: Context, userAccountToSettle: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
@@ -29,7 +30,8 @@ export default function mmSettlePenaltyReward(context: Context, userAccountToSet
                             usdcFeePool: exchange.usdcFeePool,
                             centralUsdcPoolAuth: centralUSDCPoolAuth,
                             tokenProgram: TOKEN_PROGRAM_ID
-                        }
+                        },
+                        preInstructions: [increaseComputeUnitsIx]
                     });
 
                     Tx.then((res) => {

@@ -16,6 +16,7 @@ import { calculatePcQtyAndFee } from "../../utils/orders";
 import OrderType from "../../types/OrderType";
 import BN from "bn.js";
 import marginStress from "../marginStress";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function marketMakerPostOnlyOrder(
     context: Context,
@@ -67,7 +68,9 @@ export default function marketMakerPostOnlyOrder(
                                                                                         }
                                                                                     });
 
-                                                                                let instructions = await marginStress(context, chain.asset);
+                                                                                let instructions = [increaseComputeUnitsIx]
+                                                                                let marginStressIx = await marginStress(context, chain.asset);
+                                                                                instructions.push(...marginStressIx)
 
                                                                                 instructions.push(marketMakerCalculationTx);
 

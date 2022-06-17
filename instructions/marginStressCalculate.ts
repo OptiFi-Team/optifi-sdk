@@ -6,6 +6,7 @@ import Asset from "../types/asset";
 import { findMarginStressWithAsset } from "../utils/margin";
 import { findExchangeAccount } from "../utils/accounts";
 import { assetToOptifiAsset, optifiAssetToNumber } from "../utils/generic";
+import { increaseComputeUnitsIx } from "../utils/transactions";
 
 export default function marginStressCalculate(context: Context,
     asset: Asset
@@ -24,6 +25,7 @@ export default function marginStressCalculate(context: Context,
                     optifiExchange: exchangeAddress,
                     marginStressAccount: marginStressAddress,
                 },
+                preInstructions: [increaseComputeUnitsIx]
             }
         ).then((res) => {
             resolve({

@@ -9,6 +9,7 @@ import { getSerumMarket } from "../../utils/serum";
 import { Chain, OptifiMarket, OrderSide } from "../../types/optifi-exchange-types";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { findOptifiUSDCPoolAuthPDA } from "../../utils/pda";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function marketMakerCalculation(
     context: Context,
@@ -54,7 +55,8 @@ export default function marketMakerCalculation(
                                                                                     serumDexProgramId: serumProgramId,
                                                                                     // usdcFeePool: exchangeInfo.usdcFeePool,
                                                                                     // centralUsdcPoolAuth: centralUsdcPoolAuth,
-                                                                                }
+                                                                                },
+                                                                                preInstructions: [increaseComputeUnitsIx]
                                                                             });
                                                                         marketMakerCalculationTx.then((res) => {
                                                                             console.log("Successfully executed market maker calculation",

@@ -6,7 +6,7 @@ import { Asset, Chain, OptifiMarket, UserAccount } from "../../types/optifi-exch
 import { deriveVaultNonce, findMarketInstrumentContext } from "../../utils/market";
 import { SERUM_DEX_PROGRAM_ID, SWITCHBOARD } from "../../constants";
 import { findSerumAuthorityPDA, findSerumPruneAuthorityPDA } from "../../utils/pda";
-import { signAndSendTransaction } from "../../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { getSerumMarket } from "../../utils/serum";
@@ -34,7 +34,7 @@ export default function recordPnl(context: Context,
                                             findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentLongSplToken, userAccountAddress).then(([userLongTokenVault, _]) => {
                                                 findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentShortSplToken, userAccountAddress).then(async ([userShortTokenVault, _]) => {
 
-                                                    let ixs: TransactionInstruction[] = []
+                                                    let ixs: TransactionInstruction[] = [increaseComputeUnitsIx]
                                                     let recordPnlForOneUserInx = context.program.instruction.recordPnlForOneUser({
                                                         accounts: {
                                                             optifiExchange: exchangeAddress,
