@@ -119,7 +119,7 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
 function initializeContext(wallet?: string | WalletProvider,
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet,
+    endpoint: SolanaEndpoint = SolanaEndpoint.Mainnet,
     // commitmentLevel: Commitment = "recent",
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
