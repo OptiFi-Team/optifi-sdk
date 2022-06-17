@@ -4,7 +4,7 @@ import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, Tran
 import { findExchangeAccount, findParseOptimizedOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
 import { AmmAccount, Asset as OptifiAsset } from "../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { numberToOptifiAsset } from "../utils/generic";
 import { findMarginStressWithAsset } from "../utils/margin";
 import marginStress from "./marginStress";
@@ -21,7 +21,9 @@ export default function calculateAmmDelta(context: Context,
                 // let usdcSpotOracle = findParseOptimizedOracleAccountFromAsset(context, OptifiAsset.USDC, OracleAccountType.Spot);
                 let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
 
+                let instructions = [increaseComputeUnitsIx]
                 let updateMarginStressInx = await marginStress(context, amm.asset);
+                instructions.push(...updateMarginStressInx)
 
                 context.program.rpc.ammCalculateDelta({
                     accounts: {
@@ -35,7 +37,7 @@ export default function calculateAmmDelta(context: Context,
                         // usdcFeed: usdcSpotOracle,
                         // ivFeed: ivOracle
                     },
-                    instructions: updateMarginStressInx
+                    instructions
                 })
                     .then((calculateRes) => {
                         resolve({

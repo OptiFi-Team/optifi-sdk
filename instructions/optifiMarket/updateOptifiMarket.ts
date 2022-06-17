@@ -2,6 +2,7 @@ import Context from "../../types/context";
 import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
 import { findExchangeAccount } from "../../utils/accounts";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export function updateOptifiMarket(context: Context,
     marketAddress: PublicKey,
@@ -15,7 +16,8 @@ export function updateOptifiMarket(context: Context,
                         optifiMarket: marketAddress,
                         instrument: newInstrument,
                         clock: SYSVAR_CLOCK_PUBKEY
-                    }
+                    },
+                    preInstructions: [increaseComputeUnitsIx]
                 }
             )
             updateTx.then((res) => {

@@ -16,7 +16,7 @@ import {
     optifiDurationToNumber
 } from "../utils/generic";
 import * as anchor from "@project-serum/anchor";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { Duration } from "../types/optifi-exchange-types";
 
@@ -85,6 +85,7 @@ export function initializeChain(context: Context,
                                     assetIvOracleFeed: await findParseOptimizedOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Iv),
                                     clock: SYSVAR_CLOCK_PUBKEY
                                 },
+                                preInstructions: [increaseComputeUnitsIx]
                             }
                         )
                         await signAndSendTransaction(context, newInstrumentTx)

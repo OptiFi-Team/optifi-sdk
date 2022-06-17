@@ -6,7 +6,7 @@ import { AmmAccount, OptifiMarket } from "../../types/optifi-exchange-types";
 import { MANGO_GROUP_ID, MANGO_PROGRAM_ID, MANGO_USDC_CONFIG, SERUM_DEX_PROGRAM_ID } from "../../constants";
 import { findInstrumentIndexFromAMM } from "../../utils/amm";
 import { findAssociatedTokenAccount } from "../../utils/token";
-import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
 import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { MangoClient, MangoAccount, MangoAccountLayout } from "@blockworks-foundation/mango-client";
@@ -136,13 +136,14 @@ export default function ammSyncFuturesPositions(context: Context,
                                         perpMarket: perpMarket,
                                         eventQueue: eventQueue,
                                     },
-                                    remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) =>
-                                    (
-                                        {
-                                            isSigner: false,
-                                            isWritable: false,
-                                            pubkey,
-                                        }))
+
+                                    remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) => ({
+                                        isSigner: false,
+                                        isWritable: false,
+                                        pubkey,
+                                    })),
+
+                                    preInstructions: [increaseComputeUnitsIx]
 
                                 }
 

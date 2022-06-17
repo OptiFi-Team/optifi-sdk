@@ -3,6 +3,7 @@ import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/we
 import InstructionResult from "../../types/instructionResult";
 import { findExchangeAccount } from "../../utils/accounts";
 import { OptifiMarket } from "../../types/optifi-exchange-types";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export function stopOptifiMarket(context: Context, marketAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
@@ -19,7 +20,8 @@ export function stopOptifiMarket(context: Context, marketAddress: PublicKey): Pr
                             instrumentShortSplToken: optifiMarket.instrumentShortSplToken,
                             clock: SYSVAR_CLOCK_PUBKEY
 
-                        }
+                        },
+                        preInstructions: [increaseComputeUnitsIx]
                     }
                 )
                 stopTx.then((res) => {

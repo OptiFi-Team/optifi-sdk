@@ -5,6 +5,7 @@ import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
 import InstructionResult from "../../types/instructionResult";
 import { formCancelOrderContext } from "../../utils/orders";
 import {
+  increaseComputeUnitsIx,
   signAndSendTransaction,
   TransactionResultType,
 } from "../../utils/transactions";
@@ -55,7 +56,7 @@ export default function cancelOrderByClientOrderId(
     formCancelOrderContext(context, marketAddress, userAccount)
       .then(async (orderContext) => {
 
-        let ixs: TransactionInstruction[] = []
+        let ixs: TransactionInstruction[] = [increaseComputeUnitsIx]
         let cancelOrderByClientOrderIdInx = context.program.instruction.cancelOrderByClientOrderId(
           side,
           clientOrderId,

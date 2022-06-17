@@ -5,7 +5,7 @@ import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../
 import { Chain, OptifiMarket } from "../../types/optifi-exchange-types";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { SERUM_DEX_PROGRAM_ID } from "../../constants";
-import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
 import { getSerumMarket } from "../../utils/serum";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { optifiAssetToNumber } from "../../utils/generic";
@@ -73,7 +73,8 @@ export default function registerLiquidationMarket(context: Context,
                                                     market.instrumentShortSplToken,
                                                 userInstrumentLongTokenVault: userLongTokenAddress,
                                                 userInstrumentShortTokenVault: userShortTokenAddress
-                                            }
+                                            },
+                                            preInstructions: [increaseComputeUnitsIx]
                                         }
                                     ).then((res) => {
                                         resolve({

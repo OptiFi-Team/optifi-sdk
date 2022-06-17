@@ -5,6 +5,7 @@ import { findExchangeAccount } from "../utils/accounts";
 import { AmmAccount } from "../types/optifi-exchange-types";
 import { findMarginStressWithAsset } from "../utils/margin";
 import marginStress from "./marginStress";
+import { increaseComputeUnitsIx } from "../utils/transactions";
 
 export default function calculateAmmProposal(context: Context,
     ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {
@@ -15,7 +16,9 @@ export default function calculateAmmProposal(context: Context,
                 let amm = ammRes as AmmAccount;
                 let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
 
+                let instructions: TransactionInstruction[] = [increaseComputeUnitsIx]
                 let updateMarginStressInx = await marginStress(context, amm.asset);
+                instructions.push(...updateMarginStressInx)
                 context.program.rpc.ammCalculateProposal({
                     accounts: {
                         // optifiExchange: exchangeAddress,
@@ -23,7 +26,7 @@ export default function calculateAmmProposal(context: Context,
                         amm: ammAddress,
                         // clock: SYSVAR_CLOCK_PUBKEY,
                     },
-                    instructions: updateMarginStressInx
+                    instructions
                 }).then((calculateRes) => {
                     resolve({
                         successful: true,
@@ -45,7 +48,7 @@ export function calculateAmmProposalInBatch(context: Context,
             let [exchangeAddress, _] = await findExchangeAccount(context)
             let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, ammAccount.asset)
 
-            let inxs: TransactionInstruction[] = []
+            let inxs: TransactionInstruction[] = [increaseComputeUnitsIx]
             for (let i = 0; i < batchSize - 1; i++) {
                 inxs.push(context.program.instruction.ammCalculateProposal({
                     accounts: {

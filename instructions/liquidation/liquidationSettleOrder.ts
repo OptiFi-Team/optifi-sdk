@@ -4,7 +4,7 @@ import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../
 import { OptifiMarket } from "../../types/optifi-exchange-types";
 import { findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount } from "../../utils/token";
 import { SERUM_DEX_PROGRAM_ID } from "../../constants";
-import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import InstructionResult from "../../types/instructionResult";
 import { getSerumMarket } from "../../utils/serum";
@@ -43,7 +43,7 @@ export default function liquidationSettleOrder(context: Context,
                                                             // @ts-ignore
                                                             let chain = chainRes as Chain;
                                                             findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
-                                                                let ix: TransactionInstruction[] = []
+                                                                let ix: TransactionInstruction[] = [increaseComputeUnitsIx]
                                                                 let ix1 = context.program.instruction.liquidationSettleOrder(
                                                                     {
                                                                         accounts: {

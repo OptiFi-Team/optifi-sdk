@@ -5,6 +5,7 @@ import { findExchangeAccount, } from "../../utils/accounts";
 import { AmmAccount, } from "../../types/optifi-exchange-types";
 import { findOptifiUSDCPoolAuthPDA, getAmmLiquidityAuthPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function settleFundForAmm(context: Context,
     ammToSettle: PublicKey,
@@ -27,7 +28,8 @@ export default function settleFundForAmm(context: Context,
                     centralUsdcPoolAuth: centralUsdcPoolAuth,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     usdcMint: optifiExchangeInfo.usdcMint,
-                }
+                },
+                preInstructions: [increaseComputeUnitsIx]
             })
             settleFundForAmmTx.then((res) => {
                 resolve({

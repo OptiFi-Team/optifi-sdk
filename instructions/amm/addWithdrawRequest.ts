@@ -6,6 +6,7 @@ import { findExchangeAccount, findUserAccount } from "../../utils/accounts";
 import { getMint } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { AmmAccount } from "../../types/optifi-exchange-types";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function addWithdrawRequest(context: Context,
     ammAddress: PublicKey,
@@ -25,7 +26,8 @@ export default function addWithdrawRequest(context: Context,
                                 userAccount: userAccount,
                                 owner: context.provider.wallet.publicKey,
                                 clock: SYSVAR_CLOCK_PUBKEY
-                            }
+                            },
+                            preInstructions: [increaseComputeUnitsIx]
                         }
                     ).then((res) => {
                         resolve({

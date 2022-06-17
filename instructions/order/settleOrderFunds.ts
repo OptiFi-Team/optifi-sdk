@@ -4,7 +4,7 @@ import Context from "../../types/context";
 import { formOrderContext } from "../../utils/orders";
 import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 
 export function getSettleOrderTx(
@@ -35,7 +35,8 @@ export function getSettleOrderTx(
                     vaultSigner: orderContext.vaultSigner,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     serumDexProgramId: orderContext.serumDexProgramId
-                }
+                },
+                preInstructions: [increaseComputeUnitsIx]
             });
             resolve(tx);
         }).catch((err) => {

@@ -9,7 +9,7 @@ import { findOptifiMarketMintAuthPDA, findSerumAuthorityPDA, findSerumPruneAutho
 import { findInstrumentIndexFromAMM } from "../utils/amm";
 import { findAssociatedTokenAccount } from "../utils/token";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { getSerumMarket } from "../utils/serum";
 import marginStress from "./marginStress";
 import { DexInstructions } from '@project-serum/serum';
@@ -49,7 +49,7 @@ export function ammUpdateOrders(context: Context,
                                                         // // prepare margin stress inx
                                                         // let inxs = await marginStress(context, amm.asset);
 
-                                                        let inxs: TransactionInstruction[] = []
+                                                        let inxs: TransactionInstruction[] = [increaseComputeUnitsIx]
                                                         // add amm update order inx
                                                         let ammUpdateOrdersInx = context.program.instruction.ammUpdateOrders(
                                                             orderLimit,

@@ -10,6 +10,7 @@ import { getSerumMarket } from "../../utils/serum";
 import { deriveVaultNonce } from "../../utils/market";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { findSerumAuthorityPDA } from "../../utils/pda";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function liquidationPlaceOrder(context: Context,
     userAccountAddress: PublicKey,
@@ -65,7 +66,8 @@ export default function liquidationPlaceOrder(context: Context,
                                                             pruneAuthority: serumMarketAuthority,
                                                             vaultSigner: vaultOwner,
                                                             liquidator: context.provider.wallet.publicKey,
-                                                        }
+                                                        },
+                                                        preInstructions: [increaseComputeUnitsIx]
                                                     }
                                                 ).then((res) => {
                                                     resolve({

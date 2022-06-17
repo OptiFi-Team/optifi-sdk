@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../../types/context";
-import { ComputeBudgetInstruction, ComputeBudgetProgram, LAMPORTS_PER_SOL, PublicKey, Transaction, TransactionSignature } from "@solana/web3.js";
+import { ComputeBudgetInstruction, ComputeBudgetProgram, LAMPORTS_PER_SOL, PublicKey, Transaction, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
 import { calculatePcQtyAndFee, formPlaceOrderContext } from "../../utils/orders";
 import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
@@ -10,6 +10,7 @@ import { numberAssetToDecimal } from "../../utils/generic";
 import OrderType, { orderTypeToNumber } from "../../types/OrderType";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { DexInstructions } from '@project-serum/serum';
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function placeOrder(context: Context,
     userAccount: UserAccount,
@@ -40,7 +41,8 @@ export default function placeOrder(context: Context,
             console.log("totalPcQty: ", totalPcQty);
 
 
-            let ixs = await marginStress(context, asset);
+            let ixs = [increaseComputeUnitsIx]
+            ixs.push(...await marginStress(context, asset));
 
             // // Add computing units, but currently no use in devnet 
 

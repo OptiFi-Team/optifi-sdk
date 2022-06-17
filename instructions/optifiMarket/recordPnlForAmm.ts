@@ -9,6 +9,7 @@ import { findSerumAuthorityPDA, findSerumPruneAuthorityPDA, getAmmLiquidityAuthP
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { getSerumMarket } from "../../utils/serum";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 
 export default function recordPnlForAmm(context: Context,
@@ -58,7 +59,8 @@ export default function recordPnlForAmm(context: Context,
                                                                 assetSpotPriceOracleFeed: oracleSpotAccount,
                                                                 usdcSpotPriceOracleFeed: await findParseOptimizedOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot),
                                                                 ammLiquidityAuth: ammLiquidityAuth,
-                                                            }
+                                                            },
+                                                            preInstructions: [increaseComputeUnitsIx]
                                                         })
                                                     recordPnlForAmmTx.then((res) => {
                                                         resolve({
