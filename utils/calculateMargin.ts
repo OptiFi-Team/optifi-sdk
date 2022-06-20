@@ -255,6 +255,16 @@ export function ndf(arr) {
     return result;
 }
 
+export function ndfBid(arr) {
+    var result = [] as any;
+
+    for (let i = 0; i < arr.length; i++) {
+        result.push(1 - (0.5 * (1.0 - erf(Math.abs(arr[i]) / Math.sqrt(2)))));
+    }
+
+    return result;
+}
+
 export function cdf(arr) {
     var result = [] as any;
 
