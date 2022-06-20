@@ -216,10 +216,25 @@ export function d1(spot, strike, iv, r, q, t) {
     return arrdivdearr(arrplusarr(arrmul((r - q + iv * iv / 2), t), arrlog(divide(spot, strike))), arrmul(iv, arrsqrt(t)));
 }
 
+export function d1Ask(spot, order, iv, r, q, t, strike) {
+    return arrdivdearr(arrplusarr(arrmul((r - q + iv * iv / 2), t), arrlog(divideAsk(spot, order,strike))), arrmul(iv, arrsqrt(t)));
+}
+
+export function d1Bid(spot, order, iv, r, q, t, strike) {
+    return arrdivdearr(arrplusarr(arrmul((r - q + iv * iv / 2), t), arrlog(divideBid(spot, order,strike))), arrmul(iv, arrsqrt(t)));
+}
+
 export function d2(spot, strike, iv, r, q, t) {
     return arrminusarr(d1(spot, strike, iv, r, q, t), (arrmul(iv, arrsqrt(t))));
 }
 
+export function d2Ask(spot, order, iv, r, q, t, strike) {
+    return arrminusarr(d1Ask(spot, order, iv, r, q, t, strike), (arrmul(iv, arrsqrt(t))));
+}
+
+export function d2Bid(spot, order, iv, r, q, t, strike) {
+    return arrminusarr(d1Bid(spot, order, iv, r, q, t, strike), (arrmul(iv, arrsqrt(t))));
+}
 
 export function option_delta(spot, strike, iv, r, q, t, isCall) {
 
@@ -377,6 +392,22 @@ export function divide(a, b) {
     var result = [] as any;
     for (let i = 0; i < b.length; i++) {
         result.push(a / b[i][0])
+    }
+    return result;
+}
+
+export function divideAsk(a, b,strike) {
+    var result = [] as any;
+    for (let i = 0; i < b.length; i++) {
+        result.push(a / (strike[i] + b[i][0]))
+    }
+    return result;
+}
+
+export function divideBid(a, b,strike) {
+    var result = [] as any;
+    for (let i = 0; i < b.length; i++) {
+        result.push(a / (strike[i] - b[i][0]))
     }
     return result;
 }

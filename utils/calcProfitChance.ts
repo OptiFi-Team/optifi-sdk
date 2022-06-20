@@ -1,4 +1,4 @@
-import { ndf, d2, reshap ,ndfBid} from "./calculateMargin"
+import { ndf, d2Ask,d2Bid, reshap, ndfBid } from "./calculateMargin"
 import { STRIKE, PREMIUM, IS_CALL, TIME_TO_MATURITY } from "./calcMarginTestData"
 import Context from "../types/context";
 import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
@@ -60,10 +60,12 @@ export async function calcProfitChance(
 
             let BTCOptifiMarkets = optifiMarkets.slice(0, marketLen / 2);
             let ETHOptifiMarkets = optifiMarkets.slice(marketLen / 2, marketLen);
-            let BTCFirstAsk:number[] = BTCOptifiMarkets.map(e=>{return e.askPrice})
-            let BTCFirstBid:number[] = BTCOptifiMarkets.map(e=>{return e.bidPrice})
-            let ETHFirstAsk:number[] = ETHOptifiMarkets.map(e=>{return e.askPrice})
-            let ETHFirstBid:number[] = ETHOptifiMarkets.map(e=>{return e.bidPrice})
+            let BTCFirstAsk: number[] = BTCOptifiMarkets.map(e => { return e.askPrice })
+            let BTCFirstBid: number[] = BTCOptifiMarkets.map(e => { return e.bidPrice })
+            let ETHFirstAsk: number[] = ETHOptifiMarkets.map(e => { return e.askPrice })
+            let ETHFirstBid: number[] = ETHOptifiMarkets.map(e => { return e.bidPrice })
+            let BTCStrike: number[] = BTCOptifiMarkets.map(e => { return e.strike })
+            let ETHStrike: number[] = ETHOptifiMarkets.map(e => { return e.strike })
 
             let BTCFirstAskArr = reshap(BTCFirstAsk)
             let BTCFirstBidArr = reshap(BTCFirstBid)
@@ -110,12 +112,12 @@ export async function calcProfitChance(
 
             //spot and iv only btc/eth
             //BTC
-            let d2BTCAskPriceResult = d2(marketData[0].spot, BTCFirstAskArr, marketData[0].iv, r, q, tBTC)
-            let d2BTCBidPriceResult = d2(marketData[0].spot, BTCFirstBidArr, marketData[0].iv, r, q, tBTC)
-            
+            let d2BTCAskPriceResult = d2Ask(marketData[0].spot, BTCFirstAskArr, marketData[0].iv, r, q, tBTC,BTCStrike)
+            let d2BTCBidPriceResult = d2Bid(marketData[0].spot, BTCFirstBidArr, marketData[0].iv, r, q, tBTC,BTCStrike)
+
             //ETH
-            let d2ETHAskPriceResult = d2(marketData[marketLen / 2].spot, ETHFirstAskArr, marketData[marketLen / 2].iv, r, q, tETH)
-            let d2ETHBidPriceResult = d2(marketData[marketLen / 2].spot, ETHFirstBidArr, marketData[marketLen / 2].iv, r, q, tETH)
+            let d2ETHAskPriceResult = d2Ask(marketData[marketLen / 2].spot, ETHFirstAskArr, marketData[marketLen / 2].iv, r, q, tETH,ETHStrike)
+            let d2ETHBidPriceResult = d2Bid(marketData[marketLen / 2].spot, ETHFirstBidArr, marketData[marketLen / 2].iv, r, q, tETH,ETHStrike)
 
             //BTC profit chance
             let ndfBTCAskPriceResult = ndf(d2BTCAskPriceResult);
