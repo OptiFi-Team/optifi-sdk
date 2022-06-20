@@ -35,6 +35,7 @@ initializeContext().then(async (context) => {
     }
     // @ts-ignore
     amm.proposals.forEach(e => console.log(
+        "\n instrument: ", e.instrument.toString(),
         "\n askOrdersSize: ", e.askOrdersSize.map(e => e.toNumber()),
         "\n askOrdersPrice: ", e.askOrdersPrice.map(e => e.toNumber()),
         "\n bidOrdersSize: ", e.bidOrdersSize.map(e => e.toNumber()),

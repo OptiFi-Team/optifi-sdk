@@ -79,9 +79,8 @@ export default function marginStress(context: Context,
             let optifiExchange = res as Exchange;
             //@ts-ignore
             let strikeLen = optifiExchange.instrumentUnique[asset].length;
-            for (let i = 0; i < strikeLen; i++) {
-                instructions.push(ix2);
-            }
+
+            instructions.push(ix2);
 
             resolve(instructions)
         } catch (e) {

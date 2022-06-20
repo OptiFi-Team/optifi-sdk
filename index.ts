@@ -14,6 +14,7 @@ import withdraw from './instructions/withdraw';
 import initialize from './instructions/initialize';
 import initializeUserAccount from './instructions/initializeUserAccount';
 import initializeSerumMarket from './instructions/initializeSerumMarket';
+import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 
 require('dotenv').config();
 
@@ -119,7 +120,7 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
 function initializeContext(wallet?: string | WalletProvider,
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Mainnet,
+    endpoint: SolanaEndpoint = SolanaEndpoint.Devnet,
     // commitmentLevel: Commitment = "recent",
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
@@ -168,7 +169,7 @@ function initializeContext(wallet?: string | WalletProvider,
             }
             const idl = optifiExchange as unknown as OptifiExchangeIDL;
             const connection = new Connection(endpoint, connectionConfig);
-            const walletWrapper = new anchor.Wallet(keypair);
+            const walletWrapper = new NodeWallet(keypair);
             const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
             const program = new anchor.Program(idl,
                 (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)),
