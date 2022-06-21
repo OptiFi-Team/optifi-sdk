@@ -1,4 +1,4 @@
-import { ndf, d2Ask,d2Bid, reshap, ndfBid } from "./calculateMargin"
+import { ndf, d2Ask, d2Bid, reshap, ndfBid } from "./calculateMargin"
 import { STRIKE, PREMIUM, IS_CALL, TIME_TO_MATURITY } from "./calcMarginTestData"
 import Context from "../types/context";
 import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
@@ -132,11 +132,11 @@ export async function calcProfitChance(
                     buy:
                     {
                         breakEven: BTCbreakEvenBidPriceArr[i][0],
-                        profitChance: ndfBTCBidPriceResult[i]
+                        profitChance: ndfBTCAskPriceResult[i]
                     },
                     sell: {
                         breakEven: BTCbreakEvenAskPriceArr[i][0],
-                        profitChance: ndfBTCAskPriceResult[i]
+                        profitChance: ndfBTCBidPriceResult[i]
                     }
                 }
 
@@ -148,11 +148,11 @@ export async function calcProfitChance(
                     buy:
                     {
                         breakEven: ETHbreakEvenBidPriceArr[i][0],
-                        profitChance: ndfETHBidPriceResult[i]
+                        profitChance: ndfETHAskPriceResult[i]
                     },
                     sell: {
                         breakEven: ETHbreakEvenAskPriceArr[i][0],
-                        profitChance: ndfETHAskPriceResult[i]
+                        profitChance: ndfETHBidPriceResult[i]
                     }
                 }
                 res.push(oneRes)
