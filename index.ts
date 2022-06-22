@@ -205,7 +205,7 @@ function initializeContextWithoutWallet(
         const idl = optifiExchange as unknown as OptifiExchangeIDL;
         const connection = new Connection(endpoint, connectionConfig);
         const keypair = Keypair.generate(); // use a temp key
-        const walletWrapper = new anchor.Wallet(keypair);
+        const walletWrapper = new NodeWallet(keypair);
         const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
         const program = new anchor.Program(idl,
             (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)), provider)
