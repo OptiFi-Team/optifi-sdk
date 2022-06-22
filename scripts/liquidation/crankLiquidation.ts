@@ -50,7 +50,7 @@ const liquidationLoop = async (context: Context) => {
         await sleep(3000);
     } catch (e) {
         console.log(e);
-        await sleep(600000);
+        await sleep(2 * 60 * 1000);
     }
     await liquidationLoop(context);
 }
