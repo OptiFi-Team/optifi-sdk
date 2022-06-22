@@ -70,15 +70,15 @@ export default function recordPnl(context: Context,
                                                     let instrumentInfo = await context.program.account.chain.fetch(marketContext.optifiMarket.instrument)
                                                     let asset = instrumentInfo.asset as number
                                                     let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, asset);
-                                                    let marginStressInx = await marginStress(context, asset);
-                                                    ixs.push(...marginStressInx)
+                                                    // let marginStressInx = await marginStress(context, asset);
+                                                    // ixs.push(...marginStressInx)
 
                                                     let recordPnlRes = await context.program.rpc.userMarginCalculate(
                                                         {
                                                             accounts: {
                                                                 optifiExchange: exchangeAddress,
                                                                 marginStressAccount: marginStressAddress,
-                                                                userAccount: userAccount,
+                                                                userAccount: userToSettle,
                                                                 clock: SYSVAR_CLOCK_PUBKEY
                                                             },
                                                             instructions: ixs
