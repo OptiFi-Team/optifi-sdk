@@ -10,7 +10,8 @@ import base58, { decode } from "bs58";
 import Decimal from "decimal.js";
 import { BorshCoder } from "@project-serum/anchor";
 
-const SIZE_DECIMALS = 2;
+export const BTC_DECIMALS = 2;
+export const ETH_DECIMALS = 1;
 
 async function getOrders(context: Context): Promise<Order[]> {
   return new Promise(async (resolve, reject) => {
@@ -40,7 +41,7 @@ async function getFillAmt(context: Context): Promise<number[]> {
 }
 
 //refer:logAMMAccounts
-async function getIOCClientId(logs: string[]) {
+export async function getClientId(logs: string[]) {
   let stringLen = 20
   let stringRes: string;
   for (let log of logs) {
@@ -53,7 +54,20 @@ async function getIOCClientId(logs: string[]) {
 }
 
 //refer:logAMMAccounts
-async function getIOCFillAmt(logs: string[]) {
+export async function getOrderType(logs: string[]) {
+  let stringLen = 10
+  let stringRes: string;
+  for (let log of logs) {
+    if (log.search("get client_order_id") != -1) {
+      stringRes = log.substring(log.search("get order_type") + stringLen, log.search("native_coin_total"))
+    }
+  }
+  //@ts-ignore
+  return stringRes
+}
+
+//refer:logAMMAccounts
+export async function getIOCFillAmt(logs: string[]) {
   let stringLen = 20
   let stringRes: string;
   for (let log of logs) {
@@ -66,7 +80,7 @@ async function getIOCFillAmt(logs: string[]) {
 }
 
 //refer:logAMMAccounts
-async function getIOCSide(logs: string[]) {
+export async function getIOCSide(logs: string[]) {
   let stringLen = 6
   let stringRes: string;
   for (let log of logs) {
@@ -79,7 +93,7 @@ async function getIOCSide(logs: string[]) {
 }
 
 //refer:logAMMAccounts
-async function getIOCSizeForAsk(logs: string[]) {
+export async function getIOCSizeForAsk(logs: string[]) {
   let stringLen = 6
   let stringRes: string;
   for (let log of logs) {
@@ -91,11 +105,14 @@ async function getIOCSizeForAsk(logs: string[]) {
   return Number(stringRes)
 }
 
-async function getIOCData(context: Context, account: PublicKey): Promise<number[]> {
+async function getIOCData(context: Context, account: PublicKey, trades: Trade[], clientId: number): Promise<number[]> {
   return new Promise(async (resolve, reject) => {
     let res: number[] = [];
     let txs = await retrievRecentTxs(context, account)
     for (let tx of txs) {//number of transactions people send
+      //@ts-ignore
+      let idFromProgramLog = await getClientId(tx.meta?.logMessages)
+      if (idFromProgramLog != clientId) continue;
       for (let inx of tx.transaction.message.instructions) {
         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
         if (programId.toString() == context.program.programId.toString()) {
@@ -106,9 +123,17 @@ async function getIOCData(context: Context, account: PublicKey): Promise<number[
               //@ts-ignore
               let types = await getIOCSide(tx.meta?.logMessages)
               //@ts-ignore
-              let clientId = await getIOCClientId(tx.meta?.logMessages)
+              let clientId = await getClientId(tx.meta?.logMessages)
               //@ts-ignore
               let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
+
+              //get decimals
+              // let optifiMarkets = await findOptifiMarketsWithFullData(context)
+              // let trade = trades.find(e => e.clientId == clientId)
+              // let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
+              // //@ts-ignore
+              // let decimal = (optifiMarket?.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+              let decimal = 2;
 
               if (types == "Ask") {
                 //user place Ask: market_open_orders.native_coin_total will be the amt after fill
@@ -119,10 +144,10 @@ async function getIOCData(context: Context, account: PublicKey): Promise<number[
                 //@ts-ignore
                 let askAmt = await getIOCSizeForAsk(tx.meta?.logMessages)
                 if (clientId)
-                  res[clientId] = (askAmt - fillAmt) / (10 ** SIZE_DECIMALS)
+                  res[clientId] = (askAmt - fillAmt) / (10 ** decimal)
               } else {
                 if (clientId && fillAmt)
-                  res[clientId] = fillAmt / (10 ** SIZE_DECIMALS)
+                  res[clientId] = fillAmt / (10 ** decimal)
               }
             }
           }
@@ -130,6 +155,38 @@ async function getIOCData(context: Context, account: PublicKey): Promise<number[
       }
     }
     resolve(res);
+  })
+}
+
+export async function checkPostOnlyFail(context: Context, account: PublicKey, clientId: number): Promise<boolean> {
+  return new Promise(async (resolve, reject) => {
+    let fail: boolean = false;
+
+    let txs = await retrievRecentTxs(context, account)
+    for (let tx of txs) {//number of transactions people send
+      //@ts-ignore
+      let idFromProgramLog = await getClientId(tx.meta?.logMessages)
+      if (idFromProgramLog != clientId) continue;
+      for (let inx of tx.transaction.message.instructions) {
+        let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
+        if (programId.toString() == context.program.programId.toString()) {
+          let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
+          if (decoded) {
+            if (decoded.name == "placeOrder") {
+              let logs = tx.meta?.logMessages
+              //@ts-ignore
+              for (let log of logs) {
+                if (log.search("Order is failed...") != -1) {
+                  fail = true;
+                  resolve(fail);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    resolve(fail);
   })
 }
 
@@ -142,11 +199,8 @@ export function getAllTradesForAccount(
       // resolve(res)
       res.reverse()
       let trades: Trade[] = []
-
       let clientIdFillAmt: number[] = await getFillAmt(context);
-      let clientIdIOC: number[] = await getIOCData(context, account)
-      //console.log(res)
-      res.forEach(order => {
+      for (let order of res) {
         // divide to three situations: place order / cancel order / fill
         // push to res if place order, pop res if cancel order
         // after that, check if fill order by clientIdFillAmt, then renew res by it
@@ -170,27 +224,62 @@ export function getAllTradesForAccount(
           let index = trades.findIndex(e => e.clientId == order.clientId)
           trades.splice(index, 1)
         }
-      })
 
-      for (let clientId = 0; clientId < clientIdFillAmt.length; clientId++) {
-        if (clientIdFillAmt[clientId] != null) {
-          if (clientIdFillAmt[clientId] <= 0) {//totally be filled, so delete from res
-            let index = trades.findIndex(e => e.clientId == clientId)
-            trades.splice(index, 1)
-          } else {// fill potential, so renew certain trade
-            let trade = trades.find(e => e.clientId == clientId)
-            //@ts-ignore
-            trade?.maxBaseQuantity = clientIdFillAmt[clientId];
+        //@ts-ignore
+        let trade = trades.find(e => e.clientId == order.clientId);
+
+        //@ts-ignore
+        if (trade) {
+
+          //Limit
+          if (trade.orderType == "limit") {
+            if (clientIdFillAmt[order.clientId] != null) {
+              if (clientIdFillAmt[order.clientId] <= 0) {//totally be filled, so delete from res
+                let index = trades.findIndex(e => e.clientId == order.clientId)
+                trades.splice(index, 1)
+              } else {// fill potential, so renew certain trade
+                let trade = trades.find(e => e.clientId == order.clientId)
+                //@ts-ignore
+                trade?.maxBaseQuantity = clientIdFillAmt[order.clientId];
+              }
+            }
           }
+
+          //IOC
+          if (trade.orderType == "ioc") {
+            let clientIdIOC: number[] = await getIOCData(context, account, trades, order.clientId)
+            if (clientIdIOC[order.clientId]) {//IOC success
+              //@ts-ignore
+              trade?.maxBaseQuantity = clientIdIOC[order.clientId];
+            }
+            else {
+              let index = trades.findIndex(e => e.clientId == order.clientId)
+              trades.splice(index, 1)
+            }
+          }
+
+          //Post only
+          //when id match and order is failed
+          //@ts-ignore
+          if (trade.orderType == "postOnly") {
+            let postOnlyFail = await checkPostOnlyFail(context, account, order.clientId);//wait for a long time...should be optimized
+            if (postOnlyFail) {
+              // console.log(order.clientId + " postOnlyFail!!!")
+              let index = trades.findIndex(e => e.clientId == order.clientId)
+              trades.splice(index, 1)
+            }
+          }
+
         }
       }
 
-      for (let clientId = 0; clientId < clientIdIOC.length; clientId++) {
-        if (clientIdIOC[clientId]) {
-          let trade = trades.find(e => e.clientId == clientId)
-          //@ts-ignore
-          trade?.maxBaseQuantity = clientIdIOC[clientId];
-        }
+      //fix eth decimal problem , can commend it if there isn't any decimal problem
+      for (let trade of trades) {
+        let optifiMarkets = await findOptifiMarketsWithFullData(context)
+        let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
+        //@ts-ignore
+        let decimal = (optifiMarket?.asset == "BTC") ? 0 : 1;
+        trade.maxBaseQuantity = trade.maxBaseQuantity * (10 ** decimal);
       }
 
       trades.reverse()
