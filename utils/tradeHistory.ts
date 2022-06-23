@@ -170,7 +170,8 @@ export async function checkPostOnlyFail(context: Context, account: PublicKey, cl
       for (let inx of tx.transaction.message.instructions) {
         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
         if (programId.toString() == context.program.programId.toString()) {
-          let decoded = context.program.coder.instruction.decode(base58.decode(inx.data))
+          let coder = context.program.coder as BorshCoder;
+          let decoded = coder.instruction.decode(base58.decode(inx.data))
           if (decoded) {
             if (decoded.name == "placeOrder") {
               let logs = tx.meta?.logMessages

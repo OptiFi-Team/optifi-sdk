@@ -9,22 +9,22 @@ export default function updateOracle(context: Context,
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            context.program.rpc.updateOracle(
-                asset,
-                findOracleAccountFromAsset(context, asset),
-                findOracleAccountFromAsset(context, asset, OracleAccountType.Iv),
-                {
-                    accounts: {
-                        optifiExchange: exchangeAddress,
-                        authority: context.provider.wallet.publicKey
-                    }
-                }
-            ).then((res) => {
-                resolve({
-                    successful: true,
-                    data: res as TransactionSignature
-                })
-            }).catch((err) => reject(err))
+            // context.program.rpc.updateOracle(
+            //     asset,
+            //     findOracleAccountFromAsset(context, asset),
+            //     findOracleAccountFromAsset(context, asset, OracleAccountType.Iv),
+            //     {
+            //         accounts: {
+            //             optifiExchange: exchangeAddress,
+            //             authority: context.provider.wallet.publicKey
+            //         }
+            //     }
+            // ).then((res) => {
+            //     resolve({
+            //         successful: true,
+            //         data: res as TransactionSignature
+            //     })
+            // }).catch((err) => reject(err))
         }).catch((err) => reject(err))
     })
 }
