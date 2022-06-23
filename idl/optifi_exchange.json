@@ -731,7 +731,7 @@
         },
         {
           "name": "usdcFeePool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
