@@ -388,13 +388,13 @@
           "isSigner": false
         },
         {
-          "name": "instrumentLongSplToken",
-          "isMut": false,
+          "name": "instrument",
+          "isMut": true,
           "isSigner": false
         },
         {
-          "name": "instrument",
-          "isMut": true,
+          "name": "instrumentLongSplToken",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -3265,6 +3265,41 @@
           }
         }
       ]
+    },
+    {
+      "name": "updateOracle",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "asset",
+          "type": {
+            "defined": "Asset"
+          }
+        },
+        {
+          "name": "spotOracle",
+          "type": {
+            "option": "publicKey"
+          }
+        },
+        {
+          "name": "ivOracle",
+          "type": {
+            "option": "publicKey"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -5071,6 +5106,6 @@
     }
   ],
   "metadata": {
-    "address": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord"
+    "address": "optFiKjQpoQ3PvacwnFWaPUAqXCETMJSz2sz8HwPe9B"
   }
 }
