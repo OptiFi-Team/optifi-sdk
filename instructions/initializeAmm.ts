@@ -76,7 +76,10 @@ export function initializeAmm(context: Context,
                                     signers: [withdrawQueueWallet, ammUSDCTokenVault, ammLPTokenMint],
                                     instructions: [
                                         increaseComputeUnitsIx,
-                                        await context.program.account.ammWithdrawRequestQueue.createInstruction(withdrawQueueWallet),
+                                        await context.program.account.ammWithdrawRequestQueue.createInstruction(
+                                            withdrawQueueWallet,
+                                            context.program.account.ammWithdrawRequestQueue.size + 8
+                                        ),
                                         SystemProgram.createAccount({
                                             fromPubkey: context.provider.wallet.publicKey,
                                             newAccountPubkey: ammUSDCTokenVault.publicKey,

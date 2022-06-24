@@ -44,6 +44,9 @@ export default function marginStressSync(context: Context,
                 OracleAccountType.Spot
             );
 
+        // console.log("spotOracle: ", spotOracle.toString());
+        // console.log("ivOracle: ", ivOracle.toString());
+        // console.log("usdcSpotOracle: ", usdcSpotOracle.toString());
         context.program.rpc.marginStressSync(
             {
                 accounts: {

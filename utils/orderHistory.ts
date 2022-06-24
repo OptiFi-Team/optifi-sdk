@@ -4,13 +4,13 @@ import { Market, decodeInstruction } from "@project-serum/serum";
 import { SERUM_DEX_PROGRAM_ID, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
 import bs58 from "bs58";
 import { BN, BorshCoder } from "@project-serum/anchor";
-import { findOptifiInstruments ,findOptifiMarketsWithFullData} from "./market";
+import { findOptifiInstruments, findOptifiMarketsWithFullData } from "./market";
 import { numberAssetToDecimal } from "./generic";
 import Decimal from "decimal.js";
 import { OptifiMarket } from "../types/optifi-exchange-types";
 import { getSerumMarket } from "../utils/serum";
 import { market } from "../scripts/constants";
-import { BTC_DECIMALS,ETH_DECIMALS, getIOCSizeForAsk, getIOCSide, getClientId, getIOCFillAmt ,checkPostOnlyFail} from "./tradeHistory";
+import { BTC_DECIMALS, ETH_DECIMALS, getIOCSizeForAsk, getIOCSide, getClientId, getIOCFillAmt, checkPostOnlyFail } from "./tradeHistory";
 import base58, { decode } from "bs58";
 import { Order } from "../utils/orders";
 
@@ -51,7 +51,7 @@ export const retrievRecentTxsV2 = async (context: Context,
   })
 }
 
-async function getFilledData(context: Context, account: PublicKey,orderHistorys:OrderInstruction[]): Promise<number[]> {
+async function getFilledData(context: Context, account: PublicKey, orderHistorys: OrderInstruction[]): Promise<number[]> {
   return new Promise(async (resolve, reject) => {
     let res: number[] = [];
     let txs = await retrievRecentTxs(context, account)
@@ -335,12 +335,12 @@ export function addStatusInOrderHistory(
     try {
       let originalSize: number[] = [];
       let currentSize: number[] = [];
-      let clientIdIOC: number[] = await getFilledData(context, userAccount,orderHistorys)
+      let clientIdIOC: number[] = await getFilledData(context, userAccount, orderHistorys)
 
       for (let i = 0; i < orders.length; i++) {
         //@ts-ignore
-        originalSize[orders[i].clientId.toNumber()] = new Decimal(orders[i].originalSize).toNumber();
-        currentSize[orders[i].clientId.toNumber()] = new Decimal(orders[i].size).toNumber();
+        originalSize[orders[i].clientId!.toNumber()] = new Decimal(orders[i].originalSize).toNumber();
+        currentSize[orders[i].clientId!.toNumber()] = new Decimal(orders[i].size).toNumber();
       }
 
       for (let orderHistory of orderHistorys) {

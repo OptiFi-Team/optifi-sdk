@@ -1,16 +1,13 @@
 import { PublicKey } from "@solana/web3.js";
-import { AggregatorState, parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api";
 import { SWITCHBOARD } from "../../constants";
 import { initializeContext } from "../../index";
-import marketMakerCalculation from "../../instructions/marketMaker/marketMakerCalculation";
 import marketMakerCancelOrder from "../../instructions/marketMaker/marketMakerCancelOrder";
 import marketMakerPostOnlyOrder from "../../instructions/marketMaker/marketMakerPostOnlyOrder";
 import { OrderSide } from "../../types/optifi-exchange-types";
 import { option_price } from "../../utils/calculateMargin";
-import { formatExplorerAddress } from "../../utils/debug";
-import { numberAssetToDecimal, sleep } from "../../utils/generic";
-import { findOptifiMarkets, findOptifiMarketsWithFullData, reloadOptifiMarketsData } from "../../utils/market";
-import { getSerumMarketPrice } from "../../utils/serum";
+import { sleep } from "../../utils/generic";
+import { findOptifiMarketsWithFullData } from "../../utils/market";
+import { getSwitchboard } from "../../utils/switchboardV2";
 
 const usdcSpot = 1;
 const asset: number = 0;
@@ -21,22 +18,22 @@ initializeContext().then(async (context) => {
     console.log(`Found ${MarketsWithFullDatas.length} optifi markets - `);
 
 
-    let spotRes: AggregatorState;
-    let ivRes: AggregatorState;
+    let spotRes: number;
+    let ivRes: number;
     switch (asset) {
         case 0:
-            spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
+            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
             break
         case 1:
-            spotRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
-            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV))
+            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
+            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV))
             break
         default:
             throw Error("unsupported asset type")
     }
-    let spot = spotRes.lastRoundResult?.result! / usdcSpot
-    let iv = ivRes.lastRoundResult?.result! / 100
+    let spot = spotRes / usdcSpot
+    let iv = ivRes / 100
     console.log("spot price: ", spot, " iv: ", iv)
 
     for (let MarketsWithFullData of MarketsWithFullDatas) {

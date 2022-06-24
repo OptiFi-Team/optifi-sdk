@@ -3304,28 +3304,6 @@
   ],
   "accounts": [
     {
-      "name": "Market",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "version",
-            "type": "i32"
-          },
-          {
-            "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
-          },
-          {
-            "name": "marketAuthority",
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
-    {
       "name": "AmmAccount",
       "type": {
         "kind": "struct",
@@ -4124,50 +4102,6 @@
       }
     },
     {
-      "name": "ChainDataWithAuth",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "asset",
-            "type": "u8"
-          },
-          {
-            "name": "instrumentType",
-            "type": "u8"
-          },
-          {
-            "name": "strike",
-            "type": "u64"
-          },
-          {
-            "name": "expiryDate",
-            "type": "u64"
-          },
-          {
-            "name": "duration",
-            "type": "u8"
-          },
-          {
-            "name": "start",
-            "type": "u64"
-          },
-          {
-            "name": "expiryType",
-            "type": "u8"
-          },
-          {
-            "name": "contractSize",
-            "type": "u64"
-          },
-          {
-            "name": "instrumentIdx",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
       "name": "ChainData",
       "type": {
         "kind": "struct",
@@ -4683,20 +4617,6 @@
       }
     },
     {
-      "name": "OracleDataType",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Spot"
-          },
-          {
-            "name": "IV"
-          }
-        ]
-      }
-    },
-    {
       "name": "OrderSide",
       "type": {
         "kind": "enum",
@@ -4808,6 +4728,20 @@
           },
           {
             "name": "Frozen"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleDataType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Spot"
+          },
+          {
+            "name": "IV"
           }
         ]
       }
@@ -5106,6 +5040,6 @@
     }
   ],
   "metadata": {
-    "address": "optFiKjQpoQ3PvacwnFWaPUAqXCETMJSz2sz8HwPe9B"
+    "address": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord"
   }
 }

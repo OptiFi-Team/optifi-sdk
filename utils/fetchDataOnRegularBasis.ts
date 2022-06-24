@@ -1,22 +1,14 @@
 import { PublicKey } from "@solana/web3.js";
 import Context from "../types/context";
-import { findUserAccount, userAccountExists, getDexOpenOrders } from "./accounts"
-import { getAmountToReserve, getUserBalance } from "./user"
-import { getAllOpenOrdersForUser, Order, loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets } from "../utils/orders";
+import { findUserAccount } from "./accounts"
+import { getUserBalance } from "./user"
+import { Order, loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets } from "../utils/orders";
 import { loadPositionsFromUserAccount, findOptifiMarketsWithFullData, Position } from "./market"
-import ammDeposit from "../instructions/ammDeposit";
 import { UserAccount } from "../types/optifi-exchange-types";
 import { SWITCHBOARD } from "../constants";
-import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
-import UserPosition from "../types/user";
-import { SERUM_DEX_PROGRAM_ID } from "../constants";
 import { initializeContext } from "../index";
 import { getAllOrdersForAccount } from "../utils/orderHistory";
-
-
-import {
-    OpenOrders
-} from "@project-serum/serum";
+import { getSwitchboard } from "./switchboardV2";
 
 //   const market = new PublicKey("Dv3WX52binT7rxYfruhRN9B3uVxioF7UUHDNXvwaykZL");
 
@@ -36,11 +28,11 @@ export async function fetchDataOnRegularBasis(
     userWalletAddresses: PublicKey[]
 ) {
     try {
-        let spotRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-        let spotRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
-        let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
-        let spot_btc = spotRes_btc.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
-        let spot_eth = spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
+        let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
+        let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
+        let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
+        let spot_btc = spotRes_btc / usdcSpot
+        let spot_eth = spotRes_eth / usdcSpot
         // let spot_btc = 42000;
         // let spot_eth = 3200;
 
