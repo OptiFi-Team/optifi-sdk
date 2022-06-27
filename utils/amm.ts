@@ -336,6 +336,7 @@ interface AmmEquity {
     ammUsdcVaultBalance: number, // each amm's usdc vault balance
     ammLpTokenSupply: number, // each amm's lp token total supply
     delta: number, // amm's delta based on btc
+    delta_percentage: number, // amm's delta based on %
 }
 
 export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> {
@@ -346,15 +347,19 @@ export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> 
             let tradedAmmLpMints: PublicKey[] = []
             // let tradedAmmUsdcVaults: PublicKey[] = []
             let tradedAmmUsdcLiquidity: number[] = []
-
             let deltas: number[] = []
+            let delta_percentages: number[] = []
 
             for (let amm of allAmm) {
                 assets.push(amm[0].asset)
                 tradedAmmLpMints.push(amm[0].lpTokenMint)
                 // tradedAmmUsdcVaults.push(amm[0].quoteTokenVault)
-                tradedAmmUsdcLiquidity.push(amm[0].totalLiquidityUsdc.toNumber())
-                deltas.push(new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber())
+                let totalLiquidityUsdc = amm[0].totalLiquidityUsdc.toNumber();
+                tradedAmmUsdcLiquidity.push(totalLiquidityUsdc)
+                let delta = new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber();
+                deltas.push(delta)
+                let delta_percentage = delta * amm[0].price.toNumber() / totalLiquidityUsdc
+                delta_percentages.push(delta_percentage)
             }
             let equity = new Map<number, AmmEquity>()
 
@@ -364,13 +369,15 @@ export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> 
                 // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)]);
                 // let ammUsdcVaultBalance = ammUsdcVaultInfo.amount;
                 let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
+                let delta_percentage = delta_percentages[assets.indexOf(asset)]
 
                 // let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint);
 
                 equity.set(asset, {
                     ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** USDC_DECIMALS).toNumber(),
                     ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
-                    delta: deltas[assets.indexOf(asset)]
+                    delta: deltas[assets.indexOf(asset)],
+                    delta_percentage: delta_percentage
                 })
             }
             resolve(equity)
@@ -391,13 +398,18 @@ export function getAmmEquityV2(context: Context, ammAccounts: [AmmAccount, Publi
             let tradedAmmUsdcLiquidity: number[] = []
 
             let deltas: number[] = []
+            let delta_percentages: number[] = []
 
             for (let amm of ammAccounts) {
                 assets.push(amm[0].asset)
                 tradedAmmLpMints.push(amm[0].lpTokenMint)
-                // tradedAmmUsdcVaults.push(amm.quoteTokenVault)
-                tradedAmmUsdcLiquidity.push(amm[0].totalLiquidityUsdc.toNumber())
-                deltas.push(new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber())
+                // tradedAmmUsdcVaults.push(amm[0].quoteTokenVault)
+                let totalLiquidityUsdc = amm[0].totalLiquidityUsdc.toNumber();
+                tradedAmmUsdcLiquidity.push(totalLiquidityUsdc)
+                let delta = new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber();
+                deltas.push(delta)
+                let delta_percentage = delta * amm[0].price.toNumber() / totalLiquidityUsdc
+                delta_percentages.push(delta_percentage)
             }
             let equity = new Map<number, AmmEquity>()
 
@@ -407,13 +419,14 @@ export function getAmmEquityV2(context: Context, ammAccounts: [AmmAccount, Publi
                 // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)]);
                 // let ammUsdcVaultBalance = ammUsdcVaultInfo.amount;
                 let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
+                let delta_percentage = delta_percentages[assets.indexOf(asset)]
 
                 // let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint);
-
                 equity.set(asset, {
                     ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** USDC_DECIMALS).toNumber(),
                     ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
-                    delta: deltas[assets.indexOf(asset)]
+                    delta: deltas[assets.indexOf(asset)],
+                    delta_percentage: delta_percentage
                 })
             }
             resolve(equity)
