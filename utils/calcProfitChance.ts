@@ -9,7 +9,6 @@ import { option_delta } from "./calculateMargin";
 import { resolve } from "path";
 import { rejects } from "assert";
 import { table } from "console";
-import { getSwitchboard } from "./switchboardV2";
 
 interface ProfitChance {
     breakEven: number,
@@ -113,12 +112,12 @@ export async function calcProfitChance(
 
             //spot and iv only btc/eth
             //BTC
-            let d2BTCAskPriceResult = d2Ask(marketData[0].spot, BTCFirstAskArr, marketData[0].iv, r, q, tBTC, BTCStrike)
-            let d2BTCBidPriceResult = d2Bid(marketData[0].spot, BTCFirstBidArr, marketData[0].iv, r, q, tBTC, BTCStrike)
+            let d2BTCAskPriceResult = d2Ask(marketData[0].spot, BTCFirstAskArr, marketData[0].iv, r, q, tBTC,BTCStrike)
+            let d2BTCBidPriceResult = d2Bid(marketData[0].spot, BTCFirstBidArr, marketData[0].iv, r, q, tBTC,BTCStrike)
 
             //ETH
-            let d2ETHAskPriceResult = d2Ask(marketData[marketLen / 2].spot, ETHFirstAskArr, marketData[marketLen / 2].iv, r, q, tETH, ETHStrike)
-            let d2ETHBidPriceResult = d2Bid(marketData[marketLen / 2].spot, ETHFirstBidArr, marketData[marketLen / 2].iv, r, q, tETH, ETHStrike)
+            let d2ETHAskPriceResult = d2Ask(marketData[marketLen / 2].spot, ETHFirstAskArr, marketData[marketLen / 2].iv, r, q, tETH,ETHStrike)
+            let d2ETHBidPriceResult = d2Bid(marketData[marketLen / 2].spot, ETHFirstBidArr, marketData[marketLen / 2].iv, r, q, tETH,ETHStrike)
 
             //BTC profit chance
             let ndfBTCAskPriceResult = ndf(d2BTCAskPriceResult);
@@ -173,18 +172,18 @@ function getMarketData(
 ): Promise<BreakEvenDataRes> {
     return new Promise(async (resolve, rejects) => {
         try {
-            let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
+            let spotRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
             let ivRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
 
-            let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD));
+            let spotRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD));
             let ivRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV))
 
-            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
+            let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
 
             // let spot_btc = spotRes_btc.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
             // let spot_eth = spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
-            let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
-            let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100
+            let spot_btc = Math.round(spotRes_btc.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result! * 100) / 100
+            let spot_eth = Math.round(spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result! * 100) / 100
             let iv_btc = ivRes_btc.lastRoundResult?.result! / 100
             let iv_eth = ivRes_eth.lastRoundResult?.result! / 100
 
