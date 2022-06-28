@@ -20,13 +20,8 @@ initializeContext().then(async (context) => {
     // @ts-ignore
     let amm = ammRes as AmmAccount;
 
-    // spot price
-    let btcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
-    let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
-    let spotPrice = btcSpot / usdcSpot
-
     // get amm withdraw capacity
-    let capacity = getAmmWithdrawCapacity(amm, spotPrice)
+    let capacity = getAmmWithdrawCapacity(amm, amm[0].price)
     console.log(capacity)
 
     // calc amm withdraw fee - note: lpAmount is ui amount
