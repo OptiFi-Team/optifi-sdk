@@ -1,11 +1,11 @@
 import { PublicKey } from "@solana/web3.js";
-import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api";
-import { SWITCHBOARD } from "../../constants";
+import { SWITCHBOARD, USDC_DECIMALS } from "../../constants";
 import { initializeContext } from "../../index";
 import addWithdrawRequest from "../../instructions/amm/addWithdrawRequest";
 import { AmmAccount } from "../../types/optifi-exchange-types";
 import { findOptifiExchange, findUserAccount } from "../../utils/accounts";
 import { calcAmmWithdrawFees, findAMMWithIdx, getAmmWithdrawCapacity } from "../../utils/amm";
+import { getSwitchboard } from "../../utils/switchboardV2";
 import { ammIndex } from "./constants";
 
 const lpAmount = 100; // already including decimals
@@ -20,13 +20,8 @@ initializeContext().then(async (context) => {
     // @ts-ignore
     let amm = ammRes as AmmAccount;
 
-    // spot price
-    let btcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
-    let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
-    let spotPrice = btcSpot.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
-
     // get amm withdraw capacity
-    let capacity = getAmmWithdrawCapacity(amm, spotPrice)
+    let capacity = getAmmWithdrawCapacity(amm, amm[0].price / 10 ** USDC_DECIMALS)
     console.log(capacity)
 
     // calc amm withdraw fee - note: lpAmount is ui amount

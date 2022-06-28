@@ -16,6 +16,7 @@ export default function addWithdrawRequest(context: Context,
         findUserAccount(context).then(([userAccount, _]) => {
             findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(([userLpTokenVault, _]) => {
                 getMint(context.connection, amm.lpTokenMint).then(tokenMintInfo => {
+                    console.log("withdrawQueue: ", amm.withdrawQueue.toString())
                     context.program.rpc.addWithdrawRequest(
                         new anchor.BN(lpAmount * (10 ** tokenMintInfo.decimals)),
                         {

@@ -210,10 +210,7 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
     switch (asset) {
         case OptifiAsset.Bitcoin:
             if (oracleAccountType === OracleAccountType.Spot) {
-
-                let btcSpotOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
-                let btcSpotOracle = new PublicKey(base58.encode(btcSpotOracleRaw.parseOptimizedResultAddress).toString())
-                return btcSpotOracle;
+                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
             } else {
                 let btcIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV));
                 let btcIvOracle = new PublicKey(base58.encode(btcIvOracleRaw.parseOptimizedResultAddress).toString())
@@ -221,9 +218,7 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
             }
         case OptifiAsset.Ethereum:
             if (oracleAccountType === OracleAccountType.Spot) {
-                let ethSpotOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD));
-                let ethSpotOracle = new PublicKey(base58.encode(ethSpotOracleRaw.parseOptimizedResultAddress).toString())
-                return ethSpotOracle
+                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD);
             } else {
                 let ethIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV));
                 let ethIvOracle = new PublicKey(base58.encode(ethIvOracleRaw.parseOptimizedResultAddress).toString())
@@ -233,9 +228,7 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
             if (oracleAccountType === OracleAccountType.Iv) {
                 console.warn("No IV account for USDC, returning spot");
             }
-            let usdcSpotOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD));
-            let usdcSpotOracle = new PublicKey(base58.encode(usdcSpotOracleRaw.parseOptimizedResultAddress).toString())
-            return usdcSpotOracle
+            return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD);
         default:
             console.log("Asset is ", asset);
             throw new Error(`Unsupported asset ${asset}`);
