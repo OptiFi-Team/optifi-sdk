@@ -107,7 +107,7 @@
     "@types/yargs" "^17.0.8"
     chalk "^4.0.0"
 
-"@project-serum/anchor@0.24.2", "@project-serum/anchor@^0.24.2":
+"@project-serum/anchor@0.24.2":
   version "0.24.2"
   resolved "https://registry.npmjs.org/@project-serum/anchor/-/anchor-0.24.2.tgz"
   integrity sha512-0/718g8/DnEuwAidUwh5wLYphUYXhUbiClkuRNhvNoa+1Y8a4g2tJyxoae+emV+PG/Gikd/QUBNMkIcimiIRTA==
@@ -341,14 +341,6 @@
     secp256k1 "^4.0.2"
     superstruct "^0.14.2"
     tweetnacl "^1.0.0"
-
-"@switchboard-xyz/sbv2-lite@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@switchboard-xyz/sbv2-lite/-/sbv2-lite-0.1.4.tgz#2eef582ccb5badf4dd7de70b65a989f7023d6093"
-  integrity sha512-mJhafIb58mbu4isGtkXFB6xQgQFoN8VTuX9Jq2mmeJt51DXzsBBZun3LBzl2108MHG60L7vK0bRQI5aIkZdcRA==
-  dependencies:
-    "@project-serum/anchor" "^0.24.2"
-    big.js "^6.1.1"
 
 "@switchboard-xyz/switchboard-api@^0.2.183", "@switchboard-xyz/switchboard-api@^0.2.61":
   version "0.2.193"

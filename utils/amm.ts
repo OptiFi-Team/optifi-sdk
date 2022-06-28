@@ -843,6 +843,9 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
 // get the maximum withdrawable usdc amount of an AMM
 export function getAmmWithdrawCapacity(amm: AmmAccount, spotPrice: number): number {
     let maxWithdrawable = amm.totalLiquidityUsdc.toNumber() / (10 ** USDC_DECIMALS) - (Math.abs(amm.netDelta.toNumber()) / (10 ** USDC_DECIMALS)) * spotPrice / DELTA_LIMIT
+    if (maxWithdrawable < 0) {
+        maxWithdrawable = 0;
+    }
     return maxWithdrawable
 }
 

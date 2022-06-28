@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { SWITCHBOARD } from "../../constants";
+import { SWITCHBOARD, USDC_DECIMALS } from "../../constants";
 import { initializeContext } from "../../index";
 import addWithdrawRequest from "../../instructions/amm/addWithdrawRequest";
 import { AmmAccount } from "../../types/optifi-exchange-types";
@@ -21,7 +21,7 @@ initializeContext().then(async (context) => {
     let amm = ammRes as AmmAccount;
 
     // get amm withdraw capacity
-    let capacity = getAmmWithdrawCapacity(amm, amm[0].price)
+    let capacity = getAmmWithdrawCapacity(amm, amm[0].price / 10 ** USDC_DECIMALS)
     console.log(capacity)
 
     // calc amm withdraw fee - note: lpAmount is ui amount
