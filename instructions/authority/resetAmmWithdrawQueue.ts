@@ -23,7 +23,7 @@ export default function resetAmmWithdrawQueue(context: Context,
                             amm: ammAddress,
                             withdrawQueue: amm.withdrawQueue,
                             newWithdrawQueue: withdrawQueueWallet.publicKey,
-                            userAccount: userAccount
+                            // userAccount: userAccount
                         },
                         signers: [withdrawQueueWallet],
                         instructions: [
