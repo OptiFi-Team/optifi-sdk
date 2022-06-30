@@ -1,8 +1,9 @@
+import { BorshCoder } from "@project-serum/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
 import { AmmAccount, AmmState } from "../../types/optifi-exchange-types";
 import { findOptifiExchange } from "../../utils/accounts";
-import { findAMMAccounts, findAMMWithIdx } from "../../utils/amm";
+import { findAMMAccounts, findAMMWithIdx, getAmmWithdrawQueue } from "../../utils/amm";
 import { formatExplorerAddress, logFormatted, SolanaEntityType } from "../../utils/debug";
 import { ammIndex } from "./constants";
 
@@ -57,17 +58,22 @@ initializeContext().then(async (context) => {
 
 
     console.log("amm.withdrawQueue: ", amm.withdrawQueue.toString())
-    let ammWithdrawRequestQueue = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
-    console.log("ammWithdrawRequestQueue.head: ", ammWithdrawRequestQueue.head)
-    console.log("ammWithdrawRequestQueue.tail: ", ammWithdrawRequestQueue.tail)
-    // @ts-ignore
-    console.log("ammWithdrawRequestQueue.tail: ", ammWithdrawRequestQueue.requests.map(e => {
-        return {
-            "requestId": e.requestId,
-            "userAccountId": e.userAccountId,
-            "amount": e.amount.toNumber(),
-            "withdrawTimestamp": e.requestTimestamp.toNumber(),
-        }
-    }))
+    // let ammWithdrawRequestQueue = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
+    // let ammWithdrawRequestQueue = context.program.account.ammAccount.coder.accounts.decode("AmmWithdrawRequestQueue", trimmedBytes)
+    let ammWithdrawRequestQueue = await getAmmWithdrawQueue(context, amm.withdrawQueue)
+    console.log("decoded ammWithdrawRequestQueue: ", ammWithdrawRequestQueue)
+
+
+    // console.log("ammWithdrawRequestQueue.head: ", ammWithdrawRequestQueue.head)
+    // console.log("ammWithdrawRequestQueue.tail: ", ammWithdrawRequestQueue.tail)
+    // // @ts-ignore
+    // console.log("ammWithdrawRequestQueue.tail: ", ammWithdrawRequestQueue.requests.map(e => {
+    //     return {
+    //         "requestId": e.requestId,
+    //         "userAccountId": e.userAccountId,
+    //         "amount": e.amount.toNumber(),
+    //         "withdrawTimestamp": e.requestTimestamp.toNumber(),
+    //     }
+    // }))
 
 })
