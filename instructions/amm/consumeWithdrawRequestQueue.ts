@@ -32,6 +32,7 @@ export default function consumeWithdrawRequestQueue(context: Context,
 
                                 findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
                                     let [marginStressAddress,] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
+                                    console.log("userLpTokenVault: ", userLpTokenVault.toString())
                                     context.program.rpc.consumeWithdrawQueue(
                                         {
                                             accounts: {

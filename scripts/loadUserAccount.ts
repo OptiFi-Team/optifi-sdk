@@ -13,6 +13,13 @@ initializeContext().then(async (context) => {
         // @ts-ignore
         let userAccount = res as UserAccount;
         console.log("userAccount is", res);
+
+        // @ts-ignore
+        console.log("userAccount id: ", userAccount.id.toNumber());
+
+        // @ts-ignore
+        console.log("userAccount.ammEquities[0].lpAmountInQueue:", userAccount.ammEquities[0].lpAmountInQueue.toNumber());
+
         // @ts-ignore
         console.log("userAccount temp pnl amount:", userAccount.tempPnl.amount.toNumber());
         // @ts-ignore
