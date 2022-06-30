@@ -924,23 +924,23 @@ export async function calcAmmWithdrawFees(
     })
 }
 
-export async function getAmmWithdrawQueue(context:Context, withdrawQueue: PublicKey) {
+export async function getAmmWithdrawQueue(context: Context, withdrawQueue: PublicKey) {
     let queueRaw = await context.connection.getAccountInfo(withdrawQueue)
-    console.log("queueRaw?.data: ", queueRaw?.data)
+    // console.log("queueRaw?.data: ", queueRaw?.data)
 
-    console.log("queueRaw?.data.length: ", queueRaw?.data.length)
+    // console.log("queueRaw?.data.length: ", queueRaw?.data.length)
 
-    console.log("queueRaw?.data.length: ", queueRaw?.data.slice(17, 21))
+    // console.log("queueRaw?.data.length: ", queueRaw?.data.slice(17, 21))
 
     let size = context.program.account.ammWithdrawRequestQueue.size
-    console.log("size : ", size)
+    // console.log("size : ", size)
 
-    let trimmedBytes = Buffer.concat([queueRaw?.data.slice(0, 20)!, queueRaw?.data.slice(24,queueRaw?.data.length-4)!]);
-    console.log("trimmedBytes: ", trimmedBytes)
-    console.log("trimmedBytes.length: ", trimmedBytes.length)
+    let trimmedBytes = Buffer.concat([queueRaw?.data.slice(0, 20)!, queueRaw?.data.slice(24, queueRaw?.data.length - 4)!]);
+    // console.log("trimmedBytes: ", trimmedBytes)
+    // console.log("trimmedBytes.length: ", trimmedBytes.length)
 
 
     let ammWithdrawRequestQueue = context.program.account.ammAccount.coder.accounts.decode("AmmWithdrawRequestQueue", trimmedBytes)
-    console.log("decoded ammWithdrawRequestQueue: ", ammWithdrawRequestQueue)
+    // console.log("decoded ammWithdrawRequestQueue: ", ammWithdrawRequestQueue)
     return ammWithdrawRequestQueue
 }

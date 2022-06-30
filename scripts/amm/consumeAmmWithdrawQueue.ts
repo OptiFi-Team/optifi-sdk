@@ -1,7 +1,7 @@
 import { initializeContext } from "../../index";
 import consumeWithdrawRequestQueue from "../../instructions/amm/consumeWithdrawRequestQueue";
 import { findOptifiExchange, getUserAccountById } from "../../utils/accounts";
-import { findAMMWithIdx } from "../../utils/amm";
+import { findAMMWithIdx, getAmmWithdrawQueue } from "../../utils/amm";
 // import { ammIndex } from "./constants";
 import Context from "../../types/context"
 import { SolanaEndpoint } from "../../constants";
@@ -16,15 +16,18 @@ initializeContext().then(async (context) => {
         let [ammAddress,] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         let amm = await context.program.account.ammAccount.fetch(ammAddress)
 
-        while (true) {
+        console.log("amm.withdrawQueue: ", amm.withdrawQueue.toString());
 
-            let withdrawRequests = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
-            console.log(withdrawRequests.requestIdCounter)
-            console.log(withdrawRequests.head)
-            console.log(withdrawRequests.tail)
-            if (withdrawRequests.head != withdrawRequests.tail) {
+        while (true) {
+            let ammWithdrawRequestQueue = await getAmmWithdrawQueue(context, amm.withdrawQueue)
+            // console.log("decoded ammWithdrawRequestQueue: ", ammWithdrawRequestQueue)
+
+            // console.log(ammWithdrawRequestQueue.requestIdCounter)
+            // console.log(ammWithdrawRequestQueue.head)
+            // console.log(ammWithdrawRequestQueue.tail)
+            if (ammWithdrawRequestQueue.head != ammWithdrawRequestQueue.tail) {
                 // @ts-ignore
-                let request = withdrawRequests.requests[withdrawRequests.head]
+                let request = ammWithdrawRequestQueue.requests[ammWithdrawRequestQueue.head]
                 console.log(request);
                 let userId = request.userAccountId
                 let requestAmount = request.amount
@@ -36,18 +39,20 @@ initializeContext().then(async (context) => {
                 // const staleness = now.sub(latestRoundTimestamp);
 
                 console.log("userId: ", userId)
-                console.log("requestTimestamp: ", requestTimestamp)
+                // console.log("requestTimestamp: ", requestTimestamp)
 
-                console.log("requestAmount: ", requestAmount.toString());
-                console.log("requestTimestamp: ", requestTimestamp.toString());
+                console.log("requestAmount: ", requestAmount.toNumber());
+                console.log("requestTimestamp: ", requestTimestamp.toNumber());
 
-                let userAccount = await getUserAccountById(context, userId)
-                console.log("userId: ", userId, " ,userAccount: ", userAccount.publicKey.toString())
-                await consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then((res) => {
-                    console.log("Got consumeWithdrawRequestQueue res", res);
-                }).catch((err) => {
-                    console.error(err);
-                })
+                if (isReqeustInCorrectTimeWindow(context, requestTimestamp.toNumber())) {
+                    let userAccount = await getUserAccountById(context, userId)
+                    console.log("userId: ", userId, " ,userAccount: ", userAccount.publicKey.toString())
+                    await consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then((res) => {
+                        console.log("Got consumeWithdrawRequestQueue res", res);
+                    }).catch((err) => {
+                        console.error(err);
+                    })
+                }
             }
             await sleep(10 * 1000);
         }
@@ -63,7 +68,7 @@ function isReqeustInCorrectTimeWindow(context: Context, requestTimestamp: number
     }
 
     let now = new Date().getTime()
-    let validWithdrawTime = new Date((requestTimestamp + waitingTimeInSeconds) * 1000).getTime() / 1000
+    let validWithdrawTime = new Date((requestTimestamp + waitingTimeInSeconds) * 1000).getTime()
     console.log("now: ", now, ", validWithdrawTime: ", validWithdrawTime)
     if (now >= validWithdrawTime) {
         return true
