@@ -57,7 +57,7 @@ initializeContext().then(async (context) => {
 
 
     console.log("amm.withdrawQueue: ", amm.withdrawQueue.toString())
-    let ammWithdrawRequestQueue = await context.program.account.ammWithdrawRequestQueue.fetch(new PublicKey("6PKeBny7mJn3xNXPuxVKNEu5ivazRA3mwjwgdVqvNAFj"))
+    let ammWithdrawRequestQueue = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
     console.log("ammWithdrawRequestQueue.head: ", ammWithdrawRequestQueue.head)
     console.log("ammWithdrawRequestQueue.tail: ", ammWithdrawRequestQueue.tail)
     // @ts-ignore

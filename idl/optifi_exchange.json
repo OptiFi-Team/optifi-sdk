@@ -1,5 +1,5 @@
 {
-  "version": "1.1.16",
+  "version": "1.1.17",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -3300,6 +3300,42 @@
           }
         }
       ]
+    },
+    {
+      "name": "resetAmmWithdrawQueue",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newWithdrawQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -3461,7 +3497,7 @@
                 {
                   "defined": "WithdrawRequest"
                 },
-                5000
+                4999
               ]
             }
           }

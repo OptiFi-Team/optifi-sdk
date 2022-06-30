@@ -8,7 +8,7 @@ import { calcAmmWithdrawFees, findAMMWithIdx, getAmmWithdrawCapacity } from "../
 import { getSwitchboard } from "../../utils/switchboardV2";
 import { ammIndex } from "./constants";
 
-const lpAmount = 100; // already including decimals
+const lpAmount = 483143; // already including decimals
 
 initializeContext().then(async (context) => {
     let [optifiExchange,] = await findOptifiExchange(context)
@@ -21,7 +21,7 @@ initializeContext().then(async (context) => {
     let amm = ammRes as AmmAccount;
 
     // get amm withdraw capacity
-    let capacity = getAmmWithdrawCapacity(amm, amm[0].price / 10 ** USDC_DECIMALS)
+    let capacity = getAmmWithdrawCapacity(amm, amm.price.toNumber() / 10 ** USDC_DECIMALS)
     console.log(capacity)
 
     // calc amm withdraw fee - note: lpAmount is ui amount
