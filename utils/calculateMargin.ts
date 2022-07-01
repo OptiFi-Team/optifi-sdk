@@ -216,24 +216,24 @@ export function d1(spot, strike, iv, r, q, t) {
     return arrdivdearr(arrplusarr(arrmul((r - q + iv * iv / 2), t), arrlog(divide(spot, strike))), arrmul(iv, arrsqrt(t)));
 }
 
-export function d1Ask(spot, order, iv, r, q, t, strike) {
-    return arrdivdearr(arrplusarr(arrmul((r - q + iv * iv / 2), t), arrlog(divideAsk(spot, order,strike))), arrmul(iv, arrsqrt(t)));
+export function d1Call(spot, order, iv, r, q, t, strike) {
+    return arrdivdearr(arrplusarr(arrmul((r - q + iv * iv / 2), t), arrlog(divideCall(spot, order, strike))), arrmul(iv, arrsqrt(t)));
 }
 
-export function d1Bid(spot, order, iv, r, q, t, strike) {
-    return arrdivdearr(arrplusarr(arrmul((r - q + iv * iv / 2), t), arrlog(divideBid(spot, order,strike))), arrmul(iv, arrsqrt(t)));
+export function d1Put(spot, order, iv, r, q, t, strike) {
+    return arrdivdearr(arrplusarr(arrmul((r - q + iv * iv / 2), t), arrlog(dividePut(spot, order, strike))), arrmul(iv, arrsqrt(t)));
 }
 
-export function d2(spot, strike, iv, r, q, t) {
+export function d2Origin(spot, strike, iv, r, q, t) {
     return arrminusarr(d1(spot, strike, iv, r, q, t), (arrmul(iv, arrsqrt(t))));
 }
 
-export function d2Ask(spot, order, iv, r, q, t, strike) {
-    return arrminusarr(d1Ask(spot, order, iv, r, q, t, strike), (arrmul(iv, arrsqrt(t))));
+export function d2Call(spot, order, iv, r, q, t, strike) {
+    return arrminusarr(d1Call(spot, order, iv, r, q, t, strike), (arrmul(iv, arrsqrt(t))));
 }
 
-export function d2Bid(spot, order, iv, r, q, t, strike) {
-    return arrminusarr(d1Bid(spot, order, iv, r, q, t, strike), (arrmul(iv, arrsqrt(t))));
+export function d2Put(spot, order, iv, r, q, t, strike) {
+    return arrminusarr(d1Put(spot, order, iv, r, q, t, strike), (arrmul(iv, arrsqrt(t))));
 }
 
 export function option_delta(spot, strike, iv, r, q, t, isCall) {
@@ -264,7 +264,8 @@ export function ndf(arr) {
     var result = [] as any;
 
     for (let i = 0; i < arr.length; i++) {
-        result.push(0.5 * (1.0 - erf(Math.abs(arr[i]) / Math.sqrt(2))));
+        if (isNaN(arr[i])) result.push(0)
+        else result.push((0.5 * (1.0 + erf((arr[i]) / Math.sqrt(2)))));
     }
 
     return result;
@@ -274,7 +275,8 @@ export function ndfBid(arr) {
     var result = [] as any;
 
     for (let i = 0; i < arr.length; i++) {
-        result.push(1 - (0.5 * (1.0 - erf(Math.abs(arr[i]) / Math.sqrt(2)))));
+        if (isNaN(arr[i])) result.push(0)
+        else result.push(1 - (0.5 * (1.0 + erf((arr[i]) / Math.sqrt(2)))));
     }
 
     return result;
@@ -396,7 +398,7 @@ export function divide(a, b) {
     return result;
 }
 
-export function divideAsk(a, b,strike) {
+export function divideCall(a, b, strike) {
     var result = [] as any;
     for (let i = 0; i < b.length; i++) {
         result.push(a / (strike[i] + b[i][0]))
@@ -404,7 +406,7 @@ export function divideAsk(a, b,strike) {
     return result;
 }
 
-export function divideBid(a, b,strike) {
+export function dividePut(a, b, strike) {
     var result = [] as any;
     for (let i = 0; i < b.length; i++) {
         result.push(a / (strike[i] - b[i][0]))
@@ -545,7 +547,7 @@ export function option_intrinsic_value(spot, strike, isCall) {
 
 export function option_price(spot, strike, iv, r, q, t, isCall) {
     if (typeof spot == "number") {
-        var call = arrminusarr(arrmularr(arrmul(spot, arrexp(arrmul(((-q)), t))), cdf(d1(spot, strike, iv, r, q, t))), arrmularr(strike, arrmularr(arrexp(arrmul((-r), t)), cdf(d2(spot, strike, iv, r, q, t)))));
+        var call = arrminusarr(arrmularr(arrmul(spot, arrexp(arrmul(((-q)), t))), cdf(d1(spot, strike, iv, r, q, t))), arrmularr(strike, arrmularr(arrexp(arrmul((-r), t)), cdf(d2Origin(spot, strike, iv, r, q, t)))));
         // put = call + strike * np.exp(-r * t) - spot * np.exp(-q * t)
         var put = arrplusarr(call, arrminusarr(arrmularr(strike, arrexp(arrmul((-r), t))), arrmul(spot, arrexp(arrmul((-q), t)))));
 
