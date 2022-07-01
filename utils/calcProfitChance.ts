@@ -1,4 +1,4 @@
-import { ndf, d2Ask, d2Bid, reshap, ndfBid } from "./calculateMargin"
+import { ndf, d2Call,d2Put, reshap, ndfBid } from "./calculateMargin"
 import { STRIKE, PREMIUM, IS_CALL, TIME_TO_MATURITY } from "./calcMarginTestData"
 import Context from "../types/context";
 import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
@@ -30,6 +30,7 @@ interface BreakEvenDataSingleRes {
     isCall: number,
     strike: number,
     premium: Premiumtype,
+    asset: string,
 }
 interface BreakEvenDataRes extends Array<BreakEvenDataSingleRes> { }
 export const r = 0;
@@ -50,23 +51,25 @@ export async function calcProfitChance(
 ): Promise<ProfitChanceRes[]> {
     return new Promise(async (resolve, reject) => {
         try {
-
             // =====================================================
             // TODO: use the data in optifiMarkets to calc break even 
             // and profit chance with the finished functions below
             // the length of returned array should be equal to length of optifiMarkets
             // =====================================================
             let res: ProfitChanceRes[] = [];
-            let marketLen = optifiMarkets.length;
 
-            let BTCOptifiMarkets = optifiMarkets.slice(0, marketLen / 2);
-            let ETHOptifiMarkets = optifiMarkets.slice(marketLen / 2, marketLen);
+            let BTCOptifiMarkets = optifiMarkets.filter(e => { return e.asset == "BTC" });
+            let ETHOptifiMarkets = optifiMarkets.filter(e => { return e.asset == "ETH" });
+
             let BTCFirstAsk: number[] = BTCOptifiMarkets.map(e => { return e.askPrice })
             let BTCFirstBid: number[] = BTCOptifiMarkets.map(e => { return e.bidPrice })
             let ETHFirstAsk: number[] = ETHOptifiMarkets.map(e => { return e.askPrice })
             let ETHFirstBid: number[] = ETHOptifiMarkets.map(e => { return e.bidPrice })
-            let BTCStrike: number[] = BTCOptifiMarkets.map(e => { return e.strike })
-            let ETHStrike: number[] = ETHOptifiMarkets.map(e => { return e.strike })
+
+            let BTCCallStrike: number[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.strike })
+            let BTCPutStrike: number[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.strike })
+            let ETHCallStrike: number[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.strike })
+            let ETHPutStrike: number[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.strike })
 
             let BTCFirstAskArr = reshap(BTCFirstAsk)
             let BTCFirstBidArr = reshap(BTCFirstBid)
@@ -74,8 +77,15 @@ export async function calcProfitChance(
             let ETHFirstBidArr = reshap(ETHFirstBid)
 
             let marketData = await getMarketData(context, optifiMarkets)//get spot , iv , r , q , t , strike, total len is 20
-            let BTCmarketData = marketData.slice(0, marketLen / 2);
-            let ETHmarketData = marketData.slice(marketLen / 2, marketLen);
+
+            let BTCmarketData = marketData.filter(e => { return e.asset == "BTC" })
+            let ETHmarketData = marketData.filter(e => { return e.asset == "ETH" })
+
+            let BTCCallMarketData = BTCmarketData.filter(e => { return e.isCall == 1 })
+            let BTCPutMarketData = BTCmarketData.filter(e => { return e.isCall == 0 })
+            let ETHCallMarketData = ETHmarketData.filter(e => { return e.isCall == 1 })
+            let ETHPutMarketData = ETHmarketData.filter(e => { return e.isCall == 0 })
+
             // marketData element:
             // {
             //     spot: 3035.5769939999996,
@@ -86,74 +96,141 @@ export async function calcProfitChance(
             //     premium: { askPrice: 0, bidPrice: 0 }
             //  }
 
-            //breakEvenArr[0]: askPrice break even , len 10
-            //breakEvenArr[1]: bidPrice break even , len 10
-            //if askPrice is equal to bidPrice , two array should be equal
-            let BTCbreakEvenArr = await calcBreakEven(BTCmarketData);
-            let ETHbreakEvenArr = await calcBreakEven(ETHmarketData);
+            let BTCCallBreakEvenArr = await calcBreakEven(BTCCallMarketData);
+            let BTCPutBreakEvenArr = await calcBreakEven(BTCPutMarketData);
+            let ETHCallBreakEvenArr = await calcBreakEven(ETHCallMarketData);
+            let ETHPutBreakEvenArr = await calcBreakEven(ETHPutMarketData);
 
             //prepare t
-            let tBTCTmp: number[] = [];
-            let tETHTmp: number[] = [];
+            let tBTCCallTmp: number[] = [];
+            let tBTCPutTmp: number[] = [];
+            let tETHCallTmp: number[] = [];
+            let tETHPutTmp: number[] = [];
 
-            for (let data of BTCmarketData) {
-                tBTCTmp.push(data.t);
+            for (let data of BTCCallMarketData) {
+                tBTCCallTmp.push(data.t);
             }
-            for (let data of ETHmarketData) {
-                tETHTmp.push(data.t);
+            for (let data of BTCPutMarketData) {
+                tBTCPutTmp.push(data.t);
+            }
+            for (let data of ETHCallMarketData) {
+                tETHCallTmp.push(data.t);
+            }
+            for (let data of ETHPutMarketData) {
+                tETHPutTmp.push(data.t);
             }
 
-            let tBTC = reshap(tBTCTmp);
-            let tETH = reshap(tETHTmp);
+            let tBTCCall = reshap(tBTCCallTmp);
+            let tBTCPut = reshap(tBTCPutTmp);
+            let tETHCall = reshap(tETHCallTmp);
+            let tETHPut = reshap(tETHPutTmp);
 
-            let BTCbreakEvenAskPriceArr = reshap(BTCbreakEvenArr[0])
-            let BTCbreakEvenBidPriceArr = reshap(BTCbreakEvenArr[1])
-            let ETHbreakEvenAskPriceArr = reshap(ETHbreakEvenArr[0])
-            let ETHbreakEvenBidPriceArr = reshap(ETHbreakEvenArr[1])
+            let BTCCallBreakEvenAskPriceArr = reshap(BTCCallBreakEvenArr[0])
+            let BTCCallBreakEvenBidPriceArr = reshap(BTCCallBreakEvenArr[1])
+            let ETHCallBreakEvenAskPriceArr = reshap(ETHCallBreakEvenArr[0])
+            let ETHCallBreakEvenBidPriceArr = reshap(ETHCallBreakEvenArr[1])
+            let BTCPutBreakEvenAskPriceArr = reshap(BTCPutBreakEvenArr[0])
+            let BTCPutBreakEvenBidPriceArr = reshap(BTCPutBreakEvenArr[1])
+            let ETHPutBreakEvenAskPriceArr = reshap(ETHPutBreakEvenArr[0])
+            let ETHPutBreakEvenBidPriceArr = reshap(ETHPutBreakEvenArr[1])
+
+            // BTCFirstAskArr[0][0] = 7000
+            // BTCFirstBidArr[0][0] = 5000
+            // tBTCCall[0][0] = 0.03015
+            // BTCCallStrike[0] = 15000
+            // let d2BTCCallAskPriceResult = d2Call(20644.19, BTCFirstAskArr, 1.18, r, q, tBTCCall, BTCCallStrike)
+            // let d2BTCCallBidPriceResult = d2Call(20644.19, BTCFirstBidArr, 1.18, r, q, tBTCCall, BTCCallStrike)
 
             //spot and iv only btc/eth
             //BTC
-            let d2BTCAskPriceResult = d2Ask(marketData[0].spot, BTCFirstAskArr, marketData[0].iv, r, q, tBTC, BTCStrike)
-            let d2BTCBidPriceResult = d2Bid(marketData[0].spot, BTCFirstBidArr, marketData[0].iv, r, q, tBTC, BTCStrike)
+            let d2BTCCallAskPriceResult = d2Call(marketData[0].spot, BTCFirstAskArr, marketData[0].iv, r, q, tBTCCall, BTCCallStrike)
+            let d2BTCCallBidPriceResult = d2Call(marketData[0].spot, BTCFirstBidArr, marketData[0].iv, r, q, tBTCCall, BTCCallStrike)
+            //*-1 for Put
+            let d2BTCPutAskPriceResult = d2Put(marketData[0].spot, BTCFirstAskArr, marketData[0].iv, r, q, tBTCPut, BTCPutStrike)
+            let d2BTCPutBidPriceResult = d2Put(marketData[0].spot, BTCFirstBidArr, marketData[0].iv, r, q, tBTCPut, BTCPutStrike)
+            d2BTCPutAskPriceResult = d2BTCPutAskPriceResult.map(e => { return -1 * e });
+            d2BTCPutBidPriceResult = d2BTCPutBidPriceResult.map(e => { return -1 * e });
 
             //ETH
-            let d2ETHAskPriceResult = d2Ask(marketData[marketLen / 2].spot, ETHFirstAskArr, marketData[marketLen / 2].iv, r, q, tETH, ETHStrike)
-            let d2ETHBidPriceResult = d2Bid(marketData[marketLen / 2].spot, ETHFirstBidArr, marketData[marketLen / 2].iv, r, q, tETH, ETHStrike)
+            let d2ETHCallAskPriceResult = d2Call(ETHmarketData[0].spot, ETHFirstAskArr, ETHmarketData[0].iv, r, q, tETHCall, ETHCallStrike)
+            let d2ETHCallBidPriceResult = d2Call(ETHmarketData[0].spot, ETHFirstBidArr, ETHmarketData[0].iv, r, q, tETHCall, ETHCallStrike)
+            // *-1 for Put
+            let d2ETHPutAskPriceResult = d2Put(ETHmarketData[0].spot, ETHFirstAskArr, ETHmarketData[0].iv, r, q, tETHPut, ETHPutStrike)
+            let d2ETHPutBidPriceResult = d2Put(ETHmarketData[0].spot, ETHFirstBidArr, ETHmarketData[0].iv, r, q, tETHPut, ETHPutStrike)
+            d2ETHPutAskPriceResult = d2ETHPutAskPriceResult.map(e => { return -1 * e });
+            d2ETHPutBidPriceResult = d2ETHPutBidPriceResult.map(e => { return -1 * e });
 
             //BTC profit chance
-            let ndfBTCAskPriceResult = ndf(d2BTCAskPriceResult);
-            let ndfBTCBidPriceResult = ndfBid(d2BTCBidPriceResult);
-            //ETH profit chance
-            let ndfETHAskPriceResult = ndf(d2ETHAskPriceResult);
-            let ndfETHBidPriceResult = ndfBid(d2ETHBidPriceResult);
+            let ndfBTCCallAskPriceResult = ndf(d2BTCCallAskPriceResult);
+            let ndfBTCPutAskPriceResult = ndf(d2BTCPutAskPriceResult);
+            let ndfBTCCallBidPriceResult = ndfBid(d2BTCCallBidPriceResult);
+            let ndfBTCPutBidPriceResult = ndfBid(d2BTCPutBidPriceResult);
 
-            // BTC
-            for (let i = 0; i < marketLen / 2; i++) {
+            //ETH profit chance
+            let ndfETHCallAskPriceResult = ndf(d2ETHCallAskPriceResult);
+            let ndfETHPutAskPriceResult = ndf(d2ETHPutAskPriceResult);
+            let ndfETHCallBidPriceResult = ndfBid(d2ETHCallBidPriceResult);
+            let ndfETHPutBidPriceResult = ndfBid(d2ETHPutBidPriceResult);
+
+            //BTC Call
+            for (let i = 0; i < ndfBTCCallAskPriceResult.length; i++) {
                 let oneRes: ProfitChanceRes = {
                     buy:
                     {
-                        breakEven: BTCbreakEvenBidPriceArr[i][0],
-                        profitChance: (BTCFirstAskArr[i][0] == 0) ? 0 : ndfBTCAskPriceResult[i]
+                        breakEven: BTCCallBreakEvenBidPriceArr[i][0],
+                        profitChance: (BTCFirstAskArr[i][0] == 0) ? 0 : ndfBTCCallAskPriceResult[i]
                     },
                     sell: {
-                        breakEven: BTCbreakEvenAskPriceArr[i][0],
-                        profitChance: (BTCFirstBidArr[i][0] == 0) ? 0 : ndfBTCBidPriceResult[i]
+                        breakEven: BTCCallBreakEvenAskPriceArr[i][0],
+                        profitChance: (BTCFirstBidArr[i][0] == 0) ? 0 : ndfBTCCallBidPriceResult[i]
                     }
                 }
-
                 res.push(oneRes)
             }
-            // ETH
-            for (let i = 0; i < marketLen / 2; i++) {
+
+            //BTC Put   
+            for (let i = 0; i < ndfBTCPutAskPriceResult.length; i++) {
                 let oneRes: ProfitChanceRes = {
                     buy:
                     {
-                        breakEven: ETHbreakEvenBidPriceArr[i][0],
-                        profitChance: (ETHFirstAskArr[i][0] == 0) ? 0 : ndfETHAskPriceResult[i]
+                        breakEven: BTCPutBreakEvenBidPriceArr[i][0],
+                        profitChance: (BTCFirstAskArr[i][0] == 0) ? 0 : ndfBTCPutAskPriceResult[i]
                     },
                     sell: {
-                        breakEven: ETHbreakEvenAskPriceArr[i][0],
-                        profitChance: (ETHFirstBidArr[i][0] == 0) ? 0 : ndfETHBidPriceResult[i]
+                        breakEven: BTCPutBreakEvenAskPriceArr[i][0],
+                        profitChance: (BTCFirstBidArr[i][0] == 0) ? 0 : ndfBTCPutBidPriceResult[i]
+                    }
+                }
+                res.push(oneRes)
+            }
+
+            // ETH Call  
+            for (let i = 0; i < ndfETHCallAskPriceResult.length; i++) {
+                let oneRes: ProfitChanceRes = {
+                    buy:
+                    {
+                        breakEven: ETHCallBreakEvenBidPriceArr[i][0],
+                        profitChance: (ETHFirstAskArr[i][0] == 0) ? 0 : ndfETHCallAskPriceResult[i]
+                    },
+                    sell: {
+                        breakEven: ETHCallBreakEvenAskPriceArr[i][0],
+                        profitChance: (ETHFirstBidArr[i][0] == 0) ? 0 : ndfETHCallBidPriceResult[i]
+                    }
+                }
+                res.push(oneRes)
+            }
+
+            //ETH Put
+            for (let i = 0; i < ndfETHPutAskPriceResult.length; i++) {
+                let oneRes: ProfitChanceRes = {
+                    buy:
+                    {
+                        breakEven: ETHPutBreakEvenBidPriceArr[i][0],
+                        profitChance: (ETHFirstAskArr[i][0] == 0) ? 0 : ndfETHPutAskPriceResult[i]
+                    },
+                    sell: {
+                        breakEven: ETHPutBreakEvenAskPriceArr[i][0],
+                        profitChance: (ETHFirstBidArr[i][0] == 0) ? 0 : ndfETHPutBidPriceResult[i]
                     }
                 }
                 res.push(oneRes)
@@ -216,7 +293,8 @@ function getMarketData(
                     t: t,
                     isCall: isCall,
                     strike: strike,
-                    premium: premium
+                    premium: premium,
+                    asset: market.asset,
                 }
             })
 
