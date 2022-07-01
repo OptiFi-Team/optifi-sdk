@@ -65,6 +65,8 @@ export default function ammSyncFuturesPositions(context: Context,
                     // console.log("mangoGroupAccountInfo.mangoCache: ", mangoGroupAccountInfo.mangoCache.toString())
                     const perpMarketInfo = getMangoPerpMarketInfoByAsset(context, amm.asset)!;
                     const perpMarket = new PublicKey(perpMarketInfo["publicKey"])
+                    const bids = new PublicKey(perpMarketInfo["bidsKey"])
+                    const asks = new PublicKey(perpMarketInfo["asksKey"])
                     const eventQueue = new PublicKey(perpMarketInfo["eventsKey"])
                     // console.log("perpMarket: ", perpMarket.toString())
                     // console.log("eventQueue: ", eventQueue.toString())
@@ -135,6 +137,8 @@ export default function ammSyncFuturesPositions(context: Context,
                                         tokenProgram: TOKEN_PROGRAM_ID,
                                         perpMarket: perpMarket,
                                         eventQueue: eventQueue,
+                                        bids,
+                                        asks
                                     },
 
                                     remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) => ({

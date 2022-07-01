@@ -1,5 +1,5 @@
 {
-  "version": "1.1.18",
+  "version": "1.1.19",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -1771,12 +1771,22 @@
         },
         {
           "name": "eventQueue",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "perpMarket",
-          "isMut": false,
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
           "isSigner": false
         }
       ],
