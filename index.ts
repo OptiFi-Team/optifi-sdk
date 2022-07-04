@@ -115,12 +115,13 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
  * @param customExchangeUUID Optionally supply a custom UUID for the exchange, instead of using the Optifi
  * constant
  *
- * @param endpoint The Solana cluster to connect to. Mainnet by default
+ * @param cluster The Solana cluster to connect to. If not provided, will try to read in from
+ * process.env.CLUSTER. Mainnet by default
  */
 function initializeContext(wallet?: string | WalletProvider,
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Mainnet,
+    cluster?: ("mainnet" | "devnet"),
     // commitmentLevel: Commitment = "recent",
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
@@ -129,6 +130,18 @@ function initializeContext(wallet?: string | WalletProvider,
     }
 
 ): Promise<Context> {
+    let cluster_ = cluster || process.env.CLUSTER!;
+
+    let endpoint = SolanaEndpoint.Mainnet;
+
+    switch (cluster_) {
+        case "mainnet":
+            endpoint = SolanaEndpoint.Mainnet;
+            break;
+        case "devnet":
+            endpoint = SolanaEndpoint.Devnet;
+            break;
+    }
     let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
     return new Promise((resolve, reject) => {
 
@@ -193,13 +206,25 @@ function initializeContext(wallet?: string | WalletProvider,
 function initializeContextWithoutWallet(
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint: SolanaEndpoint = SolanaEndpoint.Mainnet,
+    cluster?: ("mainnet" | "devnet"),
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
         disableRetryOnRateLimit: true,
         confirmTransactionInitialTimeout: 50 * 1000,
     }
 ): Promise<Context> {
+    let cluster_ = cluster || process.env.CLUSTER!;
+
+    let endpoint = SolanaEndpoint.Mainnet;
+
+    switch (cluster_) {
+        case "mainnet":
+            endpoint = SolanaEndpoint.Mainnet;
+            break;
+        case "devnet":
+            endpoint = SolanaEndpoint.Devnet;
+            break;
+    }
     let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
     return new Promise((resolve, reject) => {
         const idl = optifiExchange as unknown as OptifiExchangeIDL;
