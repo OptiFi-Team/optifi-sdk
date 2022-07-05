@@ -234,8 +234,12 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
         throw new Error(`failed to fetch account info`);
     }
 
+    let t = 300;
+    if (context.endpoint == SolanaEndpoint.Devnet) {
+        t = 3600 * 3;
+    }
     // Get latest value if its been updated in the last 300 seconds
-    const latestResult = sbv2.decodeLatestAggregatorValue(accountInfo, 300);
+    const latestResult = sbv2.decodeLatestAggregatorValue(accountInfo, t);
     if (latestResult === null) {
         console.error("switchboardFeed: ", switchboardFeed.toString())
         throw new Error(`failed to fetch latest result for aggregator`);
