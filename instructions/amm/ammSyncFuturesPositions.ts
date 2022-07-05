@@ -68,6 +68,9 @@ export default function ammSyncFuturesPositions(context: Context,
                     const bids = new PublicKey(perpMarketInfo["bidsKey"])
                     const asks = new PublicKey(perpMarketInfo["asksKey"])
                     const eventQueue = new PublicKey(perpMarketInfo["eventsKey"])
+                    const baseDecimals = perpMarketInfo["baseDecimals"] as number
+                    const quoteDecimals = perpMarketInfo["quoteDecimals"] as number
+
                     // console.log("perpMarket: ", perpMarket.toString())
                     // console.log("eventQueue: ", eventQueue.toString())
 
@@ -89,34 +92,13 @@ export default function ammSyncFuturesPositions(context: Context,
                             // expect(filteredNodeBanks.length).to.equal(1);
                             let vault = filteredNodeBanks[0]!.vault
 
-                            // mangoAccountInfo.spotOpenOrders.forEach(s => console.log(s.toString()));
-                            // console.log("filteredNodeBanks[0]!.publicKey: ", filteredNodeBanks[0]!.publicKey.toString())
-                            // console.log("usdcRootBank.publicKey: ", usdcRootBank.publicKey.toString())
-                            // console.log("mangoGroupAccountInfo.mangoCache: ", mangoGroupAccountInfo.mangoCache.toString())
-                            // console.log("mangoGroupAccountInfo.signerKey: ", mangoGroupAccountInfo.signerKey.toString())
-
-                            // let accounts = {
-                            //     optifiExchange: exchangeAddress,
-                            //     amm: ammAddress,
-                            //     mangoProgram: mangoProgramId,
-                            //     mangoGroup: mangoGroup,
-                            //     mangoGroupSigner: mangoGroupAccountInfo.signerKey,
-                            //     mangoAccount: ammMangoAccountAddress,
-                            //     owner: ammLiquidityAuth,
-                            //     mangoCache: mangoGroupAccountInfo.mangoCache,
-                            //     rootBank: usdcRootBank.publicKey,
-                            //     nodeBank: filteredNodeBanks[0]!.publicKey,
-                            //     vault: vault,
-                            //     ownerTokenAccount: amm.quoteTokenVault,
-                            //     payer: context.provider.wallet.publicKey,
-                            //     tokenProgram: TOKEN_PROGRAM_ID,
-                            //     perpMarket: perpMarket,
-                            //     eventQueue: eventQueue,
-                            // };
-                            // Object.values(accounts).forEach(p => console.log(p.toString()));
-
-                            // console.log(mangoGroupAccountInfo.tokens.forEach(e => console.log(e.mint.toString(), " ", e.rootBank.toString())))
-
+                            let mangoCache = await mangoGroupAccountInfo.loadCache(context.connection)
+                            let perpMarketAccountInfo = await client.getPerpMarket(perpMarket, baseDecimals, quoteDecimals)
+                            let price = mangoCache.getPrice(perpMarketIndex);
+                            let mangoAccounts = await client.getAllMangoAccounts(mangoGroupAccountInfo, [], false);
+                            let mangoSettlePnl = await client.settlePnl(mangoGroupAccountInfo, mangoCache, mangoAccountInfo, perpMarketAccountInfo, usdcRootBank, price, context.walletKeypair!, mangoAccounts)
+                            console.log("mangoSettlePnl: ", mangoSettlePnl)
+                           
                             context.program.rpc.ammSyncFuturePositions(
                                 perpMarketIndex,
                                 {
