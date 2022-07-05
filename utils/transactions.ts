@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { Keypair, PublicKey, Signer, Transaction, TransactionSignature } from "@solana/web3.js";
+import { ComputeBudgetProgram, Keypair, LAMPORTS_PER_SOL, PublicKey, Signer, Transaction, TransactionSignature } from "@solana/web3.js";
 import WalletType from "../types/walletType";
 import * as bs58 from "bs58";
 
@@ -144,3 +144,10 @@ export function signAndSendTransaction(context: Context,
         })
     })
 }
+
+
+// instruction for requesting more compute units
+export const increaseComputeUnitsIx = ComputeBudgetProgram.requestUnits({
+    units: 1400000,
+    additionalFee: 0 * LAMPORTS_PER_SOL // this may change in the future
+})

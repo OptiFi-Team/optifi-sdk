@@ -14,6 +14,9 @@ initializeContext().then(async (context) => {
     // let res = await findStoppableOptifiMarkets(context)
     // console.log("findStoppableOptifiMarkets res: ", res)
 
+    // let res2 = await findExpiredMarkets(context)
+    // console.log("findExpiredMarkets res: ", res2)
+
     findOptifiMarkets(context).then(async (res) => {
         console.log(`Found ${res.length} optifi markets - `);
         for (let market of res) {

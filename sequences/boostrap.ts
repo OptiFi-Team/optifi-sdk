@@ -114,7 +114,7 @@ async function createSerumMarketsV1(context: Context, instrumentKeys: PublicKey[
     return createdMarkets;
 }
 
-async function createSerumMarkets(context: Context, initialInstrument: PublicKey): Promise<PublicKey> {
+export async function createSerumMarkets(context: Context, initialInstrument: PublicKey): Promise<PublicKey> {
     // Intentionally do this the slow way because creating the serum markets is a super expensive process -
     // if there's a problem, we want to know before we've committed all our capital
     try {

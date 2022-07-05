@@ -5,7 +5,7 @@ import fs from "fs"
 import { OG_NFT_MINT } from "../../constants";
 import { airdropNft } from "../../utils/ogNft";
 
-import * as XLSX from 'xlsx'
+// import * as XLSX from 'xlsx'
 
 
 /* load 'stream' for stream support */
@@ -41,7 +41,7 @@ initializeContext().then(async (context) => {
     // console.log("ogList: ", ogList)
 
     let filePath = path.resolve(__dirname, "addresses-20220610.json");
-    // fs.writeFileSync(filePath, JSON.stringify(ogList))
+    // fs.writeFileSync(filePath, JSON.stringify(ogList, null, 4))
     let addresses = JSON.parse(
         fs.readFileSync(
             filePath,

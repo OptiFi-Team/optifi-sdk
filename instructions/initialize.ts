@@ -3,21 +3,15 @@ import InstructionResult from "../types/instructionResult";
 import * as anchor from "@project-serum/anchor";
 import { findExchangeAccount, findParseOptimizedOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
 import {
-    Keypair,
     PublicKey,
     SystemProgram,
     SYSVAR_RENT_PUBKEY,
-    Transaction,
     TransactionSignature
 } from "@solana/web3.js";
-import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
-import { signAndSendTransaction, TransactionResult, TransactionResultType } from "../utils/transactions";
 import { findOptifiUSDCPoolAuthPDA } from "../utils/pda";
 import { AccountLayout, createInitializeAccountInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { SWITCHBOARD, USDC_TOKEN_MINT } from "../constants";
-import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api";
-import base58 from "bs58";
-import { Asset, OracleDataType } from "../types/optifi-exchange-types";
+import { USDC_TOKEN_MINT } from "../constants";
+import { Asset } from "../types/optifi-exchange-types";
 
 /**
  * Create a new optifi exchange - the first instruction that will be run in the Optifi system

@@ -9,7 +9,7 @@ import {
 } from "@solana/web3.js";
 import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../utils/pda";
 import { assetToOptifiAsset, optifiAssetToNumber, optifiDurationToNumber } from "../utils/generic";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { AccountLayout, createInitializeAccountInstruction, createInitializeMintInstruction, MintLayout, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { AMM_TRADE_CAPACITY, MANGO_GROUP_ID, MANGO_PROGRAM_ID, SERUM_MARKETS, USDC_TOKEN_MINT } from "../constants";
 import { findAMMAccounts, findAMMWithIdx } from "../utils/amm";
@@ -75,7 +75,11 @@ export function initializeAmm(context: Context,
                                     },
                                     signers: [withdrawQueueWallet, ammUSDCTokenVault, ammLPTokenMint],
                                     instructions: [
-                                        await context.program.account.ammWithdrawRequestQueue.createInstruction(withdrawQueueWallet),
+                                        increaseComputeUnitsIx,
+                                        await context.program.account.ammWithdrawRequestQueue.createInstruction(
+                                            withdrawQueueWallet,
+                                            context.program.account.ammWithdrawRequestQueue.size + 8
+                                        ),
                                         SystemProgram.createAccount({
                                             fromPubkey: context.provider.wallet.publicKey,
                                             newAccountPubkey: ammUSDCTokenVault.publicKey,

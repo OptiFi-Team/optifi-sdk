@@ -336,6 +336,7 @@ interface AmmEquity {
     ammUsdcVaultBalance: number, // each amm's usdc vault balance
     ammLpTokenSupply: number, // each amm's lp token total supply
     delta: number, // amm's delta based on btc
+    delta_percentage: number, // amm's delta based on %
 }
 
 export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> {
@@ -346,15 +347,19 @@ export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> 
             let tradedAmmLpMints: PublicKey[] = []
             // let tradedAmmUsdcVaults: PublicKey[] = []
             let tradedAmmUsdcLiquidity: number[] = []
-
             let deltas: number[] = []
+            let delta_percentages: number[] = []
 
             for (let amm of allAmm) {
                 assets.push(amm[0].asset)
                 tradedAmmLpMints.push(amm[0].lpTokenMint)
                 // tradedAmmUsdcVaults.push(amm[0].quoteTokenVault)
-                tradedAmmUsdcLiquidity.push(amm[0].totalLiquidityUsdc.toNumber())
-                deltas.push(new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber())
+                let totalLiquidityUsdc = amm[0].totalLiquidityUsdc.toNumber();
+                tradedAmmUsdcLiquidity.push(totalLiquidityUsdc)
+                let delta = new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber();
+                deltas.push(delta)
+                let delta_percentage = delta * amm[0].price.toNumber() / totalLiquidityUsdc
+                delta_percentages.push(delta_percentage)
             }
             let equity = new Map<number, AmmEquity>()
 
@@ -364,13 +369,15 @@ export function getAmmEquity(context: Context): Promise<Map<number, AmmEquity>> 
                 // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)]);
                 // let ammUsdcVaultBalance = ammUsdcVaultInfo.amount;
                 let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
+                let delta_percentage = delta_percentages[assets.indexOf(asset)]
 
                 // let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint);
 
                 equity.set(asset, {
                     ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** USDC_DECIMALS).toNumber(),
                     ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
-                    delta: deltas[assets.indexOf(asset)]
+                    delta: deltas[assets.indexOf(asset)],
+                    delta_percentage: delta_percentage
                 })
             }
             resolve(equity)
@@ -391,13 +398,18 @@ export function getAmmEquityV2(context: Context, ammAccounts: [AmmAccount, Publi
             let tradedAmmUsdcLiquidity: number[] = []
 
             let deltas: number[] = []
+            let delta_percentages: number[] = []
 
             for (let amm of ammAccounts) {
                 assets.push(amm[0].asset)
                 tradedAmmLpMints.push(amm[0].lpTokenMint)
-                // tradedAmmUsdcVaults.push(amm.quoteTokenVault)
-                tradedAmmUsdcLiquidity.push(amm[0].totalLiquidityUsdc.toNumber())
-                deltas.push(new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber())
+                // tradedAmmUsdcVaults.push(amm[0].quoteTokenVault)
+                let totalLiquidityUsdc = amm[0].totalLiquidityUsdc.toNumber();
+                tradedAmmUsdcLiquidity.push(totalLiquidityUsdc)
+                let delta = new Decimal(amm[0].netDelta.toNumber()).div(10 ** USDC_DECIMALS).toNumber();
+                deltas.push(delta)
+                let delta_percentage = delta * amm[0].price.toNumber() / totalLiquidityUsdc
+                delta_percentages.push(delta_percentage)
             }
             let equity = new Map<number, AmmEquity>()
 
@@ -407,13 +419,14 @@ export function getAmmEquityV2(context: Context, ammAccounts: [AmmAccount, Publi
                 // let ammUsdcVaultInfo = await getAccount(context.connection, tradedAmmUsdcVaults[assets.indexOf(asset)]);
                 // let ammUsdcVaultBalance = ammUsdcVaultInfo.amount;
                 let ammUsdcVaultBalance = tradedAmmUsdcLiquidity[assets.indexOf(asset)]
+                let delta_percentage = delta_percentages[assets.indexOf(asset)]
 
                 // let usdcMintInfo = await getMint(context.connection, ammUsdcVaultInfo.mint);
-
                 equity.set(asset, {
                     ammUsdcVaultBalance: new Decimal(ammUsdcVaultBalance.toString()).div(10 ** USDC_DECIMALS).toNumber(),
                     ammLpTokenSupply: new Decimal(lpSupply.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
-                    delta: deltas[assets.indexOf(asset)]
+                    delta: deltas[assets.indexOf(asset)],
+                    delta_percentage: delta_percentage
                 })
             }
             resolve(equity)
@@ -829,7 +842,10 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
 
 // get the maximum withdrawable usdc amount of an AMM
 export function getAmmWithdrawCapacity(amm: AmmAccount, spotPrice: number): number {
-    let maxWithdrawable = amm.totalLiquidityUsdc / (10 ** USDC_DECIMALS) - (Math.abs(amm.netDelta) / (10 ** USDC_DECIMALS)) * spotPrice / DELTA_LIMIT
+    let maxWithdrawable = amm.totalLiquidityUsdc.toNumber() / (10 ** USDC_DECIMALS) - (Math.abs(amm.netDelta.toNumber()) / (10 ** USDC_DECIMALS)) * spotPrice / DELTA_LIMIT
+    if (maxWithdrawable < 0) {
+        maxWithdrawable = 0;
+    }
     return maxWithdrawable
 }
 
@@ -866,7 +882,7 @@ export async function calcAmmWithdrawFees(
             // console.log("lpAmountToWithdraw: ", lpAmountToWithdraw)
 
             // withdraw amount in usdc
-            let withdrawAmountRaw = lpToUsdcAmount(lpAmountToWithdraw * 10 ** lpMint.decimals, lpTokenSupply, amm.totalLiquidityUsdc)
+            let withdrawAmountRaw = lpToUsdcAmount(lpAmountToWithdraw * 10 ** lpMint.decimals, lpTokenSupply, amm.totalLiquidityUsdc.toNumber())
             let withdrawAmount = withdrawAmountRaw / (10 ** USDC_DECIMALS)
             // console.log("withdrawAmount: ", withdrawAmount)
 
@@ -906,4 +922,25 @@ export async function calcAmmWithdrawFees(
             reject(err)
         }
     })
+}
+
+export async function getAmmWithdrawQueue(context: Context, withdrawQueue: PublicKey) {
+    let queueRaw = await context.connection.getAccountInfo(withdrawQueue)
+    // console.log("queueRaw?.data: ", queueRaw?.data)
+
+    // console.log("queueRaw?.data.length: ", queueRaw?.data.length)
+
+    // console.log("queueRaw?.data.length: ", queueRaw?.data.slice(17, 21))
+
+    let size = context.program.account.ammWithdrawRequestQueue.size
+    // console.log("size : ", size)
+
+    let trimmedBytes = Buffer.concat([queueRaw?.data.slice(0, 20)!, queueRaw?.data.slice(24, queueRaw?.data.length - 4)!]);
+    // console.log("trimmedBytes: ", trimmedBytes)
+    // console.log("trimmedBytes.length: ", trimmedBytes.length)
+
+
+    let ammWithdrawRequestQueue = context.program.account.ammAccount.coder.accounts.decode("AmmWithdrawRequestQueue", trimmedBytes)
+    // console.log("decoded ammWithdrawRequestQueue: ", ammWithdrawRequestQueue)
+    return ammWithdrawRequestQueue
 }

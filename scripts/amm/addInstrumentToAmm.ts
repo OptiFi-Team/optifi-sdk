@@ -1,7 +1,10 @@
 import { initializeContext } from "../../index";
-import { ammIndex } from "./constants";
 import { addInstrumentsToAmm } from "./utils";
 
-initializeContext().then((context) => {
-    addInstrumentsToAmm(context, ammIndex)
-})
+let ammIdxs = [1, 2]
+
+initializeContext().then(async (context) => {
+    for (let ammIndex of ammIdxs) {
+        await addInstrumentsToAmm(context, ammIndex)
+    }
+});

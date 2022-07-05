@@ -1,9 +1,9 @@
 import Context from "../types/context";
 import { OptifiMarketFullData } from "./market"
 import { PublicKey } from "@solana/web3.js";
-import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
 import { SWITCHBOARD } from "../constants";
 import erf from "math-erf";
+import { getSwitchboard } from "./switchboardV2";
 
 export const r = 0;
 export const q = 0;
@@ -28,11 +28,11 @@ export function calculateIV(
     return new Promise(async (resolve, reject) => {
         try {
             // get Spot price too just like optionDeltafunction
-            let spotRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-            let spotRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
-            let usdcSpot = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
-            let spot_btc = Math.round(spotRes_btc.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result! * 100) / 100
-            let spot_eth = Math.round(spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result! * 100) / 100
+            let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
+            let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
+            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
+            let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
+            let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100
 
             let today = new Date().getTime();
 

@@ -5,6 +5,7 @@ import { findExchangeAccount, } from "../../utils/accounts";
 import { UserAccount, } from "../../types/optifi-exchange-types";
 import { findOptifiUSDCPoolAuthPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 
 export default function settleFundForUser(context: Context,
@@ -26,7 +27,8 @@ export default function settleFundForUser(context: Context,
                     centralUsdcPoolAuth: centralUsdcPoolAuth,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     usdcMint: optifiExchangeInfo.usdcMint,
-                }
+                },
+                preInstructions: [increaseComputeUnitsIx]
             })
             settleFundForOneUserTx.then((res) => {
                 resolve({

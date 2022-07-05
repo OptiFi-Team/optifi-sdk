@@ -7,6 +7,7 @@ import { findExchangeAccount, findUserAccount } from "../utils/accounts";
 import { assetToOptifiAsset, optifiAssetToNumber } from "../utils/generic";
 import { SUPPORTED_ASSETS } from "../constants";
 import marginStress from "./marginStress";
+import { increaseComputeUnitsIx } from "../utils/transactions";
 
 
 export default async function userMarginCalculate(context: Context
@@ -60,7 +61,9 @@ export function marginCalculate(context: Context, userAccount: PublicKey
 
             let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, optifiAssetToNumber(optifiAsset));
 
-            let ix = await marginStress(context, asset);
+            let instructions = [increaseComputeUnitsIx]
+            let marginStressIx = await marginStress(context, asset);
+            instructions.push(...marginStressIx)
 
             context.program.rpc.userMarginCalculate(
                 {
@@ -70,7 +73,7 @@ export function marginCalculate(context: Context, userAccount: PublicKey
                         userAccount: userAccount,
                         clock: SYSVAR_CLOCK_PUBKEY
                     },
-                    instructions: ix
+                    instructions
                 }
             ).then((res) => {
                 resolve(

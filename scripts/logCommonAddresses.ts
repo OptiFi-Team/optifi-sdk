@@ -14,6 +14,8 @@ initializeContext().then((context) => {
                 let exchangeExists: boolean;
                 context.program.account.exchange.fetch((exchangeAddress)).then((res) => {
                     exchangeExists = true;
+                    console.log("usdcCentralPool: ", res.usdcCentralPool.toString());
+                    console.log("usdcFeePool: ", res.usdcFeePool.toString());
                 }).catch((err) => {
                     exchangeExists = false;
                 }).finally(() => {

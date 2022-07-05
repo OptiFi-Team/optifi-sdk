@@ -21,7 +21,8 @@ const ammLoop = async (context: Context, optifiExchange: PublicKey, idx: number)
     // ammAddresses.push(ammAddress)
     let ammAccountInfo = await context.program.account.ammAccount.fetch(ammAddress)
     let state = Object.keys(ammAccountInfo.state)[0].toLowerCase();
-    console.log("found AMM State : ", state);
+    let dateTime = new Date()
+    console.log(dateTime, " found AMM State : ", state);
 
     try {
         switch (state) {
@@ -47,6 +48,9 @@ const ammLoop = async (context: Context, optifiExchange: PublicKey, idx: number)
                 break;
             // throw new Error("unkown amm state!")
         }
+
+        await sleep(5000);
+
     } catch (e) {
         // sleep and skip error
         await sleep(10000);

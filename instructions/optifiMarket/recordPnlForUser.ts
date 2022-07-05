@@ -6,7 +6,7 @@ import { Asset, Chain, OptifiMarket, UserAccount } from "../../types/optifi-exch
 import { deriveVaultNonce, findMarketInstrumentContext } from "../../utils/market";
 import { SERUM_DEX_PROGRAM_ID, SWITCHBOARD } from "../../constants";
 import { findSerumAuthorityPDA, findSerumPruneAuthorityPDA } from "../../utils/pda";
-import { signAndSendTransaction } from "../../utils/transactions";
+import { increaseComputeUnitsIx, signAndSendTransaction } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { getSerumMarket } from "../../utils/serum";
@@ -34,7 +34,7 @@ export default function recordPnl(context: Context,
                                             findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentLongSplToken, userAccountAddress).then(([userLongTokenVault, _]) => {
                                                 findAssociatedTokenAccount(context, marketContext.optifiMarket.instrumentShortSplToken, userAccountAddress).then(async ([userShortTokenVault, _]) => {
 
-                                                    let ixs: TransactionInstruction[] = []
+                                                    let ixs: TransactionInstruction[] = [increaseComputeUnitsIx]
                                                     let recordPnlForOneUserInx = context.program.instruction.recordPnlForOneUser({
                                                         accounts: {
                                                             optifiExchange: exchangeAddress,
@@ -70,15 +70,15 @@ export default function recordPnl(context: Context,
                                                     let instrumentInfo = await context.program.account.chain.fetch(marketContext.optifiMarket.instrument)
                                                     let asset = instrumentInfo.asset as number
                                                     let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, asset);
-                                                    let marginStressInx = await marginStress(context, asset);
-                                                    ixs.push(...marginStressInx)
+                                                    // let marginStressInx = await marginStress(context, asset);
+                                                    // ixs.push(...marginStressInx)
 
                                                     let recordPnlRes = await context.program.rpc.userMarginCalculate(
                                                         {
                                                             accounts: {
                                                                 optifiExchange: exchangeAddress,
                                                                 marginStressAccount: marginStressAddress,
-                                                                userAccount: userAccount,
+                                                                userAccount: userToSettle,
                                                                 clock: SYSVAR_CLOCK_PUBKEY
                                                             },
                                                             instructions: ixs

@@ -9,6 +9,7 @@ import { getAmmLiquidityAuthPDA } from "../../utils/pda";
 import { USDC_TOKEN_MINT } from "../../constants";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { UserAccount } from "../../types/optifi-exchange-types";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function consumeWithdrawRequestQueue(context: Context,
     ammAddress: PublicKey,
@@ -31,6 +32,7 @@ export default function consumeWithdrawRequestQueue(context: Context,
 
                                 findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
                                     let [marginStressAddress,] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
+                                    console.log("userLpTokenVault: ", userLpTokenVault.toString())
                                     context.program.rpc.consumeWithdrawQueue(
                                         {
                                             accounts: {
@@ -47,7 +49,8 @@ export default function consumeWithdrawRequestQueue(context: Context,
                                                 userAccount: userAccount,
                                                 tokenProgram: TOKEN_PROGRAM_ID,
                                                 clock: SYSVAR_CLOCK_PUBKEY
-                                            }
+                                            },
+                                            preInstructions: [increaseComputeUnitsIx]
                                         }
                                     ).then((res) => {
                                         resolve({

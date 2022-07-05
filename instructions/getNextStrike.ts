@@ -18,6 +18,7 @@ import {
 } from "../utils/generic";
 import * as anchor from "@project-serum/anchor";
 import InstructionResult from "../types/instructionResult";
+import { increaseComputeUnitsIx } from "../utils/transactions";
 //TODO: use account.chain.account
 export const instrumentIdx = 5; //if instrument address is already in use, plus 1
 
@@ -91,6 +92,7 @@ export function getNextStrike(
             ),
             clock: SYSVAR_CLOCK_PUBKEY,
           },
+          preInstructions: [increaseComputeUnitsIx]
         });
 
         resolve({

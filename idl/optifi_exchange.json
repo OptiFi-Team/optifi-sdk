@@ -1,5 +1,5 @@
 {
-  "version": "1.1.14",
+  "version": "1.1.22",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -393,6 +393,11 @@
           "isSigner": false
         },
         {
+          "name": "instrumentLongSplToken",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "clock",
           "isMut": false,
           "isSigner": false
@@ -726,7 +731,7 @@
         },
         {
           "name": "usdcFeePool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1766,12 +1771,22 @@
         },
         {
           "name": "eventQueue",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "perpMarket",
-          "isMut": false,
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bids",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "asks",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -3260,31 +3275,44 @@
           }
         }
       ]
+    },
+    {
+      "name": "updateOracle",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "asset",
+          "type": {
+            "defined": "Asset"
+          }
+        },
+        {
+          "name": "spotOracle",
+          "type": {
+            "option": "publicKey"
+          }
+        },
+        {
+          "name": "ivOracle",
+          "type": {
+            "option": "publicKey"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
-    {
-      "name": "Market",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "version",
-            "type": "i32"
-          },
-          {
-            "name": "asset",
-            "type": {
-              "defined": "Asset"
-            }
-          },
-          {
-            "name": "marketAuthority",
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
     {
       "name": "AmmAccount",
       "type": {
@@ -4084,50 +4112,6 @@
       }
     },
     {
-      "name": "ChainDataWithAuth",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "asset",
-            "type": "u8"
-          },
-          {
-            "name": "instrumentType",
-            "type": "u8"
-          },
-          {
-            "name": "strike",
-            "type": "u64"
-          },
-          {
-            "name": "expiryDate",
-            "type": "u64"
-          },
-          {
-            "name": "duration",
-            "type": "u8"
-          },
-          {
-            "name": "start",
-            "type": "u64"
-          },
-          {
-            "name": "expiryType",
-            "type": "u8"
-          },
-          {
-            "name": "contractSize",
-            "type": "u64"
-          },
-          {
-            "name": "instrumentIdx",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
       "name": "ChainData",
       "type": {
         "kind": "struct",
@@ -4643,20 +4627,6 @@
       }
     },
     {
-      "name": "OracleDataType",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Spot"
-          },
-          {
-            "name": "IV"
-          }
-        ]
-      }
-    },
-    {
       "name": "OrderSide",
       "type": {
         "kind": "enum",
@@ -4768,6 +4738,20 @@
           },
           {
             "name": "Frozen"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleDataType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Spot"
+          },
+          {
+            "name": "IV"
           }
         ]
       }
@@ -5066,6 +5050,6 @@
     }
   ],
   "metadata": {
-    "address": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord"
+    "address": "optFiKjQpoQ3PvacwnFWaPUAqXCETMJSz2sz8HwPe9B"
   }
 }

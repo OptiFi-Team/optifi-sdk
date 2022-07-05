@@ -1,11 +1,13 @@
 import { initializeContext } from "../../index";
 import consumeWithdrawRequestQueue from "../../instructions/amm/consumeWithdrawRequestQueue";
 import { findOptifiExchange, getUserAccountById } from "../../utils/accounts";
-import { findAMMWithIdx } from "../../utils/amm";
+import { findAMMWithIdx, getAmmWithdrawQueue } from "../../utils/amm";
 // import { ammIndex } from "./constants";
 import Context from "../../types/context"
 import { SolanaEndpoint } from "../../constants";
 import { sleep } from "../../utils/generic";
+import * as anchor from "@project-serum/anchor";
+import BN from 'bn.js';
 
 let ammIndexes = [1, 2]
 initializeContext().then(async (context) => {
@@ -14,18 +16,37 @@ initializeContext().then(async (context) => {
         let [ammAddress,] = await findAMMWithIdx(context, optifiExchange, ammIndex)
         let amm = await context.program.account.ammAccount.fetch(ammAddress)
 
+        console.log("amm.withdrawQueue: ", amm.withdrawQueue.toString());
+
         while (true) {
+            let ammWithdrawRequestQueue = await getAmmWithdrawQueue(context, amm.withdrawQueue)
+            // console.log("decoded ammWithdrawRequestQueue: ", ammWithdrawRequestQueue)
 
-            let withdrawRequests = await context.program.account.ammWithdrawRequestQueue.fetch(amm.withdrawQueue)
+            // console.log(ammWithdrawRequestQueue.requestIdCounter)
+            // console.log(ammWithdrawRequestQueue.head)
+            // console.log(ammWithdrawRequestQueue.tail)
+            if (ammWithdrawRequestQueue.head != ammWithdrawRequestQueue.tail) {
+                // @ts-ignore
+                let request = ammWithdrawRequestQueue.requests[ammWithdrawRequestQueue.head]
+                console.log(request);
+                let userId = request.userAccountId
+                let requestAmount = request.amount
 
-            if (withdrawRequests.head != withdrawRequests.tail) {
-                // @ts-ignore
-                let userId = withdrawRequests.requests[withdrawRequests.head].userAccountId
-                // @ts-ignore
-                let requestTimestamp = withdrawRequests.requests[withdrawRequests.head].requestTimestamp.toNumber()
-                if (isReqeustInCorrectTimeWindow(context, requestTimestamp)) {
+                let requestTimestamp = request.requestTimestamp
+                // const now = new anchor.BN(Date.now() / 1000);
+                // const latestRoundTimestamp: anchor.BN =
+                //     aggregator.latestConfirmedRound.roundOpenTimestamp;
+                // const staleness = now.sub(latestRoundTimestamp);
+
+                console.log("userId: ", userId)
+                // console.log("requestTimestamp: ", requestTimestamp)
+
+                console.log("requestAmount: ", requestAmount.toNumber());
+                console.log("requestTimestamp: ", requestTimestamp.toNumber());
+
+                if (isReqeustInCorrectTimeWindow(context, requestTimestamp.toNumber())) {
                     let userAccount = await getUserAccountById(context, userId)
-
+                    console.log("userId: ", userId, " ,userAccount: ", userAccount.publicKey.toString())
                     await consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then((res) => {
                         console.log("Got consumeWithdrawRequestQueue res", res);
                     }).catch((err) => {
@@ -33,7 +54,6 @@ initializeContext().then(async (context) => {
                     })
                 }
             }
-
             await sleep(10 * 1000);
         }
     })
@@ -49,6 +69,7 @@ function isReqeustInCorrectTimeWindow(context: Context, requestTimestamp: number
 
     let now = new Date().getTime()
     let validWithdrawTime = new Date((requestTimestamp + waitingTimeInSeconds) * 1000).getTime()
+    console.log("now: ", now, ", validWithdrawTime: ", validWithdrawTime)
     if (now >= validWithdrawTime) {
         return true
     } else {

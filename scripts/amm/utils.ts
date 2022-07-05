@@ -194,7 +194,7 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
         let ammInfo = ammInfoRaw as AmmAccount;
         console.log(`to calc proposals for amm: ${ammAddress.toString()} with id ${ammIndex}`)
 
-        const batchSize = 2;
+        const batchSize = 5;
         // @ts-ignore
         const optionFlags: boolean[] = ammInfo.flags.slice(1).filter(e => e == false)
         if (optionFlags.length == 0) {

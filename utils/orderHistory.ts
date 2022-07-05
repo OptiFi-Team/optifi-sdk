@@ -4,9 +4,15 @@ import { Market, decodeInstruction } from "@project-serum/serum";
 import { SERUM_DEX_PROGRAM_ID, SOL_DECIMALS, USDC_DECIMALS } from "../constants";
 import bs58 from "bs58";
 import { BN, BorshCoder } from "@project-serum/anchor";
-import { findOptifiInstruments } from "./market";
+import { findOptifiInstruments, findOptifiMarketsWithFullData } from "./market";
 import { numberAssetToDecimal } from "./generic";
 import Decimal from "decimal.js";
+import { OptifiMarket } from "../types/optifi-exchange-types";
+import { getSerumMarket } from "../utils/serum";
+import { market } from "../scripts/constants";
+import { BTC_DECIMALS, ETH_DECIMALS, getIOCSizeForAsk, getIOCSide, getClientId, getIOCFillAmt, checkPostOnlyFail } from "./tradeHistory";
+import base58, { decode } from "bs58";
+import { Order } from "../utils/orders";
 
 const inxNames = ["placeOrder", "cancelOrderByClientOrderId"];
 
@@ -45,12 +51,63 @@ export const retrievRecentTxsV2 = async (context: Context,
   })
 }
 
+async function getFilledData(context: Context, account: PublicKey, orderHistorys: OrderInstruction[]): Promise<number[]> {
+  return new Promise(async (resolve, reject) => {
+    let res: number[] = [];
+    let txs = await retrievRecentTxs(context, account)
+    for (let tx of txs) {//number of transactions people send
+      for (let inx of tx.transaction.message.instructions) {
+        let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
+        if (programId.toString() == context.program.programId.toString()) {
+          let coder = context.program.coder as BorshCoder;
+          let decoded = coder.instruction.decode(base58.decode(inx.data))
+          if (decoded) {
+            if (decoded.name == "placeOrder") {
+
+              //@ts-ignore
+              let types = await getIOCSide(tx.meta?.logMessages)
+              //@ts-ignore
+              let clientId = await getClientId(tx.meta?.logMessages)
+              //@ts-ignore
+              let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
+
+              //get decimals
+              // let optifiMarkets = await findOptifiMarketsWithFullData(context)
+              // let trade = orderHistorys.find(e => e.clientId == clientId)
+              // let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
+              // //@ts-ignore
+              // let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+              let decimal = 2;
+
+              if (types == "Ask") {
+                //user place Ask: market_open_orders.native_coin_total will be the amt after fill
+                //(ex: open order bid 2, user ask 3,  market_open_orders.native_coin_total will be 1;
+                //user ask 1 ,market_open_orders.native_coin_total will be 0
+                //->ask amt - market_open_orders.native_coin_total = fillAmt 
+
+                //@ts-ignore
+                let askAmt = await getIOCSizeForAsk(tx.meta?.logMessages)
+                if (clientId)
+                  res[clientId] = (askAmt - fillAmt) / (10 ** decimal)
+              } else {
+                if (clientId && fillAmt)
+                  res[clientId] = fillAmt / (10 ** decimal)
+              }
+            }
+          }
+        }
+      }
+    }
+    resolve(res);
+  })
+}
+
 const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
 
   for (let tx of txs) {
     let inxs = tx.transaction.message.instructions;
-    inxs.forEach((inx) => {
+    for (let inx of inxs) {
       // console.log("inx.data: ", inx.data)
       // console.log("txid: ", tx.transaction.signatures[0]);
       let coder = context.program.coder as BorshCoder;
@@ -59,8 +116,8 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
       // if (inx.data.includes(placeOrderSignature) || inx.data.includes(cancelOrderByClientOrderIdSignature)) {
       if (decodedInx && inxNames.includes(decodedInx.name)) {
         let innerInxs = tx.meta?.innerInstructions!;
-        innerInxs.forEach((innerInx) => {
-          innerInx.instructions.forEach((inx2) => {
+        for (let innerInx of innerInxs) {
+          for (let inx2 of innerInx.instructions) {
             let programId =
               tx.transaction.message.accountKeys[inx2.programIdIndex];
             // console.log("programId:", programId.toString());
@@ -136,10 +193,10 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                 console.log(e);
               }
             }
-          });
-        });
+          }
+        }
       }
-    });
+    }
     // }
   };
   return orderTxs
@@ -209,6 +266,7 @@ export class OrderInstruction {
   marketAddress: string
   txType: "place order" | "cancel order"
   cancelledQuantity: number | undefined
+  status: string
 
   constructor({
     clientId,
@@ -224,7 +282,8 @@ export class OrderInstruction {
     gasFee,
     marketAddress,
     txType,
-    cancelledQuantity
+    cancelledQuantity,
+    status
   }: {
     clientId: BN;
     limit: number;
@@ -240,6 +299,7 @@ export class OrderInstruction {
     marketAddress: string
     txType: "place order" | "cancel order"
     cancelledQuantity: number | undefined
+    status: string
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -255,9 +315,108 @@ export class OrderInstruction {
     this.marketAddress = marketAddress
     this.txType = txType
     this.cancelledQuantity = cancelledQuantity
+    this.status = status
   }
 
   public get shortForm(): string {
     return `${this.side} ${this.limit} @ ${this.limitPrice}`;
   }
+}
+
+
+
+export function addStatusInOrderHistory(
+  orders: Order[],//對於這個user 他在全部market 上面的open orders
+  orderHistorys: OrderInstruction[],
+  context: Context,
+  userAccount: PublicKey
+): Promise<OrderInstruction[]> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let originalSize: number[] = [];
+      let currentSize: number[] = [];
+      let clientIdIOC: number[] = await getFilledData(context, userAccount, orderHistorys)
+
+      for (let i = 0; i < orders.length; i++) {
+        //@ts-ignore
+        originalSize[orders[i].clientId!.toNumber()] = new Decimal(orders[i].originalSize).toNumber();
+        currentSize[orders[i].clientId!.toNumber()] = new Decimal(orders[i].size).toNumber();
+      }
+
+      for (let orderHistory of orderHistorys) {
+
+        if (orderHistory.txType == "cancel order") {
+          orderHistory.status = "Canceled";
+          continue;
+        }
+
+        let clientId = orderHistory.clientId;
+
+        if (orderHistory.orderType == "limit") {
+
+          //there is currentSize,means it still on open order, 
+          //and there isn't filled any, so originalSize and currentSize are same
+
+          //@ts-ignore
+          let thisClientidcancelOrderHistory: OrderInstruction = orderHistorys.find(e => ((e.clientId == orderHistory.clientId) && (e.txType == "cancel order")))
+          if (((currentSize[clientId] == originalSize[clientId]) && (currentSize[clientId])) || //situation 1:normal place order
+            (thisClientidcancelOrderHistory)) {//situation 2:place order , but be canceled, so can't find currentSize
+            orderHistory.status = "Open";
+            continue;
+          }
+
+          if (originalSize[clientId] > currentSize[clientId]) {
+            let filledSize = new Decimal(originalSize[clientId]).minus(currentSize[clientId]);
+            let res = Math.floor(filledSize.mul(100).div(originalSize[clientId]).toNumber()).toString();
+            orderHistory.status = "Filled " + res + "%";
+            continue;
+          }
+
+          if (!(currentSize[clientId])) {//not in open order, and it also not cancel order
+            orderHistory.status = "Filled 100%";// when totally filled, it doesn't show on orders
+            continue;
+          }
+
+          orderHistory.status = "Wrong status! please check"
+
+        } else if (orderHistory.orderType == "ioc") {
+          if (clientIdIOC[clientId]) orderHistory.status = "Filled"
+          else orderHistory.status = "Failed"
+        } else {
+          // console.log(currentSize[clientId])
+          // console.log(originalSize[clientId])
+          //if post only success ,there are currentSize and originalSize
+
+          //@ts-ignore
+          let thisClientidcancelOrderHistory: OrderInstruction = orderHistorys.find(e => ((e.clientId == orderHistory.clientId) && (e.txType == "cancel order")))
+          if (((currentSize[clientId] == originalSize[clientId]) && (currentSize[clientId])) || //situation 1:normal place order
+            (thisClientidcancelOrderHistory)) {//situation 2:place order , but be canceled, so can't find currentSize
+            orderHistory.status = "Open";
+            continue;
+          }
+
+          if (originalSize[clientId] > currentSize[clientId]) {
+            let filledSize = new Decimal(originalSize[clientId]).minus(currentSize[clientId]);
+            let res = Math.floor(filledSize.mul(100).div(originalSize[clientId]).toNumber()).toString();
+            orderHistory.status = "Filled " + res + "%";
+            continue;
+          }
+
+          let postOnlyFail = await checkPostOnlyFail(context, userAccount, clientId);//wait for a long time...should be optimized
+          if (postOnlyFail) {
+            orderHistory.status = "Failed";
+            continue;
+          }
+
+          orderHistory.status = "Filled 100%";
+
+        }
+      }
+      resolve(orderHistorys);
+    }
+    catch (err) {
+      console.error(err);
+      reject(err)
+    }
+  });
 }
