@@ -237,6 +237,7 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
     // Get latest value if its been updated in the last 300 seconds
     const latestResult = sbv2.decodeLatestAggregatorValue(accountInfo, 300);
     if (latestResult === null) {
+        console.error("switchboardFeed: ", switchboardFeed.toString())
         throw new Error(`failed to fetch latest result for aggregator`);
     }
     console.log(`latestResult: ${latestResult}`);

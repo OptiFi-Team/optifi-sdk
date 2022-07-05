@@ -121,8 +121,7 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
 function initializeContext(wallet?: string | WalletProvider,
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    cluster?: ("mainnet" | "devnet"),
-    // commitmentLevel: Commitment = "recent",
+    endpoint?: SolanaEndpoint,
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
         disableRetryOnRateLimit: true,
@@ -130,17 +129,19 @@ function initializeContext(wallet?: string | WalletProvider,
     }
 
 ): Promise<Context> {
-    let cluster_ = cluster || process.env.CLUSTER!;
-
-    let endpoint = SolanaEndpoint.Mainnet;
-
-    switch (cluster_) {
-        case "mainnet":
-            endpoint = SolanaEndpoint.Mainnet;
-            break;
-        case "devnet":
-            endpoint = SolanaEndpoint.Devnet;
-            break;
+    if (endpoint == undefined) {
+        let cluster = process.env.CLUSTER!;
+        switch (cluster) {
+            case "mainnet":
+                endpoint = SolanaEndpoint.Mainnet;
+                break;
+            case "devnet":
+                endpoint = SolanaEndpoint.Devnet;
+                break;
+            default:
+                endpoint = SolanaEndpoint.Devnet;
+                break;
+        }
     }
     let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
     return new Promise((resolve, reject) => {
@@ -150,7 +151,7 @@ function initializeContext(wallet?: string | WalletProvider,
         if (wallet !== undefined && isWalletProvider(wallet)) {
 
             getWalletWrapper(wallet).then((walletRes) => {
-                const connection = new Connection(endpoint, connectionConfig);
+                const connection = new Connection(endpoint!, connectionConfig);
                 const provider = new anchor.AnchorProvider(connection,
                     walletRes.anchorWallet,
                     anchor.AnchorProvider.defaultOptions());
@@ -164,7 +165,7 @@ function initializeContext(wallet?: string | WalletProvider,
                     program: program,
                     walletType: walletRes.walletType,
                     provider: provider,
-                    endpoint: endpoint,
+                    endpoint: endpoint!,
                     connection: connection,
                     exchangeUUID: uuid
                 })
@@ -181,7 +182,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 keypair = Keypair.fromSecretKey(new Uint8Array(readJsonFile<any>(wallet)));
             }
             const idl = optifiExchange as unknown as OptifiExchangeIDL;
-            const connection = new Connection(endpoint, connectionConfig);
+            const connection = new Connection(endpoint!, connectionConfig);
             const walletWrapper = new NodeWallet(keypair);
             const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
             const program = new anchor.Program(idl,
@@ -193,7 +194,7 @@ function initializeContext(wallet?: string | WalletProvider,
             resolve({
                 program: program,
                 provider: provider,
-                endpoint: endpoint,
+                endpoint: endpoint!,
                 connection: connection,
                 walletType: WalletType.Keypair,
                 walletKeypair: keypair,
@@ -206,29 +207,31 @@ function initializeContext(wallet?: string | WalletProvider,
 function initializeContextWithoutWallet(
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    cluster?: ("mainnet" | "devnet"),
+    endpoint?: SolanaEndpoint,
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
         disableRetryOnRateLimit: true,
         confirmTransactionInitialTimeout: 50 * 1000,
     }
 ): Promise<Context> {
-    let cluster_ = cluster || process.env.CLUSTER!;
-
-    let endpoint = SolanaEndpoint.Mainnet;
-
-    switch (cluster_) {
-        case "mainnet":
-            endpoint = SolanaEndpoint.Mainnet;
-            break;
-        case "devnet":
-            endpoint = SolanaEndpoint.Devnet;
-            break;
+    if (endpoint == undefined) {
+        let cluster = process.env.CLUSTER!;
+        switch (cluster) {
+            case "mainnet":
+                endpoint = SolanaEndpoint.Mainnet;
+                break;
+            case "devnet":
+                endpoint = SolanaEndpoint.Devnet;
+                break;
+            default:
+                endpoint = SolanaEndpoint.Devnet;
+                break;
+        }
     }
     let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
     return new Promise((resolve, reject) => {
         const idl = optifiExchange as unknown as OptifiExchangeIDL;
-        const connection = new Connection(endpoint, connectionConfig);
+        const connection = new Connection(endpoint!, connectionConfig);
         const keypair = Keypair.generate(); // use a temp key
         const walletWrapper = new NodeWallet(keypair);
         const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
@@ -237,7 +240,7 @@ function initializeContextWithoutWallet(
         resolve({
             program: program,
             provider: provider,
-            endpoint: endpoint,
+            endpoint: endpoint!,
             connection: connection,
             walletType: WalletType.Keypair,
             walletKeypair: keypair,
