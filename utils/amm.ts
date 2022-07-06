@@ -58,14 +58,8 @@ function iterateFindAMM(context: Context,
     })
 }
 
-export function findAMMAccountsV1(context: Context): Promise<[AmmAccount, PublicKey][]> {
+export function findAMMAccounts(context: Context): Promise<[AmmAccount, PublicKey][]> {
     return new Promise(async (resolve, reject) => {
-        // findExchangeAccount(context).then(([exchangeAddress, _]) => {
-        // iterateFindAMM(context, exchangeAddress).then((accts) => {
-        //     console.debug(`Found ${accts.length} AMM accounts`);
-        //     resolve(accts);
-        // })
-        // })
         try {
             let [exchangeAddress, _] = await findExchangeAccount(context)
             let filters: GetProgramAccountsFilter[] = [
@@ -94,36 +88,6 @@ export function findAMMAccountsV1(context: Context): Promise<[AmmAccount, Public
         }
     })
 }
-
-
-export async function findAMMAccounts(context: Context): Promise<[AmmAccount, PublicKey][]> {
-    return new Promise(async (resolve, reject) => {
-        try {
-
-
-            const [optifiExchange, _bump1] = await findOptifiExchange(context);
-
-            const ammAddresses: PublicKey[] = []
-            for (let idx of ammIndexes) {
-                const [ammAddress, _bump2] = await findAMMWithIdx(
-                    context,
-                    optifiExchange,
-                    idx
-                );
-                ammAddresses.push(ammAddress)
-            }
-
-            // @ts-ignore
-            const ammAccounts: AmmAccount[] = await Promise.all(ammAddresses.map(e => context.program.account.ammAccount.fetch(e)));
-
-            resolve(ammAccounts.map((e, i) => [e, ammAddresses[i]]));
-        } catch (err) {
-            reject(err)
-        }
-    })
-
-}
-
 
 export function findInstrumentIndexFromAMM(context: Context,
     amm: AmmAccount,
