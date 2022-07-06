@@ -236,7 +236,11 @@ function initializeContextWithoutWallet(
         const walletWrapper = new NodeWallet(keypair);
         const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
         const program = new anchor.Program(idl,
-            (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)), provider)
+            (optifiProgramId || (process.env.OPTIFI_PROGRAM_ID as string)),
+            provider,
+            new anchor.BorshCoder(idl)
+        )
+
         resolve({
             program: program,
             provider: provider,
