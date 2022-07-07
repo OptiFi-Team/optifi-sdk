@@ -31,6 +31,7 @@ export default function calculateAmmDelta(context: Context,
                         marginStressAccount: marginStressAddress,
                         amm: ammAddress,
                         quoteTokenVault: amm.quoteTokenVault,
+                        lpTokenMint: amm.lpTokenMint
                         // tokenProgram: TOKEN_PROGRAM_ID,
                         // clock: SYSVAR_CLOCK_PUBKEY,
                         // assetFeed: spotOracle,

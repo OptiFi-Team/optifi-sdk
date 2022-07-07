@@ -1,5 +1,5 @@
 {
-  "version": "1.1.22",
+  "version": "1.1.21",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -1893,6 +1893,11 @@
         },
         {
           "name": "quoteTokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lpTokenMint",
           "isMut": false,
           "isSigner": false
         }
@@ -5050,6 +5055,6 @@
     }
   ],
   "metadata": {
-    "address": "optFiKjQpoQ3PvacwnFWaPUAqXCETMJSz2sz8HwPe9B"
+    "address": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord"
   }
 }
