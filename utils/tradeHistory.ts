@@ -9,7 +9,7 @@ import { retrievRecentTxs } from "./orderHistory";
 import base58, { decode } from "bs58";
 import Decimal from "decimal.js";
 import { BorshCoder } from "@project-serum/anchor";
-
+import { Chain } from "../types/optifi-exchange-types";
 export const BTC_DECIMALS = 2;
 export const ETH_DECIMALS = 1;
 
@@ -220,6 +220,8 @@ export function getAllTradesForAccount(
             txid: order.txid,
             gasFee: order.gasFee,
             marketAddress: order.marketAddress
+            // instrument:null,
+            // instrumentAddress: null,
           }))
         } else if (order.txType == "cancel order") {
           let index = trades.findIndex(e => e.clientId == order.clientId)
@@ -304,6 +306,8 @@ export class Trade {
   txid: string
   gasFee: number
   marketAddress: string
+  // instrument:Chain
+  // instrumentAddress: PublicKey
 
   constructor({
     clientId,
@@ -317,7 +321,9 @@ export class Trade {
     timestamp,
     txid,
     gasFee,
-    marketAddress
+    marketAddress,
+    // instrument,
+    // instrumentAddress
   }: {
     clientId: number;
     limit: number;
@@ -331,6 +337,8 @@ export class Trade {
     txid: string
     gasFee: number
     marketAddress: string
+    // instrument:Chain
+    // instrumentAddress: PublicKey
   }) {
     this.clientId = clientId
     this.limit = limit;
@@ -344,6 +352,8 @@ export class Trade {
     this.txid = txid;
     this.gasFee = gasFee;
     this.marketAddress = marketAddress
+    // this.instrument = instrument
+    // this.instrumentAddress = instrumentAddress
   }
 
   public get shortForm(): string {
