@@ -7,13 +7,15 @@ import { BN, BorshCoder } from "@project-serum/anchor";
 import { findOptifiInstruments, findOptifiMarketsWithFullData } from "./market";
 import { numberAssetToDecimal } from "./generic";
 import Decimal from "decimal.js";
-import { OptifiMarket } from "../types/optifi-exchange-types";
+import { Chain, OptifiMarket } from "../types/optifi-exchange-types";
 import { getSerumMarket } from "../utils/serum";
 import { market } from "../scripts/constants";
 import { BTC_DECIMALS, ETH_DECIMALS, getIOCSizeForAsk, getIOCSide, getClientId, getIOCFillAmt, checkPostOnlyFail } from "./tradeHistory";
 import base58, { decode } from "bs58";
 import { Order } from "../utils/orders";
-
+import {
+  dateToAnchorTimestamp,
+} from "../utils/generic";
 const inxNames = ["placeOrder", "cancelOrderByClientOrderId"];
 
 // get recent tx  - 1000 tx by default
@@ -241,7 +243,7 @@ export function getAllOrdersForAccount(
         if (a.timestamp > b.timestamp) return -1;
         return 0;
       });
-
+      let expiryDateAddedOrder = await addExpiryDate(orderTxs, context)
       resolve(orderTxs)
     }
     catch (err) {
@@ -249,6 +251,79 @@ export function getAllOrdersForAccount(
       reject(err)
     }
   });
+}
+
+async function addExpiryDate(orderTxs: OrderInstruction[], context: Context): Promise<OrderInstruction[]> {
+  //if is in range(包括判斷asset), return instrumentInfo
+  const filters = [
+    {
+      dataSize: context.program.account.chain.size + 3
+    },
+  ]
+
+  return new Promise(async (resolve, reject) => {
+
+    // only use time to filter -> a lot match
+
+    for (let orderTx of orderTxs) {
+      let instrumentInfo = await context.program.account.chain.all(filters)
+      // console.log("total instrument length: " + instrumentInfo.length);
+      let instrumentInfoPubkey = instrumentInfo.map(e => e.publicKey)
+      //@ts-ignore
+      let instrumentInfoAccount: Chain[] = instrumentInfo.map(e => e.account)
+
+      let historyDate: BN = dateToAnchorTimestamp(orderTx.timestamp);
+      let rangeAccount:Chain[] = []
+      for (let account of instrumentInfoAccount) {
+        if (historyDate > account.start && historyDate < account.expiryDate) {
+          rangeAccount.push(account)
+        }
+      }
+      console.log("rangeAccount: "+rangeAccount.length);
+    }
+
+    // let marketAddress: string[] = orderTxs.map(e => { return e.marketAddress });
+
+    // for (let marketAddressFromOrderTxs of marketAddress) {
+
+    //   let instrumentInfo = await context.program.account.chain.all(filters)
+    //   // console.log(instrumentInfo.length);
+    //   let instrumentInfoPubkey: PublicKey[] = instrumentInfo.map(e => e.publicKey)
+    //   //@ts-ignore
+    //   let instrumentInfoAccount: Chain[] = instrumentInfo.map(e => e.account)
+    //   // console.log(new Date(Number(instrumentInfo[0].account.expiryDate) * 1000))
+    //   for (let i = 0; i < instrumentInfoPubkey.length; i++) {
+    //     if (instrumentInfoPubkey[i].toString() === marketAddressFromOrderTxs) { //instrumentAddress<->marketAddress
+    //       console.log("find instrument , market address: " + marketAddressFromOrderTxs)
+    //     }
+    //   }
+    // }
+
+    // let markets = await findOptifiMarketsWithFullData(context);
+
+    // let marketAddress: string[] = orderTxs.map(e => { return e.marketAddress });
+    // marketAddress = [...new Set(marketAddress)]//delete repeat element
+
+    // for (let marketAddressFromOrderTxs of marketAddress) {
+
+    //   let instrumentInfo = await context.program.account.chain.all(filters)
+    //   // console.log(instrumentInfo.length);
+    //   let instrumentInfoPubkey = instrumentInfo.map(e => e.publicKey)
+    //   let instrumentInfoAccount = instrumentInfo.map(e => e.account)
+
+    //   for (let market of markets) {
+    //     if (market.marketAddress.toString() == marketAddressFromOrderTxs) {
+    //       console.log("find market address: " + marketAddressFromOrderTxs)
+    //       for (let i = 0; i < instrumentInfoPubkey.length; i++) {
+    //         if (market.instrumentAddress.toString() == instrumentInfoPubkey[i].toString()) {
+    //           console.log(new Date(Number(instrumentInfoAccount[i].expiryDate) * 1000))
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+    resolve(orderTxs)
+  })
 }
 
 export class OrderInstruction {
@@ -267,6 +342,8 @@ export class OrderInstruction {
   txType: "place order" | "cancel order"
   cancelledQuantity: number | undefined
   status: string
+  instrument: Chain
+  instrumentAddress: PublicKey
 
   constructor({
     clientId,
@@ -283,7 +360,9 @@ export class OrderInstruction {
     marketAddress,
     txType,
     cancelledQuantity,
-    status
+    status,
+    instrument,
+    instrumentAddress
   }: {
     clientId: BN;
     limit: number;
@@ -300,6 +379,8 @@ export class OrderInstruction {
     txType: "place order" | "cancel order"
     cancelledQuantity: number | undefined
     status: string
+    instrument: Chain
+    instrumentAddress: PublicKey
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -316,6 +397,8 @@ export class OrderInstruction {
     this.txType = txType
     this.cancelledQuantity = cancelledQuantity
     this.status = status
+    this.instrument = instrument
+    this.instrumentAddress = instrumentAddress
   }
 
   public get shortForm(): string {
