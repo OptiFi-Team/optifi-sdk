@@ -6,7 +6,7 @@ import { Duration } from "./types/optifi-exchange-types";
 import { PublicKey } from "@solana/web3.js";
 
 export enum SolanaEndpoint {
-    Mainnet = "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc",
+    Mainnet = "https://solana-api.projectserum.com",
     Devnet = "https://mango.devnet.rpcpool.com",
     Testnet = "https://api.testnet.solana.com"
 }
@@ -107,7 +107,7 @@ export type EndpointConstant = {
 }
 
 export const USDC_TOKEN_MINT: EndpointConstant = {
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "https://solana-api.projectserum.com": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     "https://mango.devnet.rpcpool.com": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
     "https://api.testnet.solana.com": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN"
 }
@@ -115,11 +115,11 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
     "https://mango.devnet.rpcpool.com": "220527",
     "https://api.testnet.solana.com": "dmeWlh",
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": "210001",
+    "https://solana-api.projectserum.com": "210001",
 }
 
 export const SWITCHBOARD: EndpointConstant = {
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": {
+    "https://solana-api.projectserum.com": {
         SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
         SWITCHBOARD_BTC_IV: "CX1PvW4qUDy4PPq8egnMVCbVJt8TcPCt7WCZuwmvCfo7",
         SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
@@ -143,7 +143,7 @@ export const SWITCHBOARD: EndpointConstant = {
 }
 
 export const SERUM_DEX_PROGRAM_ID: EndpointConstant = {
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+    "https://solana-api.projectserum.com": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
     "https://mango.devnet.rpcpool.com": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY",
     "https://api.testnet.solana.com": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
 }
@@ -151,21 +151,21 @@ export const SERUM_DEX_PROGRAM_ID: EndpointConstant = {
 // Mango market program ids
 // from https://github.com/blockworks-foundation/mango-client-v3/blob/main/src/ids.json
 export const MANGO_PROGRAM_ID: EndpointConstant = {
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": "mv3ekLzLbnVPNxjSKvqBpU3ZeZXPQdEC3bp5MDEBG68",
+    "https://solana-api.projectserum.com": "mv3ekLzLbnVPNxjSKvqBpU3ZeZXPQdEC3bp5MDEBG68",
     "https://mango.devnet.rpcpool.com": "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA",
     "https://api.testnet.solana.com": "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA"
 }
 
 // Mango group pubkey
 export const MANGO_GROUP_ID: EndpointConstant = {
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": "98pjRuQjK3qA6gXts96PqZT4Ze5QmnCmt3QYjhbUSPue",
+    "https://solana-api.projectserum.com": "98pjRuQjK3qA6gXts96PqZT4Ze5QmnCmt3QYjhbUSPue",
     "https://mango.devnet.rpcpool.com": "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA",
     "https://api.testnet.solana.com": "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA"
 }
 
 // Mango usdc token
 export const MANGO_USDC_CONFIG: EndpointConstant = {
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": {
+    "https://solana-api.projectserum.com": {
         "symbol": "USDC",
         "mintKey": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
         "decimals": 6,
@@ -190,7 +190,7 @@ export const MANGO_USDC_CONFIG: EndpointConstant = {
 
 // Mango usdc token
 export const MANGO_PERP_MARKETS: EndpointConstant = {
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": [
+    "https://solana-api.projectserum.com": [
         {
             "name": "BTC-PERP",
             "publicKey": "DtEcjPLyD4YtTBB4q8xwFZ9q49W89xZCZtJyrGebi5t8",
@@ -259,24 +259,24 @@ export const SOL_DECIMALS = 9;
 // The fee for each transaction on the OptiFi system
 export const TAKER_FEE: EndpointConstant = {
     "https://mango.devnet.rpcpool.com": 0.0028,
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": 0.0010,
+    "https://solana-api.projectserum.com": 0.0010,
     "https://api.testnet.solana.com": undefined
 }
 export const SERUM_TAKER_FEE: EndpointConstant = {
     "https://mango.devnet.rpcpool.com": 0.0022,
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": 0.0004,
+    "https://solana-api.projectserum.com": 0.0004,
     "https://api.testnet.solana.com": undefined
 }
 export const OPTIFI_TAKER_FEE: number = 0.0006;
 // PostOnly order
 export const MAKER_FEE: EndpointConstant = {
     "https://mango.devnet.rpcpool.com": 0.0028,
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": 0.0006,
+    "https://solana-api.projectserum.com": 0.0006,
     "https://api.testnet.solana.com": undefined
 }
 export const SERUM_MAKER_FEE: EndpointConstant = {
     "https://mango.devnet.rpcpool.com": 0.0022,
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": 0.0,
+    "https://solana-api.projectserum.com": 0.0,
     "https://api.testnet.solana.com": undefined
 }
 export const OPTIFI_MAKER_FEE: number = 0.0006;
@@ -287,6 +287,6 @@ export const DEPOSIT_LIMIT: number = 10000 * (10 ** USDC_DECIMALS);
 // OG NFT token mint address
 export const OG_NFT_MINT = {
     "https://mango.devnet.rpcpool.com": "u5vbDPVKUJMDXimVzT46FqCZzj1MvozGjhQ4LuwXMFr",
-    "https://solana-api.syndica.io/access-token/79cqbpD893wpOmyHI0QEKgmSI9GsJOLeeMxwI5mGP9mu4YVFEI25XXvWMQiZggzA/rpc": "GA3oHKD9F8o8peET6p5icmnwtusx7k1dGxvnaT3dVAg1",
+    "https://solana-api.projectserum.com": "GA3oHKD9F8o8peET6p5icmnwtusx7k1dGxvnaT3dVAg1",
     "https://api.testnet.solana.com": ""
 }
