@@ -92,13 +92,16 @@ export default function ammSyncFuturesPositions(context: Context,
                             // expect(filteredNodeBanks.length).to.equal(1);
                             let vault = filteredNodeBanks[0]!.vault
 
-                            let mangoCache = await mangoGroupAccountInfo.loadCache(context.connection)
-                            let perpMarketAccountInfo = await client.getPerpMarket(perpMarket, baseDecimals, quoteDecimals)
-                            let price = mangoCache.getPrice(perpMarketIndex);
-                            let mangoAccounts = await client.getAllMangoAccounts(mangoGroupAccountInfo, [], false);
-                            let mangoSettlePnl = await client.settlePnl(mangoGroupAccountInfo, mangoCache, mangoAccountInfo, perpMarketAccountInfo, usdcRootBank, price, context.walletKeypair!, mangoAccounts)
-                            console.log("mangoSettlePnl: ", mangoSettlePnl)
-                           
+                            // @ts-ignore
+                            if (amm.positions[0].latestPosition.toNumber() > 0) {
+                                let mangoCache = await mangoGroupAccountInfo.loadCache(context.connection)
+                                let perpMarketAccountInfo = await client.getPerpMarket(perpMarket, baseDecimals, quoteDecimals)
+                                let price = mangoCache.getPrice(perpMarketIndex);
+                                let mangoAccounts = await client.getAllMangoAccounts(mangoGroupAccountInfo, [], false);
+                                let mangoSettlePnl = await client.settlePnl(mangoGroupAccountInfo, mangoCache, mangoAccountInfo, perpMarketAccountInfo, usdcRootBank, price, context.walletKeypair!, mangoAccounts)
+                                console.log("mangoSettlePnl: ", mangoSettlePnl)
+                            }
+
                             context.program.rpc.ammSyncFuturePositions(
                                 perpMarketIndex,
                                 {
