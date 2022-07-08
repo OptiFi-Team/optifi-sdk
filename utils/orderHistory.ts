@@ -13,6 +13,7 @@ import { market } from "../scripts/constants";
 import { BTC_DECIMALS, ETH_DECIMALS, getIOCSizeForAsk, getIOCSide, getClientId, getIOCFillAmt, checkPostOnlyFail } from "./tradeHistory";
 import base58, { decode } from "bs58";
 import { Order } from "../utils/orders";
+import { populateInxAccountKeys } from "./transactions"
 
 const inxNames = ["placeOrder", "cancelOrderByClientOrderId"];
 
@@ -112,6 +113,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
       // console.log("txid: ", tx.transaction.signatures[0]);
       let coder = context.program.coder as BorshCoder;
       let decodedInx = coder.instruction.decode(bs58.decode(inx.data))
+      let programAccounts = populateInxAccountKeys(context, tx.transaction.message.accountKeys, inx)
       // console.log(decodedInx)
       // if (inx.data.includes(placeOrderSignature) || inx.data.includes(cancelOrderByClientOrderIdSignature)) {
       if (decodedInx && inxNames.includes(decodedInx.name)) {
@@ -134,7 +136,9 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   );
 
                   // convert the base amount to ui amount
-                  let marketAddress = tx.transaction.message.accountKeys[inx.accounts[7]].toString() // market address index is 7 in the place order inx
+                  // let marketAddress = tx.transaction.message.accountKeys[inx.accounts[7]].toString() // market address index is 7 in the place order inx
+                  //@ts-ignore
+                  let marketAddress = programAccounts.optifiMarket.pubkey.toString();
                   let instrument = instruments.find((instrument: any) => {
                     return marketAddress === instrument.marketAddress.toString();
                   });
@@ -150,20 +154,23 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   record.txType = "place order"
                   orderTxs.push(Object.assign({}, record));
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
-
                   // get the orginal order details
                   let orginalOrder = orderTxs.find(e => e.clientId.toString() == decData.cancelOrderByClientIdV2.clientId.toString())!
 
                   // console.log("orginalOrder: ", orginalOrder, decData.cancelOrderByClientIdV2.clientId.toNumber())
                   if (orginalOrder) {
                     let record = JSON.parse(JSON.stringify(orginalOrder));
-                    let marketAddress = tx.transaction.message.accountKeys[inx.accounts[6]].toString() // market address index is 6 in the cancel order inx
+                    // let marketAddress = tx.transaction.message.accountKeys[inx.accounts[6]].toString() // market address index is 6 in the cancel order inx
+                    //@ts-ignore
+                    let marketAddress = programAccounts.serumMarket.pubkey.toString();
                     // console.log("tx.meta?.preTokenBalances: ", tx.meta?.preTokenBalances)
                     // console.log("tx.meta?.postTokenBalances: ", tx.meta?.postTokenBalances)
                     // console.log("inx.accounts: ", inx.accounts)
                     //  tx.transaction.message.accountKeys[inx.accounts[6]].toString()
-                    let userMarginAccountIndex = inx.accounts[3]
-                    let longTokenVaultIndex = inx.accounts[5]
+                    // let userMarginAccountIndex = inx.accounts[3]
+                    //@ts-ignore
+                    let userMarginAccountIndex = programAccounts.userMarginAccount.accountIndex
+                    let longTokenVaultIndex = inx.accounts[5]//TODO(no match data() now)
                     // console.log("long vault: ",longTokenVaultIndex,  tx.transaction.message.accountKeys[longTokenVaultIndex].toString())
                     let cancelledQuantity: number = 0
                     if (record.side == "buy") {
@@ -176,7 +183,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       // console.log("preTokenAccount: ", preTokenAccount, "postTokenAccount: " , postTokenAccount)
                       // console.log("tx.meta?.preTokenBalances? ", tx.meta?.preTokenBalances)
                       // console.log("tx.meta?.postTokenBalances? ", tx.meta?.postTokenBalances)
-                      cancelledQuantity = (new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()
+                      cancelledQuantity = (preTokenAccount && postTokenAccount) ? ((new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()) : -1;
                     }
 
                     // console.log("cancelledAmount: ", cancelledAmount)
@@ -322,8 +329,6 @@ export class OrderInstruction {
     return `${this.side} ${this.limit} @ ${this.limitPrice}`;
   }
 }
-
-
 
 export function addStatusInOrderHistory(
   orders: Order[],//對於這個user 他在全部market 上面的open orders
