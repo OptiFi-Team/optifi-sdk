@@ -151,7 +151,7 @@ function initializeContext(wallet?: string | WalletProvider,
         if (wallet !== undefined && isWalletProvider(wallet)) {
 
             getWalletWrapper(wallet).then((walletRes) => {
-                const connection = new Connection(endpoint!, connectionConfig);
+                const connection = new Connection((process.env.RPC_ENDPOINT as string) || endpoint!, connectionConfig);
                 const provider = new anchor.AnchorProvider(connection,
                     walletRes.anchorWallet,
                     anchor.AnchorProvider.defaultOptions());
@@ -182,7 +182,7 @@ function initializeContext(wallet?: string | WalletProvider,
                 keypair = Keypair.fromSecretKey(new Uint8Array(readJsonFile<any>(wallet)));
             }
             const idl = optifiExchange as unknown as OptifiExchangeIDL;
-            const connection = new Connection(endpoint!, connectionConfig);
+            const connection = new Connection((process.env.RPC_ENDPOINT as string) || endpoint!, connectionConfig);
             const walletWrapper = new NodeWallet(keypair);
             const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
             const program = new anchor.Program(idl,
@@ -231,7 +231,7 @@ function initializeContextWithoutWallet(
     let uuid = customExchangeUUID || OPTIFI_EXCHANGE_ID[endpoint];
     return new Promise((resolve, reject) => {
         const idl = optifiExchange as unknown as OptifiExchangeIDL;
-        const connection = new Connection(endpoint!, connectionConfig);
+        const connection = new Connection((process.env.RPC_ENDPOINT as string) || endpoint!, connectionConfig);
         const keypair = Keypair.generate(); // use a temp key
         const walletWrapper = new NodeWallet(keypair);
         const provider = new anchor.AnchorProvider(connection, walletWrapper, anchor.AnchorProvider.defaultOptions());
