@@ -10,7 +10,7 @@ import { BN, BorshCoder, BorshEventCoder, eventDiscriminator, EventParser } from
 import Decimal from "decimal.js";
 import { findAssociatedTokenAccount } from "./token";
 import { decodeBurnInstruction, getAccount, getMint } from "@solana/spl-token";
-
+import { populateInxAccountKeys } from "./transactions"
 
 export const DELTA_LIMIT = 0.05;
 export const WITHDRAW_FEE_PERCENTAGE = 0.001;
@@ -644,14 +644,18 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                     for (let inx of tx.transaction.message.instructions) {
                         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
                         if (programId.toString() == context.program.programId.toString()) {
+                            let programAccounts = populateInxAccountKeys(context, tx.transaction.message.accountKeys, inx)
                             let coder = context.program.coder as BorshCoder;
                             let decoded = coder.instruction.decode(base58.decode(inx.data))
 
                             if (decoded) {
                                 if (decoded.name == "ammDeposit") {
-                                    let userUsdcAccountIndex = inx.accounts[3]
-
-                                    let userLpAccountIndex = inx.accounts[6]
+                                    // let userUsdcAccountIndex = inx.accounts[3]
+                                    //@ts-ignore
+                                    let userUsdcAccountIndex = programAccounts.userQuoteTokenVault.accountIndex
+                                    // let userLpAccountIndex = inx.accounts[6]
+                                    //@ts-ignore
+                                    let userLpAccountIndex = programAccounts.userLpTokenVault.accountIndex
 
                                     let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
                                     let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
@@ -681,9 +685,13 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                 } else if (decoded.name == "ammWithdraw") {
 
 
-                                    let userUsdcAccountIndex = inx.accounts[4]//user_quote_token_vault
+                                    // let userUsdcAccountIndex = inx.accounts[4]//user_quote_token_vault
+                                    //@ts-ignore
+                                    let userUsdcAccountIndex = programAccounts.userQuoteTokenVault.accountIndex
                                     // console.log("userUsdcAccountIndex:", userUsdcAccountIndex)
-                                    let userLpAccountIndex = inx.accounts[7]//user_lp_token_vault
+                                    // let userLpAccountIndex = inx.accounts[7]//user_lp_token_vault
+                                    //@ts-ignore
+                                    let userLpAccountIndex = programAccounts.userLpTokenVault.accountIndex
                                     // console.log("userLpAccountIndex:", userLpAccountIndex)
 
                                     let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)
