@@ -151,3 +151,24 @@ export const increaseComputeUnitsIx = ComputeBudgetProgram.requestUnits({
     units: 1400000,
     additionalFee: 0 * LAMPORTS_PER_SOL // this may change in the future
 })
+
+// populate inx account keys from tx account keys according to program idl
+export function populateInxAccountKeys(optifiContext, txAccountKeys, inx) {
+    let decodedInx = optifiContext.program.coder.instruction.decode(bs58.decode(inx.data))
+    // console.log(“decodedInx: “, decodedInx)
+    if (decodedInx) {
+        let inxName = decodedInx.name
+        const idl = optifiContext.program.idl
+        let idlAccounts = idl.instructions.find(e => e.name == inxName).accounts
+        let res = {}
+        idlAccounts.map((acc, i) => {
+            res[acc.name] = {
+                name: acc.name,
+                pubkey: txAccountKeys[inx.accounts[i]],
+                accountIndex: inx.accounts[i]
+            }
+        })
+        return res
+    }
+    // accountKeys[inx.accounts[idlAccounts.accounts.findIndex(e => e.name == “userAccount”)]]
+}
