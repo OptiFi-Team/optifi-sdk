@@ -4,7 +4,7 @@ import Context from "../types/context";
 import { findUserAccount } from "../utils/accounts";
 import { loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, Order } from "../utils/orders";
 import { findOptifiMarketsWithFullData } from "../utils/market";
-import { getAllOrdersForAccount } from "../utils/orderHistory";
+import { getAllOrdersForAccount, OrderInstruction } from "../utils/orderHistory";
 import { retrievRecentTxs } from "./orderHistory";
 import base58, { decode } from "bs58";
 import Decimal from "decimal.js";
@@ -26,15 +26,14 @@ async function getOrders(context: Context): Promise<Order[]> {
   })
 }
 
-async function getFillAmt(context: Context): Promise<number[]> {
+async function getFillAmt(context: Context, orderHistorys: OrderInstruction[], orders: Order[]): Promise<number[]> {
   return new Promise(async (resolve, reject) => {
-    let orders = await getOrders(context);
-
     let res: number[] = [];
 
     for (let i = 0; i < orders.length; i++) {
-      //@ts-ignore
-      res[orders[i].clientId.toNumber()] = (new Decimal(orders[i].originalSize).minus(new Decimal(orders[i].size).toNumber())).toNumber();
+      let clientId = orders[i].clientId;
+      let orderHistory = orderHistorys.find(e => e.clientId == clientId?.toNumber())
+      res[orders[i].clientId!.toNumber()] = (orderHistory) ? (new Decimal(orderHistory?.maxBaseQuantity!).minus(new Decimal(orders[i].size).toNumber())).toNumber() : 0;
     }
     resolve(res);
   })
@@ -200,8 +199,9 @@ export function getAllTradesForAccount(
       // resolve(res)
       res.reverse()
       let trades: Trade[] = []
-      let clientIdFillAmt: number[] = await getFillAmt(context);
-      for (let order of res) {
+      let orders = await getOrders(context)
+      let clientIdFillAmt: number[] = await getFillAmt(context, res, orders);
+      for (let order of res) {//the order here is order history
         // divide to three situations: place order / cancel order / fill
         // push to res if place order, pop res if cancel order
         // after that, check if fill order by clientIdFillAmt, then renew res by it
@@ -268,20 +268,29 @@ export function getAllTradesForAccount(
               // console.log(order.clientId + " postOnlyFail!!!")
               let index = trades.findIndex(e => e.clientId == order.clientId)
               trades.splice(index, 1)
+            } else {
+              let orderFind = orders.find(e => e.clientId?.toNumber() == order.clientId)
+              if (orderFind) {//still in open orders
+                if (!orderFind.fillPercentage) {//open
+                  console.log("postonly and is open, so delete it: " + order.clientId)
+                  let index = trades.findIndex(e => e.clientId == order.clientId)
+                  trades.splice(index, 1)
+                } else { console.log("don't need to delete it , since it is already filled") }
+              }
             }
           }
 
         }
       }
 
-      //fix eth decimal problem , can commend it if there isn't any decimal problem
-      for (let trade of trades) {
-        let optifiMarkets = await findOptifiMarketsWithFullData(context)
-        let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
-        //@ts-ignore
-        let decimal = (optifiMarket?.asset == "BTC") ? 0 : 1;
-        trade.maxBaseQuantity = trade.maxBaseQuantity * (10 ** decimal);
-      }
+      // //fix eth decimal problem , can commend it if there isn't any decimal problem
+      // for (let trade of trades) {
+      //   let optifiMarkets = await findOptifiMarketsWithFullData(context)
+      //   let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
+      //   //@ts-ignore
+      //   let decimal = (optifiMarket?.asset == "BTC") ? 0 : 1;
+      //   trade.maxBaseQuantity = trade.maxBaseQuantity * (10 ** decimal);
+      // }
 
       trades.reverse()
       resolve(trades)
