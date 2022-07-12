@@ -103,6 +103,34 @@ async function getFilledData(context: Context, account: PublicKey, orderHistorys
   })
 }
 
+async function getCancelledQuantity(logs: string[]): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    let stringRes: string;
+    let stringLen = 26
+    for (let i = 0; i < logs.length; i++) {
+      if (logs[i].search("order's remaining amount:") != -1) {
+        stringRes = logs[i].substring(logs[i].search("order's remaining amount:") + stringLen)
+        resolve(stringRes)
+      }
+    }
+    resolve("unknown")
+  })
+}
+
+async function getFillAmtFromLog(logs: string[]): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    let stringRes: string;
+    let stringLen = 12
+    for (let log of logs) {
+      if ((log.search("long_amount") != -1)) {
+        stringRes = log.substring(log.search("long_amount") + stringLen, log.search("short_amount") - 2)
+        resolve(stringRes)
+      }
+    }
+    resolve("-1")
+  })
+}
+
 const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
 
@@ -143,7 +171,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                     return marketAddress === instrument.marketAddress.toString();
                   });
                   let baseTokenDecimal = numberAssetToDecimal(instrument.asset)!
-                  record.maxBaseQuantity = record.maxBaseQuantity / 10 ** baseTokenDecimal
+                  record.maxBaseQuantity = record.maxBaseQuantity / 10 ** baseTokenDecimal//original size
 
                   // let newOrderJSON = JSON.stringify(decData);
                   // console.log("newOrderJSON: ", newOrderJSON);
@@ -152,6 +180,8 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
                   record.marketAddress = marketAddress
                   record.txType = "place order"
+                  record.decimal = baseTokenDecimal
+                  record.fillAmtFromLog = await getFillAmtFromLog(tx.meta?.logMessages!)
                   orderTxs.push(Object.assign({}, record));
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
                   // get the orginal order details
@@ -176,18 +206,18 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                     if (record.side == "buy") {
                       let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userMarginAccountIndex)!
                       let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userMarginAccountIndex)!
-                      cancelledQuantity = (new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()
+                      // cancelledQuantity = (new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()
                     } else {
                       let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == longTokenVaultIndex)!
                       let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == longTokenVaultIndex)!
                       // console.log("preTokenAccount: ", preTokenAccount, "postTokenAccount: " , postTokenAccount)
                       // console.log("tx.meta?.preTokenBalances? ", tx.meta?.preTokenBalances)
                       // console.log("tx.meta?.postTokenBalances? ", tx.meta?.postTokenBalances)
-                      cancelledQuantity = (preTokenAccount && postTokenAccount) ? ((new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()) : -1;
+                      // cancelledQuantity = (preTokenAccount && postTokenAccount) ? ((new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()) : -1;
                     }
 
                     // console.log("cancelledAmount: ", cancelledAmount)
-                    record.cancelledQuantity = cancelledQuantity
+                    record.cancelledQuantity = await getCancelledQuantity(tx.meta?.logMessages!);//cancelledQuantity
                     record.timestamp = new Date(tx.blockTime! * 1000);
                     record.txid = tx.transaction.signatures[0]
                     record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
@@ -274,6 +304,8 @@ export class OrderInstruction {
   txType: "place order" | "cancel order"
   cancelledQuantity: number | undefined
   status: string
+  decimal: number
+  fillAmtFromLog: string
 
   constructor({
     clientId,
@@ -290,7 +322,9 @@ export class OrderInstruction {
     marketAddress,
     txType,
     cancelledQuantity,
-    status
+    status,
+    decimal,
+    fillAmtFromLog
   }: {
     clientId: BN;
     limit: number;
@@ -307,6 +341,8 @@ export class OrderInstruction {
     txType: "place order" | "cancel order"
     cancelledQuantity: number | undefined
     status: string
+    decimal: number
+    fillAmtFromLog: string
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -323,6 +359,8 @@ export class OrderInstruction {
     this.txType = txType
     this.cancelledQuantity = cancelledQuantity
     this.status = status
+    this.decimal = decimal
+    this.fillAmtFromLog = fillAmtFromLog
   }
 
   public get shortForm(): string {
@@ -337,15 +375,47 @@ export function addStatusInOrderHistory(
   userAccount: PublicKey
 ): Promise<OrderInstruction[]> {
   return new Promise(async (resolve, reject) => {
+
     try {
-      let originalSize: number[] = [];
-      let currentSize: number[] = [];
+      // 用戶一開始下單的數量,不會被任何操作影響
+      let originalSize: Decimal[] = [];
+      // originalSize - (cancel的數量) - (已經fill 的數量)
+      //如果沒有被cancel, currentSize = 還沒被fill 的數量
+      //如果被cancel, currentSize = 
+      //  a. 若cancelSize < originalSize, 表示一開始被fill 一些
+      //  b. 若cancelSize = originalSize, 表示原本是open
+      let currentSize: Decimal[] = [];
+      //cancel order 時被cancel的數量
+      let cancelSize: Decimal[] = [];
       let clientIdIOC: number[] = await getFilledData(context, userAccount, orderHistorys)
 
-      for (let i = 0; i < orders.length; i++) {
-        //@ts-ignore
-        originalSize[orders[i].clientId!.toNumber()] = new Decimal(orders[i].originalSize).toNumber();
-        currentSize[orders[i].clientId!.toNumber()] = new Decimal(orders[i].size).toNumber();
+      //originalSize
+      for (let orderHistory of orderHistorys) {
+        originalSize[orderHistory.clientId] = new Decimal(orderHistory.maxBaseQuantity);
+      }
+
+      //cancelSize
+      for (let orderHistory of orderHistorys) {
+        if (orderHistory.cancelledQuantity) {
+          cancelSize[orderHistory.clientId] = new Decimal(orderHistory.cancelledQuantity)
+          // find decimal from place order history, since no assign decimal when generate cancel order history
+          let decimal = orderHistorys.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
+          if (decimal)
+            cancelSize[orderHistory.clientId] = (cancelSize[orderHistory.clientId]).div(10 ** decimal)
+        }
+      }
+      for (let orderHistory of orderHistorys) {
+        if (!cancelSize[orderHistory.clientId])
+          cancelSize[orderHistory.clientId] = new Decimal(0)
+      }
+
+      //currentSize
+      for (let orderHistory of orderHistorys) {
+        let decimal = orderHistorys.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
+        if (decimal) {
+          let fillamt = (new Decimal(orderHistory.fillAmtFromLog)).div(10 ** decimal)
+          currentSize[orderHistory.clientId] = originalSize[orderHistory.clientId].minus(cancelSize[orderHistory.clientId]).minus(fillamt)//.minus((new Decimal(orderHistory.fillAmtFromLog)).div(10 ** decimal)))
+        }
       }
 
       for (let orderHistory of orderHistorys) {
@@ -356,29 +426,29 @@ export function addStatusInOrderHistory(
         }
 
         let clientId = orderHistory.clientId;
+        console.log("id is: " + clientId);
+        console.log("original size: " + originalSize[orderHistory.clientId])
+        console.log("current size:" + currentSize[orderHistory.clientId])
+        console.log("cancel size:" + cancelSize[orderHistory.clientId])
 
         if (orderHistory.orderType == "limit") {
 
-          //there is currentSize,means it still on open order, 
-          //and there isn't filled any, so originalSize and currentSize are same
-
+          //open order 上面剩的和原本的一樣,表示都沒被fill,也就是open
           //@ts-ignore
-          let thisClientidcancelOrderHistory: OrderInstruction = orderHistorys.find(e => ((e.clientId == orderHistory.clientId) && (e.txType == "cancel order")))
-          if (((currentSize[clientId] == originalSize[clientId]) && (currentSize[clientId])) || //situation 1:normal place order
-            (thisClientidcancelOrderHistory)) {//situation 2:place order , but be canceled, so can't find currentSize
+          if (cancelSize[clientId].equals(originalSize[clientId])) {
             orderHistory.status = "Open";
             continue;
           }
 
-          if (originalSize[clientId] > currentSize[clientId]) {
-            let filledSize = new Decimal(originalSize[clientId]).minus(currentSize[clientId]);
-            let res = Math.floor(filledSize.mul(100).div(originalSize[clientId]).toNumber()).toString();
+          if (originalSize[clientId].minus(cancelSize[clientId]) != new Decimal(0)) {
+            let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+            let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
             orderHistory.status = "Filled " + res + "%";
             continue;
           }
 
-          if (!(currentSize[clientId])) {//not in open order, and it also not cancel order
-            orderHistory.status = "Filled 100%";// when totally filled, it doesn't show on orders
+          if (!currentSize[clientId]) {
+            orderHistory.status = "Filled 100%";
             continue;
           }
 
@@ -388,21 +458,17 @@ export function addStatusInOrderHistory(
           if (clientIdIOC[clientId]) orderHistory.status = "Filled"
           else orderHistory.status = "Failed"
         } else {
-          // console.log(currentSize[clientId])
-          // console.log(originalSize[clientId])
           //if post only success ,there are currentSize and originalSize
 
           //@ts-ignore
-          let thisClientidcancelOrderHistory: OrderInstruction = orderHistorys.find(e => ((e.clientId == orderHistory.clientId) && (e.txType == "cancel order")))
-          if (((currentSize[clientId] == originalSize[clientId]) && (currentSize[clientId])) || //situation 1:normal place order
-            (thisClientidcancelOrderHistory)) {//situation 2:place order , but be canceled, so can't find currentSize
+          if (cancelSize[clientId].equals(originalSize[clientId])) {
             orderHistory.status = "Open";
             continue;
           }
 
-          if (originalSize[clientId] > currentSize[clientId]) {
-            let filledSize = new Decimal(originalSize[clientId]).minus(currentSize[clientId]);
-            let res = Math.floor(filledSize.mul(100).div(originalSize[clientId]).toNumber()).toString();
+          if (originalSize[clientId].minus(cancelSize[clientId]) != new Decimal(0)) {
+            let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+            let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
             orderHistory.status = "Filled " + res + "%";
             continue;
           }
