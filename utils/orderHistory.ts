@@ -119,12 +119,18 @@ async function getCancelledQuantity(logs: string[]): Promise<string> {
 
 async function getFillAmtFromLog(logs: string[]): Promise<string> {
   return new Promise(async (resolve, reject) => {
-    let stringRes: string;
-    let stringLen = 12
+    let stringResLong: string;
+    let stringResShort: string;
+    let stringLongLen = 12
+    let stringShortLen = 13
     for (let log of logs) {
-      if ((log.search("long_amount") != -1)) {
-        stringRes = log.substring(log.search("long_amount") + stringLen, log.search("short_amount") - 2)
-        resolve(stringRes)
+      if (log.search("long_amount") != -1) {
+        stringResLong = log.substring(log.search("long_amount") + stringLongLen, log.search("short_amount") - 2)
+        if (stringResLong == "0") {
+          stringResShort = log.substring(log.search("short_amount") + stringShortLen, log.search("net_positions") - 2)
+          resolve(stringResShort)
+        }
+        resolve(stringResLong)
       }
     }
     resolve("-1")
@@ -379,12 +385,6 @@ export function addStatusInOrderHistory(
     try {
       // 用戶一開始下單的數量,不會被任何操作影響
       let originalSize: Decimal[] = [];
-      // originalSize - (cancel的數量) - (已經fill 的數量)
-      //如果沒有被cancel, currentSize = 還沒被fill 的數量
-      //如果被cancel, currentSize = 
-      //  a. 若cancelSize < originalSize, 表示一開始被fill 一些
-      //  b. 若cancelSize = originalSize, 表示原本是open
-      let currentSize: Decimal[] = [];
       //cancel order 時被cancel的數量
       let cancelSize: Decimal[] = [];
       let clientIdIOC: number[] = await getFilledData(context, userAccount, orderHistorys)
@@ -409,15 +409,6 @@ export function addStatusInOrderHistory(
           cancelSize[orderHistory.clientId] = new Decimal(0)
       }
 
-      //currentSize
-      for (let orderHistory of orderHistorys) {
-        let decimal = orderHistorys.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
-        if (decimal) {
-          let fillamt = (new Decimal(orderHistory.fillAmtFromLog)).div(10 ** decimal)
-          currentSize[orderHistory.clientId] = originalSize[orderHistory.clientId].minus(cancelSize[orderHistory.clientId]).minus(fillamt)//.minus((new Decimal(orderHistory.fillAmtFromLog)).div(10 ** decimal)))
-        }
-      }
-
       for (let orderHistory of orderHistorys) {
 
         if (orderHistory.txType == "cancel order") {
@@ -426,52 +417,49 @@ export function addStatusInOrderHistory(
         }
 
         let clientId = orderHistory.clientId;
-        console.log("id is: " + clientId);
-        console.log("original size: " + originalSize[orderHistory.clientId])
-        console.log("current size:" + currentSize[orderHistory.clientId])
-        console.log("cancel size:" + cancelSize[orderHistory.clientId])
+        // console.log("id is: " + clientId);
+        // console.log("original size: " + originalSize[orderHistory.clientId])
+        // console.log("cancel size:" + cancelSize[orderHistory.clientId])
 
         if (orderHistory.orderType == "limit") {
 
-          //open order 上面剩的和原本的一樣,表示都沒被fill,也就是open
-          //@ts-ignore
-          if (cancelSize[clientId].equals(originalSize[clientId])) {
-            orderHistory.status = "Open";
-            continue;
+          if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
+            let order = orders.find(e => e.clientId?.toNumber() == clientId)
+            if (order) {//沒有被totally fill
+              if (!order.fillPercentage) {//open
+                console.log("no cancel and open")
+                console.log("orders[clientId].fillPercentage: " + (order.fillPercentage! * 100).toFixed(2))
+                orderHistory.status = "Open";
+                continue;
+              } else {
+                console.log("no cancel and fill")
+                console.log("orders[clientId].fillPercentage: " + (order.fillPercentage! * 100).toFixed(2))
+                let res = ((order.fillPercentage * 100).toFixed(2))?.toString();
+                orderHistory.status = "Filled " + res + "%";
+                continue;
+              }
+            } else {//totally fill
+              console.log("totally be filled")
+              orderHistory.status = "Filled 100%";
+            }
+          } else {//最後被cancel 了
+            if (originalSize[clientId].equals(cancelSize[clientId])) {//在open的狀況下被cancel
+              console.log("cancel and open")
+              orderHistory.status = "Open";
+              continue;
+            } else {
+              console.log("cancel and fill")
+              let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+              let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
+              orderHistory.status = "Filled " + res + "%";
+              continue;
+            }
           }
-
-          if (originalSize[clientId].minus(cancelSize[clientId]) != new Decimal(0)) {
-            let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
-            let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
-            orderHistory.status = "Filled " + res + "%";
-            continue;
-          }
-
-          if (!currentSize[clientId]) {
-            orderHistory.status = "Filled 100%";
-            continue;
-          }
-
-          orderHistory.status = "Wrong status! please check"
 
         } else if (orderHistory.orderType == "ioc") {
           if (clientIdIOC[clientId]) orderHistory.status = "Filled"
           else orderHistory.status = "Failed"
         } else {
-          //if post only success ,there are currentSize and originalSize
-
-          //@ts-ignore
-          if (cancelSize[clientId].equals(originalSize[clientId])) {
-            orderHistory.status = "Open";
-            continue;
-          }
-
-          if (originalSize[clientId].minus(cancelSize[clientId]) != new Decimal(0)) {
-            let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
-            let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
-            orderHistory.status = "Filled " + res + "%";
-            continue;
-          }
 
           let postOnlyFail = await checkPostOnlyFail(context, userAccount, clientId);//wait for a long time...should be optimized
           if (postOnlyFail) {
@@ -479,7 +467,38 @@ export function addStatusInOrderHistory(
             continue;
           }
 
-          orderHistory.status = "Filled 100%";
+          if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
+            let order = orders.find(e => e.clientId?.toNumber() == clientId)
+            if (order) {//沒有被totally fill
+              if (!order.fillPercentage) {//open
+                console.log("no cancel and open")
+                console.log("orders[clientId].fillPercentage: " + (order.fillPercentage! * 100).toFixed(2))
+                orderHistory.status = "Open";
+                continue;
+              } else {
+                console.log("no cancel and fill")
+                console.log("orders[clientId].fillPercentage: " + (order.fillPercentage! * 100).toFixed(2))
+                let res = ((order.fillPercentage * 100).toFixed(2))?.toString();
+                orderHistory.status = "Filled " + res + "%";
+                continue;
+              }
+            } else {//totally fill
+              console.log("totally be filled")
+              orderHistory.status = "Filled 100%";
+            }
+          } else {//最後被cancel 了
+            if (originalSize[clientId].equals(cancelSize[clientId])) {//在open的狀況下被cancel
+              console.log("cancel and open")
+              orderHistory.status = "Open";
+              continue;
+            } else {
+              console.log("cancel and fill")
+              let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+              let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
+              orderHistory.status = "Filled " + res + "%";
+              continue;
+            }
+          }
 
         }
       }
