@@ -6,7 +6,7 @@ import { Duration } from "./types/optifi-exchange-types";
 
 // solana cluter with default endpoint
 export enum SolanaEndpoint {
-    Mainnet = "https://solana-api.projectserum.com",
+    Mainnet = "https://optifil-main-c161.mainnet.rpcpool.com",
     Devnet = "https://mango.devnet.rpcpool.com",
     Testnet = "https://api.testnet.solana.com"
 }
