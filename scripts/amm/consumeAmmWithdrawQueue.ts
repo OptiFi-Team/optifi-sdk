@@ -2,12 +2,9 @@ import { initializeContext } from "../../index";
 import consumeWithdrawRequestQueue from "../../instructions/amm/consumeWithdrawRequestQueue";
 import { findOptifiExchange, getUserAccountById } from "../../utils/accounts";
 import { findAMMWithIdx, getAmmWithdrawQueue } from "../../utils/amm";
-// import { ammIndex } from "./constants";
 import Context from "../../types/context"
 import { SolanaEndpoint } from "../../constants";
 import { sleep } from "../../utils/generic";
-import * as anchor from "@project-serum/anchor";
-import BN from 'bn.js';
 
 let ammIndexes = [1, 2]
 initializeContext().then(async (context) => {
@@ -28,7 +25,7 @@ initializeContext().then(async (context) => {
             if (ammWithdrawRequestQueue.head != ammWithdrawRequestQueue.tail) {
                 // @ts-ignore
                 let request = ammWithdrawRequestQueue.requests[ammWithdrawRequestQueue.head]
-                console.log(request);
+                // console.log(request);
                 let userId = request.userAccountId
                 let requestAmount = request.amount
 
@@ -38,11 +35,11 @@ initializeContext().then(async (context) => {
                 //     aggregator.latestConfirmedRound.roundOpenTimestamp;
                 // const staleness = now.sub(latestRoundTimestamp);
 
-                console.log("userId: ", userId)
+                // console.log("userId: ", userId)
                 // console.log("requestTimestamp: ", requestTimestamp)
 
-                console.log("requestAmount: ", requestAmount.toNumber());
-                console.log("requestTimestamp: ", requestTimestamp.toNumber());
+                // console.log("requestAmount: ", requestAmount.toNumber());
+                // console.log("requestTimestamp: ", requestTimestamp.toNumber());
 
                 if (isReqeustInCorrectTimeWindow(context, requestTimestamp.toNumber())) {
                     let userAccount = await getUserAccountById(context, userId)
@@ -54,7 +51,7 @@ initializeContext().then(async (context) => {
                     })
                 }
             }
-            await sleep(10 * 1000);
+            await sleep(5 * 60 * 1000);
         }
     })
 })
