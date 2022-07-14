@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../../types/context";
-import { PublicKey, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
 import InstructionResult from "../../types/instructionResult";
 import { formCancelOrderContext } from "../../utils/orders";
@@ -11,6 +11,7 @@ import {
 } from "../../utils/transactions";
 import { DexInstructions } from '@project-serum/serum';
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { findMarginStressWithAsset } from "../../utils/margin";
 
 // =========================================================================================
 //  the cancelOrder in Optifi program is deprecated, use cancelOrderByClientOrderId instead
@@ -54,7 +55,7 @@ export default function cancelOrderByClientOrderId(
 ): Promise<InstructionResult<TransactionSignature>> {
   return new Promise((resolve, reject) => {
     formCancelOrderContext(context, marketAddress, userAccount)
-      .then(async (orderContext) => {
+      .then(async ([orderContext, asset]) => {
 
         let ixs: TransactionInstruction[] = [increaseComputeUnitsIx]
         let cancelOrderByClientOrderIdInx = context.program.instruction.cancelOrderByClientOrderId(
@@ -78,7 +79,7 @@ export default function cancelOrderByClientOrderId(
         ixs.push(consumeEventInx)
 
 
-        let cancelOrderRes = await context.program.rpc.settleOrderFunds({
+        let settleOrderIx = context.program.instruction.settleOrderFunds({
           accounts: {
             optifiExchange: orderContext.optifiExchange,
             userAccount: orderContext.userAccount,
@@ -100,9 +101,21 @@ export default function cancelOrderByClientOrderId(
             tokenProgram: TOKEN_PROGRAM_ID,
             serumDexProgramId: orderContext.serumDexProgramId
           },
+        });
 
+        ixs.push(settleOrderIx);
+
+        let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, orderContext.optifiExchange, asset);
+
+        let cancelOrderRes = await context.program.rpc.userMarginCalculate({
+          accounts: {
+            optifiExchange: orderContext.optifiExchange,
+            marginStressAccount: marginStressAddress,
+            userAccount: orderContext.userAccount,
+            clock: SYSVAR_CLOCK_PUBKEY
+          },
           instructions: ixs
-        })
+        });
 
         resolve({
           successful: true,
