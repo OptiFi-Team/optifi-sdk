@@ -236,7 +236,7 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
 
     let t = 300;
     if (context.endpoint == SolanaEndpoint.Devnet) {
-        t = 3600 * 3;
+       t = 3600 * 12;
     }
     // Get latest value if its been updated in the last 300 seconds
     const latestResult = sbv2.decodeLatestAggregatorValue(accountInfo, t);
