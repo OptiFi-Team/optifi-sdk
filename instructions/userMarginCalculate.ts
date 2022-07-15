@@ -51,45 +51,45 @@ export function marginCalculate(context: Context, userAccount: PublicKey
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {
 
-        console.log("marginCalculate...");
+        let ixs = [increaseComputeUnitsIx]
 
         let [exchangeAddress, _] = await findExchangeAccount(context);
 
-        Promise.all(SUPPORTED_ASSETS.map((asset) => new Promise(async () => {
+        let [userAccountAddress,] = await findUserAccount(context)
 
-            let optifiAsset = assetToOptifiAsset(asset);
+        let res;
 
-            let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, optifiAssetToNumber(optifiAsset));
+        for (let i = 0; i < SUPPORTED_ASSETS.length; i++) {
 
-            let instructions = [increaseComputeUnitsIx]
-            let marginStressIx = await marginStress(context, asset);
-            instructions.push(...marginStressIx)
+            let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, SUPPORTED_ASSETS[i]);
 
-            context.program.rpc.userMarginCalculate(
-                {
+            if (i == SUPPORTED_ASSETS.length - 1) {
+                res = await context.program.rpc.userMarginCalculate({
                     accounts: {
                         optifiExchange: exchangeAddress,
                         marginStressAccount: marginStressAddress,
-                        userAccount: userAccount,
+                        userAccount: userAccountAddress,
                         clock: SYSVAR_CLOCK_PUBKEY
                     },
-                    instructions
-                }
-            ).then((res) => {
-                resolve(
-                    {
-                        successful: true,
-                        data: res as TransactionSignature
-                    }
-                )
-                console.log({
+                    instructions: ixs
+                });
+
+                resolve({
                     successful: true,
                     data: res as TransactionSignature
                 })
-            }).catch((err) => console.log(err))
-        }))).then(() => resolve({
-            successful: true
-        })
-        ).catch((err) => reject(err));
+            } else {
+                ixs.push(
+                    context.program.instruction.userMarginCalculate({
+                        accounts: {
+                            optifiExchange: exchangeAddress,
+                            marginStressAccount: marginStressAddress,
+                            userAccount: userAccountAddress,
+                            clock: SYSVAR_CLOCK_PUBKEY
+                        }
+                    })
+                );
+            }
+        }
     })
 }

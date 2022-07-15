@@ -40,7 +40,7 @@ initializeContext().then(async (context) => {
                 console.log("marginStressCalculate: ", res);
             }
         } catch (e) {
-            await sleep(5000);
+            await sleep(10000);
         }
         marginLoop();
     }

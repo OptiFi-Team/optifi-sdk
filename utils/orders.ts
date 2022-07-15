@@ -402,7 +402,7 @@ export function formCancelOrderContext(
   context: Context,
   marketAddress: PublicKey,
   userAccount: UserAccount,
-): Promise<CancelOrderContext> {
+): Promise<[CancelOrderContext, number]> {
   let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
   let acctExists = true;
   return new Promise((resolve, reject) => {
@@ -506,7 +506,7 @@ export function formCancelOrderContext(
                                                     TOKEN_PROGRAM_ID,
                                                   marginStressAccount: serumId,
                                                 };
-                                                resolve(result);
+                                                resolve([result, chain.asset]);
                                               })
                                               .catch((err) => {
                                                 console.error(err);
