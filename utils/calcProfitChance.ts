@@ -18,15 +18,7 @@ interface ProfitChance {
 interface ProfitChanceRes {
     buy: ProfitChance,
     sell: ProfitChance,
-}
-interface ProfitChanceAsset {
-    BTC: ProfitChanceCallOrPut | null,
-    ETH: ProfitChanceCallOrPut | null,
-}
-
-interface ProfitChanceCallOrPut {
-    call: ProfitChanceRes | null,
-    put: ProfitChanceRes | null,
+    marketAddress: string,
 }
 interface Premiumtype {
     askPrice: number,
@@ -57,7 +49,7 @@ export const q = 0;
 export async function calcProfitChance(
     context: Context,
     optifiMarkets: OptifiMarketFullData[],
-): Promise<ProfitChanceAsset[]> {
+): Promise<ProfitChanceRes[]> {
     return new Promise(async (resolve, reject) => {
         try {
             // =====================================================
@@ -65,7 +57,7 @@ export async function calcProfitChance(
             // and profit chance with the finished functions below
             // the length of returned array should be equal to length of optifiMarkets
             // =====================================================
-            let res: ProfitChanceAsset[] = [];
+            let res: ProfitChanceRes[] = [];
 
             let BTCOptifiMarkets = optifiMarkets.filter(e => { return e.asset == "BTC" });
             let ETHOptifiMarkets = optifiMarkets.filter(e => { return e.asset == "ETH" });
@@ -83,6 +75,11 @@ export async function calcProfitChance(
             let BTCPutStrike: number[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.strike })
             let ETHCallStrike: number[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.strike })
             let ETHPutStrike: number[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.strike })
+
+            let BTCCallMarketAddress: string[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.marketAddress.toString() })
+            let BTCPutMarketAddress: string[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.marketAddress.toString() })
+            let ETHCallMarketAddress: string[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.marketAddress.toString() })
+            let ETHPutMarketAddress: string[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.marketAddress.toString() })
 
             let BTCCallFirstAskArr = reshap(BTCCallFirstAsk)
             let BTCCallFirstBidArr = reshap(BTCCallFirstBid)
@@ -191,99 +188,73 @@ export async function calcProfitChance(
 
             //BTC Call
             for (let i = 0; i < ndfBTCCallAskPriceResult.length; i++) {
-                let oneRes: ProfitChanceAsset = {
-                    BTC:
+                let oneRes: ProfitChanceRes = {
+                    buy:
                     {
-                        call:
-                        {
-                            buy:
-                            {
-                                breakEven: BTCCallBreakEvenBidPriceArr[i][0],
-                                profitChance: (BTCCallFirstAskArr[i][0] == 0) ? 0 : ndfBTCCallAskPriceResult[i]
-                            },
-                            sell: {
-                                breakEven: BTCCallBreakEvenAskPriceArr[i][0],
-                                profitChance: (BTCCallFirstBidArr[i][0] == 0) ? 0 : ndfBTCCallBidPriceResult[i]
-                            }
-                        },
-                        put: null
+                        breakEven: BTCCallBreakEvenBidPriceArr[i][0],
+                        profitChance: (BTCCallFirstAskArr[i][0] == 0) ? 0 : ndfBTCCallAskPriceResult[i]
                     },
-                    ETH: null
+                    sell: {
+                        breakEven: BTCCallBreakEvenAskPriceArr[i][0],
+                        profitChance: (BTCCallFirstBidArr[i][0] == 0) ? 0 : ndfBTCCallBidPriceResult[i]
+                    },
+                    marketAddress: BTCCallMarketAddress[i]
                 }
                 res.push(oneRes)
             }
 
             //BTC Put   
             for (let i = 0; i < ndfBTCPutAskPriceResult.length; i++) {
-                let oneRes: ProfitChanceAsset = {
-                    BTC:
+                let oneRes: ProfitChanceRes = {
+                    buy:
                     {
-                        call: null,
-                        put: {
-                            buy:
-                            {
-                                breakEven: BTCPutBreakEvenBidPriceArr[i][0],
-                                profitChance: (BTCPutFirstAskArr[i][0] == 0) ? 0 : ndfBTCPutAskPriceResult[i]
-                            },
-                            sell: {
-                                breakEven: BTCPutBreakEvenAskPriceArr[i][0],
-                                profitChance: (BTCPutFirstBidArr[i][0] == 0) ? 0 : ndfBTCPutBidPriceResult[i]
-                            }
-                        }
+                        breakEven: BTCPutBreakEvenBidPriceArr[i][0],
+                        profitChance: (BTCPutFirstAskArr[i][0] == 0) ? 0 : ndfBTCPutAskPriceResult[i]
                     },
-                    ETH: null
+                    sell: {
+                        breakEven: BTCPutBreakEvenAskPriceArr[i][0],
+                        profitChance: (BTCPutFirstBidArr[i][0] == 0) ? 0 : ndfBTCPutBidPriceResult[i]
+                    },
+                    marketAddress: BTCPutMarketAddress[i]
                 }
                 res.push(oneRes)
             }
 
             // ETH Call  
-
             for (let i = 0; i < ndfETHCallAskPriceResult.length; i++) {
-                let oneRes: ProfitChanceAsset = {
-                    BTC: null,
-                    ETH:
+                let oneRes: ProfitChanceRes = {
+                    buy:
                     {
-                        call: {
-                            buy:
-                            {
-                                breakEven: ETHCallBreakEvenBidPriceArr[i][0],
-                                profitChance: (ETHCallFirstAskArr[i][0] == 0) ? 0 : ndfETHCallAskPriceResult[i]
-                            },
-                            sell: {
-                                breakEven: ETHCallBreakEvenAskPriceArr[i][0],
-                                profitChance: (ETHCallFirstBidArr[i][0] == 0) ? 0 : ndfETHCallBidPriceResult[i]
-                            }
-                        },
-                        put: null,
-                    }
+                        breakEven: ETHCallBreakEvenBidPriceArr[i][0],
+                        profitChance: (ETHCallFirstAskArr[i][0] == 0) ? 0 : ndfETHCallAskPriceResult[i]
+                    },
+                    sell: {
+                        breakEven: ETHCallBreakEvenAskPriceArr[i][0],
+                        profitChance: (ETHCallFirstBidArr[i][0] == 0) ? 0 : ndfETHCallBidPriceResult[i]
+                    },
+                    marketAddress: ETHCallMarketAddress[i]
                 }
                 res.push(oneRes)
             }
 
             //ETH Put
-            for (let i = 0; i < ndfETHCallAskPriceResult.length; i++) {
-                let oneRes: ProfitChanceAsset = {
-                    BTC: null,
-                    ETH:
+            for (let i = 0; i < ndfETHPutAskPriceResult.length; i++) {
+                let oneRes: ProfitChanceRes = {
+                    buy:
                     {
-                        call: null,
-                        put: {
-                            buy:
-                            {
-                                breakEven: ETHPutBreakEvenBidPriceArr[i][0],
-                                profitChance: (ETHPutFirstAskArr[i][0] == 0) ? 0 : ndfETHPutAskPriceResult[i]
-                            },
-                            sell: {
-                                breakEven: ETHPutBreakEvenAskPriceArr[i][0],
-                                profitChance: (ETHPutFirstBidArr[i][0] == 0) ? 0 : ndfETHPutBidPriceResult[i]
-                            }
-                        }
-                    }
+                        breakEven: ETHPutBreakEvenBidPriceArr[i][0],
+                        profitChance: (ETHPutFirstAskArr[i][0] == 0) ? 0 : ndfETHPutAskPriceResult[i]
+                    },
+                    sell: {
+                        breakEven: ETHPutBreakEvenAskPriceArr[i][0],
+                        profitChance: (ETHPutFirstBidArr[i][0] == 0) ? 0 : ndfETHPutBidPriceResult[i]
+                    },
+                    marketAddress: ETHPutMarketAddress[i]
                 }
                 res.push(oneRes)
             }
-            // res.map(e => { if (e.BTC?.call != null) console.log(e.BTC.call) })
-            
+
+
             resolve(res);
         } catch (err) {
             reject(err)
