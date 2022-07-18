@@ -194,17 +194,20 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
         let ammInfo = ammInfoRaw as AmmAccount;
         console.log(`to calc proposals for amm: ${ammAddress.toString()} with id ${ammIndex}`)
 
-        const batchSize = 5;
+        const firstBtchSize = 3;
+        const batchSize = 7;
         // @ts-ignore
         const optionFlags: boolean[] = ammInfo.flags.slice(1).filter(e => e == false)
         if (optionFlags.length == 0) {
-            let res = await calculateAmmProposalInBatch(context, ammAddress, ammInfo, 1)
+            let res = await calculateAmmProposalInBatch(context, ammAddress, ammInfo, 0, 1)
             console.log(`successfully calc proposals in batch for amm ${ammAddress.toString()} with id ${ammIndex}, batch id ${0}`)
             console.log(res)
         } else {
-            let batches = splitToBatch(optionFlags, batchSize)
+            let batches: boolean[][] = [];
+            batches[0] = optionFlags.splice(0, firstBtchSize)
+            batches.push(...splitToBatch(optionFlags, batchSize))
             batches.forEach(async (batch, i) => {
-                let res = await calculateAmmProposalInBatch(context, ammAddress, ammInfo, batch.length)
+                let res = await calculateAmmProposalInBatch(context, ammAddress, ammInfo, i, batch.length)
                 console.log(`successfully calc proposals in batch for amm ${ammAddress.toString()} with id ${ammIndex}, batch id ${i}`)
                 console.log(res)
             })
