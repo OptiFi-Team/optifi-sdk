@@ -1,5 +1,5 @@
 {
-  "version": "1.1.21",
+  "version": "1.1.24",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -5052,9 +5052,14 @@
       "code": 6057,
       "name": "MismatchedInstrument",
       "msg": "Instrument index is wrong"
+    },
+    {
+      "code": 6058,
+      "name": "InvalidMarginStressAccount",
+      "msg": "Invalid margin stress account"
     }
   ],
   "metadata": {
-    "address": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord"
+    "address": "optFiKjQpoQ3PvacwnFWaPUAqXCETMJSz2sz8HwPe9B"
   }
 }
