@@ -80,6 +80,12 @@ export async function removeInstrumentsFromAmm(context: Context, ammIndex: numbe
             let index = instrumentAddresses.findIndex(e => e.toString() == instrument.toString())
             return !(index >= 0 && instrumentInfos[index].expiryDate.toNumber() * 1000 > now)
         });
+
+        optifiMarketsToRemove = [
+            new PublicKey("GrkkaSeSenf7vS2pnbBGwrrJM4g1eVD5u9VEThJfo8kD"),
+            new PublicKey("4CwNe5e1VVQXciU9Dp6ahm713yYf9H6gC8TyibZasT3K")
+        ]
+
         // for (let market of optifiMarketsToRemove) {
         optifiMarketsToRemove.forEach(async market => {
             console.log(ammAddress.toString(), market.toString())
@@ -194,7 +200,7 @@ export async function calculateAmmProposals(context: Context, ammIndex: number) 
         let ammInfo = ammInfoRaw as AmmAccount;
         console.log(`to calc proposals for amm: ${ammAddress.toString()} with id ${ammIndex}`)
 
-        const firstBtchSize = 2;
+        const firstBtchSize = 1;
         const batchSize = 7;
         // @ts-ignore
         const optionFlags: boolean[] = ammInfo.flags.slice(1).filter(e => e == false)
