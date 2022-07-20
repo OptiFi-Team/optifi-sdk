@@ -12,6 +12,7 @@ import {
 import { DexInstructions } from '@project-serum/serum';
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findMarginStressWithAsset } from "../../utils/margin";
+import marginStress from "../marginStress";
 
 // =========================================================================================
 //  the cancelOrder in Optifi program is deprecated, use cancelOrderByClientOrderId instead
@@ -58,6 +59,8 @@ export default function cancelOrderByClientOrderId(
       .then(async ([orderContext, asset]) => {
 
         let ixs: TransactionInstruction[] = [increaseComputeUnitsIx]
+        ixs.push(...await marginStress(context, asset));
+
         let cancelOrderByClientOrderIdInx = context.program.instruction.cancelOrderByClientOrderId(
           side,
           clientOrderId,
