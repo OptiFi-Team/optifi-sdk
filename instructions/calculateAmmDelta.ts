@@ -1,6 +1,6 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, Transaction, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findParseOptimizedOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
 import { AmmAccount, Asset as OptifiAsset } from "../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -21,9 +21,13 @@ export default function calculateAmmDelta(context: Context,
                 // let usdcSpotOracle = findParseOptimizedOracleAccountFromAsset(context, OptifiAsset.USDC, OracleAccountType.Spot);
                 let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
 
-                let instructions = [increaseComputeUnitsIx]
+                let tx = new Transaction()
                 let updateMarginStressInx = await marginStress(context, amm.asset);
-                instructions.push(...updateMarginStressInx)
+                tx.add(increaseComputeUnitsIx)
+                tx.add(...updateMarginStressInx)
+                let updateMarginStressTx = await context.provider.sendAndConfirm(tx);
+                console.log("updateMarginStressTx: ", updateMarginStressTx as TransactionSignature)
+                let instructions = [increaseComputeUnitsIx]
 
                 context.program.rpc.ammCalculateDelta({
                     accounts: {
