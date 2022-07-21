@@ -130,7 +130,6 @@ function initializeContext(wallet?: string | WalletProvider,
     }
 
 ): Promise<Context> {
-    console.log("initializeContext rpcEndpoint: ", rpcEndpoint)
     if (!cluster) {
         let clusterEnv = process.env.CLUSTER!;
         switch (clusterEnv) {
