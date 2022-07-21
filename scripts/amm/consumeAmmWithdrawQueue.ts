@@ -3,7 +3,7 @@ import consumeWithdrawRequestQueue from "../../instructions/amm/consumeWithdrawR
 import { findOptifiExchange, getUserAccountById } from "../../utils/accounts";
 import { findAMMWithIdx, getAmmWithdrawQueue } from "../../utils/amm";
 import Context from "../../types/context"
-import { SolanaEndpoint } from "../../constants";
+import { SolanaCluster } from "../../constants";
 import { sleep } from "../../utils/generic";
 
 let ammIndexes = [1, 2]
@@ -58,9 +58,9 @@ initializeContext().then(async (context) => {
 
 function isReqeustInCorrectTimeWindow(context: Context, requestTimestamp: number): boolean {
     let waitingTimeInSeconds
-    if (context.endpoint == SolanaEndpoint.Mainnet) {
+    if (context.endpoint == SolanaCluster.Mainnet) {
         waitingTimeInSeconds = 2 * 24 * 60 * 60 // 2 days
-    } else if (context.endpoint == SolanaEndpoint.Devnet) {
+    } else if (context.endpoint == SolanaCluster.Devnet) {
         waitingTimeInSeconds = 10 * 60 // 10 mins
     }
 

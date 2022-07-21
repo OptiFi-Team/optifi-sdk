@@ -2,7 +2,7 @@
 // // "@switchboard-xyz/switchboard-v2": "^0.0.112",
 // import { AggregatorAccount, loadSwitchboardProgram } from "@switchboard-xyz/switchboard-v2";
 // import { resolve } from "path";
-// import { SolanaEndpoint } from "../constants";
+// import { SolanaCluster } from "../constants";
 // import Context from "../types/context";
 
 
@@ -11,10 +11,10 @@
 //     let cluster;
 
 //     switch (context.endpoint) {
-//         case SolanaEndpoint.Devnet:
+//         case SolanaCluster.Devnet:
 //             cluster = "devnet";
 //             break
-//         case SolanaEndpoint.Mainnet:
+//         case SolanaCluster.Mainnet:
 //             cluster = "mainnet-beta";
 //             break
 //     };

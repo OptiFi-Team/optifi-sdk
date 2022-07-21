@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { SolanaEndpoint } from "../constants";
+import { SolanaCluster } from "../constants";
 import Context from "../types/context";
 import * as anchor from "@project-serum/anchor";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
@@ -219,10 +219,10 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
     let sbv2;
 
     switch (context.endpoint) {
-        case SolanaEndpoint.Devnet:
+        case SolanaCluster.Devnet:
             sbv2 = await SwitchboardProgram.loadDevnet();
             break
-        case SolanaEndpoint.Mainnet:
+        case SolanaCluster.Mainnet:
             sbv2 = await SwitchboardProgram.loadMainnet();
             break
     };
@@ -235,7 +235,7 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
     }
 
     let t = 300;
-    if (context.endpoint == SolanaEndpoint.Devnet) {
+    if (context.endpoint == SolanaCluster.Devnet) {
       t = 3600 * 12;
     }
     // Get latest value if its been updated in the last 300 seconds

@@ -1,7 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { Connection, Keypair, PublicKey, ConnectionConfig, Commitment } from "@solana/web3.js";
 import Context from "./types/context";
-import { OPTIFI_EXCHANGE_ID, SolanaEndpoint } from "./constants";
+import { OPTIFI_EXCHANGE_ID, SolanaCluster } from "./constants";
 import { isWalletProvider, readJsonFile } from './utils/generic';
 import { OptifiExchangeIDL } from './types/optifi-exchange-types';
 import optifiExchange from './idl/optifi_exchange.json';
@@ -121,7 +121,7 @@ function getWalletWrapper(wallet: WalletProvider): Promise<WalletContext> {
 function initializeContext(wallet?: string | WalletProvider,
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint?: SolanaEndpoint,
+    endpoint?: SolanaCluster,
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
         disableRetryOnRateLimit: true,
@@ -133,13 +133,13 @@ function initializeContext(wallet?: string | WalletProvider,
         let cluster = process.env.CLUSTER!;
         switch (cluster) {
             case "mainnet":
-                endpoint = SolanaEndpoint.Mainnet;
+                endpoint = SolanaCluster.Mainnet;
                 break;
             case "devnet":
-                endpoint = SolanaEndpoint.Devnet;
+                endpoint = SolanaCluster.Devnet;
                 break;
             default:
-                endpoint = SolanaEndpoint.Devnet;
+                endpoint = SolanaCluster.Devnet;
                 break;
         }
     }
@@ -207,7 +207,7 @@ function initializeContext(wallet?: string | WalletProvider,
 function initializeContextWithoutWallet(
     optifiProgramId?: string,
     customExchangeUUID?: string,
-    endpoint?: SolanaEndpoint,
+    endpoint?: SolanaCluster,
     connectionConfig: ConnectionConfig = {
         commitment: "recent",
         disableRetryOnRateLimit: true,
@@ -218,13 +218,13 @@ function initializeContextWithoutWallet(
         let cluster = process.env.CLUSTER!;
         switch (cluster) {
             case "mainnet":
-                endpoint = SolanaEndpoint.Mainnet;
+                endpoint = SolanaCluster.Mainnet;
                 break;
             case "devnet":
-                endpoint = SolanaEndpoint.Devnet;
+                endpoint = SolanaCluster.Devnet;
                 break;
             default:
-                endpoint = SolanaEndpoint.Devnet;
+                endpoint = SolanaCluster.Devnet;
                 break;
         }
     }

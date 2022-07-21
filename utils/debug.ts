@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { SolanaEndpoint } from "../constants";
+import { SolanaCluster } from "../constants";
 import { findUserAccount } from "./accounts";
 import { PublicKey } from "@solana/web3.js";
 import { IdlAccount } from "@project-serum/anchor/src/idl";
@@ -22,13 +22,13 @@ export function formatExplorerAddress(context: Context,
     entity_type: SolanaEntityType): string {
     let suffix: string;
     switch (context.endpoint) {
-        case SolanaEndpoint.Mainnet:
+        case SolanaCluster.Mainnet:
             suffix = '';
             break;
-        case SolanaEndpoint.Devnet:
+        case SolanaCluster.Devnet:
             suffix = '?cluster=devnet';
             break;
-        case SolanaEndpoint.Testnet:
+        case SolanaCluster.Testnet:
             suffix = '?cluster=testnet';
             break;
     }
