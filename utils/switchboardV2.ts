@@ -218,7 +218,7 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
     // load the switchboard program
     let sbv2;
 
-    switch (context.endpoint) {
+    switch (context.cluster) {
         case SolanaCluster.Devnet:
             sbv2 = await SwitchboardProgram.loadDevnet();
             break
@@ -235,7 +235,7 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
     }
 
     let t = 300;
-    if (context.endpoint == SolanaCluster.Devnet) {
+    if (context.cluster == SolanaCluster.Devnet) {
       t = 3600 * 12;
     }
     // Get latest value if its been updated in the last 300 seconds

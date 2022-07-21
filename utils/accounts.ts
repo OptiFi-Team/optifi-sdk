@@ -88,7 +88,7 @@ export function getDexOpenOrders(context: Context,
 
 
 export function findUserUSDCAddress(context: Context): Promise<[PublicKey, number]> {
-    return findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint]))
+    return findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.cluster]))
 }
 
 /**
@@ -134,16 +134,16 @@ export function exchangeAccountExists(context: Context): Promise<[boolean, Excha
 }
 
 /**
- * Helper function to add the oracle accounts for a particular endpoint to an accounts object
+ * Helper function to add the oracle accounts for a particular cluster to an accounts object
  *
  * @param context The program context
  * @param accounts The current accounts
  */
 export function oracleAccountsWrapper(context: Context, accounts: { [name: string]: any }): { [name: string]: any } {
-    accounts['btcSpotOracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
-    accounts['btcIvOracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV);
-    accounts['ethSpotOracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD);
-    accounts['ethIvOracle'] = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV)
+    accounts['btcSpotOracle'] = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD);
+    accounts['btcIvOracle'] = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV);
+    accounts['ethSpotOracle'] = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD);
+    accounts['ethIvOracle'] = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV)
 
     return accounts
 }
@@ -210,17 +210,17 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
     switch (asset) {
         case OptifiAsset.Bitcoin:
             if (oracleAccountType === OracleAccountType.Spot) {
-                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD);
             } else {
-                let btcIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV));
+                let btcIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV));
                 let btcIvOracle = new PublicKey(base58.encode(btcIvOracleRaw.parseOptimizedResultAddress).toString())
                 return btcIvOracle
             }
         case OptifiAsset.Ethereum:
             if (oracleAccountType === OracleAccountType.Spot) {
-                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD);
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD);
             } else {
-                let ethIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV));
+                let ethIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV));
                 let ethIvOracle = new PublicKey(base58.encode(ethIvOracleRaw.parseOptimizedResultAddress).toString())
                 return ethIvOracle
             }
@@ -228,7 +228,7 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
             if (oracleAccountType === OracleAccountType.Iv) {
                 console.warn("No IV account for USDC, returning spot");
             }
-            return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD);
+            return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD);
         default:
             console.log("Asset is ", asset);
             throw new Error(`Unsupported asset ${asset}`);
@@ -259,21 +259,21 @@ export function findOracleAccountFromAsset(context: Context,
     switch (asset) {
         case OptifiAsset.Bitcoin:
             if (oracleAccountType === OracleAccountType.Spot) {
-                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD);
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD);
             } else {
-                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV)
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV)
             }
         case OptifiAsset.Ethereum:
             if (oracleAccountType === OracleAccountType.Spot) {
-                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD)
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD)
             } else {
-                return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV)
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV)
             }
         case OptifiAsset.USDC:
             if (oracleAccountType === OracleAccountType.Iv) {
                 console.warn("No IV account for USDC, returning spot");
             }
-            return new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD)
+            return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD)
         default:
             console.log("Asset is ", asset);
             throw new Error(`Unsupported asset ${asset}`);

@@ -16,7 +16,7 @@ export async function consumeEventsV2(
     limit: number,
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {
-        let serumDexProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
+        let serumDexProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster])
         console.log(`passed ${openOrdersAccounts.length} openOrdersAccounts`)
         // let owner: Account = myWallet;
         // let marketAccont = await Market.load(connection, marketAddress, {}, serumDexProgramId);
@@ -57,7 +57,7 @@ export async function consumeEvents(
     limit: number,
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {
-        let serumDexProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
+        let serumDexProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster])
 
         // let owner: Account = myWallet;
         // let marketAccont = await Market.load(connection, marketAddress, {}, serumDexProgramId);

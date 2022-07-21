@@ -27,7 +27,7 @@ export default function consumeWithdrawRequestQueue(context: Context,
                             let user = userAccountRes as UserAccount;
                             // console.log(user.owner.toString())
 
-                            findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint]), user.owner).then(([userQuoteTokenVault, _]) => {
+                            findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.cluster]), user.owner).then(([userQuoteTokenVault, _]) => {
                                 // console.log(userQuoteTokenVault.toString())
 
                                 findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {

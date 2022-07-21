@@ -13,7 +13,7 @@ import {market} from "./constants";
 
 
 
-initializeContext(undefined, undefined, undefined,undefined, {commitment: "confirmed"} )
+initializeContext(undefined, undefined, undefined,undefined,undefined,  {commitment: "confirmed"} )
   .then((context) => {
     findUserAccount(context)
       .then(([userAccount, _]) => {

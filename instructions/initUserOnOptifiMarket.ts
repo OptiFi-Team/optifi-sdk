@@ -16,7 +16,7 @@ export default function initUserOnOptifiMarket(context: Context,
     marketAddress: PublicKey,
     userAccount: UserAccount,
 ): Promise<InstructionResult<string>> {
-    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
     return new Promise((resolve, reject) => {
         let exists = true;
         if (!exists || !userAccount) reject({
@@ -97,7 +97,7 @@ export default function initUserOnOptifiMarket(context: Context,
 export function initUserOnOptifiMarketV2(context: Context,
     marketAddress: PublicKey,
 ): Promise<InstructionResult<string>> {
-    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
     return new Promise(async (resolve, reject) => {
         try {
 
@@ -179,7 +179,7 @@ export function initUserOnOptifiMarketV2(context: Context,
 export function createInitUserOnOptifiMarketInstruciton(context: Context,
     marketAddress: PublicKey,
 ): Promise<TransactionInstruction[]> {
-    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
     return new Promise(async (resolve, reject) => {
         try {
 

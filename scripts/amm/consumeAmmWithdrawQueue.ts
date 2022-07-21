@@ -58,9 +58,9 @@ initializeContext().then(async (context) => {
 
 function isReqeustInCorrectTimeWindow(context: Context, requestTimestamp: number): boolean {
     let waitingTimeInSeconds
-    if (context.endpoint == SolanaCluster.Mainnet) {
+    if (context.cluster == SolanaCluster.Mainnet) {
         waitingTimeInSeconds = 2 * 24 * 60 * 60 // 2 days
-    } else if (context.endpoint == SolanaCluster.Devnet) {
+    } else if (context.cluster == SolanaCluster.Devnet) {
         waitingTimeInSeconds = 10 * 60 // 10 mins
     }
 

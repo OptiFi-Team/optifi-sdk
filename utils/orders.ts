@@ -80,7 +80,7 @@ export function formOrderContext(
   side: OrderSide,
   userAccount: UserAccount,
 ): Promise<OrderAccountContext> {
-  let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+  let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
   return new Promise((resolve, reject) => {
     let acctExists = true;
     findExchangeAccount(context)
@@ -226,7 +226,7 @@ export function formPlaceOrderContext(
   marketAddress: PublicKey,
   userAccount: UserAccount,
 ): Promise<[PlaceOrderContext, number]> {
-  let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+  let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
   let acctExists = true;
   return new Promise((resolve, reject) => {
     findExchangeAccount(context)
@@ -403,7 +403,7 @@ export function formCancelOrderContext(
   marketAddress: PublicKey,
   userAccount: UserAccount,
 ): Promise<[CancelOrderContext, number]> {
-  let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+  let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
   let acctExists = true;
   return new Promise((resolve, reject) => {
     findExchangeAccount(context)
@@ -700,7 +700,7 @@ export async function loadOrdersAccountsForOwner(connection: Connection, optifiM
 
 // load all orders accounts for owner with only one request
 export async function loadOrdersAccountsForOwnerV2(context: Context, optifiMarkets: OptifiMarketFullData[], ownerAddress: PublicKey) {
-  let serumProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+  let serumProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
   let userOpenOrdersAccountsAddresses: PublicKey[] = []
   for (let optifiMarket of optifiMarkets) {
     let [openOrdersAccountAddr, _] = await getDexOpenOrders(
@@ -826,20 +826,20 @@ function filterForOpenOrders2(bids: Orderbook, asks: Orderbook, openOrdersAccoun
 function getTotalFee(context: Context, orderType: OrderType, is_registered_maker: Boolean): number {
   switch (orderType) {
     case OrderType.PostOnly: {
-      return MAKER_FEE[context.endpoint];
+      return MAKER_FEE[context.cluster];
     }
     default: {
-      return TAKER_FEE[context.endpoint];
+      return TAKER_FEE[context.cluster];
     }
   }
 }
 function getSerumFee(context: Context, orderType: OrderType, is_registered_maker: Boolean): number {
   switch (orderType) {
     case OrderType.PostOnly: {
-      return SERUM_MAKER_FEE[context.endpoint];
+      return SERUM_MAKER_FEE[context.cluster];
     }
     default: {
-      return SERUM_TAKER_FEE[context.endpoint];
+      return SERUM_TAKER_FEE[context.cluster];
     }
   }
 }

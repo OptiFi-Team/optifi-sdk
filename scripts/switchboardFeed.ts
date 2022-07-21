@@ -13,7 +13,7 @@ import { getSwitchboard } from "../utils/switchboardV2";
 
 initializeContext().then((context) => {
 
-    const switchboardFeed = new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD)
+    const switchboardFeed = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD)
 
     getSwitchboard(context, switchboardFeed).then(
         () => process.exit(),

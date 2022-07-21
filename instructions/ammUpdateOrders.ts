@@ -21,7 +21,7 @@ export function ammUpdateOrders(context: Context,
     marketAddress: PublicKey,
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
-        let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
+        let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster])
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findUserAccount(context).then(([userAccountAddress, _]) => {
                 context.program.account.ammAccount.fetch(ammAddress).then(async (ammRes) => {

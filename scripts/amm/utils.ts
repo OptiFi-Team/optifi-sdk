@@ -267,7 +267,7 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
 }
 
 export function getMangoPerpMarketInfoByAsset(context: Context, asset: number) {
-    let configs = MANGO_PERP_MARKETS[context.endpoint]
+    let configs = MANGO_PERP_MARKETS[context.cluster]
     switch (asset) {
         case 0:
             return configs[0]

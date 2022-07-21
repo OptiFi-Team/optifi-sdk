@@ -12,7 +12,7 @@ export default function registerMarketMaker(context: Context): Promise<Instructi
             findUserAccount(context).then(([userAccountAddress, _]) => {
                 findMarketMakerAccount(context).then(([marketMakerAccount, bump]) => {
                     findOrCreateAssociatedTokenAccount(context,
-                        new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                        new PublicKey(USDC_TOKEN_MINT[context.cluster]),
                         marketMakerAccount).then((liquidityPoolAccount) => {
                             let registerMarketMakerTx = context.program.rpc.registerMarketMaker(
                                 bump,

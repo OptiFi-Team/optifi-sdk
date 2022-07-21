@@ -4,7 +4,7 @@ import ExpiryType from "./types/expiryType";
 import MaturityType from "./types/maturityType";
 import { Duration } from "./types/optifi-exchange-types";
 
-// solana cluter with default endpoint
+// solana cluster with default rpc endpoint
 export enum SolanaCluster {
     Mainnet = "https://optifil-main-c161.mainnet.rpcpool.com",
     Devnet = "https://mango.devnet.rpcpool.com",
@@ -103,7 +103,7 @@ export function calculateSerumMarketsCount(): number {
 export const SERUM_MARKETS: number = calculateSerumMarketsCount();
 
 export type EndpointConstant = {
-    [endpoint in SolanaCluster]: any;
+    [cluster in SolanaCluster]: any;
 }
 
 export const USDC_TOKEN_MINT: EndpointConstant = {

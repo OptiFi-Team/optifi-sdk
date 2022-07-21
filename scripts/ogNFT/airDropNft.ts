@@ -17,7 +17,7 @@ import { airdropNft } from "../../utils/ogNft";
 // XLSX.set_cptable(cpexcel);
 
 initializeContext().then(async (context) => {
-    let nftMint = new PublicKey(OG_NFT_MINT[context.endpoint])
+    let nftMint = new PublicKey(OG_NFT_MINT[context.cluster])
     let airdropAmount = 1
 
     // let filePath = path.resolve(__dirname, "addresses.json");

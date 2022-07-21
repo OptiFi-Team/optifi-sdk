@@ -13,7 +13,7 @@ export default function executeMarketMakerWithdrawal(context: Context): Promise<
             findUserAccount(context).then(([userAccountAddress, _]) => {
                 context.program.account.userAccount.fetch(userAccountAddress).then((userAcctRaw) => {
                     findMarketMakerAccount(context).then(([marketMakerAccount]) => {
-                        findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
+                        findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.cluster])).then(([userQuoteTokenVault, _]) => {
 
                             let marketMakerWithdrawTx = context.program.rpc.executeMarketMakerWithdrawal({
                                 accounts: {

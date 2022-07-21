@@ -28,9 +28,9 @@ export async function fetchDataOnRegularBasis(
     userWalletAddresses: PublicKey[]
 ) {
     try {
-        let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-        let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
-        let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
+        let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD))
+        let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD))
+        let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
         let spot_btc = spotRes_btc / usdcSpot
         let spot_eth = spotRes_eth / usdcSpot
         // let spot_btc = 42000;
@@ -88,7 +88,7 @@ export async function fetchDataOnRegularBasis(
             let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress1)
 
             // must use "confirmed" as commitment level for tx hostory related requests 
-            let context2 = await initializeContext(undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" })
+            let context2 = await initializeContext(undefined, undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" })
             let orderHistory = await getAllOrdersForAccount(context2, userAccountAddress1,)
             // order history is optional, get call loadOrdersForOwnerOnAllMarkets without it first. and whenever you get user's order history,
             // just call this loadOrdersForOwnerOnAllMarkets again

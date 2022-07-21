@@ -35,7 +35,7 @@ export default function liquidationSettleOrder(context: Context,
                                                 market.instrumentShortSplToken,
                                                 userAccountAddress
                                             ).then((shortSPLTokenVault) => {
-                                                let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+                                                let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
                                                 deriveVaultNonce(market.serumMarket, serumId).then(([vaultOwner, _]) => {
                                                     context.program.account.chain
                                                         .fetch(market.instrument)
@@ -67,7 +67,7 @@ export default function liquidationSettleOrder(context: Context,
                                                                                     .baseMint,
                                                                             instrumentShortSplTokenMint:
                                                                                 market.instrumentShortSplToken,
-                                                                            serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
+                                                                            serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]),
                                                                             tokenProgram: TOKEN_PROGRAM_ID,
                                                                             liquidator: context.provider.wallet.publicKey,
                                                                         }

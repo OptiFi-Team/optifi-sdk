@@ -83,7 +83,7 @@ function initializeAccountsWithLayouts(context: Context,
                     newAccountPubkey: marketAccount.publicKey,
                     space: MARKET_DATA_LENGTH,
                     lamports: rentBalances[MARKET_DATA_LENGTH],
-                    programId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
+                    programId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster])
                 }),
                 SystemProgram.createAccount({
                     fromPubkey: context.provider.wallet.publicKey,
@@ -147,7 +147,7 @@ function initializeAccountsWithLayouts(context: Context,
  */
 export default function initializeSerumMarket(context: Context, decimal: number): Promise<InstructionResult<PublicKey>> {
 
-    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
     return new Promise((resolve, reject) => {
 
         console.debug("Starting serum market creation");
@@ -156,7 +156,7 @@ export default function initializeSerumMarket(context: Context, decimal: number)
         let marketAccount = anchor.web3.Keypair.generate();
         let coinMintAccount = anchor.web3.Keypair.generate();
         let pcVaultAccount = anchor.web3.Keypair.generate();
-        let usdcMint = new PublicKey(USDC_TOKEN_MINT[context.endpoint]);
+        let usdcMint = new PublicKey(USDC_TOKEN_MINT[context.cluster]);
         let coinVaultAccount = anchor.web3.Keypair.generate();
         let bidsAccount = anchor.web3.Keypair.generate();
         let asksAccount = anchor.web3.Keypair.generate();

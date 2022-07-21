@@ -39,7 +39,7 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                     // Get the minimum lamports for rent exemption
                     context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then(async (min) => {
 
-                        let usdcMint = new PublicKey(USDC_TOKEN_MINT[context.endpoint])
+                        let usdcMint = new PublicKey(USDC_TOKEN_MINT[context.cluster])
                         let inxs = [
                             anchor.web3.SystemProgram.createAccount({
                                 fromPubkey: context.provider.wallet.publicKey,

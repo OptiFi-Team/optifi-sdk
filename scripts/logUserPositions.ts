@@ -8,7 +8,7 @@ import { calcPnLForUserPositions } from "../utils/user";
 import { getAllTradesForAccount } from "../utils/tradeHistory";
 import { Connection, Keypair, PublicKey, ConnectionConfig, Commitment } from "@solana/web3.js";
 import Decimal from "decimal.js";
-initializeContext(undefined, undefined, undefined, undefined, { commitment: "confirmed" }).then(async (context) => {
+initializeContext(undefined, undefined, undefined, undefined, undefined, { commitment: "confirmed" }).then(async (context) => {
     // findUserAccount(context).then(([userAccountAddress, _]) => {
     // findOptifiMarkets(context).then(async (markets) => {
     //     let res = await context.program.account.userAccount.fetch(userAccountAddress);

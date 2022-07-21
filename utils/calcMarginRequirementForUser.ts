@@ -72,7 +72,7 @@ export function calcMarginRequirementForUser(
             // console.log('netPositionsETH: ', netPositionsETH);
 
             // Calc margin requirement for both BTC and ETH options
-            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
+            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
             let marginForBTC = 0
             let marginForETH = 0
             let netOptionForBTC = 0
@@ -198,7 +198,7 @@ export function preCalcMarginForNewOrder(
 
             // Calc margin requirement for both BTC and ETH options
             // Calc margin requirement for both BTC and ETH options
-            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_USDC_USD))
+            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
             let marginForBTC = 0
             let marginForETH = 0
             let netOptionForBTC = 0
@@ -273,8 +273,8 @@ export function isMarginSufficientForNewOrder(
 }
 
 export async function getSpotnIv(context: Context) {
-    let spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD));
-    let ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+    let spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD));
+    let ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
 
     let result = [spotRes, ivRes];
 
@@ -291,12 +291,12 @@ async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: 
     let ivRes: AggregatorState;
     switch (asset) {
         case 0:
-            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_USD))
-            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_BTC_IV))
+            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD))
+            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
             break
         case 1:
-            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_USD))
-            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.endpoint].SWITCHBOARD_ETH_IV))
+            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD))
+            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
             break
         default:
             throw Error("unsupported asset type")

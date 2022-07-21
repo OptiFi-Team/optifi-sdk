@@ -7,7 +7,7 @@ import { findUserAccount, getFilteredProgramAccounts } from "./accounts";
 import settleOrderFunds from "../instructions/order/settleOrderFunds";
 
 export function getSerumMarket(context: Context, marketAddress: PublicKey): Promise<Market> {
-    return Market.load(context.connection, marketAddress, {}, new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]))
+    return Market.load(context.connection, marketAddress, {}, new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]))
 }
 
 export function getSerumMarketPrice(context: Context, serumMarketAddress: PublicKey): Promise<number> {
@@ -102,7 +102,7 @@ export function watchSettleSerumFunds(context: Context,
     })
 }
 
-export async function findOpenOrdersForSerumMarket(context: Context, marketAddress: PublicKey, programId: PublicKey = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])) {
+export async function findOpenOrdersForSerumMarket(context: Context, marketAddress: PublicKey, programId: PublicKey = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster])) {
     const filters = [
         {
             memcmp: {

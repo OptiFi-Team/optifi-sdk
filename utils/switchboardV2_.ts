@@ -10,7 +10,7 @@
 //     // load the switchboard program
 //     let cluster;
 
-//     switch (context.endpoint) {
+//     switch (context.cluster) {
 //         case SolanaCluster.Devnet:
 //             cluster = "devnet";
 //             break

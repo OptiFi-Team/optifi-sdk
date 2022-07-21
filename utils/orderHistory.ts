@@ -275,7 +275,7 @@ export function getAllOrdersForAccount(
       }
 
       // parse order txs, inlcuding place order, cancel order
-      let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+      let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
       let orderTxs = await parseOrderTxs(context, allTxs, serumId, instruments)
       // sort them back to descending time order
       orderTxs.sort(function (a, b) {

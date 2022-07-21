@@ -452,7 +452,7 @@ function createMaterailsForExchangeIfNotExist(context: Context, exchangeAddress:
     let filename = path.resolve(__dirname, logsDirPrefix, exchangeAddress.toString() + ".json");
     if (!fs.existsSync(filename)) {
         let data: ExchangeMaterial = {
-            network: context.endpoint.toString(),
+            network: context.cluster.toString(),
             programId: context.program.programId.toString(),
             exchangeUUID: context.exchangeUUID,
             exchangeAddress: exchangeAddress.toString(),

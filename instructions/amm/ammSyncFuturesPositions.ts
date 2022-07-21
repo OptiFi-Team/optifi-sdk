@@ -47,8 +47,8 @@ export default function ammSyncFuturesPositions(context: Context,
                     let amm = ammRes as AmmAccount;
                     let [ammLiquidityAuth,] = await getAmmLiquidityAuthPDA(context);
                     // prepare the mango account for amm
-                    let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.endpoint])
-                    let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.endpoint])
+                    let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.cluster])
+                    let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.cluster])
                     // console.log("mangoProgramId: ", mangoProgramId.toString())
                     // console.log("mangoGroup: ", mangoGroup.toString())
 
@@ -79,7 +79,7 @@ export default function ammSyncFuturesPositions(context: Context,
                         const rootBanks = await mangoGroupAccountInfo.loadRootBanks(client.connection);
                         // console.log("rootBanks: ", rootBanks)
                         // rootBanks.forEach(e => console.log("e?.publicKey.toString(): ", e?.publicKey.toString()))
-                        let mangoUSDCConfig = MANGO_USDC_CONFIG[context.endpoint]
+                        let mangoUSDCConfig = MANGO_USDC_CONFIG[context.cluster]
                         let usdcRootKey = new PublicKey(mangoUSDCConfig["rootKey"])
                         let index = rootBanks.findIndex(e => e?.publicKey.equals(usdcRootKey))
                         // console.log("index: ", index)

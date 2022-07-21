@@ -183,7 +183,7 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
                 let serumMarketInfos = await context.connection.getMultipleAccountsInfo(serumMarketAddresses)
                 let asksAndBidsAddresses: PublicKey[] = []
                 let decodedSerumMarkets: Market[] = []
-                let serumDexProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
+                let serumDexProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster])
                 serumMarketInfos.forEach((e, i) => {
                     let decoded = Market.getLayout(serumDexProgramId).decode(e?.data!)
                     if (!decoded.accountFlags.initialized ||

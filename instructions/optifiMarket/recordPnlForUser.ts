@@ -27,7 +27,7 @@ export default function recordPnl(context: Context,
                 findMarketInstrumentContext(context, market).then((marketContext) => {
                     findSerumAuthorityPDA(context).then(([serumMarketAuthorityAddress, _]) => {
                         findParseOptimizedOracleAccountFromInstrument(context, marketContext.optifiMarket.instrument).then((oracleSpotAccount) =>
-                            deriveVaultNonce(marketContext.optifiMarket.serumMarket, new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]))
+                            deriveVaultNonce(marketContext.optifiMarket.serumMarket, new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]))
                                 .then(([vaultAddress, nonce]) => {
                                     getSerumMarket(context, marketContext.optifiMarket.serumMarket).then((serumMarket) => {
                                         getDexOpenOrders(context, marketContext.optifiMarket.serumMarket, userToSettle).then(([openOrdersAccount, _]) => {
@@ -55,7 +55,7 @@ export default function recordPnl(context: Context,
                                                             userInstrumentLongTokenVault: userLongTokenVault,
                                                             userInstrumentShortTokenVault: userShortTokenVault,
                                                             pruneAuthority: serumMarketAuthorityAddress,
-                                                            serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
+                                                            serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]),
                                                             tokenProgram: TOKEN_PROGRAM_ID,
                                                             clock: SYSVAR_CLOCK_PUBKEY,
                                                             assetSpotPriceOracleFeed: oracleSpotAccount,

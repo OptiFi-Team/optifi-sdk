@@ -21,7 +21,7 @@ export function formatExplorerAddress(context: Context,
     entity: string,
     entity_type: SolanaEntityType): string {
     let suffix: string;
-    switch (context.endpoint) {
+    switch (context.cluster) {
         case SolanaCluster.Mainnet:
             suffix = '';
             break;

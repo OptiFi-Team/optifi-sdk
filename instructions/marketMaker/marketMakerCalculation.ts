@@ -22,9 +22,9 @@ export default function marketMakerCalculation(
                     context.program.account.userAccount.fetch(userAccountAddress).then((userAcctRaw) => {
                         findMarketMakerAccount(context).then(([marketMakerAccount]) => {
                             findAssociatedTokenAccount(context,
-                                new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                new PublicKey(USDC_TOKEN_MINT[context.cluster]),
                                 userAccountAddress).then(([userMargin,]) => {
-                                    let serumProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint])
+                                    let serumProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster])
                                     context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {
                                         let optifiMarket = marketRes as OptifiMarket;
                                         getSerumMarket(context, optifiMarket.serumMarket).then((serumMarket) => {

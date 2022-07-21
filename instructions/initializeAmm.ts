@@ -37,8 +37,8 @@ export function initializeAmm(context: Context,
                                 "with address", ammAddress.toString());
 
                             // prepare the mango account for amm
-                            let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.endpoint])
-                            let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.endpoint])
+                            let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.cluster])
+                            let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.cluster])
                             let [ammMangoAccountAddress,] = await getMangoAccountPDA(mangoProgramId, mangoGroup, ammLiquidityAuthAddress, idx)
                             console.log("ammMangoAccountAddress: ", ammMangoAccountAddress.toString())
 
@@ -89,7 +89,7 @@ export function initializeAmm(context: Context,
                                         }),
                                         createInitializeAccountInstruction(
                                             ammUSDCTokenVault.publicKey,
-                                            new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                            new PublicKey(USDC_TOKEN_MINT[context.cluster]),
                                             ammLiquidityAuthAddress,
                                             TOKEN_PROGRAM_ID
                                         ),

@@ -32,7 +32,7 @@ export default function registerLiquidationMarket(context: Context,
                                     let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, chain.asset);
                                     let [serumMarketAuthority,] = await findSerumAuthorityPDA(context);
 
-                                    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+                                    let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
                                     let [vaultOwner, _] = await deriveVaultNonce(market.serumMarket, serumId);
 
                                     let userAccount = await context.program.account.userAccount.fetch(userAccountAddress);

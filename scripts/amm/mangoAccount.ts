@@ -7,8 +7,8 @@ import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../../utils/pda";
 import { ammIndex } from "./constants";
 
 initializeContext().then(async (context) => {
-    let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.endpoint])
-    let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.endpoint])
+    let mangoProgramId = new PublicKey(MANGO_PROGRAM_ID[context.cluster])
+    let mangoGroup = new PublicKey(MANGO_GROUP_ID[context.cluster])
     let client = new MangoClient(context.connection, mangoProgramId);
     let [ammLiquidityAuth,] = await getAmmLiquidityAuthPDA(context);
     let [ammMangoAccountAddress,] = await getMangoAccountPDA(mangoProgramId, mangoGroup, ammLiquidityAuth, ammIndex)

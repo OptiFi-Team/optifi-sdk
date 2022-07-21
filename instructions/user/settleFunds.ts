@@ -25,7 +25,7 @@ export default function settleFunds(context: Context,
                                 userMarginAccountUsdc: userAccount.userMarginAccountUsdc,
                                 centralUsdcPool: exchange.usdcCentralPool,
                                 centralUsdcPoolAuth: centralUSDCPoolAuth,
-                                usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                usdcMint: new PublicKey(USDC_TOKEN_MINT[context.cluster]),
                                 tokenProgram: TOKEN_PROGRAM_ID
                             }
                         }).then((res) => {

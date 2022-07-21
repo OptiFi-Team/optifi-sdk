@@ -19,7 +19,7 @@ export default function ammDeposit(context: Context,
                 context.program.account.ammAccount.fetch(ammAddress).then((ammRes) => {
                     // @ts-ignore
                     let amm = ammRes as AmmAccount;
-                    findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.endpoint])).then(([userQuoteTokenVault, _]) => {
+                    findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.cluster])).then(([userQuoteTokenVault, _]) => {
                         findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
                             let instructions: TransactionInstruction[] = []
                             try {

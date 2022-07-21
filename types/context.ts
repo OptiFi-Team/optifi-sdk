@@ -7,7 +7,7 @@ import WalletType from "./walletType";
 
 export default interface Context {
     program: anchor.Program<OptifiExchangeIDL>,
-    endpoint: SolanaCluster,
+    cluster: SolanaCluster,
     connection: Connection,
     exchangeUUID: string,
     provider: anchor.AnchorProvider,

@@ -77,7 +77,7 @@ Grabs all orders from each market and return an array of orders
 
 (async () => {
     console.log('running getAllOpenOrdersForUser')
-    initializeContext(undefined, undefined, undefined, undefined, { commitment: "confirmed" })
+    initializeContext(undefined, undefined, undefined, undefined, undefined, { commitment: "confirmed" })
         .then(context => {
             findOptifiMarketsWithFullData(context)
                 .then(optifiMarkets => {

@@ -27,7 +27,7 @@ export default function liquidationPlaceOrder(context: Context,
                                     findSerumAuthorityPDA(context).then(([serumMarketAuthority, _]) => {
                                         context.program.account.userAccount.fetch(userAccountAddress).then((userAccount) => {
 
-                                            let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]);
+                                            let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
                                             deriveVaultNonce(market.serumMarket, serumId).then(async ([vaultOwner, _]) => {
                                                 let chainRes = await context.program.account.chain
                                                     .fetch(marketRes.instrument)
@@ -60,7 +60,7 @@ export default function liquidationPlaceOrder(context: Context,
                                                             asks: serumMarket.asksAddress,
                                                             coinVault: serumMarket.decoded.baseVault,
                                                             pcVault: serumMarket.decoded.quoteVault,
-                                                            serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.endpoint]),
+                                                            serumDexProgramId: new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]),
                                                             tokenProgram: TOKEN_PROGRAM_ID,
                                                             rent: SYSVAR_RENT_PUBKEY,
                                                             pruneAuthority: serumMarketAuthority,

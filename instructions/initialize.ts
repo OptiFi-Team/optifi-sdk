@@ -39,7 +39,7 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                             uuid: context.exchangeUUID,
                             version: 1,
                             exchangeAuthority: context.provider.wallet.publicKey,
-                            usdcMint: new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                            usdcMint: new PublicKey(USDC_TOKEN_MINT[context.cluster]),
                             btcSpotOracle,
                             ethSpotOracle,
                             usdcSpotOracle,
@@ -69,7 +69,7 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                                 }),
                                 createInitializeAccountInstruction(
                                     usdcCentralPoolWallet.publicKey,
-                                    new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                    new PublicKey(USDC_TOKEN_MINT[context.cluster]),
                                     poolAuthPDAAddress,
                                     TOKEN_PROGRAM_ID
                                 ),
@@ -83,7 +83,7 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                                 }),
                                 createInitializeAccountInstruction(
                                     usdcFeePoolWallet.publicKey,
-                                    new PublicKey(USDC_TOKEN_MINT[context.endpoint]),
+                                    new PublicKey(USDC_TOKEN_MINT[context.cluster]),
                                     poolAuthPDAAddress,
                                     TOKEN_PROGRAM_ID
                                 )

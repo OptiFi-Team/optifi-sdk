@@ -8,7 +8,7 @@ import { BN } from "@project-serum/anchor";
 // check if a wallet address holds an og nft
 export async function checkIfUserHasOgNft(context: Context, userWallet?: PublicKey): Promise<boolean> {
     let wallet = userWallet ? userWallet : context.provider.wallet.publicKey
-    let nftMint = new PublicKey(OG_NFT_MINT[context.endpoint])
+    let nftMint = new PublicKey(OG_NFT_MINT[context.cluster])
 
     let ata = await getAssociatedTokenAddress(nftMint, wallet)
     let acctInfo = await context.connection.getAccountInfo(ata)
