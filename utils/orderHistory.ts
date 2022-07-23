@@ -117,26 +117,6 @@ async function getCancelledQuantity(logs: string[]): Promise<string> {
   })
 }
 
-async function getFillAmtFromLog(logs: string[]): Promise<string> {
-  return new Promise(async (resolve, reject) => {
-    let stringResLong: string;
-    let stringResShort: string;
-    let stringLongLen = 12
-    let stringShortLen = 13
-    for (let log of logs) {
-      if (log.search("long_amount") != -1) {
-        stringResLong = log.substring(log.search("long_amount") + stringLongLen, log.search("short_amount") - 2)
-        if (stringResLong == "0") {
-          stringResShort = log.substring(log.search("short_amount") + stringShortLen, log.search("net_positions") - 2)
-          resolve(stringResShort)
-        }
-        resolve(stringResLong)
-      }
-    }
-    resolve("-1")
-  })
-}
-
 const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
 
@@ -187,7 +167,6 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   record.marketAddress = marketAddress
                   record.txType = "place order"
                   record.decimal = baseTokenDecimal
-                  record.fillAmtFromLog = await getFillAmtFromLog(tx.meta?.logMessages!)
                   orderTxs.push(Object.assign({}, record));
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
                   // get the orginal order details
@@ -311,7 +290,6 @@ export class OrderInstruction {
   cancelledQuantity: number | undefined
   status: string
   decimal: number
-  fillAmtFromLog: string
 
   constructor({
     clientId,
@@ -330,7 +308,6 @@ export class OrderInstruction {
     cancelledQuantity,
     status,
     decimal,
-    fillAmtFromLog
   }: {
     clientId: BN;
     limit: number;
@@ -348,7 +325,6 @@ export class OrderInstruction {
     cancelledQuantity: number | undefined
     status: string
     decimal: number
-    fillAmtFromLog: string
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -366,7 +342,6 @@ export class OrderInstruction {
     this.cancelledQuantity = cancelledQuantity
     this.status = status
     this.decimal = decimal
-    this.fillAmtFromLog = fillAmtFromLog
   }
 
   public get shortForm(): string {
