@@ -1,5 +1,5 @@
 {
-  "version": "1.1.24",
+  "version": "1.1.25",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -2171,7 +2171,7 @@
       ]
     },
     {
-      "name": "marginStressSync",
+      "name": "marginStressCalculate",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -2196,27 +2196,6 @@
         {
           "name": "ivFeed",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "marginStressCalculate",
-      "accounts": [
-        {
-          "name": "optifiExchange",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "marginStressAccount",
-          "isMut": true,
           "isSigner": false
         }
       ],
@@ -5058,8 +5037,5 @@
       "name": "InvalidMarginStressAccount",
       "msg": "Invalid margin stress account"
     }
-  ],
-  "metadata": {
-    "address": "optFiKjQpoQ3PvacwnFWaPUAqXCETMJSz2sz8HwPe9B"
-  }
+  ]
 }

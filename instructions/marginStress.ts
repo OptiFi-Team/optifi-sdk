@@ -42,7 +42,20 @@ export default function marginStress(context: Context,
                     OracleAccountType.Spot
                 );
 
-            let ix1 = context.program.instruction.marginStressSync(
+            // let ix1 = context.program.instruction.marginStressSync(
+            //     {
+            //         accounts: {
+            //             optifiExchange: exchangeAddress,
+            //             marginStressAccount: marginStressAddress,
+            //             assetFeed: spotOracle,
+            //             usdcFeed: usdcSpotOracle,
+            //             ivFeed: ivOracle,
+            //             clock: SYSVAR_CLOCK_PUBKEY
+            //         },
+            //     }
+            // );
+
+            let ix2 = context.program.instruction.marginStressCalculate(
                 {
                     accounts: {
                         optifiExchange: exchangeAddress,
@@ -50,23 +63,13 @@ export default function marginStress(context: Context,
                         assetFeed: spotOracle,
                         usdcFeed: usdcSpotOracle,
                         ivFeed: ivOracle,
-                        clock: SYSVAR_CLOCK_PUBKEY
-                    },
-                }
-            );
-
-            let ix2 = context.program.instruction.marginStressCalculate(
-                {
-                    accounts: {
-                        optifiExchange: exchangeAddress,
-                        marginStressAccount: marginStressAddress,
                     },
                 }
             );
 
             let instructions: TransactionInstruction[] = []
 
-            instructions.push(ix1);
+            // instructions.push(ix1);
             instructions.push(ix2);
 
             resolve(instructions)
