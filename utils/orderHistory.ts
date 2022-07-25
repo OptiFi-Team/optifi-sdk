@@ -52,7 +52,7 @@ export const retrievRecentTxsV2 = async (context: Context,
   })
 }
 
-async function getFilledData(context: Context, account: PublicKey, orderHistorys: OrderInstruction[]): Promise<number[]> {
+export async function getFilledData(context: Context, account: PublicKey, orderHistorys: OrderInstruction[]): Promise<number[]> {
   return new Promise(async (resolve, reject) => {
     let res: number[] = [];
     let txs = await retrievRecentTxs(context, account)
