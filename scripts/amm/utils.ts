@@ -81,11 +81,6 @@ export async function removeInstrumentsFromAmm(context: Context, ammIndex: numbe
             return !(index >= 0 && instrumentInfos[index].expiryDate.toNumber() * 1000 > now)
         });
 
-        optifiMarketsToRemove = [
-            new PublicKey("GrkkaSeSenf7vS2pnbBGwrrJM4g1eVD5u9VEThJfo8kD"),
-            new PublicKey("4CwNe5e1VVQXciU9Dp6ahm713yYf9H6gC8TyibZasT3K")
-        ]
-
         // for (let market of optifiMarketsToRemove) {
         optifiMarketsToRemove.forEach(async market => {
             console.log(ammAddress.toString(), market.toString())
