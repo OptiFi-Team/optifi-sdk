@@ -5037,5 +5037,8 @@
       "name": "InvalidMarginStressAccount",
       "msg": "Invalid margin stress account"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "DeVoPfWrDn2UTA1MbSfagvpQxA91MpNFQnhHRw19dK34"
+  }
 }
