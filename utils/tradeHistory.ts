@@ -292,7 +292,7 @@ export function getAllTradesForAccount(
 
         // postOnly on trade history:
         // 1. totally Filled
-        // 2. Partial Filled 
+        // 2. Partial Filled
         // 3. Partial Filled and be canceled 
         if (orderHistory.orderType == "postOnly") {
           if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
