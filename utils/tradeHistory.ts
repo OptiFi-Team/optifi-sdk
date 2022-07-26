@@ -4,7 +4,7 @@ import Context from "../types/context";
 import { findUserAccount } from "../utils/accounts";
 import { loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, Order } from "../utils/orders";
 import { findOptifiMarketsWithFullData } from "../utils/market";
-import { getAllOrdersForAccount, OrderInstruction } from "../utils/orderHistory";
+import { getAllOrdersForAccount, OrderInstruction, getFilledData } from "../utils/orderHistory";
 import { retrievRecentTxs } from "./orderHistory";
 import base58, { decode } from "bs58";
 import Decimal from "decimal.js";
@@ -190,6 +190,26 @@ export async function checkPostOnlyFail(context: Context, account: PublicKey, cl
   })
 }
 
+async function pushInTrade(orderHistory: OrderInstruction, trades: Trade[]): Promise<Trade[]> {
+  return new Promise(async (resolve, reject) => {
+    trades.push(new Trade({
+      clientId: orderHistory.clientId,
+      limit: orderHistory.limit,
+      limitPrice: orderHistory.limitPrice,
+      maxBaseQuantity: orderHistory.maxBaseQuantity,
+      maxQuoteQuantity: orderHistory.maxQuoteQuantity,
+      orderType: orderHistory.orderType,
+      // selfTradeBehavior,
+      side: orderHistory.side,
+      timestamp: orderHistory.timestamp,
+      txid: orderHistory.txid,
+      gasFee: orderHistory.gasFee,
+      marketAddress: orderHistory.marketAddress
+    }))
+    resolve(trades)
+  })
+}
+
 export function getAllTradesForAccount(
   context: Context,
   account: PublicKey
@@ -200,88 +220,188 @@ export function getAllTradesForAccount(
       res.reverse()
       let trades: Trade[] = []
       let orders = await getOrders(context)
-      let clientIdFillAmt: number[] = await getFillAmt(context, res, orders);
-      for (let order of res) {//the order here is order history
-        // divide to three situations: place order / cancel order / fill
-        // push to res if place order, pop res if cancel order
-        // after that, check if fill order by clientIdFillAmt, then renew res by it
+      // let clientIdFillAmt: number[] = await getFillAmt(context, res, orders);
 
-        if (order.txType == "place order") {
-          trades.push(new Trade({
-            clientId: order.clientId,
-            limit: order.limit,
-            limitPrice: order.limitPrice,
-            maxBaseQuantity: order.maxBaseQuantity,
-            maxQuoteQuantity: order.maxQuoteQuantity,
-            orderType: order.orderType,
-            // selfTradeBehavior,
-            side: order.side,
-            timestamp: order.timestamp,
-            txid: order.txid,
-            gasFee: order.gasFee,
-            marketAddress: order.marketAddress
-          }))
-        } else if (order.txType == "cancel order") {
-          let index = trades.findIndex(e => e.clientId == order.clientId)
-          trades.splice(index, 1)
-        }
+      let originalSize: Decimal[] = [];
+      //cancel order 時被cancel的數量
+      let cancelSize: Decimal[] = [];
 
-        //@ts-ignore
-        let trade = trades.find(e => e.clientId == order.clientId);
+      //originalSize
+      for (let orderHistory of res) {
+        originalSize[orderHistory.clientId] = new Decimal(orderHistory.maxBaseQuantity);
+      }
 
-        //@ts-ignore
-        if (trade) {
-
-          //Limit
-          if (trade.orderType == "limit") {
-            if (clientIdFillAmt[order.clientId] != null) {
-              if (clientIdFillAmt[order.clientId] <= 0) {//totally be filled, so delete from res
-                let index = trades.findIndex(e => e.clientId == order.clientId)
-                trades.splice(index, 1)
-              } else {// fill potential, so renew certain trade
-                let trade = trades.find(e => e.clientId == order.clientId)
-                //@ts-ignore
-                trade?.maxBaseQuantity = clientIdFillAmt[order.clientId];
-              }
-            }
-          }
-
-          //IOC
-          if (trade.orderType == "ioc") {
-            let clientIdIOC: number[] = await getIOCData(context, account, trades, order.clientId)
-            if (clientIdIOC[order.clientId]) {//IOC success
-              //@ts-ignore
-              trade?.maxBaseQuantity = clientIdIOC[order.clientId];
-            }
-            else {
-              let index = trades.findIndex(e => e.clientId == order.clientId)
-              trades.splice(index, 1)
-            }
-          }
-
-          //Post only
-          //when id match and order is failed
-          //@ts-ignore
-          if (trade.orderType == "postOnly") {
-            let postOnlyFail = await checkPostOnlyFail(context, account, order.clientId);//wait for a long time...should be optimized
-            if (postOnlyFail) {
-              // console.log(order.clientId + " postOnlyFail!!!")
-              let index = trades.findIndex(e => e.clientId == order.clientId)
-              trades.splice(index, 1)
-            } else {
-              let orderFind = orders.find(e => e.clientId?.toNumber() == order.clientId)
-              if (orderFind) {//still in open orders
-                if (!orderFind.fillPercentage) {//open
-                  console.log("postonly and is open, so delete it: " + order.clientId)
-                  let index = trades.findIndex(e => e.clientId == order.clientId)
-                  trades.splice(index, 1)
-                } else { console.log("don't need to delete it , since it is already filled") }
-              }
-            }
-          }
-
+      //cancelSize
+      for (let orderHistory of res) {
+        if (orderHistory.cancelledQuantity) {
+          cancelSize[orderHistory.clientId] = new Decimal(orderHistory.cancelledQuantity)
+          // find decimal from place order history, since no assign decimal when generate cancel order history
+          let decimal = res.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
+          if (decimal)
+            cancelSize[orderHistory.clientId] = (cancelSize[orderHistory.clientId]).div(10 ** decimal)
         }
       }
+      for (let orderHistory of res) {
+        if (!cancelSize[orderHistory.clientId])
+          cancelSize[orderHistory.clientId] = new Decimal(0)
+      }
+
+      for (let orderHistory of res) {
+        let clientId = orderHistory.clientId;
+
+        // Limit on trade history:
+        // 1. totally Filled
+        // 2. Partial Filled 
+        // 3. Partial Filled and be canceled 
+        if (orderHistory.orderType == "limit") {
+          if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
+            let order = orders.find(e => e.clientId?.toNumber() == clientId)
+            if (order) {//沒有被totally fill
+              if (order.fillPercentage) {//2. Partial Filled 
+                console.log("no cancel and fill")
+                orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
+                trades = await pushInTrade(orderHistory, trades)
+                continue;
+              }
+            } else {//1. totally Filled
+              console.log("totally be filled")
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          } else {//最後被cancel 了
+            if (!originalSize[clientId].equals(cancelSize[clientId]) && (orderHistory.txType != "cancel order")) {// 3. Partial Filled and be canceled 
+              console.log("cancel and fill")
+              let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+              let res = Math.floor(filledAmt.div(originalSize[clientId]).toNumber());
+              orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * res).toFixed(2))
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          }
+        }
+
+        // IOC on trade history:
+        // 1. totally Filled
+        if (orderHistory.orderType == "ioc") {
+          let clientIdIOC: number[] = await getFilledData(context, account, res)
+          if (clientIdIOC[clientId]) {
+            trades = await pushInTrade(orderHistory, trades)
+            continue;
+          }
+        }
+
+        // postOnly on trade history:
+        // 1. totally Filled
+        // 2. Partial Filled 
+        // 3. Partial Filled and be canceled 
+        if (orderHistory.orderType == "postOnly") {
+          if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
+            let order = orders.find(e => e.clientId?.toNumber() == clientId)
+            if (order) {//沒有被totally fill
+              if (order.fillPercentage) {// 2. Partial Filled 
+                console.log("no cancel and fill")
+                orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
+                trades = await pushInTrade(orderHistory, trades)
+                continue;
+              }
+            } else {// 1. totally Filled
+              console.log("totally be filled")
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          } else {//最後被cancel 了
+            if (!originalSize[clientId].equals(cancelSize[clientId]) && (orderHistory.txType != "cancel order")) {//3. Partial Filled and be canceled 
+              console.log("cancel and fill")
+              let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+              let res = Math.floor(filledAmt.div(originalSize[clientId]).toNumber());
+              orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * res).toFixed(2))
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          }
+        }
+      }
+      // for (let order of res) {//the order here is order history
+      //   // divide to three situations: place order / cancel order / fill
+      //   // push to res if place order, pop res if cancel order
+      //   // after that, check if fill order by clientIdFillAmt, then renew res by it
+
+      //   if (order.txType == "place order") {
+      //     trades.push(new Trade({
+      //       clientId: order.clientId,
+      //       limit: order.limit,
+      //       limitPrice: order.limitPrice,
+      //       maxBaseQuantity: order.maxBaseQuantity,
+      //       maxQuoteQuantity: order.maxQuoteQuantity,
+      //       orderType: order.orderType,
+      //       // selfTradeBehavior,
+      //       side: order.side,
+      //       timestamp: order.timestamp,
+      //       txid: order.txid,
+      //       gasFee: order.gasFee,
+      //       marketAddress: order.marketAddress
+      //     }))
+      //   } else if (order.txType == "cancel order") {
+      //     let index = trades.findIndex(e => e.clientId == order.clientId)
+      //     trades.splice(index, 1)
+      //   }
+
+      //   //@ts-ignore
+      //   let trade = trades.find(e => e.clientId == order.clientId);
+
+      //   //@ts-ignore
+      //   if (trade) {
+
+      //     //Limit
+      //     if (trade.orderType == "limit") {
+      //       if (clientIdFillAmt[order.clientId] != null) {
+      //         if (clientIdFillAmt[order.clientId] <= 0) {//totally be filled, so delete from res
+      //           let index = trades.findIndex(e => e.clientId == order.clientId)
+      //           trades.splice(index, 1)
+      //         } else {// fill potential, so renew certain trade
+      //           let trade = trades.find(e => e.clientId == order.clientId)
+      //           //@ts-ignore
+      //           trade?.maxBaseQuantity = clientIdFillAmt[order.clientId];
+      //         }
+      //       }
+      //     }
+
+      //     //IOC
+      //     if (trade.orderType == "ioc") {
+      //       let clientIdIOC: number[] = await getIOCData(context, account, trades, order.clientId)
+      //       if (clientIdIOC[order.clientId]) {//IOC success
+      //         //@ts-ignore
+      //         trade?.maxBaseQuantity = clientIdIOC[order.clientId];
+      //       }
+      //       else {
+      //         let index = trades.findIndex(e => e.clientId == order.clientId)
+      //         trades.splice(index, 1)
+      //       }
+      //     }
+
+      //     //Post only
+      //     //when id match and order is failed
+      //     //@ts-ignore
+      //     if (trade.orderType == "postOnly") {
+      //       let postOnlyFail = await checkPostOnlyFail(context, account, order.clientId);//wait for a long time...should be optimized
+      //       if (postOnlyFail) {
+      //         // console.log(order.clientId + " postOnlyFail!!!")
+      //         let index = trades.findIndex(e => e.clientId == order.clientId)
+      //         trades.splice(index, 1)
+      //       } else {
+      //         let orderFind = orders.find(e => e.clientId?.toNumber() == order.clientId)
+      //         if (orderFind) {//still in open orders
+      //           if (!orderFind.fillPercentage) {//open
+      //             console.log("postonly and is open, so delete it: " + order.clientId)
+      //             let index = trades.findIndex(e => e.clientId == order.clientId)
+      //             trades.splice(index, 1)
+      //           } else { console.log("don't need to delete it , since it is already filled") }
+      //         }
+      //       }
+      //     }
+
+      //   }
+      // }
 
       // //fix eth decimal problem , can commend it if there isn't any decimal problem
       // for (let trade of trades) {
