@@ -1,12 +1,8 @@
 import Context from "../types/context";
-import { findOptifiMarkets, OptifiMarketFullData } from "./market"
-import { findUserAccount } from "./accounts";
-import { OracleDataType } from "../types/optifi-exchange-types";
+import { OptifiMarketFullData } from "./market"
 import { option_delta } from "./calculateMargin";
-import { getSpotnIv } from "./calcMarginRequirementForUser";
 import { PublicKey } from "@solana/web3.js";
-import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
-import { SWITCHBOARD, USDC_DECIMALS } from "../constants";
+import { SWITCHBOARD } from "../constants";
 import { getSwitchboard } from "./switchboardV2";
 
 export const r = 0;
@@ -42,17 +38,17 @@ export function calculateOptionDelta(
     return new Promise(async (resolve, reject) => {
         try {
             let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD));
-            let ivRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
+            let ivRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
 
             let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD));
-            let ivRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
+            let ivRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
 
             let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
 
             let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
             let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100
-            let iv_btc = ivRes_btc.lastRoundResult?.result! / 100
-            let iv_eth = ivRes_eth.lastRoundResult?.result! / 100
+            let iv_btc = ivRes_btc / 100
+            let iv_eth = ivRes_eth / 100
 
             let today = new Date().getTime();
             let res = optifiMarket.map(market => {

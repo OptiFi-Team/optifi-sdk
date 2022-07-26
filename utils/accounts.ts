@@ -10,22 +10,17 @@ import {
     USER_TOKEN_ACCOUNT_PDA
 } from "../constants";
 import { Chain, Exchange, UserAccount } from "../types/optifi-exchange-types";
-import Asset from "../types/asset";
 import { Asset as OptifiAsset } from "../types/optifi-exchange-types";
-import InstrumentType from "../types/instrumentType";
-import ExpiryType from "../types/expiryType";
 import { InstrumentType as OptifiInstrumentType } from '../types/optifi-exchange-types';
 import { ExpiryType as OptifiExpiryType } from '../types/optifi-exchange-types';
 import {
     dateToAnchorTimestamp,
-    dateToAnchorTimestampBuffer, expiryTypeToNumber,
+    expiryTypeToNumber,
     instrumentTypeToNumber, numberToOptifiAsset,
     optifiAssetToNumber
 } from "./generic";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "./token";
 import { initializeUserAccount } from "../index";
-import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api";
 import base58 from "bs58";
 
 /**
@@ -212,17 +207,13 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
             if (oracleAccountType === OracleAccountType.Spot) {
                 return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD);
             } else {
-                let btcIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV));
-                let btcIvOracle = new PublicKey(base58.encode(btcIvOracleRaw.parseOptimizedResultAddress).toString())
-                return btcIvOracle
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV);
             }
         case OptifiAsset.Ethereum:
             if (oracleAccountType === OracleAccountType.Spot) {
                 return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD);
             } else {
-                let ethIvOracleRaw = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV));
-                let ethIvOracle = new PublicKey(base58.encode(ethIvOracleRaw.parseOptimizedResultAddress).toString())
-                return ethIvOracle
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV);
             }
         case OptifiAsset.USDC:
             if (oracleAccountType === OracleAccountType.Iv) {

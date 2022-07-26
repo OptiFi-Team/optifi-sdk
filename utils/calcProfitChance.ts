@@ -1,14 +1,8 @@
 import { ndf, d2Call, d2Put, reshap, ndfBid } from "./calculateMargin"
-import { STRIKE, PREMIUM, IS_CALL, TIME_TO_MATURITY } from "./calcMarginTestData"
 import Context from "../types/context";
-import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
-import { SWITCHBOARD, USDC_DECIMALS } from "../constants";
+import { SWITCHBOARD } from "../constants";
 import { PublicKey } from "@solana/web3.js";
-import { OptifiMarketFullData, Position } from "./market";
-import { option_delta } from "./calculateMargin";
-import { resolve } from "path";
-import { rejects } from "assert";
-import { table } from "console";
+import { OptifiMarketFullData } from "./market";
 import { getSwitchboard } from "./switchboardV2";
 
 interface ProfitChance {
@@ -269,19 +263,17 @@ function getMarketData(
     return new Promise(async (resolve, rejects) => {
         try {
             let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD));
-            let ivRes_btc = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
+            let ivRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
 
             let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD));
-            let ivRes_eth = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
+            let ivRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
 
             let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
 
-            // let spot_btc = spotRes_btc.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
-            // let spot_eth = spotRes_eth.lastRoundResult?.result! / usdcSpot.lastRoundResult?.result!
             let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
             let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100
-            let iv_btc = ivRes_btc.lastRoundResult?.result! / 100
-            let iv_eth = ivRes_eth.lastRoundResult?.result! / 100
+            let iv_btc = ivRes_btc / 100
+            let iv_eth = ivRes_eth / 100
 
             let today = new Date().getTime();
             let res: BreakEvenDataRes = optifiMarkets.map(market => {

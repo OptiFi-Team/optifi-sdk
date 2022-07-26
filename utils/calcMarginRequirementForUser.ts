@@ -3,7 +3,6 @@ import { PublicKey } from "@solana/web3.js";
 import { Chain, OrderSide } from "../types/optifi-exchange-types";
 import { findUserAccount } from './accounts'
 import { calculateMargin, stress_function, option_intrinsic_value, reshap } from "./calculateMargin";
-import { AggregatorState, parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api"
 import { SWITCHBOARD, USDC_DECIMALS } from "../constants";
 import { getSwitchboard } from "./switchboardV2";
 
@@ -274,7 +273,7 @@ export function isMarginSufficientForNewOrder(
 
 export async function getSpotnIv(context: Context) {
     let spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD));
-    let ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
+    let ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
 
     let result = [spotRes, ivRes];
 
@@ -288,21 +287,21 @@ async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: 
     let userPositions = reshap(userPositionsRaw)
 
     let spotRes: number;
-    let ivRes: AggregatorState;
+    let ivRes: number;
     switch (asset) {
         case 0:
             spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD))
-            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
+            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
             break
         case 1:
             spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD))
-            ivRes = await parseAggregatorAccountData(context.connection, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
+            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
             break
         default:
             throw Error("unsupported asset type")
     }
     let spot = spotRes / usdcSpot
-    let iv = ivRes.lastRoundResult?.result! / 100
+    let iv = ivRes / 100
 
     let intrinsic = option_intrinsic_value(spot, strike, isCall);
 
