@@ -272,8 +272,8 @@ export function getAllTradesForAccount(
             if (!originalSize[clientId].equals(cancelSize[clientId]) && (orderHistory.txType != "cancel order")) {// 3. Partial Filled and be canceled 
               console.log("cancel and fill")
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
-              let res = Math.floor(filledAmt.div(originalSize[clientId]).toNumber());
-              orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * res).toFixed(2))
+              let res = (filledAmt.div(originalSize[clientId]));
+              orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
               trades = await pushInTrade(orderHistory, trades)
               continue;
             }
@@ -313,8 +313,8 @@ export function getAllTradesForAccount(
             if (!originalSize[clientId].equals(cancelSize[clientId]) && (orderHistory.txType != "cancel order")) {//3. Partial Filled and be canceled 
               console.log("cancel and fill")
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
-              let res = Math.floor(filledAmt.div(originalSize[clientId]).toNumber());
-              orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * res).toFixed(2))
+              let res = (filledAmt.div(originalSize[clientId]));
+              orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
               trades = await pushInTrade(orderHistory, trades)
               continue;
             }
