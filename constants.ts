@@ -6,8 +6,8 @@ import { Duration } from "./types/optifi-exchange-types";
 
 // solana cluster with default rpc endpoint
 export enum SolanaCluster {
-    Mainnet = "https://solana-api.projectserum.com",
-    Devnet = "https://mango.devnet.rpcpool.com",
+    Mainnet = "https://optifil-main-c161.mainnet.rpcpool.com",
+    Devnet = "https://optifil-develope-610c.devnet.rpcpool.com",
     Testnet = "https://api.testnet.solana.com"
 }
 
