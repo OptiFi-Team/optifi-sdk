@@ -5,6 +5,7 @@ import {
     EXCHANGE_PREFIX,
     INSTRUMENT_PREFIX, LIQUIDATION_STATE_PREFIX, MARKET_MAKER_PREFIX,
     SERUM_OPEN_ORDERS_PREFIX,
+    SolanaCluster,
     SWITCHBOARD, USDC_TOKEN_MINT,
     USER_ACCOUNT_PREFIX,
     USER_TOKEN_ACCOUNT_PDA
@@ -22,6 +23,7 @@ import {
 import { findAssociatedTokenAccount } from "./token";
 import { initializeUserAccount } from "../index";
 import base58 from "bs58";
+import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api";
 
 /**
  * Helper function for finding an account with a list of seeds
@@ -207,12 +209,20 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
             if (oracleAccountType === OracleAccountType.Spot) {
                 return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD);
             } else {
+                // keep using v1 address for mainnet btc and eth iv
+                if (context.cluster == SolanaCluster.Mainnet) {
+                    return new PublicKey(SWITCHBOARD[SolanaCluster.Mainnet].SWITCHBOARD_BTC_IV_OPTIMIZED);
+                }
                 return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV);
             }
         case OptifiAsset.Ethereum:
             if (oracleAccountType === OracleAccountType.Spot) {
                 return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD);
             } else {
+                // keep using v1 address for mainnet btc and eth iv
+                if (context.cluster == SolanaCluster.Mainnet) {
+                    return new PublicKey(SWITCHBOARD[SolanaCluster.Mainnet].SWITCHBOARD_ETH_IV_OPTIMIZED);
+                }
                 return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV);
             }
         case OptifiAsset.USDC:

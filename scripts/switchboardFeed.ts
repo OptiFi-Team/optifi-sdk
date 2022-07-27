@@ -13,10 +13,10 @@ import { getSwitchboard } from "../utils/switchboardV2";
 
 initializeContext().then((context) => {
 
-    const switchboardFeed = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD)
+    const switchboardFeed = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV)
 
     getSwitchboard(context, switchboardFeed).then(
-        () => process.exit(),
+        (res) => console.log(res),
         (error) => {
             console.error("Failed to parse Switchboard Feed");
             console.error(error);

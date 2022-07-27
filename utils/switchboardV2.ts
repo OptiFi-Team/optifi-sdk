@@ -1,9 +1,10 @@
 import { PublicKey } from "@solana/web3.js";
-import { SolanaCluster } from "../constants";
+import { SolanaCluster, SWITCHBOARD } from "../constants";
 import Context from "../types/context";
 import * as anchor from "@project-serum/anchor";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import Big from "big.js";
+import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api";
 
 // "@switchboard-xyz/sbv2-lite": "^0.1.4",
 
@@ -227,6 +228,14 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
             break
     };
 
+    // keep using v1 decoder for mainnet btc and eth iv
+    if (switchboardFeed.toString() == SWITCHBOARD[SolanaCluster.Mainnet].SWITCHBOARD_BTC_IV ||
+        switchboardFeed.toString() == SWITCHBOARD[SolanaCluster.Mainnet].SWITCHBOARD_ETH_IV) {
+        let rawRes = await parseAggregatorAccountData(context.connection, switchboardFeed)
+        let res = rawRes.lastRoundResult?.result!
+        return res
+    }
+
     const accountInfo = await sbv2.program.provider.connection.getAccountInfo(
         switchboardFeed
     );
@@ -236,7 +245,7 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
 
     let t = 300;
     if (context.cluster == SolanaCluster.Devnet) {
-      t = 3600 * 12;
+        t = 3600 * 12;
     }
     // Get latest value if its been updated in the last 300 seconds
     const latestResult = sbv2.decodeLatestAggregatorValue(accountInfo, t);
@@ -244,7 +253,7 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
         console.error("switchboardFeed: ", switchboardFeed.toString())
         throw new Error(`failed to fetch latest result for aggregator`);
     }
-    console.log(`latestResult: ${latestResult}`);
+    // console.log(`latestResult: ${latestResult}`);
     // latestResult: 105.673205
 
     return latestResult;
