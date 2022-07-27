@@ -285,6 +285,7 @@ export function getAllTradesForAccount(
         if (orderHistory.orderType == "ioc") {
           let clientIdIOC: number[] = await getFilledData(context, account, res)
           if (clientIdIOC[clientId]) {
+            orderHistory.maxBaseQuantity = clientIdIOC[clientId]
             trades = await pushInTrade(orderHistory, trades)
             continue;
           }
@@ -295,6 +296,10 @@ export function getAllTradesForAccount(
         // 2. Partial Filled
         // 3. Partial Filled and be canceled 
         if (orderHistory.orderType == "postOnly") {
+          let postOnlyFail = await checkPostOnlyFail(context, account, clientId);//wait for a long time...should be optimized
+          if (postOnlyFail) {
+            continue;
+          }
           if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
             let order = orders.find(e => e.clientId?.toNumber() == clientId)
             if (order) {//沒有被totally fill
