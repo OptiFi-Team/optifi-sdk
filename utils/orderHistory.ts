@@ -432,7 +432,10 @@ export function addStatusInOrderHistory(
           }
 
         } else if (orderHistory.orderType == "ioc") {
-          if (clientIdIOC[clientId]) orderHistory.status = "Filled"
+          if (clientIdIOC[clientId]) {
+            orderHistory.maxBaseQuantity = clientIdIOC[clientId]
+            orderHistory.status = "Filled"
+            }
           else orderHistory.status = "Failed"
         } else {
 
