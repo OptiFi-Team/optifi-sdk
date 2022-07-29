@@ -73,12 +73,12 @@ export async function getFilledData(context: Context, account: PublicKey, orderH
               let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
 
               //get decimals
-              // let optifiMarkets = await findOptifiMarketsWithFullData(context)
-              // let trade = orderHistorys.find(e => e.clientId == clientId)
-              // let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
-              // //@ts-ignore
-              // let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
-              let decimal = 2;
+              let optifiMarkets = await findOptifiMarketsWithFullData(context)
+              let trade = orderHistorys.find(e => e.clientId == clientId)
+              let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
+              //@ts-ignore
+              let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+              // let decimal = 2;
 
               if (types == "Ask") {
                 //user place Ask: market_open_orders.native_coin_total will be the amt after fill
@@ -392,9 +392,6 @@ export function addStatusInOrderHistory(
         }
 
         let clientId = orderHistory.clientId;
-        // console.log("id is: " + clientId);
-        // console.log("original size: " + originalSize[orderHistory.clientId])
-        // console.log("cancel size:" + cancelSize[orderHistory.clientId])
 
         if (orderHistory.orderType == "limit") {
 
@@ -402,28 +399,21 @@ export function addStatusInOrderHistory(
             let order = orders.find(e => e.clientId?.toNumber() == clientId)
             if (order) {//沒有被totally fill
               if (!order.fillPercentage) {//open
-                console.log("no cancel and open")
-                console.log("orders[clientId].fillPercentage: " + (order.fillPercentage! * 100).toFixed(2))
                 orderHistory.status = "Open";
                 continue;
               } else {
-                console.log("no cancel and fill")
-                console.log("orders[clientId].fillPercentage: " + (order.fillPercentage! * 100).toFixed(2))
                 let res = ((order.fillPercentage * 100).toFixed(2))?.toString();
                 orderHistory.status = "Filled " + res + "%";
                 continue;
               }
             } else {//totally fill
-              console.log("totally be filled")
               orderHistory.status = "Filled 100%";
             }
           } else {//最後被cancel 了
             if (originalSize[clientId].equals(cancelSize[clientId])) {//在open的狀況下被cancel
-              console.log("cancel and open")
               orderHistory.status = "Open";
               continue;
             } else {
-              console.log("cancel and fill")
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
               let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
               orderHistory.status = "Filled " + res + "%";
@@ -449,28 +439,21 @@ export function addStatusInOrderHistory(
             let order = orders.find(e => e.clientId?.toNumber() == clientId)
             if (order) {//沒有被totally fill
               if (!order.fillPercentage) {//open
-                console.log("no cancel and open")
-                console.log("orders[clientId].fillPercentage: " + (order.fillPercentage! * 100).toFixed(2))
                 orderHistory.status = "Open";
                 continue;
               } else {
-                console.log("no cancel and fill")
-                console.log("orders[clientId].fillPercentage: " + (order.fillPercentage! * 100).toFixed(2))
                 let res = ((order.fillPercentage * 100).toFixed(2))?.toString();
                 orderHistory.status = "Filled " + res + "%";
                 continue;
               }
             } else {//totally fill
-              console.log("totally be filled")
               orderHistory.status = "Filled 100%";
             }
           } else {//最後被cancel 了
             if (originalSize[clientId].equals(cancelSize[clientId])) {//在open的狀況下被cancel
-              console.log("cancel and open")
               orderHistory.status = "Open";
               continue;
             } else {
-              console.log("cancel and fill")
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
               let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
               orderHistory.status = "Filled " + res + "%";
