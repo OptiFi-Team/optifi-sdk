@@ -76,23 +76,23 @@ export async function getFilledData(context: Context, account: PublicKey, orderH
               let optifiMarkets = await findOptifiMarketsWithFullData(context)
               let trade = orderHistorys.find(e => e.clientId == clientId)
               let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
-              //@ts-ignore
-              let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
-              // let decimal = 2;
+              if (optifiMarket) {//can find optifiMarket(not cancel order)
+                let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
 
-              if (types == "Ask") {
-                //user place Ask: market_open_orders.native_coin_total will be the amt after fill
-                //(ex: open order bid 2, user ask 3,  market_open_orders.native_coin_total will be 1;
-                //user ask 1 ,market_open_orders.native_coin_total will be 0
-                //->ask amt - market_open_orders.native_coin_total = fillAmt 
+                if (types == "Ask") {
+                  //user place Ask: market_open_orders.native_coin_total will be the amt after fill
+                  //(ex: open order bid 2, user ask 3,  market_open_orders.native_coin_total will be 1;
+                  //user ask 1 ,market_open_orders.native_coin_total will be 0
+                  //->ask amt - market_open_orders.native_coin_total = fillAmt 
 
-                //@ts-ignore
-                let askAmt = await getIOCSizeForAsk(tx.meta?.logMessages)
-                if (clientId)
-                  res[clientId] = (askAmt - fillAmt) / (10 ** decimal)
-              } else {
-                if (clientId && fillAmt)
-                  res[clientId] = fillAmt / (10 ** decimal)
+                  //@ts-ignore
+                  let askAmt = await getIOCSizeForAsk(tx.meta?.logMessages)
+                  if (clientId)
+                    res[clientId] = (askAmt - fillAmt) / (10 ** decimal)
+                } else {
+                  if (clientId && fillAmt)
+                    res[clientId] = fillAmt / (10 ** decimal)
+                }
               }
             }
           }
@@ -425,7 +425,7 @@ export function addStatusInOrderHistory(
           if (clientIdIOC[clientId]) {
             orderHistory.maxBaseQuantity = clientIdIOC[clientId]
             orderHistory.status = "Filled"
-            }
+          }
           else orderHistory.status = "Failed"
         } else {
 
