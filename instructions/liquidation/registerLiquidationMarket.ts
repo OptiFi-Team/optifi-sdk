@@ -5,13 +5,13 @@ import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../
 import { Chain, OptifiMarket } from "../../types/optifi-exchange-types";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { SERUM_DEX_PROGRAM_ID } from "../../constants";
-import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 import { getSerumMarket } from "../../utils/serum";
 import { findMarginStressWithAsset } from "../../utils/margin";
-import { optifiAssetToNumber } from "../../utils/generic";
 import { findSerumAuthorityPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { deriveVaultNonce } from "../../utils/market";
+import marginStress from "../marginStress";
 
 export default function registerLiquidationMarket(context: Context,
     userAccountAddress: PublicKey,
@@ -36,6 +36,10 @@ export default function registerLiquidationMarket(context: Context,
                                     let [vaultOwner, _] = await deriveVaultNonce(market.serumMarket, serumId);
 
                                     let userAccount = await context.program.account.userAccount.fetch(userAccountAddress);
+
+
+                                    let ixs = [increaseComputeUnitsIx]
+                                    ixs.push(...await marginStress(context, chain.asset));
 
                                     context.program.rpc.liquidationRegister(
                                         {
@@ -74,7 +78,7 @@ export default function registerLiquidationMarket(context: Context,
                                                 userInstrumentLongTokenVault: userLongTokenAddress,
                                                 userInstrumentShortTokenVault: userShortTokenAddress
                                             },
-                                            preInstructions: [increaseComputeUnitsIx]
+                                            preInstructions: ixs
                                         }
                                     ).then((res) => {
                                         resolve({
