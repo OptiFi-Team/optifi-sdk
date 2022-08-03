@@ -167,6 +167,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   record.marketAddress = marketAddress
                   record.txType = "place order"
                   record.decimal = baseTokenDecimal
+                  record.start = instrument.start
                   orderTxs.push(Object.assign({}, record));
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
                   // get the orginal order details
@@ -252,7 +253,7 @@ export function getAllOrdersForAccount(
           return e[0]
         })
       }
-
+      
       // parse order txs, inlcuding place order, cancel order
       let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
       let orderTxs = await parseOrderTxs(context, allTxs, serumId, instruments)
@@ -290,6 +291,7 @@ export class OrderInstruction {
   cancelledQuantity: number | undefined
   status: string
   decimal: number
+  start: Date
 
   constructor({
     clientId,
@@ -308,6 +310,7 @@ export class OrderInstruction {
     cancelledQuantity,
     status,
     decimal,
+    start,
   }: {
     clientId: BN;
     limit: number;
@@ -325,6 +328,7 @@ export class OrderInstruction {
     cancelledQuantity: number | undefined
     status: string
     decimal: number
+    start: Date
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -342,6 +346,7 @@ export class OrderInstruction {
     this.cancelledQuantity = cancelledQuantity
     this.status = status
     this.decimal = decimal
+    this.start = start
   }
 
   public get shortForm(): string {
