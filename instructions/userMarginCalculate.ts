@@ -51,7 +51,6 @@ export function marginCalculate(context: Context, userAccount: PublicKey
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {
 
-        let ixs = [increaseComputeUnitsIx]
 
         let [exchangeAddress, _] = await findExchangeAccount(context);
 
@@ -61,35 +60,41 @@ export function marginCalculate(context: Context, userAccount: PublicKey
 
         for (let i = 0; i < SUPPORTED_ASSETS.length; i++) {
 
+            let ixs = [increaseComputeUnitsIx]
+
             let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, SUPPORTED_ASSETS[i]);
 
-            if (i == SUPPORTED_ASSETS.length - 1) {
-                res = await context.program.rpc.userMarginCalculate({
-                    accounts: {
-                        optifiExchange: exchangeAddress,
-                        marginStressAccount: marginStressAddress,
-                        userAccount: userAccountAddress,
-                        clock: SYSVAR_CLOCK_PUBKEY
-                    },
-                    instructions: ixs
-                });
+            ixs.push(...await marginStress(context, SUPPORTED_ASSETS[i]));
 
-                resolve({
-                    successful: true,
-                    data: res as TransactionSignature
-                })
-            } else {
-                ixs.push(
-                    context.program.instruction.userMarginCalculate({
-                        accounts: {
-                            optifiExchange: exchangeAddress,
-                            marginStressAccount: marginStressAddress,
-                            userAccount: userAccountAddress,
-                            clock: SYSVAR_CLOCK_PUBKEY
-                        }
-                    })
-                );
-            }
+            res = await context.program.rpc.userMarginCalculate({
+                accounts: {
+                    optifiExchange: exchangeAddress,
+                    marginStressAccount: marginStressAddress,
+                    userAccount: userAccountAddress,
+                    clock: SYSVAR_CLOCK_PUBKEY
+                },
+                instructions: ixs
+            });
+
+            resolve({
+                successful: true,
+                data: res as TransactionSignature
+            })
+
+            // if (i == SUPPORTED_ASSETS.length - 1) {
+
+            // } else {
+            //     ixs.push(
+            //         context.program.instruction.userMarginCalculate({
+            //             accounts: {
+            //                 optifiExchange: exchangeAddress,
+            //                 marginStressAccount: marginStressAddress,
+            //                 userAccount: userAccountAddress,
+            //                 clock: SYSVAR_CLOCK_PUBKEY
+            //             }
+            //         })
+            //     );
+            // }
         }
     })
 }

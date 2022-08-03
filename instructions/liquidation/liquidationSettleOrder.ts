@@ -1,16 +1,16 @@
 import Context from "../../types/context";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findLiquidationState, getDexOpenOrders } from "../../utils/accounts";
 import { OptifiMarket } from "../../types/optifi-exchange-types";
 import { findAssociatedTokenAccount, findOrCreateAssociatedTokenAccount } from "../../utils/token";
 import { SERUM_DEX_PROGRAM_ID } from "../../constants";
-import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import InstructionResult from "../../types/instructionResult";
 import { getSerumMarket } from "../../utils/serum";
 import { deriveVaultNonce } from "../../utils/market";
 import { findMarginStressWithAsset } from "../../utils/margin";
-import { optifiAssetToNumber } from "../../utils/generic";
+import marginStress from "../marginStress";
 
 export default function liquidationSettleOrder(context: Context,
     userAccountAddress: PublicKey,
@@ -42,8 +42,10 @@ export default function liquidationSettleOrder(context: Context,
                                                         .then((chainRes) => {
                                                             // @ts-ignore
                                                             let chain = chainRes as Chain;
-                                                            findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
-                                                                let ix: TransactionInstruction[] = [increaseComputeUnitsIx]
+                                                            findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(async ([marginStressAddress, _bump]) => {
+                                                                let ixs = [increaseComputeUnitsIx]
+                                                                ixs.push(...await marginStress(context, chain.asset));
+
                                                                 let ix1 = context.program.instruction.liquidationSettleOrder(
                                                                     {
                                                                         accounts: {
@@ -73,7 +75,7 @@ export default function liquidationSettleOrder(context: Context,
                                                                         }
                                                                     }
                                                                 );
-                                                                ix.push(ix1);
+                                                                ixs.push(ix1);
                                                                 context.program.rpc.userMarginCalculate(
                                                                     {
                                                                         accounts: {
@@ -82,7 +84,7 @@ export default function liquidationSettleOrder(context: Context,
                                                                             userAccount: userAccountAddress,
                                                                             clock: SYSVAR_CLOCK_PUBKEY
                                                                         },
-                                                                        instructions: ix
+                                                                        instructions: ixs
                                                                     }
                                                                 ).then((res) => {
                                                                     resolve({

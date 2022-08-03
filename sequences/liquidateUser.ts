@@ -138,15 +138,13 @@ export default async function liquidateUser(context: Context, userToLiquidate: P
                 } else {
                     console.log("marketAddress: " + marketAddress + " liquidationState: " + Object.keys(liquidationState.status)[0]);
                     let shortAmount = await getTokenAmount(context, market[0].instrumentShortSplToken, userToLiquidate);
-                    if (Object.keys(liquidationState.status)[0] == 'placeOrder') {
-                        // Liquidation Place Order
-                        console.log("Place liquidation order...");
-                        await liquidationPlaceOrder(context, userToLiquidate, marketAddress).then((res) => {
-                            console.log("Got liquidationPlaceOrder res", res, " on market ", marketAddress.toString());
-                        }).catch((err) => {
-                            console.error(err);
-                        });
-                    }
+                    // Liquidation Place Order
+                    console.log("Place liquidation order...");
+                    await liquidationPlaceOrder(context, userToLiquidate, marketAddress).then((res) => {
+                        console.log("Got liquidationPlaceOrder res", res, " on market ", marketAddress.toString());
+                    }).catch((err) => {
+                        console.error(err);
+                    });
                     // Wait for order filled
                     console.log("Wait for liquidation settlement...");
                     await sleep(10000);
@@ -171,30 +169,22 @@ async function waitForSettle(context: Context, serumMarket: Market, userToLiquid
         userToLiquidate
     );
 
-    console.log("Already filled: ", openOrdersRes[0].baseTokenFree.toNumber(), "Target amount: ", shortAmount);
-
-    if (openOrdersRes[0].baseTokenFree.toNumber() == shortAmount) {
-        console.log("Find unsettle options: ", openOrdersRes[0].baseTokenFree.toNumber());
-        liquidationSettleOrder(context, userToLiquidate, marketAddress).then((res) => {
-            console.log("Got liquidationSettleOrder res", res);
-        }).catch((err) => {
-            console.error(err);
-        });
-    };
-    console.log("Wating 10 secs for order filled...");
-    await sleep(10000);
-
-    if (round < 6) {
-        await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount, round + 1)
-    } else {
-        // Liquidation Place Order
-        console.log("Update liquidation order...");
-        await liquidationPlaceOrder(context, userToLiquidate, marketAddress).then((res) => {
-            console.log("Got liquidationPlaceOrder res", res, " on market ", marketAddress.toString());
-        }).catch((err) => {
-            console.error(err);
-        });
+    while (true) {
+        console.log("Wating 10 secs for order filled...");
         await sleep(10000);
-        await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount, 0)
+
+        console.log("Already filled: ", openOrdersRes[0].baseTokenFree.toNumber(), "Target amount: ", shortAmount);
+
+        if (openOrdersRes[0].baseTokenFree.toNumber() == shortAmount) {
+            console.log("Find unsettle options: ", openOrdersRes[0].baseTokenFree.toNumber());
+            liquidationSettleOrder(context, userToLiquidate, marketAddress).then((res) => {
+                console.log("Got liquidationSettleOrder res", res);
+            }).catch((err) => {
+                console.error(err);
+            });
+            break
+        } else if (round > 6) { break }
+
+        round += 1;
     }
 }

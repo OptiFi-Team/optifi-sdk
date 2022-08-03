@@ -11,6 +11,7 @@ import { deriveVaultNonce } from "../../utils/market";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { findSerumAuthorityPDA } from "../../utils/pda";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
+import marginStress from "../marginStress";
 
 export default function liquidationPlaceOrder(context: Context,
     userAccountAddress: PublicKey,
@@ -35,6 +36,9 @@ export default function liquidationPlaceOrder(context: Context,
                                                 let chain = chainRes as Chain;
 
                                                 let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, chain.asset);
+
+                                                let ixs = [increaseComputeUnitsIx]
+                                                ixs.push(...await marginStress(context, chain.asset));
 
                                                 console.log("liquidatePosition...");
 
@@ -67,7 +71,7 @@ export default function liquidationPlaceOrder(context: Context,
                                                             vaultSigner: vaultOwner,
                                                             liquidator: context.provider.wallet.publicKey,
                                                         },
-                                                        preInstructions: [increaseComputeUnitsIx]
+                                                        preInstructions: ixs
                                                     }
                                                 ).then((res) => {
                                                     resolve({
