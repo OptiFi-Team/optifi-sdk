@@ -204,7 +204,8 @@ async function pushInTrade(orderHistory: OrderInstruction, trades: Trade[]): Pro
       timestamp: orderHistory.timestamp,
       txid: orderHistory.txid,
       gasFee: orderHistory.gasFee,
-      marketAddress: orderHistory.marketAddress
+      marketAddress: orderHistory.marketAddress,
+      start: orderHistory.start
     }))
     resolve(trades)
   })
@@ -342,6 +343,7 @@ export class Trade {
   txid: string
   gasFee: number
   marketAddress: string
+  start: Date
 
   constructor({
     clientId,
@@ -355,7 +357,8 @@ export class Trade {
     timestamp,
     txid,
     gasFee,
-    marketAddress
+    marketAddress,
+    start
   }: {
     clientId: number;
     limit: number;
@@ -369,6 +372,7 @@ export class Trade {
     txid: string
     gasFee: number
     marketAddress: string
+    start: Date
   }) {
     this.clientId = clientId
     this.limit = limit;
@@ -381,7 +385,8 @@ export class Trade {
     this.timestamp = timestamp;
     this.txid = txid;
     this.gasFee = gasFee;
-    this.marketAddress = marketAddress
+    this.marketAddress = marketAddress;
+    this.start = start
   }
 
   public get shortForm(): string {
