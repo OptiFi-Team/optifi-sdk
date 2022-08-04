@@ -104,59 +104,6 @@ export async function getIOCSizeForAsk(logs: string[]) {
   return Number(stringRes)
 }
 
-async function getIOCData(context: Context, account: PublicKey, trades: Trade[], clientId: number): Promise<number[]> {
-  return new Promise(async (resolve, reject) => {
-    let res: number[] = [];
-    let txs = await retrievRecentTxs(context, account)
-    for (let tx of txs) {//number of transactions people send
-      //@ts-ignore
-      let idFromProgramLog = await getClientId(tx.meta?.logMessages)
-      if (idFromProgramLog != clientId) continue;
-      for (let inx of tx.transaction.message.instructions) {
-        let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
-        if (programId.toString() == context.program.programId.toString()) {
-          let coder = context.program.coder as BorshCoder;
-          let decoded = coder.instruction.decode(base58.decode(inx.data))
-          if (decoded) {
-            if (decoded.name == "placeOrder") {
-              //@ts-ignore
-              let types = await getIOCSide(tx.meta?.logMessages)
-              //@ts-ignore
-              let clientId = await getClientId(tx.meta?.logMessages)
-              //@ts-ignore
-              let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
-
-              //get decimals
-              // let optifiMarkets = await findOptifiMarketsWithFullData(context)
-              // let trade = trades.find(e => e.clientId == clientId)
-              // let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == trade?.marketAddress)
-              // //@ts-ignore
-              // let decimal = (optifiMarket?.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
-              let decimal = 2;
-
-              if (types == "Ask") {
-                //user place Ask: market_open_orders.native_coin_total will be the amt after fill
-                //(ex: open order bid 2, user ask 3,  market_open_orders.native_coin_total will be 1;
-                //user ask 1 ,market_open_orders.native_coin_total will be 0
-                //->ask amt - market_open_orders.native_coin_total = res
-
-                //@ts-ignore
-                let askAmt = await getIOCSizeForAsk(tx.meta?.logMessages)
-                if (clientId)
-                  res[clientId] = (askAmt - fillAmt) / (10 ** decimal)
-              } else {
-                if (clientId && fillAmt)
-                  res[clientId] = fillAmt / (10 ** decimal)
-              }
-            }
-          }
-        }
-      }
-    }
-    resolve(res);
-  })
-}
-
 export async function checkPostOnlyFail(context: Context, account: PublicKey, clientId: number): Promise<boolean> {
   return new Promise(async (resolve, reject) => {
     let fail: boolean = false;
