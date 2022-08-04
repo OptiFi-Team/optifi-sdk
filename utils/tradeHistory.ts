@@ -4,7 +4,7 @@ import Context from "../types/context";
 import { findUserAccount } from "../utils/accounts";
 import { loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, Order } from "../utils/orders";
 import { findOptifiMarketsWithFullData } from "../utils/market";
-import { getAllOrdersForAccount, OrderInstruction, getFilledData } from "../utils/orderHistory";
+import { getAllOrdersForAccount, OrderInstruction, getFilledData,getFilterOrdersForAccount } from "../utils/orderHistory";
 import { retrievRecentTxs } from "./orderHistory";
 import base58, { decode } from "bs58";
 import Decimal from "decimal.js";
@@ -217,6 +217,125 @@ export function getAllTradesForAccount(
 ): Promise<Trade[]> {
   return new Promise(async (resolve, reject) => {
     getAllOrdersForAccount(context, account).then(async (res) => {
+      // resolve(res)
+      res.reverse()
+      let trades: Trade[] = []
+      let orders = await getOrders(context)
+      // let clientIdFillAmt: number[] = await getFillAmt(context, res, orders);
+
+      let originalSize: Decimal[] = [];
+      //cancel order 時被cancel的數量
+      let cancelSize: Decimal[] = [];
+
+      //originalSize
+      for (let orderHistory of res) {
+        originalSize[orderHistory.clientId] = new Decimal(orderHistory.maxBaseQuantity);
+      }
+
+      //cancelSize
+      for (let orderHistory of res) {
+        if (orderHistory.cancelledQuantity) {
+          cancelSize[orderHistory.clientId] = new Decimal(orderHistory.cancelledQuantity)
+          // find decimal from place order history, since no assign decimal when generate cancel order history
+          let decimal = res.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
+          if (decimal)
+            cancelSize[orderHistory.clientId] = (cancelSize[orderHistory.clientId]).div(10 ** decimal)
+        }
+      }
+      for (let orderHistory of res) {
+        if (!cancelSize[orderHistory.clientId])
+          cancelSize[orderHistory.clientId] = new Decimal(0)
+      }
+
+      for (let orderHistory of res) {
+        let clientId = orderHistory.clientId;
+
+        // Limit on trade history:
+        // 1. totally Filled
+        // 2. Partial Filled 
+        // 3. Partial Filled and be canceled 
+        if (orderHistory.orderType == "limit") {
+          if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
+            let order = orders.find(e => e.clientId?.toNumber() == clientId)
+            if (order) {//沒有被totally fill
+              if (order.fillPercentage) {//2. Partial Filled 
+                orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
+                trades = await pushInTrade(orderHistory, trades)
+                continue;
+              }
+            } else {//1. totally Filled
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          } else {//最後被cancel 了
+            if (!originalSize[clientId].equals(cancelSize[clientId]) && (orderHistory.txType != "cancel order")) {// 3. Partial Filled and be canceled 
+              let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+              let res = (filledAmt.div(originalSize[clientId]));
+              orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          }
+        }
+
+        // IOC on trade history:
+        // 1. totally Filled
+        if (orderHistory.orderType == "ioc") {
+          let clientIdIOC: number[] = await getFilledData(context, account, res)
+          if (clientIdIOC[clientId]) {
+            orderHistory.maxBaseQuantity = clientIdIOC[clientId]
+            trades = await pushInTrade(orderHistory, trades)
+            continue;
+          }
+        }
+
+        // postOnly on trade history:
+        // 1. totally Filled
+        // 2. Partial Filled
+        // 3. Partial Filled and be canceled 
+        if (orderHistory.orderType == "postOnly") {
+          let postOnlyFail = await checkPostOnlyFail(context, account, clientId);//wait for a long time...should be optimized
+          if (postOnlyFail) {
+            continue;
+          }
+          if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
+            let order = orders.find(e => e.clientId?.toNumber() == clientId)
+            if (order) {//沒有被totally fill
+              if (order.fillPercentage) {// 2. Partial Filled 
+                orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
+                trades = await pushInTrade(orderHistory, trades)
+                continue;
+              }
+            } else {// 1. totally Filled
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          } else {//最後被cancel 了
+            if (!originalSize[clientId].equals(cancelSize[clientId]) && (orderHistory.txType != "cancel order")) {//3. Partial Filled and be canceled 
+              let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+              let res = (filledAmt.div(originalSize[clientId]));
+              orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          }
+        }
+      }
+
+      trades.reverse()
+      resolve(trades)
+    }).catch(err => reject(err))
+
+  })
+
+}
+
+export function getFilterTradesForAccount(
+  context: Context,
+  account: PublicKey
+): Promise<Trade[]> {
+  return new Promise(async (resolve, reject) => {
+    getFilterOrdersForAccount(context, account).then(async (res) => {
       // resolve(res)
       res.reverse()
       let trades: Trade[] = []

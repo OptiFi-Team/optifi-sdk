@@ -8,7 +8,7 @@ import {
 } from "@project-serum/serum";
 import { market } from "./constants";
 import { findOptifiMarketsWithFullData } from "../utils/market";
-import { getAllOrdersForAccount ,addStatusInOrderHistory} from "../utils/orderHistory";
+import { getAllOrdersForAccount, addStatusInOrderHistory, getFilterOrdersForAccount } from "../utils/orderHistory";
 // let userAccount = new PublicKey("5UiD5WNnGVRuTmhfjhVLYvHV8fDiXH5eUNCoBxwJpkYs")
 
 initializeContext().then(async (context) => {
@@ -52,6 +52,7 @@ initializeContext().then(async (context) => {
   // must use "confirmed" as commitment level for tx hostory related requests 
   let context2 = await initializeContext(undefined, undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" })
   let orderHistory = await getAllOrdersForAccount(context2, userAccount,)
+  console.log("filter: ", await getFilterOrdersForAccount(context2, userAccount,))
   // order history is optional, get call loadOrdersForOwnerOnAllMarkets without it first. and whenever you get user's order history,
   // just call this loadOrdersForOwnerOnAllMarkets again
   let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)

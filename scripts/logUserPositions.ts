@@ -5,7 +5,7 @@ import { findUserAccount } from "../utils/accounts";
 import { UserAccount } from "../types/optifi-exchange-types";
 import UserPosition from "../types/user";
 import { calcPnLForUserPositions } from "../utils/user";
-import { getAllTradesForAccount } from "../utils/tradeHistory";
+import { getAllTradesForAccount ,getFilterTradesForAccount} from "../utils/tradeHistory";
 import { Connection, Keypair, PublicKey, ConnectionConfig, Commitment } from "@solana/web3.js";
 import Decimal from "decimal.js";
 initializeContext(undefined, undefined, undefined, undefined, undefined, { commitment: "confirmed" }).then(async (context) => {
@@ -47,8 +47,8 @@ initializeContext(undefined, undefined, undefined, undefined, undefined, { commi
     })
 
     // prepare trade history
-    let userTradesHistory = await getAllTradesForAccount(context, userAccountAddress)
-
+    // let userTradesHistory = await getAllTradesForAccount(context, userAccountAddress)
+    let userTradesHistory = await getFilterTradesForAccount(context, userAccountAddress)
     console.log("userTradesHistory:", userTradesHistory)
 
     // get the PnLs for each position

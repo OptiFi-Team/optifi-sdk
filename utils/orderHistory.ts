@@ -253,7 +253,7 @@ export function getAllOrdersForAccount(
           return e[0]
         })
       }
-      
+
       // parse order txs, inlcuding place order, cancel order
       let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
       let orderTxs = await parseOrderTxs(context, allTxs, serumId, instruments)
@@ -274,6 +274,64 @@ export function getAllOrdersForAccount(
   });
 }
 
+//filter, use the frist instrument to get start and expiryDate
+function filterByDate(instrument: any, allTxs: TransactionResponse[]) {
+  let start = instrument.start.toNumber()
+  let end = instrument.expiryDate.toNumber()
+  let filterAllTxs = allTxs.filter(e => ((e.blockTime! < end) && (e.blockTime! > start)))
+  return filterAllTxs
+}
+
+export function getFilterOrdersForAccount(
+  context: Context,
+  account: PublicKey,
+  instrumentsWithOptifiMarketAddress?: any
+): Promise<OrderInstruction[]> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // get all recent txs
+      let allTxs = await retrievRecentTxsV2(context, account)
+      // sort them in ascending time order for btter parsing process
+      allTxs.sort(function (a, b) {
+        // Compare the 2 dates
+        if (a.slot < b.slot) return -1;
+        if (a.slot > b.slot) return 1;
+        return 0;
+      });
+
+      let instruments
+      if (instrumentsWithOptifiMarketAddress) {
+        instruments = instrumentsWithOptifiMarketAddress
+      } else {
+        let optifiInstruments = await findOptifiInstruments(context)
+        instruments = optifiInstruments.map(e => {
+          // @ts-ignore
+          e[0].marketAddress = e[2]
+          return e[0]
+        })
+      }
+
+      let filterAllTxs = filterByDate(instruments[0], allTxs)
+
+      // parse order txs, inlcuding place order, cancel order
+      let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
+      let orderTxs = await parseOrderTxs(context, filterAllTxs, serumId, instruments)
+      // sort them back to descending time order
+      orderTxs.sort(function (a, b) {
+        // Compare the 2 dates
+        if (a.timestamp < b.timestamp) return 1;
+        if (a.timestamp > b.timestamp) return -1;
+        return 0;
+      });
+
+      resolve(orderTxs)
+    }
+    catch (err) {
+      console.error(err);
+      reject(err)
+    }
+  });
+}
 export class OrderInstruction {
   clientId: number; // BN {negative: 0, words: Array(3), length: 1, red: null}
   limit: number; // 65535
