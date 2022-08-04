@@ -36,7 +36,7 @@ export const STRIKE_LADDER_SIZE: number = 5;
 export const AMM_TRADE_CAPACITY = 25;
 
 // How many assets are supported, should be in the same sequence as enum
-export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin, Asset.Ethereum];
+export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin, Asset.Ethereum, Asset.Solana];
 
 // How many duration are supported
 export const SUPPORTED_DURATION: Duration[] = [Duration.Weekly, Duration.Monthly];
@@ -133,7 +133,9 @@ export const SWITCHBOARD: EndpointConstant = {
         SWITCHBOARD_BTC_IV: "6MrFTTN6125HDHze3Yn6Me59w8PdYfzvAqGT7TBztk7U",
         SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
         SWITCHBOARD_ETH_IV: "GikZAw9st7HcUn2bhcFCiM2fkwvgUXGt2CvQXLYZcBZN",
-        SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW"
+        SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW",
+        SWITCHBOARD_SOL_USD: "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR",
+        SWITCHBOARD_SOL_IV: "5YWQE6W9MnsXPymN2Ud5NoRwTGgFu9TehT542MBvdqWB"
     },
     [SolanaCluster.Testnet]: {
         SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
@@ -214,7 +216,18 @@ export const MANGO_PERP_MARKETS: EndpointConstant = {
             "bidsKey": "DQv2sWhaHYbKrobHH6jAdkAXw13mnDdM9hVfRQtrUcMe",
             "asksKey": "8NhLMV6huneGAqijuUgUFSshbAfXxdNj6ZMHSLb9aW8K",
             "eventsKey": "9vDfKNPJkCvQv9bzR4JNTGciQC2RVHPVNMMHiVDgT1mw"
-        }
+        },
+        {
+            "name": "SOL-PERP",
+            "publicKey": "2TgaaVoHgnSeEtXvWTx13zQeTf4hYWAMEiMQdcG6EwHi",
+            "baseSymbol": "SOL",
+            "baseDecimals": 9,
+            "quoteDecimals": 6,
+            "marketIndex": 3,
+            "bidsKey": "Fu8q5EiFunGwSRrjFKjRUoMABj5yCoMEPccMbUiAT6PD",
+            "asksKey": "9qUxMSWBGAeNmXusQHuLfgSuYJqADyYoNLwZ63JJSi6V",
+            "eventsKey": "31cKs646dt1YkA3zPyxZ7rUAkxTBz279w4XEobFXcAKP"
+        },
     ],
     [SolanaCluster.Devnet]: [
         {
@@ -239,6 +252,17 @@ export const MANGO_PERP_MARKETS: EndpointConstant = {
             "asksKey": "FXSvghvoaWFHRXzWUHi5tjK9YhgcPgMPpypFXBd4Aq3r",
             "eventsKey": "8WLv5fKLYkyZpFG74kRmp2RALHQFcNKmH7eJn8ebHC13"
         },
+        {
+            "name": "SOL-PERP",
+            "publicKey": "58vac8i9QXStG1hpaa4ouwE1X7ngeDjY9oY7R15hcbKJ",
+            "baseSymbol": "SOL",
+            "baseDecimals": 9,
+            "quoteDecimals": 6,
+            "marketIndex": 3,
+            "bidsKey": "7HRgm8iXEDx2TmSETo3Lq9SXkF954HMVKNiq8t5sKvQS",
+            "asksKey": "4oNxXQv1Rx3h7aNWjhTs3PWBoXdoPZjCaikSThV4yGb8",
+            "eventsKey": "CZ5MCRvkN38d5pnZDDEEyMiED3drgDUVpEUjkuJq31Kf"
+        }
     ],
     [SolanaCluster.Testnet]: {
         "symbol": "USDC",

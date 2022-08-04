@@ -8,7 +8,7 @@ import {
     findExchangeAccount,
     findUserAccount,
 } from "../utils/accounts";
-import { SERUM_MARKETS } from "../constants";
+import { SERUM_MARKETS, SUPPORTED_ASSETS } from "../constants";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { createInstruments } from "./createInstruments";
@@ -120,7 +120,10 @@ export async function createSerumMarkets(context: Context, initialInstrument: Pu
     try {
         let instrument_res = await context.program.account.chain.fetch(initialInstrument);
         let instrument = instrument_res as unknown as Chain;
+        console.log("instrument.asset: ", instrument.asset);
         let decimal = numberAssetToDecimal(instrument.asset)!;
+        console.log("decimal: ", decimal);
+
         let res = await initializeSerumMarket(context, decimal);
         if (res.successful) {
             return res.data as PublicKey;
@@ -275,9 +278,9 @@ export default function boostrap(context: Context, ogNftMint?: PublicKey, deposi
                     }
                 })
                 saveMaterailsForExchange(exchangeAddress, materials);
+                console.log("sleep for 5s")
+                await sleep(5 * 1000)
             }
-            console.log("sleep for 5s")
-            await sleep(5 * 1000)
         }
 
         console.log("Created serum markets");
@@ -305,7 +308,7 @@ export default function boostrap(context: Context, ogNftMint?: PublicKey, deposi
 
         console.log("materials.optifiMarkets: ", materials.optifiMarkets)
         let existingMarketsLen = materials.optifiMarkets.length;
-        for (let i = existingMarketsLen; i < 20; i++) {
+        for (let i = existingMarketsLen; i < 10 * SUPPORTED_ASSETS.length; i++) {
             await createOptifiMarketWithIdx(context,
                 new PublicKey(materials.serumMarkets[i].address),
                 new PublicKey(materials.instruments[i].address),

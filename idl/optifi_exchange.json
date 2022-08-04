@@ -4567,6 +4567,9 @@
           },
           {
             "name": "USDC"
+          },
+          {
+            "name": "Solana"
           }
         ]
       }
@@ -5071,5 +5074,8 @@
       "name": "InvalidMarginStressAccount",
       "msg": "Invalid margin stress account"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord"
+  }
 }

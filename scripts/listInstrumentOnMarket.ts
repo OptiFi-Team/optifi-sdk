@@ -144,7 +144,7 @@ export default function listInstrumentOnMarket(
     saveMaterailsForExchange(exchangeAddress, materials);
 
     let existingMarketsLen = materials.optifiMarkets.length;
-    console.log("existingMarketsLen: "+existingMarketsLen);
+    console.log("existingMarketsLen: " + existingMarketsLen);
     console.log(materials.serumMarkets.length);
     console.log(materials.instruments.length);
 

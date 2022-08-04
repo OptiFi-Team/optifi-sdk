@@ -230,6 +230,15 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
                 console.warn("No IV account for USDC, returning spot");
             }
             return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD);
+        case OptifiAsset.Solana:
+            if (context.cluster == SolanaCluster.Mainnet) {
+                throw new Error(`Unsupported asset ${asset}`);
+            }
+            if (oracleAccountType === OracleAccountType.Spot) {
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_USD);
+            } else {
+                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_IV);
+            }
         default:
             console.log("Asset is ", asset);
             throw new Error(`Unsupported asset ${asset}`);

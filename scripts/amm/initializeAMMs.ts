@@ -5,27 +5,22 @@ import { initializeAmm } from "../../instructions/initializeAmm";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { Duration } from "../../types/optifi-exchange-types";
 import { USDC_DECIMALS } from "../../constants";
+import Asset from "../../types/asset";
+
+
+let i = 3;
+let asset = Asset.Solana;
+let duration = Duration.Weekly; // should be the same as created instruments
+
 
 async function initializeAMMOnSupportedAssets(context: Context) {
-    let i = 1;
-    let duration = Duration.Weekly; // should be the same as created instruments
     // let contractSize = 0.01 * (10 ** USDC_DECIMALS); // TBD
     let contractSize = 0.01 * (10 ** 4); // TBD
-    for (let asset of SUPPORTED_ASSETS) {
-        console.log("Initializing AMM for asset ", asset);
-        try {
-            let res = await initializeAmm(context, asset, i, duration, contractSize);
-            console.log("Created AMM - ", formatExplorerAddress(context,
-                res.data as string,
-                SolanaEntityType.Transaction)
-            );
-            i++;
-        }
-        catch (e) {
-            console.error(e);
-            throw e;
-        }
-    }
+    let res = await initializeAmm(context, asset, i, duration, contractSize);
+    console.log("Created AMM - ", formatExplorerAddress(context,
+        res.data as string,
+        SolanaEntityType.Transaction)
+    );
 }
 
 initializeContext().then((context) => {

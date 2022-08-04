@@ -268,6 +268,8 @@ export function getMangoPerpMarketInfoByAsset(context: Context, asset: number) {
             return configs[0]
         case 1:
             return configs[1]
+        case 3:
+            return configs[2]
         default:
     }
 }
