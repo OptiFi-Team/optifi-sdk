@@ -1,7 +1,7 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, OracleAccountType, findParseOptimizedOracleAccountFromAsset } from "../../utils/accounts";
+import { findExchangeAccount, OracleAccountType, findOracleAccountFromAsset } from "../../utils/accounts";
 import { Asset as OptifiAsset } from "../../types/optifi-exchange-types";
 
 export default function updateOracle(context: Context,
@@ -9,13 +9,13 @@ export default function updateOracle(context: Context,
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(async ([exchangeAddress, _]) => {
-            let spotOracle = await findParseOptimizedOracleAccountFromAsset(context, asset);
+            let spotOracle = await findOracleAccountFromAsset(context, asset);
             let ivOracle;
             if (asset == OptifiAsset.USDC) {
                 ivOracle = null;
             }
             else {
-                ivOracle = await findParseOptimizedOracleAccountFromAsset(context, asset, OracleAccountType.Iv);
+                ivOracle = await findOracleAccountFromAsset(context, asset, OracleAccountType.Iv);
             }
             context.program.rpc.updateOracle(
                 asset,

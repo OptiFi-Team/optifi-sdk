@@ -2,7 +2,7 @@ import { initializeContext } from "../../index";
 import updateOracle from "../../instructions/authority/authUpdateOracle";
 import { Asset as OptifiAsset } from "../../types/optifi-exchange-types";
 
-const assets = [OptifiAsset.Bitcoin, OptifiAsset.Ethereum];
+const assets = [OptifiAsset.Bitcoin, OptifiAsset.Ethereum, OptifiAsset.USDC];
 
 initializeContext().then(async (context) => {
     for (let asset of assets) {

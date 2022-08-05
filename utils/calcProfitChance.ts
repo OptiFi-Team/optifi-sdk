@@ -1,9 +1,10 @@
 import { ndf, d2Call, d2Put, reshap, ndfBid } from "./calculateMargin"
 import Context from "../types/context";
-import { SWITCHBOARD } from "../constants";
+import { PYTH, SWITCHBOARD } from "../constants";
 import { PublicKey } from "@solana/web3.js";
 import { OptifiMarketFullData } from "./market";
 import { getSwitchboard } from "./switchboardV2";
+import { getPythData } from "./pyth";
 
 interface ProfitChance {
     breakEven: number,
@@ -262,13 +263,13 @@ function getMarketData(
 ): Promise<BreakEvenDataRes> {
     return new Promise(async (resolve, rejects) => {
         try {
-            let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD));
+            let spotRes_btc = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD));
             let ivRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
 
-            let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD));
+            let spotRes_eth = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD));
             let ivRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
 
-            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
+            let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
 
             let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
             let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100

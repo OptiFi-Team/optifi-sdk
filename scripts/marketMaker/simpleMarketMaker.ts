@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { SWITCHBOARD } from "../../constants";
+import { PYTH, SWITCHBOARD } from "../../constants";
 import { initializeContext } from "../../index";
 import marketMakerCancelOrder from "../../instructions/marketMaker/marketMakerCancelOrder";
 import marketMakerPostOnlyOrder from "../../instructions/marketMaker/marketMakerPostOnlyOrder";
@@ -7,6 +7,7 @@ import { OrderSide } from "../../types/optifi-exchange-types";
 import { option_price } from "../../utils/calculateMargin";
 import { sleep } from "../../utils/generic";
 import { findOptifiMarketsWithFullData } from "../../utils/market";
+import { getPythData } from "../../utils/pyth";
 import { getSwitchboard } from "../../utils/switchboardV2";
 
 const usdcSpot = 1;
@@ -22,11 +23,11 @@ initializeContext().then(async (context) => {
     let ivRes: number;
     switch (asset) {
         case 0:
-            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD))
+            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD))
             ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
             break
         case 1:
-            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD))
+            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD))
             ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
             break
         default:

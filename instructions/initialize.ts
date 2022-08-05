@@ -1,7 +1,7 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import * as anchor from "@project-serum/anchor";
-import { findExchangeAccount, findParseOptimizedOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
+import { findExchangeAccount, findOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
 import {
     PublicKey,
     SystemProgram,
@@ -26,11 +26,11 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                 const usdcCentralPoolWallet = anchor.web3.Keypair.generate();
                 const usdcFeePoolWallet = anchor.web3.Keypair.generate();
 
-                let btcSpotOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Bitcoin, OracleAccountType.Spot)
-                let ethSpotOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Ethereum, OracleAccountType.Spot)
-                let usdcSpotOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot)
-                let btcIvOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Bitcoin, OracleAccountType.Iv)
-                let ethIvOracle = await findParseOptimizedOracleAccountFromAsset(context, Asset.Ethereum, OracleAccountType.Iv)
+                let btcSpotOracle = await findOracleAccountFromAsset(context, Asset.Bitcoin, OracleAccountType.Spot)
+                let ethSpotOracle = await findOracleAccountFromAsset(context, Asset.Ethereum, OracleAccountType.Spot)
+                let usdcSpotOracle = await findOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot)
+                let btcIvOracle = await findOracleAccountFromAsset(context, Asset.Bitcoin, OracleAccountType.Iv)
+                let ethIvOracle = await findOracleAccountFromAsset(context, Asset.Ethereum, OracleAccountType.Iv)
 
                 context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then((min) => {
                     context.program.rpc.initialize(

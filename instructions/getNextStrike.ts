@@ -2,7 +2,7 @@ import Context from "../types/context";
 import { PublicKey, SYSVAR_CLOCK_PUBKEY, SystemProgram, TransactionSignature } from "@solana/web3.js";
 import {
   findExchangeAccount,
-  findParseOptimizedOracleAccountFromAsset,
+  findOracleAccountFromAsset,
   OracleAccountType,
 } from "../utils/accounts";
 import { InstrumentContext } from "../instructions/initializeChain";
@@ -80,12 +80,12 @@ export function getNextStrike(
             payer: context.provider.wallet.publicKey,
             systemProgram: SystemProgram.programId,
             assetSpotPriceOracleFeed:
-              await findParseOptimizedOracleAccountFromAsset(
+              await findOracleAccountFromAsset(
                 context,
                 optifiAsset,
                 OracleAccountType.Spot
               ),
-            assetIvOracleFeed: await findParseOptimizedOracleAccountFromAsset(
+            assetIvOracleFeed: await findOracleAccountFromAsset(
               context,
               optifiAsset,
               OracleAccountType.Iv

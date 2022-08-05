@@ -1,7 +1,7 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
 import { Connection, PublicKey, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findParseOptimizedOracleAccountFromAsset, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
+import { findExchangeAccount, findOracleAccountFromAsset, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
 import { AmmAccount, OptifiMarket } from "../../types/optifi-exchange-types";
 import { MANGO_GROUP_ID, MANGO_PROGRAM_ID, MANGO_USDC_CONFIG, SERUM_DEX_PROGRAM_ID } from "../../constants";
 import { findInstrumentIndexFromAMM } from "../../utils/amm";
@@ -68,14 +68,14 @@ export default function ammUpdateFuturesPositions(context: Context,
                         const eventQueue = new PublicKey(perpMarketInfo["eventsKey"])
 
                         // let spotOracle =
-                        //     await findParseOptimizedOracleAccountFromAsset(
+                        //     await findOracleAccountFromAsset(
                         //         context,
                         //         numberToOptifiAsset(
                         //             amm.asset
                         //         )
                         //     );
                         // let ivOracle =
-                        //     await findParseOptimizedOracleAccountFromAsset(
+                        //     await findOracleAccountFromAsset(
                         //         context,
                         //         numberToOptifiAsset(
                         //             amm.asset
@@ -83,7 +83,7 @@ export default function ammUpdateFuturesPositions(context: Context,
                         //         OracleAccountType.Iv
                         //     );
                         // let usdcSpotOracle =
-                        //     await findParseOptimizedOracleAccountFromAsset(
+                        //     await findOracleAccountFromAsset(
                         //         context,
                         //         OptifiAsset.USDC,
                         //         OracleAccountType.Spot

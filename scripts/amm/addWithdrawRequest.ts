@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { SWITCHBOARD, USDC_DECIMALS } from "../../constants";
+import { USDC_DECIMALS } from "../../constants";
 import { initializeContext } from "../../index";
 import addWithdrawRequest from "../../instructions/amm/addWithdrawRequest";
 import { AmmAccount } from "../../types/optifi-exchange-types";

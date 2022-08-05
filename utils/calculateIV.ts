@@ -1,9 +1,10 @@
 import Context from "../types/context";
 import { OptifiMarketFullData } from "./market"
 import { PublicKey } from "@solana/web3.js";
-import { SWITCHBOARD } from "../constants";
+import { PYTH, SWITCHBOARD } from "../constants";
 import erf from "math-erf";
 import { getSwitchboard } from "./switchboardV2";
+import { getPythData } from "./pyth";
 
 export const r = 0;
 export const q = 0;
@@ -28,9 +29,9 @@ export function calculateIV(
     return new Promise(async (resolve, reject) => {
         try {
             // get Spot price too just like optionDeltafunction
-            let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD))
-            let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD))
-            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
+            let spotRes_btc = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD))
+            let spotRes_eth = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD))
+            let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
             let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
             let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100
 

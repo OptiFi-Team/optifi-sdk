@@ -4,6 +4,7 @@ import * as anchor from "@project-serum/anchor";
 import {
     EXCHANGE_PREFIX,
     INSTRUMENT_PREFIX, LIQUIDATION_STATE_PREFIX, MARKET_MAKER_PREFIX,
+    PYTH,
     SERUM_OPEN_ORDERS_PREFIX,
     SolanaCluster,
     SWITCHBOARD, USDC_TOKEN_MINT,
@@ -130,20 +131,6 @@ export function exchangeAccountExists(context: Context): Promise<[boolean, Excha
     })
 }
 
-/**
- * Helper function to add the oracle accounts for a particular cluster to an accounts object
- *
- * @param context The program context
- * @param accounts The current accounts
- */
-export function oracleAccountsWrapper(context: Context, accounts: { [name: string]: any }): { [name: string]: any } {
-    accounts['btcSpotOracle'] = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD);
-    accounts['btcIvOracle'] = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV);
-    accounts['ethSpotOracle'] = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD);
-    accounts['ethIvOracle'] = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV)
-
-    return accounts
-}
 
 /**
  * Find the PDA, who is the account which controls all user's usdc vaults
@@ -201,13 +188,13 @@ export enum OracleAccountType {
     Iv,
 }
 
-export async function findParseOptimizedOracleAccountFromAsset(context: Context,
+export async function findOracleAccountFromAsset(context: Context,
     asset: OptifiAsset,
     oracleAccountType: OracleAccountType = OracleAccountType.Spot): Promise<PublicKey> {
     switch (asset) {
         case OptifiAsset.Bitcoin:
             if (oracleAccountType === OracleAccountType.Spot) {
-                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD);
+                return new PublicKey(PYTH[context.cluster].BTC_USD);
             } else {
                 // keep using v1 address for mainnet btc and eth iv
                 if (context.cluster == SolanaCluster.Mainnet) {
@@ -217,7 +204,7 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
             }
         case OptifiAsset.Ethereum:
             if (oracleAccountType === OracleAccountType.Spot) {
-                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD);
+                return new PublicKey(PYTH[context.cluster].ETH_USD);
             } else {
                 // keep using v1 address for mainnet btc and eth iv
                 if (context.cluster == SolanaCluster.Mainnet) {
@@ -229,61 +216,16 @@ export async function findParseOptimizedOracleAccountFromAsset(context: Context,
             if (oracleAccountType === OracleAccountType.Iv) {
                 console.warn("No IV account for USDC, returning spot");
             }
-            return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD);
+            return new PublicKey(PYTH[context.cluster].USDC_USD);
         case OptifiAsset.Solana:
             if (context.cluster == SolanaCluster.Mainnet) {
                 throw new Error(`Unsupported asset ${asset}`);
             }
             if (oracleAccountType === OracleAccountType.Spot) {
-                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_USD);
+                return new PublicKey(PYTH[context.cluster].SOL_USD);
             } else {
                 return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_IV);
             }
-        default:
-            console.log("Asset is ", asset);
-            throw new Error(`Unsupported asset ${asset}`);
-    }
-
-}
-
-export function findParseOptimizedOracleAccountFromInstrument(context: Context,
-    instrumentAddress: PublicKey,
-    oracleAccountType: OracleAccountType = OracleAccountType.Spot): Promise<PublicKey> {
-    return new Promise((resolve, reject) => {
-        context.program.account.chain.fetch(instrumentAddress).then(async (chainRes) => {
-            // @ts-ignore
-            let chain = chainRes as Chain;
-            try {
-                resolve(await findParseOptimizedOracleAccountFromAsset(context, numberToOptifiAsset(chain.asset), oracleAccountType))
-            } catch (e) {
-                console.error(e);
-                reject(e);
-            }
-        })
-    })
-}
-
-export function findOracleAccountFromAsset(context: Context,
-    asset: OptifiAsset,
-    oracleAccountType: OracleAccountType = OracleAccountType.Spot): PublicKey {
-    switch (asset) {
-        case OptifiAsset.Bitcoin:
-            if (oracleAccountType === OracleAccountType.Spot) {
-                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD);
-            } else {
-                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV)
-            }
-        case OptifiAsset.Ethereum:
-            if (oracleAccountType === OracleAccountType.Spot) {
-                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD)
-            } else {
-                return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV)
-            }
-        case OptifiAsset.USDC:
-            if (oracleAccountType === OracleAccountType.Iv) {
-                console.warn("No IV account for USDC, returning spot");
-            }
-            return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD)
         default:
             console.log("Asset is ", asset);
             throw new Error(`Unsupported asset ${asset}`);
@@ -295,11 +237,11 @@ export function findOracleAccountFromInstrument(context: Context,
     instrumentAddress: PublicKey,
     oracleAccountType: OracleAccountType = OracleAccountType.Spot): Promise<PublicKey> {
     return new Promise((resolve, reject) => {
-        context.program.account.chain.fetch(instrumentAddress).then((chainRes) => {
+        context.program.account.chain.fetch(instrumentAddress).then(async (chainRes) => {
             // @ts-ignore
             let chain = chainRes as Chain;
             try {
-                resolve(findOracleAccountFromAsset(context, numberToOptifiAsset(chain.asset), oracleAccountType))
+                resolve(await findOracleAccountFromAsset(context, numberToOptifiAsset(chain.asset), oracleAccountType))
             } catch (e) {
                 console.error(e);
                 reject(e);

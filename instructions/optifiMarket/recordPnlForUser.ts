@@ -1,10 +1,10 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
 import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findOracleAccountFromInstrument, findParseOptimizedOracleAccountFromAsset, findParseOptimizedOracleAccountFromInstrument, findUserAccount, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
+import { findExchangeAccount, findOracleAccountFromAsset, findOracleAccountFromInstrument, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
 import { Asset, Chain, OptifiMarket, UserAccount } from "../../types/optifi-exchange-types";
 import { deriveVaultNonce, findMarketInstrumentContext } from "../../utils/market";
-import { SERUM_DEX_PROGRAM_ID, SWITCHBOARD } from "../../constants";
+import { SERUM_DEX_PROGRAM_ID } from "../../constants";
 import { findSerumAuthorityPDA, findSerumPruneAuthorityPDA } from "../../utils/pda";
 import { increaseComputeUnitsIx, signAndSendTransaction } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -26,7 +26,7 @@ export default function recordPnl(context: Context,
             findExchangeAccount(context).then(([exchangeAddress, _]) => {
                 findMarketInstrumentContext(context, market).then((marketContext) => {
                     findSerumAuthorityPDA(context).then(([serumMarketAuthorityAddress, _]) => {
-                        findParseOptimizedOracleAccountFromInstrument(context, marketContext.optifiMarket.instrument).then((oracleSpotAccount) =>
+                        findOracleAccountFromInstrument(context, marketContext.optifiMarket.instrument).then((oracleSpotAccount) =>
                             deriveVaultNonce(marketContext.optifiMarket.serumMarket, new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]))
                                 .then(([vaultAddress, nonce]) => {
                                     getSerumMarket(context, marketContext.optifiMarket.serumMarket).then((serumMarket) => {
@@ -59,7 +59,7 @@ export default function recordPnl(context: Context,
                                                             tokenProgram: TOKEN_PROGRAM_ID,
                                                             clock: SYSVAR_CLOCK_PUBKEY,
                                                             assetSpotPriceOracleFeed: oracleSpotAccount,
-                                                            usdcSpotPriceOracleFeed: await findParseOptimizedOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot)
+                                                            usdcSpotPriceOracleFeed: await findOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot)
                                                         }
                                                     })
 

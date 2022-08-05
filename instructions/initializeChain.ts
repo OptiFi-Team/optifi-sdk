@@ -1,10 +1,10 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
 import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
-import { findExchangeAccount, findInstrument, findParseOptimizedOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
+import { findExchangeAccount, findInstrument, findOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
 import Asset from "../types/asset";
 import InstrumentType from "../types/instrumentType";
-import { STRIKE_LADDER_SIZE, SWITCHBOARD } from "../constants";
+import { STRIKE_LADDER_SIZE } from "../constants";
 import ExpiryType from "../types/expiryType";
 import {
     assetToOptifiAsset,
@@ -81,8 +81,8 @@ export function initializeChain(context: Context,
                                     instrument: instrument[0],
                                     payer: context.provider.wallet.publicKey,
                                     systemProgram: SystemProgram.programId,
-                                    assetSpotPriceOracleFeed: await findParseOptimizedOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Spot),
-                                    assetIvOracleFeed: await findParseOptimizedOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Iv),
+                                    assetSpotPriceOracleFeed: await findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Spot),
+                                    assetIvOracleFeed: await findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Iv),
                                     clock: SYSVAR_CLOCK_PUBKEY
                                 },
                                 preInstructions: [increaseComputeUnitsIx]

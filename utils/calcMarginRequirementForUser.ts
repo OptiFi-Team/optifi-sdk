@@ -3,8 +3,9 @@ import { PublicKey } from "@solana/web3.js";
 import { Chain, OrderSide } from "../types/optifi-exchange-types";
 import { findUserAccount } from './accounts'
 import { calculateMargin, stress_function, option_intrinsic_value, reshap } from "./calculateMargin";
-import { SWITCHBOARD, USDC_DECIMALS } from "../constants";
+import { PYTH, SWITCHBOARD, USDC_DECIMALS } from "../constants";
 import { getSwitchboard } from "./switchboardV2";
+import { getPythData } from "./pyth";
 
 export const r = 0;
 export const q = 0;
@@ -71,7 +72,7 @@ export function calcMarginRequirementForUser(
             // console.log('netPositionsETH: ', netPositionsETH);
 
             // Calc margin requirement for both BTC and ETH options
-            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
+            let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
             let marginForBTC = 0
             let marginForETH = 0
             let netOptionForBTC = 0
@@ -197,7 +198,7 @@ export function preCalcMarginForNewOrder(
 
             // Calc margin requirement for both BTC and ETH options
             // Calc margin requirement for both BTC and ETH options
-            let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
+            let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
             let marginForBTC = 0
             let marginForETH = 0
             let netOptionForBTC = 0
@@ -272,7 +273,7 @@ export function isMarginSufficientForNewOrder(
 }
 
 export async function getSpotnIv(context: Context) {
-    let spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD));
+    let spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD));
     let ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
 
     let result = [spotRes, ivRes];
@@ -290,11 +291,11 @@ async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: 
     let ivRes: number;
     switch (asset) {
         case 0:
-            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD))
+            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD))
             ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
             break
         case 1:
-            spotRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD))
+            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD))
             ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
             break
         default:

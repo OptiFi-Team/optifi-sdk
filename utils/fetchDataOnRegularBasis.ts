@@ -5,10 +5,11 @@ import { getUserBalance } from "./user"
 import { Order, loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets } from "../utils/orders";
 import { loadPositionsFromUserAccount, findOptifiMarketsWithFullData, Position } from "./market"
 import { UserAccount } from "../types/optifi-exchange-types";
-import { SWITCHBOARD } from "../constants";
+import { PYTH, SWITCHBOARD } from "../constants";
 import { initializeContext } from "../index";
 import { getAllOrdersForAccount } from "../utils/orderHistory";
 import { getSwitchboard } from "./switchboardV2";
+import { getPythData } from "./pyth";
 
 //   const market = new PublicKey("Dv3WX52binT7rxYfruhRN9B3uVxioF7UUHDNXvwaykZL");
 
@@ -28,9 +29,9 @@ export async function fetchDataOnRegularBasis(
     userWalletAddresses: PublicKey[]
 ) {
     try {
-        let spotRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_USD))
-        let spotRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_USD))
-        let usdcSpot = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_USDC_USD))
+        let spotRes_btc = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD))
+        let spotRes_eth = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD))
+        let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
         let spot_btc = spotRes_btc / usdcSpot
         let spot_eth = spotRes_eth / usdcSpot
         // let spot_btc = 42000;

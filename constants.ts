@@ -146,6 +146,27 @@ export const SWITCHBOARD: EndpointConstant = {
     }
 }
 
+export const PYTH: EndpointConstant = {
+    [SolanaCluster.Mainnet]: {
+        BTC_USD: "GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU",
+        ETH_USD: "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB",
+        SOL_USD: "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG",
+        USDC_USD: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
+    },
+    [SolanaCluster.Devnet]: {
+        BTC_USD: "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J",
+        ETH_USD: "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw",
+        SOL_USD: "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix",
+        USDC_USD: "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7",
+    },
+    [SolanaCluster.Testnet]: {
+        BTC_USD: "DJW6f4ZVqCnpYNN9rNuzqUcCvkVtBgixo8mq9FKSsCbJ",
+        ETH_USD: "7A98y76fcETLHnkCxjmnUrsuNrbUae7asy4TiVeGqLSs",
+        SOL_USD: "7VJsBtJzgTftYzEeooSDYyjKXvYRWJHdwvbwfBvTg9K",
+        USDC_USD: "GBvYgUMCt4nvycUZMEBpHyLEXGbKjr6G9HjMjmLyf6mA",
+    }
+}
+
 export const SERUM_DEX_PROGRAM_ID: EndpointConstant = {
     [SolanaCluster.Mainnet]: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
     [SolanaCluster.Devnet]: "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY",
