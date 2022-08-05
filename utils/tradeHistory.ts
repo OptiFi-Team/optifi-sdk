@@ -27,19 +27,6 @@ async function getOrders(context: Context): Promise<Order[]> {
   })
 }
 
-async function getFillAmt(context: Context, orderHistorys: OrderInstruction[], orders: Order[]): Promise<number[]> {
-  return new Promise(async (resolve, reject) => {
-    let res: number[] = [];
-
-    for (let i = 0; i < orders.length; i++) {
-      let clientId = orders[i].clientId;
-      let orderHistory = orderHistorys.find(e => e.clientId == clientId?.toNumber())
-      res[orders[i].clientId!.toNumber()] = (orderHistory) ? (new Decimal(orderHistory?.maxBaseQuantity!).minus(new Decimal(orders[i].size).toNumber())).toNumber() : 0;
-    }
-    resolve(res);
-  })
-}
-
 //refer:logAMMAccounts
 export async function getClientId(logs: string[]) {
   let stringLen = 20
@@ -105,39 +92,6 @@ export async function getIOCSizeForAsk(logs: string[]) {
   return Number(stringRes)
 }
 
-export async function checkPostOnlyFail(context: Context, account: PublicKey, clientId: number): Promise<boolean> {
-  return new Promise(async (resolve, reject) => {
-    let fail: boolean = false;
-
-    let txs = await retrievRecentTxs(context, account)
-    for (let tx of txs) {//number of transactions people send
-      //@ts-ignore
-      let idFromProgramLog = await getClientId(tx.meta?.logMessages)
-      if (idFromProgramLog != clientId) continue;
-      for (let inx of tx.transaction.message.instructions) {
-        let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
-        if (programId.toString() == context.program.programId.toString()) {
-          let coder = context.program.coder as BorshCoder;
-          let decoded = coder.instruction.decode(base58.decode(inx.data))
-          if (decoded) {
-            if (decoded.name == "placeOrder") {
-              let logs = tx.meta?.logMessages
-              //@ts-ignore
-              for (let log of logs) {
-                if (log.search("Order is failed...") != -1) {
-                  fail = true;
-                  resolve(fail);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    resolve(fail);
-  })
-}
-
 async function pushInTrade(orderHistory: OrderInstruction, trades: Trade[]): Promise<Trade[]> {
   return new Promise(async (resolve, reject) => {
     trades.push(new Trade({
@@ -169,7 +123,6 @@ export function getAllTradesForAccount(
       res.reverse()
       let trades: Trade[] = []
       let orders = await getOrders(context)
-      // let clientIdFillAmt: number[] = await getFillAmt(context, res, orders);
 
       let originalSize: Decimal[] = [];
       //cancel order 時被cancel的數量
@@ -286,7 +239,6 @@ export function getFilterTradesForAccount(
       res.reverse()
       let trades: Trade[] = []
       let orders = await getOrders(context)
-      // let clientIdFillAmt: number[] = await getFillAmt(context, res, orders);
 
       let originalSize: Decimal[] = [];
       //cancel order 時被cancel的數量

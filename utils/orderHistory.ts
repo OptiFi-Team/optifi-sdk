@@ -10,7 +10,7 @@ import Decimal from "decimal.js";
 import { OptifiMarket } from "../types/optifi-exchange-types";
 import { getSerumMarket } from "../utils/serum";
 import { market } from "../scripts/constants";
-import { BTC_DECIMALS, ETH_DECIMALS, getIOCSizeForAsk, getIOCSide, getClientId, getIOCFillAmt, checkPostOnlyFail } from "./tradeHistory";
+import { BTC_DECIMALS, ETH_DECIMALS, getIOCSizeForAsk, getIOCSide, getClientId, getIOCFillAmt } from "./tradeHistory";
 import base58, { decode } from "bs58";
 import { Order } from "../utils/orders";
 import { populateInxAccountKeys } from "./transactions"
