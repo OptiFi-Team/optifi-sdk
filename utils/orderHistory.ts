@@ -159,6 +159,43 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   let baseTokenDecimal = numberAssetToDecimal(instrument.asset)!
                   record.maxBaseQuantity = record.maxBaseQuantity / 10 ** baseTokenDecimal//original size
 
+                  //getFilledData
+                  //@ts-ignore
+                  let types = await getIOCSide(tx.meta?.logMessages)
+                  //@ts-ignore
+                  let clientId = record.clientId
+                  //@ts-ignore
+                  let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
+                  let optifiMarkets = await findOptifiMarketsWithFullData(context)
+                  let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == marketAddress)
+                  if (optifiMarket) {//can find optifiMarket(not cancel order)
+                    let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+                    if (types == "Ask") {
+                      //user place Ask: market_open_orders.native_coin_total will be the amt after fill
+                      //(ex: open order bid 2, user ask 3,  market_open_orders.native_coin_total will be 1;
+                      //user ask 1 ,market_open_orders.native_coin_total will be 0
+                      //->ask amt - market_open_orders.native_coin_total = fillAmt 
+
+                      //@ts-ignore
+                      let askAmt = await getIOCSizeForAsk(tx.meta?.logMessages)
+                      if (clientId)
+                        record.filledData = (askAmt - fillAmt) / (10 ** decimal)
+                    } else {
+                      if (clientId && fillAmt)
+                        record.filledData = fillAmt / (10 ** decimal)
+                    }
+                  }
+
+                  //checkPostOnlyFail
+                  record.checkPostOnlyFail = false;
+                  let logs = tx.meta?.logMessages
+                  //@ts-ignore
+                  for (let log of logs) {
+                    if (log.search("Order is failed...") != -1) {
+                      record.checkPostOnlyFail = true;
+                    }
+                  }
+
                   // let newOrderJSON = JSON.stringify(decData);
                   // console.log("newOrderJSON: ", newOrderJSON);
                   record.timestamp = new Date(tx.blockTime! * 1000);
@@ -172,7 +209,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
                   // get the orginal order details
                   let orginalOrder = orderTxs.find(e => e.clientId.toString() == decData.cancelOrderByClientIdV2.clientId.toString())!
-
+                  
                   // console.log("orginalOrder: ", orginalOrder, decData.cancelOrderByClientIdV2.clientId.toNumber())
                   if (orginalOrder) {
                     let record = JSON.parse(JSON.stringify(orginalOrder));
@@ -350,6 +387,8 @@ export class OrderInstruction {
   status: string
   decimal: number
   start: Date
+  filledData: number
+  checkPostOnlyFail:boolean
 
   constructor({
     clientId,
@@ -369,6 +408,8 @@ export class OrderInstruction {
     status,
     decimal,
     start,
+    filledData,
+    checkPostOnlyFail,
   }: {
     clientId: BN;
     limit: number;
@@ -387,6 +428,8 @@ export class OrderInstruction {
     status: string
     decimal: number
     start: Date
+    filledData: number
+    checkPostOnlyFail:boolean
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -405,6 +448,8 @@ export class OrderInstruction {
     this.status = status
     this.decimal = decimal
     this.start = start
+    this.filledData = filledData
+    this.checkPostOnlyFail = checkPostOnlyFail
   }
 
   public get shortForm(): string {
@@ -425,7 +470,6 @@ export function addStatusInOrderHistory(
       let originalSize: Decimal[] = [];
       //cancel order 時被cancel的數量
       let cancelSize: Decimal[] = [];
-      let clientIdIOC: number[] = await getFilledData(context, userAccount, orderHistorys)
 
       //originalSize
       for (let orderHistory of orderHistorys) {
@@ -485,15 +529,13 @@ export function addStatusInOrderHistory(
           }
 
         } else if (orderHistory.orderType == "ioc") {
-          if (clientIdIOC[clientId]) {
-            orderHistory.maxBaseQuantity = clientIdIOC[clientId]
+          if (orderHistory.filledData) {
+            orderHistory.maxBaseQuantity = orderHistory.filledData
             orderHistory.status = "Filled"
           }
           else orderHistory.status = "Failed"
         } else {
-
-          let postOnlyFail = await checkPostOnlyFail(context, userAccount, clientId);//wait for a long time...should be optimized
-          if (postOnlyFail) {
+          if (orderHistory.checkPostOnlyFail) {
             orderHistory.status = "Failed";
             continue;
           }

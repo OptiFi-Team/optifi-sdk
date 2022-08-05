@@ -2,7 +2,7 @@ import { PublicKey, Keypair, Connection } from "@solana/web3.js";
 import Context from "../types/context";
 
 import { findUserAccount } from "../utils/accounts";
-import { loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, Order } from "../utils/orders";
+import { loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, Order ,getAllOpenOrdersForUser} from "../utils/orders";
 import { findOptifiMarketsWithFullData } from "../utils/market";
 import { getAllOrdersForAccount, OrderInstruction, getFilledData,getFilterOrdersForAccount } from "../utils/orderHistory";
 import { retrievRecentTxs } from "./orderHistory";
@@ -15,13 +15,14 @@ export const ETH_DECIMALS = 1;
 
 async function getOrders(context: Context): Promise<Order[]> {
   return new Promise(async (resolve, reject) => {
-    let [userAccount,] = await findUserAccount(context)
+    // let [userAccount,] = await findUserAccount(context)
     let optifiMarkets = await findOptifiMarketsWithFullData(context)
-    let [userAccountAddress,] = await findUserAccount(context)
+    let orders = await getAllOpenOrdersForUser(context,optifiMarkets)
+    // let [userAccountAddress,] = await findUserAccount(context)
 
-    let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress)
-    let orderHistory = await getAllOrdersForAccount(context, userAccount,)
-    let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
+    // let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress)
+    // let orderHistory = await getAllOrdersForAccount(context, userAccount,)
+    // let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
     resolve(orders)
   })
 }
@@ -228,9 +229,8 @@ export function getAllTradesForAccount(
         // IOC on trade history:
         // 1. totally Filled
         if (orderHistory.orderType == "ioc") {
-          let clientIdIOC: number[] = await getFilledData(context, account, res)
-          if (clientIdIOC[clientId]) {
-            orderHistory.maxBaseQuantity = clientIdIOC[clientId]
+          if (orderHistory.filledData) {
+            orderHistory.maxBaseQuantity = orderHistory.filledData
             trades = await pushInTrade(orderHistory, trades)
             continue;
           }
@@ -241,8 +241,7 @@ export function getAllTradesForAccount(
         // 2. Partial Filled
         // 3. Partial Filled and be canceled 
         if (orderHistory.orderType == "postOnly") {
-          let postOnlyFail = await checkPostOnlyFail(context, account, clientId);//wait for a long time...should be optimized
-          if (postOnlyFail) {
+          if (orderHistory.checkPostOnlyFail) {
             continue;
           }
           if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
@@ -347,9 +346,8 @@ export function getFilterTradesForAccount(
         // IOC on trade history:
         // 1. totally Filled
         if (orderHistory.orderType == "ioc") {
-          let clientIdIOC: number[] = await getFilledData(context, account, res)
-          if (clientIdIOC[clientId]) {
-            orderHistory.maxBaseQuantity = clientIdIOC[clientId]
+          if (orderHistory.filledData) {
+            orderHistory.maxBaseQuantity = orderHistory.filledData
             trades = await pushInTrade(orderHistory, trades)
             continue;
           }
@@ -360,8 +358,7 @@ export function getFilterTradesForAccount(
         // 2. Partial Filled
         // 3. Partial Filled and be canceled 
         if (orderHistory.orderType == "postOnly") {
-          let postOnlyFail = await checkPostOnlyFail(context, account, clientId);//wait for a long time...should be optimized
-          if (postOnlyFail) {
+          if (orderHistory.checkPostOnlyFail) {
             continue;
           }
           if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
