@@ -54,8 +54,6 @@ export function marginCalculate(context: Context, userAccount: PublicKey
 
         let [exchangeAddress, _] = await findExchangeAccount(context);
 
-        let [userAccountAddress,] = await findUserAccount(context)
-
         let res;
 
         for (let i = 0; i < SUPPORTED_ASSETS.length; i++) {
@@ -70,7 +68,7 @@ export function marginCalculate(context: Context, userAccount: PublicKey
                 accounts: {
                     optifiExchange: exchangeAddress,
                     marginStressAccount: marginStressAddress,
-                    userAccount: userAccountAddress,
+                    userAccount,
                     clock: SYSVAR_CLOCK_PUBKEY
                 },
                 instructions: ixs
