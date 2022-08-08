@@ -129,15 +129,22 @@ export default async function liquidateUser(context: Context, userToLiquidate: P
                 let [marginRequirement, netOptionValue] = await calcMarginRequirementForUser(context, userToLiquidate);
                 let marketAddress = market[1];
 
+                console.log("marketAddress: " + marketAddress + " liquidationState: " + Object.keys(liquidationState.status)[0]);
+                let shortAmount = await getTokenAmount(context, market[0].instrumentShortSplToken, userToLiquidate);
+
                 if (margin + netOptionValue < marginRequirement * 0.5) {
                     await liquidationToAmm(context, userToLiquidate, marketAddress).then((res) => {
                         console.log("Got liquidationToAmm res", res, " on market ", marketAddress.toString());
                     }).catch((err) => {
                         console.error(err);
                     });
+                    // Wait for order filled
+                    console.log("Wait for liquidation settlement...");
+                    await sleep(10000);
+
+                    let serumMarket = await getSerumMarket(context, market[0].serumMarket);
+                    await waitForSettle(context, serumMarket, userToLiquidate, marketAddress, shortAmount, 0);
                 } else {
-                    console.log("marketAddress: " + marketAddress + " liquidationState: " + Object.keys(liquidationState.status)[0]);
-                    let shortAmount = await getTokenAmount(context, market[0].instrumentShortSplToken, userToLiquidate);
                     // Liquidation Place Order
                     console.log("Place liquidation order...");
                     await liquidationPlaceOrder(context, userToLiquidate, marketAddress).then((res) => {
