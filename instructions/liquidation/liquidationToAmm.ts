@@ -50,7 +50,7 @@ export default function liquidationToAmm(context: Context,
                                     console.log("liquidationToAmm...");
                                     let ammAccounts = await findAMMAccounts(context)
                                     let ammForLiquidation = ammAccounts.filter(amm => {
-                                        amm[0].tradingInstruments.map(e => e.toString()).includes(market.instrument.toString())
+                                       return amm[0].tradingInstruments.map(e => e.toString()).includes(market.instrument.toString())
                                     })
                                     context.program.rpc.liquidationToAmm(
                                         {
