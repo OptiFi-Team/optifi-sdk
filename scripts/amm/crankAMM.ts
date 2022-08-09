@@ -8,7 +8,7 @@ import { sleep } from "../../utils/generic";
 import { syncAmmPositions, calcAmmDelta, calculateAmmProposals, executeAmmOrderProposal, updateAmmFutureOrders, syncAmmFuturePositions } from "./utils";
 import Context from "../../types/context";
 
-let ammIdxs = [1, 2, 3]
+let ammIdxs = [1, 2]
 
 // all amm states
 let Sync = Object.keys(AmmState.Sync)[0].toLowerCase();
