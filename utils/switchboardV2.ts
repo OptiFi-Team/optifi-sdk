@@ -221,10 +221,10 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
 
     switch (context.cluster) {
         case SolanaCluster.Devnet:
-            sbv2 = await SwitchboardProgram.loadDevnet();
+            sbv2 = await SwitchboardProgram.loadDevnet(context.connection);
             break
         case SolanaCluster.Mainnet:
-            sbv2 = await SwitchboardProgram.loadMainnet();
+            sbv2 = await SwitchboardProgram.loadMainnet(context.connection);
             break
     };
 

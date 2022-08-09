@@ -16,7 +16,7 @@ initializeContext().then((context) => {
     const switchboardFeed = new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV)
 
     getSwitchboard(context, switchboardFeed).then(
-        (res) => console.log(res),
+        (res) => console.log(res.toString()),
         (error) => {
             console.error("Failed to parse Switchboard Feed");
             console.error(error);
