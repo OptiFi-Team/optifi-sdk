@@ -196,20 +196,12 @@ export async function findOracleAccountFromAsset(context: Context,
             if (oracleAccountType === OracleAccountType.Spot) {
                 return new PublicKey(PYTH[context.cluster].BTC_USD);
             } else {
-                // keep using v1 address for mainnet btc and eth iv
-                if (context.cluster == SolanaCluster.Mainnet) {
-                    return new PublicKey(SWITCHBOARD[SolanaCluster.Mainnet].SWITCHBOARD_BTC_IV_OPTIMIZED);
-                }
                 return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV);
             }
         case OptifiAsset.Ethereum:
             if (oracleAccountType === OracleAccountType.Spot) {
                 return new PublicKey(PYTH[context.cluster].ETH_USD);
             } else {
-                // keep using v1 address for mainnet btc and eth iv
-                if (context.cluster == SolanaCluster.Mainnet) {
-                    return new PublicKey(SWITCHBOARD[SolanaCluster.Mainnet].SWITCHBOARD_ETH_IV_OPTIMIZED);
-                }
                 return new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV);
             }
         case OptifiAsset.USDC:

@@ -121,11 +121,9 @@ export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
 export const SWITCHBOARD: EndpointConstant = {
     [SolanaCluster.Mainnet]: {
         SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
-        SWITCHBOARD_BTC_IV: "CX1PvW4qUDy4PPq8egnMVCbVJt8TcPCt7WCZuwmvCfo7",
-        SWITCHBOARD_BTC_IV_OPTIMIZED: "CeTDZpMSTkWDf8sWWHzpvZRRLR32BWcz7WBqjj8YLu6h",
+        SWITCHBOARD_BTC_IV: "BQekWds7W79CVeKnG3McESWa94YrChT4VPUYqPzGcHon",
         SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
-        SWITCHBOARD_ETH_IV: "4AGPMUEfBCSNqVd4Y6veHAep6VPtrkMa89rBhPqMYegz",
-        SWITCHBOARD_ETH_IV_OPTIMIZED: "2AXWsmzs3h4E3zf14zbVBdAho15TG29Vkq9xTg8jhH2v",
+        SWITCHBOARD_ETH_IV: "DkACWMFoJr9xnAwsttHmUQrhzRSnwG7J5cmFqG6VH44",
         SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW",
     },
     [SolanaCluster.Devnet]: {
