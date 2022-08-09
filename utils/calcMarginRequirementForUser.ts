@@ -273,10 +273,10 @@ export function isMarginSufficientForNewOrder(
 }
 
 export async function getSpotnIv(context: Context) {
-    let spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD));
-    let ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
-
-    let result = [spotRes, ivRes];
+    let result = await Promise.all([
+        getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD)),
+        getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
+    ]);
 
     return result
 }

@@ -228,14 +228,6 @@ export async function getSwitchboard(context: Context, switchboardFeed: PublicKe
             break
     };
 
-    // keep using v1 decoder for mainnet btc and eth iv
-    if (switchboardFeed.toString() == SWITCHBOARD[SolanaCluster.Mainnet].SWITCHBOARD_BTC_IV ||
-        switchboardFeed.toString() == SWITCHBOARD[SolanaCluster.Mainnet].SWITCHBOARD_ETH_IV) {
-        let rawRes = await parseAggregatorAccountData(context.connection, switchboardFeed)
-        let res = rawRes.lastRoundResult?.result!
-        return res
-    }
-
     const accountInfo = await sbv2.program.provider.connection.getAccountInfo(
         switchboardFeed
     );
