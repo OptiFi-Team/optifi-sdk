@@ -1,19 +1,13 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
 import { Connection, PublicKey, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, getDexOpenOrders, OracleAccountType } from "../../utils/accounts";
-import { AmmAccount, OptifiMarket } from "../../types/optifi-exchange-types";
-import { MANGO_GROUP_ID, MANGO_PROGRAM_ID, MANGO_USDC_CONFIG, SERUM_DEX_PROGRAM_ID } from "../../constants";
-import { findInstrumentIndexFromAMM } from "../../utils/amm";
-import { findAssociatedTokenAccount } from "../../utils/token";
-import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
+import { findExchangeAccount, } from "../../utils/accounts";
+import { AmmAccount, } from "../../types/optifi-exchange-types";
+import { MANGO_GROUP_ID, MANGO_PROGRAM_ID, MANGO_USDC_CONFIG, } from "../../constants";
+import { increaseComputeUnitsIx, } from "../../utils/transactions";
 import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { MangoClient, MangoAccount, MangoAccountLayout } from "@blockworks-foundation/mango-client";
-import { numberToOptifiAsset } from "../../utils/generic";
-import {
-    Asset as OptifiAsset,
-} from '../../types/optifi-exchange-types';
+import { MangoClient, MangoAccount, MangoAccountLayout, ZERO_I80F48 } from "@blockworks-foundation/mango-client";
 import { getMangoPerpMarketInfoByAsset } from "../../scripts/amm/utils";
 
 
@@ -87,16 +81,23 @@ export default function ammSyncFuturesPositions(context: Context,
 
                         if (usdcRootBank) {
                             const nodeBanks = await usdcRootBank.loadNodeBanks(client.connection);
-
                             const filteredNodeBanks = nodeBanks.filter((nodeBank) => !!nodeBank);
-                            // expect(filteredNodeBanks.length).to.equal(1);
                             let vault = filteredNodeBanks[0]!.vault
 
+                            let perpMarketAccountInfo = await client.getPerpMarket(perpMarket, baseDecimals, quoteDecimals)
+                            const marketIndex = mangoGroupAccountInfo.getPerpMarketIndex(perpMarket);
+                            const perpMarketInfo = mangoGroupAccountInfo.perpMarkets[marketIndex];
+                            let mangoCache = await mangoGroupAccountInfo.loadCache(context.connection)
+                            let price = mangoCache.getPrice(perpMarketIndex);
+                            let pnl = mangoAccountInfo.perpAccounts[marketIndex].getPnl(
+                                perpMarketInfo,
+                                mangoCache.perpMarketCache[marketIndex],
+                                price,
+                            );
+
+                            // settle pnl on mango market when amm has positions or pnl
                             // @ts-ignore
-                            if (amm.positions[0].latestPosition.toNumber() > 0) {
-                                let mangoCache = await mangoGroupAccountInfo.loadCache(context.connection)
-                                let perpMarketAccountInfo = await client.getPerpMarket(perpMarket, baseDecimals, quoteDecimals)
-                                let price = mangoCache.getPrice(perpMarketIndex);
+                            if (amm.positions[0].latestPosition.toNumber() > 0 || pnl.eq(ZERO_I80F48)) {
                                 let mangoAccounts = await client.getAllMangoAccounts(mangoGroupAccountInfo, [], false);
                                 let mangoSettlePnl = await client.settlePnl(mangoGroupAccountInfo, mangoCache, mangoAccountInfo, perpMarketAccountInfo, usdcRootBank, price, context.walletKeypair!, mangoAccounts)
                                 console.log("mangoSettlePnl: ", mangoSettlePnl)
