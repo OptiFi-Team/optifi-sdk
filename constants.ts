@@ -304,7 +304,7 @@ export const SOL_DECIMALS = 9;
 // The fee for each transaction on the OptiFi system
 export const TAKER_FEE: EndpointConstant = {
     [SolanaCluster.Devnet]: 0.0028,
-    [SolanaCluster.Mainnet]: 0.0010,
+    [SolanaCluster.Mainnet]: 0.0004,
     [SolanaCluster.Testnet]: undefined
 }
 export const SERUM_TAKER_FEE: EndpointConstant = {
@@ -316,7 +316,7 @@ export const OPTIFI_TAKER_FEE: number = 0.0006;
 // PostOnly order
 export const MAKER_FEE: EndpointConstant = {
     [SolanaCluster.Devnet]: 0.0028,
-    [SolanaCluster.Mainnet]: 0.0006,
+    [SolanaCluster.Mainnet]: 0,
     [SolanaCluster.Testnet]: undefined
 }
 export const SERUM_MAKER_FEE: EndpointConstant = {
