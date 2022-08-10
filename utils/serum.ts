@@ -57,7 +57,7 @@ export function settleSerumFundsIfAnyUnsettled(context: Context,
                                         let res = await context.program.account.userAccount.fetch(userAccountAddress);
                                         // @ts-ignore
                                         let userAccount = res as UserAccount;
-                                        settleOrderFunds(context, [marketAddress], userAccount).then((res) => {
+                                        settleOrderFunds(context, marketAddress, userAccount).then((res) => {
                                             console.debug(res);
                                             // If any of them were successful, we only need to settle once.
                                             resolve(res.data as TransactionSignature);

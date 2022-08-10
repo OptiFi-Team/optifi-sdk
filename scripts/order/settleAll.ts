@@ -27,9 +27,7 @@ initializeContext().then((context) => {
                         if (baseTokenFree.toNumber() > 0 || quoteTokenFree.toNumber() > 0) {
                             console.log("Find unsettle options: ", baseTokenFree.toNumber());
                             console.log("Find unsettle usdc: ", quoteTokenFree.toNumber());
-                            // unsettleMarkets.push(market[1]);
-                            let unsettleMarkets = [market[1]];
-                            let res = await settleOrderFunds(context, unsettleMarkets, userAccount);
+                            let res = await settleOrderFunds(context, market[1], userAccount);
                             if (res) {
                                 console.log(res);
                             }
@@ -38,14 +36,5 @@ initializeContext().then((context) => {
             };
         }
         findUnsettleMarkets();
-        // findUnsettleMarkets().then(async () => {
-        //     // if (unsettleMarkets.length > 0) {
-        //     //     console.log("Start settle the markets: ", unsettleMarkets.toString());
-        //     //     let res = await settleOrderFunds(context, unsettleMarkets);
-        //     //     if (res) {
-        //     //         console.log(res);
-        //     //     }
-        //     // }
-        // })
     })
 })

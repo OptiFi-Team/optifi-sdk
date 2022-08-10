@@ -24,46 +24,38 @@ const ammLoop = async (context: Context, optifiExchange: PublicKey, idx: number)
     let dateTime = new Date()
     console.log(dateTime, " found AMM State : ", state);
 
-    try {
-        switch (state) {
-            case Sync:
-                await syncAmmPositions(context, idx);
-                await syncAmmFuturePositions(context, idx);
-                break;
-            case CalculateDelta:
-                await calcAmmDelta(context, idx);
-                let ammAccountInfo = await context.program.account.ammAccount.fetch(ammAddress);
-                if (ammAccountInfo.isHedgeNeeded || ammAccountInfo.isHedgeInProgress) {
-                    await updateAmmFutureOrders(context, idx)
-                }
-                break;
-            case CalculateProposal:
-                await calculateAmmProposals(context, idx);
-                break;
-            case Execute:
-                await executeAmmOrderProposal(context, idx);
-                break;
-            default:
-                console.log("unknown state: ", state)
-                break;
-            // throw new Error("unkown amm state!")
+    while (true) {
+        try {
+            switch (state) {
+                case Sync:
+                    await syncAmmPositions(context, idx);
+                    await syncAmmFuturePositions(context, idx);
+                    break;
+                case CalculateDelta:
+                    await calcAmmDelta(context, idx);
+                    let ammAccountInfo = await context.program.account.ammAccount.fetch(ammAddress);
+                    if (ammAccountInfo.isHedgeNeeded || ammAccountInfo.isHedgeInProgress) {
+                        await updateAmmFutureOrders(context, idx)
+                    }
+                    break;
+                case CalculateProposal:
+                    await calculateAmmProposals(context, idx);
+                    break;
+                case Execute:
+                    await executeAmmOrderProposal(context, idx);
+                    break;
+                default:
+                    console.log("unknown state: ", state)
+                    break;
+                // throw new Error("unkown amm state!")
+            }
+
+            await sleep(5000);
+
+        } catch (e) {
+            // sleep and skip error
+            await sleep(10000);
         }
-
-        await sleep(5000);
-
-    } catch (e) {
-        // sleep and skip error
-        await sleep(10000);
-        await ammLoop(context, optifiExchange, idx);
-    }
-
-    try {
-        await sleep(10000);
-        await ammLoop(context, optifiExchange, idx);
-    } catch (e) {
-        // sleep and skip error
-        await sleep(20000);
-        await ammLoop(context, optifiExchange, idx);
     }
 }
 
@@ -72,9 +64,8 @@ initializeContext().then(async (context) => {
     let [optifiExchange, _bump1] = await findOptifiExchange(context)
     // let ammAddresses: PublicKey[] = []
     // let idx = ammIdxs[0]
-    Promise.all(
-        ammIdxs.map(idx => ammLoop(context, optifiExchange, idx))
-    )
+
+    ammIdxs.forEach(idx => ammLoop(context, optifiExchange, idx))
 
     process.on('uncaughtException', err => {
         console.log(`Uncaught Exception: ${err.message}`)

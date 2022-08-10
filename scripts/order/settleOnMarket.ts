@@ -29,7 +29,7 @@ initializeContext().then(async (context) => {
     let result = await context.program.account.userAccount.fetch(userAccountAddress);
     // @ts-ignore
     let userAccount = result as UserAccount;
-    let res = await settleOrderFunds(context, [market], userAccount);
+    let res = await settleOrderFunds(context, market, userAccount);
     if (res) {
         console.log(res);
     }
