@@ -44,12 +44,17 @@ export function calculateOptionDelta(
             let spotRes_eth = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD));
             let ivRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
 
+            let spotRes_sol = await getPythData(context, new PublicKey(PYTH[context.cluster].SOL_USD));
+            let ivRes_sol = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_IV))
+
             let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
 
             let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
             let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100
+            let spot_sol = Math.round(spotRes_sol / usdcSpot * 100) / 100
             let iv_btc = ivRes_btc / 100
             let iv_eth = ivRes_eth / 100
+            let iv_sol = ivRes_sol / 100
 
             let today = new Date().getTime();
             let res = optifiMarket.map(market => {
@@ -63,6 +68,10 @@ export function calculateOptionDelta(
                     case "ETH":
                         spot = spot_eth
                         iv = iv_eth
+                        break
+                    case "SOL":
+                        spot = spot_sol
+                        iv = iv_sol
                         break
                 }
 

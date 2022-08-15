@@ -31,9 +31,11 @@ export function calculateIV(
             // get Spot price too just like optionDeltafunction
             let spotRes_btc = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD))
             let spotRes_eth = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD))
+            let spotRes_sol = await getPythData(context, new PublicKey(PYTH[context.cluster].SOL_USD))
             let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
             let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
             let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100
+            let spot_sol = Math.round(spotRes_sol / usdcSpot * 100) / 100
 
             let today = new Date().getTime();
 
@@ -45,6 +47,9 @@ export function calculateIV(
                         break
                     case "ETH":
                         spot = spot_eth
+                        break
+                    case "SOL":
+                        spot = spot_sol
                         break
                 }
                 // update decimal
