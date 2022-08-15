@@ -18,13 +18,12 @@ let Execute = Object.keys(AmmState.Execute)[0].toLowerCase();
 
 const ammLoop = async (context: Context, optifiExchange: PublicKey, idx: number) => {
     let [ammAddress,] = await findAMMWithIdx(context, optifiExchange, idx)
-    // ammAddresses.push(ammAddress)
-    let ammAccountInfo = await context.program.account.ammAccount.fetch(ammAddress)
-    let state = Object.keys(ammAccountInfo.state)[0].toLowerCase();
-    let dateTime = new Date()
-    console.log(dateTime, " found AMM State : ", state);
-
     while (true) {
+        let ammAccountInfo = await context.program.account.ammAccount.fetch(ammAddress)
+        let state = Object.keys(ammAccountInfo.state)[0].toLowerCase();
+        let dateTime = new Date()
+        console.log(dateTime, " found AMM State : ", state);
+
         try {
             switch (state) {
                 case Sync:
