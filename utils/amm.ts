@@ -268,6 +268,7 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
 
             // get actual usdc balance according to user lp token balance
             for (let asset of notionalBalance.keys()) {
+                if (asset == 2) asset += 1 //for sol condition
                 if (userLpAccounts[assets.indexOf(asset)]) {
                     let userLpTokenAccountInfo = await getAccount(context.connection, userLpAccounts[assets.indexOf(asset)])
                     let userLpTokenBalance = userLpTokenAccountInfo.amount
@@ -281,11 +282,11 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
                         .dividedBy(new Decimal(lpSupply.toString()))
                         .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** USDC_DECIMALS).toNumber()
                     // .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
-
+                    let tmpAsset = (asset == 3) ? asset-1 : asset
                     equity.set(asset, {
                         lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                         lpToeknValueInUsdc: actualBalance,
-                        earnedValueInUsdc: new Decimal(actualBalance).sub(new Decimal(notionalBalance.get(asset)!)).toNumber(),
+                        earnedValueInUsdc: new Decimal(actualBalance).sub(new Decimal(notionalBalance.get(tmpAsset)!)).toNumber(),
                     })
                 }
             }
