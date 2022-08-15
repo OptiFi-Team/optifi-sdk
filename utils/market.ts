@@ -174,7 +174,7 @@ export function findOptifiInstruments(context: Context): Promise<[Chain, PublicK
 
 
 export interface OptifiMarketFullData {
-    asset: "BTC" | "ETH",
+    asset: "BTC" | "ETH" | "SOL",
     strike: number,
     instrumentType: "Call" | "Put",
     bidPrice: number,
@@ -245,7 +245,7 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
                     // @ts-ignore
                     asksAndBidsAddresses.push(market.asksAddress, market.bidsAddress)
                     res.push({
-                        asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
+                        asset: instrumentInfos[i].asset == 0 ? "BTC" : instrumentInfos[i].asset == 1 ? "ETH" : "SOL",
                         strike: instrumentInfos[i].strike.toNumber(),
                         instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
                         bidPrice: 0,
@@ -566,7 +566,7 @@ export interface Position {
     marketId: PublicKey;
     expiryDate: Date;
     strike: number;
-    asset: "BTC" | "ETH";
+    asset: "BTC" | "ETH" | "SOL";
     instrumentType: "Call" | "Put";
     longAmount: number;
     shortAmount: number;
@@ -617,7 +617,7 @@ export function getUserPositions(
                     marketId: market[1],
                     expiryDate: new Date(instrumentInfos[i].expiryDate.toNumber() * 1000),
                     strike: instrumentInfos[i].strike.toNumber(),
-                    asset: instrumentInfos[i].asset == 0 ? "BTC" : "ETH",
+                    asset: instrumentInfos[i].asset == 0 ? "BTC" : instrumentInfos[i].asset == 1 ? "ETH" : "SOL",
                     instrumentType: Object.keys(instrumentInfos[i].instrumentType)[0] === "call" ? "Call" : "Put",
                     longAmount,
                     shortAmount,
@@ -664,7 +664,7 @@ export function loadPositionsFromUserAccount(
             }
 
             let res: Position[] = tradingMarkets.map((market, i) => {
-                let decimals = numberAssetToDecimal(market.asset == "BTC" ? 0 : 1)!
+                let decimals = numberAssetToDecimal(market.asset == "BTC" ? 0 : market.asset == "ETH" ? 1 : 3)!
                 let longAmount = vaultBalances[2 * i] / 10 ** decimals
                 let shortAmount = vaultBalances[2 * i + 1] / 10 ** decimals
 

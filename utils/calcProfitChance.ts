@@ -56,6 +56,7 @@ export async function calcProfitChance(
 
             let BTCOptifiMarkets = optifiMarkets.filter(e => { return e.asset == "BTC" });
             let ETHOptifiMarkets = optifiMarkets.filter(e => { return e.asset == "ETH" });
+            let SOLOptifiMarkets = optifiMarkets.filter(e => { return e.asset == "SOL" });
 
             let BTCCallFirstAsk: number[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.askPrice })
             let BTCCallFirstBid: number[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.bidPrice })
@@ -65,16 +66,24 @@ export async function calcProfitChance(
             let ETHCallFirstBid: number[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.bidPrice })
             let ETHPutFirstAsk: number[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.askPrice })
             let ETHPutFirstBid: number[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.bidPrice })
+            let SOLCallFirstAsk: number[] = SOLOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.askPrice })
+            let SOLCallFirstBid: number[] = SOLOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.bidPrice })
+            let SOLPutFirstAsk: number[] = SOLOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.askPrice })
+            let SOLPutFirstBid: number[] = SOLOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.bidPrice })
 
             let BTCCallStrike: number[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.strike })
             let BTCPutStrike: number[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.strike })
             let ETHCallStrike: number[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.strike })
             let ETHPutStrike: number[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.strike })
+            let SOLCallStrike: number[] = SOLOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.strike })
+            let SOLPutStrike: number[] = SOLOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.strike })
 
             let BTCCallMarketAddress: string[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.marketAddress.toString() })
             let BTCPutMarketAddress: string[] = BTCOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.marketAddress.toString() })
             let ETHCallMarketAddress: string[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.marketAddress.toString() })
             let ETHPutMarketAddress: string[] = ETHOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.marketAddress.toString() })
+            let SOLCallMarketAddress: string[] = SOLOptifiMarkets.filter(e => e.instrumentType == "Call").map(e => { return e.marketAddress.toString() })
+            let SOLPutMarketAddress: string[] = SOLOptifiMarkets.filter(e => e.instrumentType == "Put").map(e => { return e.marketAddress.toString() })
 
             let BTCCallFirstAskArr = reshap(BTCCallFirstAsk)
             let BTCCallFirstBidArr = reshap(BTCCallFirstBid)
@@ -84,16 +93,23 @@ export async function calcProfitChance(
             let ETHCallFirstBidArr = reshap(ETHCallFirstBid)
             let ETHPutFirstAskArr = reshap(ETHPutFirstAsk)
             let ETHPutFirstBidArr = reshap(ETHPutFirstBid)
+            let SOLCallFirstAskArr = reshap(SOLCallFirstAsk)
+            let SOLCallFirstBidArr = reshap(SOLCallFirstBid)
+            let SOLPutFirstAskArr = reshap(SOLPutFirstAsk)
+            let SOLPutFirstBidArr = reshap(SOLPutFirstBid)
 
             let marketData = await getMarketData(context, optifiMarkets)//get spot , iv , r , q , t , strike, total len is 20
 
             let BTCmarketData = marketData.filter(e => { return e.asset == "BTC" })
             let ETHmarketData = marketData.filter(e => { return e.asset == "ETH" })
+            let SOLmarketData = marketData.filter(e => { return e.asset == "SOL" })
 
             let BTCCallMarketData = BTCmarketData.filter(e => { return e.isCall == 1 })
             let BTCPutMarketData = BTCmarketData.filter(e => { return e.isCall == 0 })
             let ETHCallMarketData = ETHmarketData.filter(e => { return e.isCall == 1 })
             let ETHPutMarketData = ETHmarketData.filter(e => { return e.isCall == 0 })
+            let SOLCallMarketData = SOLmarketData.filter(e => { return e.isCall == 1 })
+            let SOLPutMarketData = SOLmarketData.filter(e => { return e.isCall == 0 })
 
             // marketData element:
             // {
@@ -109,12 +125,16 @@ export async function calcProfitChance(
             let BTCPutBreakEvenArr = await calcBreakEven(BTCPutMarketData);
             let ETHCallBreakEvenArr = await calcBreakEven(ETHCallMarketData);
             let ETHPutBreakEvenArr = await calcBreakEven(ETHPutMarketData);
+            let SOLCallBreakEvenArr = await calcBreakEven(SOLCallMarketData);
+            let SOLPutBreakEvenArr = await calcBreakEven(SOLPutMarketData);
 
             //prepare t
             let tBTCCallTmp: number[] = [];
             let tBTCPutTmp: number[] = [];
             let tETHCallTmp: number[] = [];
             let tETHPutTmp: number[] = [];
+            let tSOLCallTmp: number[] = [];
+            let tSOLPutTmp: number[] = [];
 
             for (let data of BTCCallMarketData) {
                 tBTCCallTmp.push(data.t);
@@ -128,20 +148,32 @@ export async function calcProfitChance(
             for (let data of ETHPutMarketData) {
                 tETHPutTmp.push(data.t);
             }
+            for (let data of SOLCallMarketData) {
+                tSOLCallTmp.push(data.t);
+            }
+            for (let data of ETHPutMarketData) {
+                tSOLPutTmp.push(data.t);
+            }
 
             let tBTCCall = reshap(tBTCCallTmp);
             let tBTCPut = reshap(tBTCPutTmp);
             let tETHCall = reshap(tETHCallTmp);
             let tETHPut = reshap(tETHPutTmp);
+            let tSOLCall = reshap(tSOLCallTmp);
+            let tSOLPut = reshap(tSOLPutTmp);
 
             let BTCCallBreakEvenAskPriceArr = reshap(BTCCallBreakEvenArr[0])
             let BTCCallBreakEvenBidPriceArr = reshap(BTCCallBreakEvenArr[1])
             let ETHCallBreakEvenAskPriceArr = reshap(ETHCallBreakEvenArr[0])
             let ETHCallBreakEvenBidPriceArr = reshap(ETHCallBreakEvenArr[1])
+            let SOLCallBreakEvenAskPriceArr = reshap(SOLCallBreakEvenArr[0])
+            let SOLCallBreakEvenBidPriceArr = reshap(SOLCallBreakEvenArr[1])
             let BTCPutBreakEvenAskPriceArr = reshap(BTCPutBreakEvenArr[0])
             let BTCPutBreakEvenBidPriceArr = reshap(BTCPutBreakEvenArr[1])
             let ETHPutBreakEvenAskPriceArr = reshap(ETHPutBreakEvenArr[0])
             let ETHPutBreakEvenBidPriceArr = reshap(ETHPutBreakEvenArr[1])
+            let SOLPutBreakEvenAskPriceArr = reshap(SOLPutBreakEvenArr[0])
+            let SOLPutBreakEvenBidPriceArr = reshap(SOLPutBreakEvenArr[1])
 
             // BTCFirstAskArr[0][0] = 7000
             // BTCFirstBidArr[0][0] = 5000
@@ -169,6 +201,15 @@ export async function calcProfitChance(
             d2ETHPutAskPriceResult = d2ETHPutAskPriceResult.map(e => { return -1 * e });
             d2ETHPutBidPriceResult = d2ETHPutBidPriceResult.map(e => { return -1 * e });
 
+            //SOL
+            let d2SOLCallAskPriceResult = d2Call(SOLmarketData[0].spot, SOLCallFirstAskArr, SOLmarketData[0].iv, r, q, tSOLCall, SOLCallStrike)
+            let d2SOLCallBidPriceResult = d2Call(SOLmarketData[0].spot, SOLCallFirstBidArr, SOLmarketData[0].iv, r, q, tSOLCall, SOLCallStrike)
+            // *-1 for Put
+            let d2SOLPutAskPriceResult = d2Put(SOLmarketData[0].spot, SOLPutFirstAskArr, SOLmarketData[0].iv, r, q, tSOLPut, SOLPutStrike)
+            let d2SOLPutBidPriceResult = d2Put(SOLmarketData[0].spot, SOLPutFirstBidArr, SOLmarketData[0].iv, r, q, tSOLPut, SOLPutStrike)
+            d2SOLPutAskPriceResult = d2SOLPutAskPriceResult.map(e => { return -1 * e });
+            d2SOLPutBidPriceResult = d2SOLPutBidPriceResult.map(e => { return -1 * e });
+
             //BTC profit chance
             let ndfBTCCallAskPriceResult = ndf(d2BTCCallAskPriceResult);
             let ndfBTCPutAskPriceResult = ndf(d2BTCPutAskPriceResult);
@@ -180,6 +221,12 @@ export async function calcProfitChance(
             let ndfETHPutAskPriceResult = ndf(d2ETHPutAskPriceResult);
             let ndfETHCallBidPriceResult = ndfBid(d2ETHCallBidPriceResult);
             let ndfETHPutBidPriceResult = ndfBid(d2ETHPutBidPriceResult);
+
+            //SOL profit chance
+            let ndfSOLCallAskPriceResult = ndf(d2SOLCallAskPriceResult);
+            let ndfSOLPutAskPriceResult = ndf(d2SOLPutAskPriceResult);
+            let ndfSOLCallBidPriceResult = ndfBid(d2SOLCallBidPriceResult);
+            let ndfSOLPutBidPriceResult = ndfBid(d2SOLPutBidPriceResult);
 
             //BTC Call
             for (let i = 0; i < ndfBTCCallAskPriceResult.length; i++) {
@@ -249,6 +296,40 @@ export async function calcProfitChance(
                 res.push(oneRes)
             }
 
+            // SOL Call  
+            for (let i = 0; i < ndfSOLCallAskPriceResult.length; i++) {
+                let oneRes: ProfitChanceRes = {
+                    buy:
+                    {
+                        breakEven: SOLCallBreakEvenBidPriceArr[i][0],
+                        profitChance: (SOLCallFirstAskArr[i][0] == 0) ? 0 : ndfSOLCallAskPriceResult[i]
+                    },
+                    sell: {
+                        breakEven: SOLCallBreakEvenAskPriceArr[i][0],
+                        profitChance: (SOLCallFirstBidArr[i][0] == 0) ? 0 : ndfSOLCallBidPriceResult[i]
+                    },
+                    marketAddress: SOLCallMarketAddress[i]
+                }
+                res.push(oneRes)
+            }
+
+            //SOL Put
+            for (let i = 0; i < ndfSOLPutAskPriceResult.length; i++) {
+                let oneRes: ProfitChanceRes = {
+                    buy:
+                    {
+                        breakEven: SOLPutBreakEvenBidPriceArr[i][0],
+                        profitChance: (SOLPutFirstAskArr[i][0] == 0) ? 0 : ndfSOLPutAskPriceResult[i]
+                    },
+                    sell: {
+                        breakEven: SOLPutBreakEvenAskPriceArr[i][0],
+                        profitChance: (SOLPutFirstBidArr[i][0] == 0) ? 0 : ndfSOLPutBidPriceResult[i]
+                    },
+                    marketAddress: SOLPutMarketAddress[i]
+                }
+                res.push(oneRes)
+            }
+
 
             resolve(res);
         } catch (err) {
@@ -269,12 +350,17 @@ function getMarketData(
             let spotRes_eth = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD));
             let ivRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
 
+            let spotRes_sol = await getPythData(context, new PublicKey(PYTH[context.cluster].SOL_USD));
+            let ivRes_sol = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_IV))
+
             let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
 
             let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
             let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100
+            let spot_sol = Math.round(spotRes_sol / usdcSpot * 100) / 100
             let iv_btc = ivRes_btc / 100
             let iv_eth = ivRes_eth / 100
+            let iv_sol = ivRes_sol / 100
 
             let today = new Date().getTime();
             let res: BreakEvenDataRes = optifiMarkets.map(market => {
@@ -289,6 +375,10 @@ function getMarketData(
                     case "ETH":
                         spot = spot_eth
                         iv = iv_eth
+                        break
+                    case "SOL":
+                        spot = spot_sol
+                        iv = iv_sol
                         break
                 }
                 let t: number = (market.expiryDate.getTime() / 1000 - today / 1000) / (60 * 60 * 24 * 365);
