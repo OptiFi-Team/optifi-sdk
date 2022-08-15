@@ -140,11 +140,6 @@ export async function syncAmmFuturePositions(context: Context, ammIndex: number)
     try {
         let [optifiExchange, _bump1] = await findOptifiExchange(context)
         let [ammAddress, _bump2] = await findAMMWithIdx(context, optifiExchange, ammIndex)
-        let ammInfoRaw = await context.program.account.ammAccount.fetch(ammAddress)
-        // @ts-ignore
-        let ammInfo = ammInfoRaw as AmmAccount;
-        let ammTradingInstruments = ammInfo.tradingInstruments.map(e => e.toString())
-
         let res = await ammSyncFuturesPositions(context, ammAddress)
         console.log(`successfully synced futures postions for amm ${ammAddress.toString()} with id ${ammIndex}`)
         console.log(res)
