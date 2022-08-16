@@ -462,6 +462,9 @@ export function formCancelOrderContext(
 
                                             let [feeAccount,] = await findUserFeeAccount(context, exchangeAddress, userAccountAddress);
 
+                                            let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, chain.asset)
+
+
                                             context.program.account.exchange
                                               .fetch(exchangeAddress)
                                               .then((exchangeRes) => {
@@ -515,7 +518,7 @@ export function formCancelOrderContext(
                                                     serumId,
                                                   tokenProgram:
                                                     TOKEN_PROGRAM_ID,
-                                                  marginStressAccount: serumId,
+                                                  marginStressAccount: marginStressAddress,
                                                   feeAccount: feeAccount
                                                 };
                                                 resolve([result, chain.asset]);

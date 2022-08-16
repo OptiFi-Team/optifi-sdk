@@ -12,7 +12,7 @@
   },
   "name": "@optifi/optifi-sdk",
   "description": "TypeScript interfaces for working with the on-chain Optifi system",
-  "version": "1.3.80-sol",
+  "version": "1.3.81-sol",
   "main": "lib/index.js",
   "files": [
     "lib"
