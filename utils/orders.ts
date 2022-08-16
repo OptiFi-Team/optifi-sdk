@@ -31,6 +31,7 @@ import { findMarginStressWithAsset } from "./margin";
 import { getAllOrdersForAccount, OrderInstruction } from "./orderHistory";
 import { Market, Orderbook, OpenOrders } from "@project-serum/serum";
 import OrderType from "../types/OrderType";
+import { findUserFeeAccount } from "../instructions/user/initializeFeeAccount";
 
 export enum TxType {
   PlaceOrder = 0,
@@ -61,6 +62,7 @@ export interface OrderAccountContext {
   instrumentShortSplTokenMint: PublicKey;
   serumDexProgramId: PublicKey;
   tokenProgram: PublicKey;
+  feeAccount: PublicKey;
 }
 
 export interface PlaceOrderContext extends OrderAccountContext {
@@ -123,9 +125,11 @@ export function formOrderContext(
                                       findOptifiUSDCPoolAuthPDA(context).then(([centralUSDCPoolAuth, _]) => {
                                         context.program.account.exchange
                                           .fetch(exchangeAddress)
-                                          .then((exchangeRes) => {
+                                          .then(async (exchangeRes) => {
                                             let exchange =
                                               exchangeRes as Exchange;
+                                            let [feeAccount,] = await findUserFeeAccount(context, exchangeAddress, userAccountAddress);
+
                                             resolve({
                                               optifiExchange:
                                                 exchangeAddress,
@@ -174,6 +178,7 @@ export function formOrderContext(
                                               tokenProgram:
                                                 TOKEN_PROGRAM_ID,
                                               //    rent: SYSVAR_RENT_PUBKEY
+                                              feeAccount: feeAccount
                                             });
                                           })
                                           .catch((err) => {
@@ -279,9 +284,11 @@ export function formPlaceOrderContext(
                                                 context.program.account.exchange
                                                   .fetch(exchangeAddress)
                                                   .then((exchangeRes) => {
-                                                    findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
+                                                    findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(async ([marginStressAddress, _bump]) => {
                                                       let exchange =
                                                         exchangeRes as Exchange;
+
+                                                      let [feeAccount,] = await findUserFeeAccount(context, exchangeAddress, userAccountAddress);
 
                                                       let result: PlaceOrderContext =
                                                       {
@@ -337,6 +344,7 @@ export function formPlaceOrderContext(
                                                         // clock:
                                                         //   SYSVAR_CLOCK_PUBKEY,
                                                         marginStressAccount: marginStressAddress,
+                                                        feeAccount: feeAccount
                                                       };
                                                       resolve([result, chain.asset]);
                                                     })
@@ -446,11 +454,14 @@ export function formCancelOrderContext(
                                       context.program.account.chain
                                         .fetch(optifiMarket.instrument)
                                         .then((chainRes) => {
-                                          findOptifiUSDCPoolAuthPDA(context).then(([centralUSDCPoolAuth, _]) => {
+                                          findOptifiUSDCPoolAuthPDA(context).then(async ([centralUSDCPoolAuth, _]) => {
                                             // console.log("Chain res is ", chainRes);
                                             // @ts-ignore
                                             let chain = chainRes as Chain;
                                             // console.log("Chain is", chain);
+
+                                            let [feeAccount,] = await findUserFeeAccount(context, exchangeAddress, userAccountAddress);
+
                                             context.program.account.exchange
                                               .fetch(exchangeAddress)
                                               .then((exchangeRes) => {
@@ -505,6 +516,7 @@ export function formCancelOrderContext(
                                                   tokenProgram:
                                                     TOKEN_PROGRAM_ID,
                                                   marginStressAccount: serumId,
+                                                  feeAccount: feeAccount
                                                 };
                                                 resolve([result, chain.asset]);
                                               })
