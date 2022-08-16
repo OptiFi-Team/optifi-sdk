@@ -30,6 +30,11 @@ export function calcMarginRequirementForUser(
             let isCallETH: number[] = [];
             let strikeETH: number[] = [];
 
+            let netPositionsSOL: number[] = [];
+            let tSOL: number[] = [];
+            let isCallSOL: number[] = [];
+            let strikeSOL: number[] = [];
+
             // get user's all existing positons from user account
             let userAccountAddress = userAccountAddressInput || await findUserAccount(context)[0];
             let userAccountInfo = await context.program.account.userAccount.fetch(userAccountAddress);
@@ -62,6 +67,11 @@ export function calcMarginRequirementForUser(
                     tETH.push(maturity)
                     strikeETH.push(instrument.strike.toNumber());
                     isCallETH.push(Object.keys(instrument.instrumentType)[0] === "call" ? 1 : 0)
+                } else if (instrument.asset == 3) {
+                    netPositionsSOL.push(userNetPositions[i] / (10 ** USDC_DECIMALS))
+                    tSOL.push(maturity)
+                    strikeSOL.push(instrument.strike.toNumber());
+                    isCallSOL.push(Object.keys(instrument.instrumentType)[0] === "call" ? 1 : 0)
                 }
             })
 
@@ -75,8 +85,10 @@ export function calcMarginRequirementForUser(
             let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
             let marginForBTC = 0
             let marginForETH = 0
+            let marginForSOL = 0
             let netOptionForBTC = 0
             let netOptionForETH = 0
+            let netOptionForSOL = 0
             if (netPositionsBTC.length > 0) {
                 // calc margin requriement for BTC postions
                 [marginForBTC, netOptionForBTC] = await calcMarginForOneAsset(context, 0, usdcSpot, strikeBTC, isCallBTC, netPositionsBTC, tBTC)
@@ -88,10 +100,15 @@ export function calcMarginRequirementForUser(
                 [marginForETH, netOptionForETH] = await calcMarginForOneAsset(context, 1, usdcSpot, strikeETH, isCallETH, netPositionsETH, tETH)
                 // console.log("marginForETH: ", marginForETH)
             }
+            if (netPositionsSOL.length > 0) {
+                // calc margin requriement for ETH postions
+                [marginForSOL, netOptionForSOL] = await calcMarginForOneAsset(context, 3, usdcSpot, strikeSOL, isCallSOL, netPositionsSOL, tSOL)
+                // console.log("marginForETH: ", marginForETH)
+            }
 
             // get the total margin
-            let margin_requirement = -marginForBTC - marginForETH
-            let netOptionValue = Math.max(netOptionForBTC + netOptionForETH, 0)
+            let margin_requirement = -marginForBTC - marginForETH - marginForSOL
+            let netOptionValue = Math.max(netOptionForBTC + netOptionForETH + netOptionForSOL, 0)
 
             resolve([margin_requirement, netOptionValue])
         } catch (err) {
@@ -121,6 +138,11 @@ export function preCalcMarginForNewOrder(
             let tETH: number[] = [];
             let isCallETH: number[] = [];
             let strikeETH: number[] = [];
+
+            let netPositionsSOL: number[] = [];
+            let tSOL: number[] = [];
+            let isCallSOL: number[] = [];
+            let strikeSOL: number[] = [];
 
             // get user's all existing positons from user account
             //  let [userAccountAddress, _] = await findUserAccount(context)
@@ -187,6 +209,11 @@ export function preCalcMarginForNewOrder(
                     tETH.push(maturity)
                     strikeETH.push(instrument.strike.toNumber());
                     isCallETH.push(Object.keys(instrument.instrumentType)[0] === "call" ? 1 : 0)
+                } else if (instrument.asset == 3) {
+                    netPositionsSOL.push(userNetPositions[i] / (10 ** USDC_DECIMALS))
+                    tSOL.push(maturity)
+                    strikeSOL.push(instrument.strike.toNumber());
+                    isCallSOL.push(Object.keys(instrument.instrumentType)[0] === "call" ? 1 : 0)
                 }
             })
 
@@ -201,8 +228,10 @@ export function preCalcMarginForNewOrder(
             let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
             let marginForBTC = 0
             let marginForETH = 0
+            let marginForSOL = 0
             let netOptionForBTC = 0
             let netOptionForETH = 0
+            let netOptionForSOL = 0
             if (netPositionsBTC.length > 0) {
                 // calc margin requriement for BTC postions
                 [marginForBTC, netOptionForBTC] = await calcMarginForOneAsset(context, 0, usdcSpot, strikeBTC, isCallBTC, netPositionsBTC, tBTC)
@@ -215,9 +244,15 @@ export function preCalcMarginForNewOrder(
                 console.log("marginForETH: ", marginForETH)
             }
 
+            if (netPositionsSOL.length > 0) {
+                // calc margin requriement for SOL postions
+                [marginForSOL, netOptionForSOL] = await calcMarginForOneAsset(context, 3, usdcSpot, strikeSOL, isCallSOL, netPositionsSOL, tSOL)
+                console.log("marginForSOL: ", marginForSOL)
+            }
+
             // get the total margin
-            let margin_requirement = -marginForBTC - marginForETH
-            let netOptionValue = Math.max(netOptionForBTC + netOptionForETH, 0)
+            let margin_requirement = -marginForBTC - marginForETH - marginForSOL
+            let netOptionValue = Math.max(netOptionForBTC + netOptionForETH + netOptionForSOL, 0)
 
             resolve([margin_requirement, netOptionValue])
         } catch (err) {
@@ -297,6 +332,10 @@ async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: 
         case 1:
             spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD))
             ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
+            break
+        case 3:
+            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].SOL_USD))
+            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_IV))
             break
         default:
             throw Error("unsupported asset type")
