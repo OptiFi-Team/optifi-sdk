@@ -70,16 +70,16 @@ export default function cancelOrderByClientOrderId(
         );
         ixs.push(cancelOrderByClientOrderIdInx)
 
-        let consumeEventInx = DexInstructions.consumeEvents({
-          market: orderContext.serumMarket,
-          openOrdersAccounts: [orderContext.openOrders],
-          eventQueue: orderContext.eventQueue,
-          pcFee: orderContext.userMarginAccount,
-          coinFee: orderContext.userInstrumentLongTokenVault,
-          limit: 65535,
-          programId: orderContext.serumDexProgramId,
-        })
-        ixs.push(consumeEventInx)
+        // let consumeEventInx = DexInstructions.consumeEvents({
+        //   market: orderContext.serumMarket,
+        //   openOrdersAccounts: [orderContext.openOrders],
+        //   eventQueue: orderContext.eventQueue,
+        //   pcFee: orderContext.userMarginAccount,
+        //   coinFee: orderContext.userInstrumentLongTokenVault,
+        //   limit: 65535,
+        //   programId: orderContext.serumDexProgramId,
+        // })
+        // ixs.push(consumeEventInx)
 
 
         let settleOrderIx = context.program.instruction.settleOrderFunds({

@@ -63,23 +63,48 @@ export default function placeOrder(context: Context,
                 new anchor.BN(maxPcQty),
                 new anchor.BN(orderTypeToNumber(orderType)),
                 {
-                    accounts: orderContext,
+                    accounts: {
+                        optifiExchange: orderContext.optifiExchange,
+                        userAccount: orderContext.userAccount,
+                        optifiMarket: marketAddress,
+                        serumMarket: orderContext.serumMarket,
+                        openOrders: orderContext.openOrders,
+                        coinVault: orderContext.coinVault,
+                        pcVault: orderContext.pcVault,
+                        asks: orderContext.asks,
+                        bids: orderContext.bids,
+                        requestQueue: orderContext.requestQueue,
+                        eventQueue: orderContext.eventQueue,
+                        coinMint: orderContext.coinMint,
+                        instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
+                        userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
+                        userInstrumentShortTokenVault: orderContext.userInstrumentShortTokenVault,
+                        userMarginAccount: orderContext.userMarginAccount,
+                        tokenProgram: TOKEN_PROGRAM_ID,
+                        serumDexProgramId: orderContext.serumDexProgramId,
+                        feeAccount: orderContext.feeAccount,
+                        marginStressAccount: orderContext.marginStressAccount,
+                        user: orderContext.user,
+                        instrumentTokenMintAuthorityPda: orderContext.instrumentTokenMintAuthorityPda,
+                        usdcFeePool: orderContext.usdcFeePool,
+                        rent: orderContext.rent
+                    },
                 }
             );
 
             ixs.push(placeOrderIx);
 
-            let consumeEventInx = DexInstructions.consumeEvents({
-                market: orderContext.serumMarket,
-                openOrdersAccounts: [orderContext.openOrders],
-                eventQueue: orderContext.eventQueue,
-                pcFee: orderContext.userMarginAccount,
-                coinFee: orderContext.userInstrumentLongTokenVault,
-                limit: 65535,
-                programId: orderContext.serumDexProgramId,
-            })
+            // let consumeEventInx = DexInstructions.consumeEvents({
+            //     market: orderContext.serumMarket,
+            //     openOrdersAccounts: [orderContext.openOrders],
+            //     eventQueue: orderContext.eventQueue,
+            //     pcFee: orderContext.userMarginAccount,
+            //     coinFee: orderContext.userInstrumentLongTokenVault,
+            //     limit: 65535,
+            //     programId: orderContext.serumDexProgramId,
+            // })
 
-            ixs.push(consumeEventInx)
+            // ixs.push(consumeEventInx)
 
             let settleOrderIx = context.program.instruction.settleOrderFunds({
                 accounts: {
