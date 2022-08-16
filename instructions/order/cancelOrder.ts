@@ -102,7 +102,8 @@ export default function cancelOrderByClientOrderId(
             userMarginAccount: orderContext.userMarginAccount,
             vaultSigner: orderContext.vaultSigner,
             tokenProgram: TOKEN_PROGRAM_ID,
-            serumDexProgramId: orderContext.serumDexProgramId
+            serumDexProgramId: orderContext.serumDexProgramId,
+            feeAccount: orderContext.feeAccount
           },
         });
 

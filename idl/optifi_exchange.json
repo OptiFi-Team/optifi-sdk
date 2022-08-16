@@ -1,5 +1,5 @@
 {
-  "version": "1.1.27",
+  "version": "1.1.26",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -654,6 +654,11 @@
           "name": "rent",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false
         }
       ],
       "args": [
@@ -747,6 +752,11 @@
         {
           "name": "tokenProgram",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -858,6 +868,11 @@
         },
         {
           "name": "asks",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeAccount",
           "isMut": true,
           "isSigner": false
         }
@@ -3322,6 +3337,37 @@
           }
         }
       ]
+    },
+    {
+      "name": "initializeFeeAccount",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -3617,6 +3663,34 @@
             "name": "userDepositLimit",
             "type": {
               "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "userAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "notionalTradingVolume",
+            "type": "u64"
+          },
+          {
+            "name": "accFee",
+            "type": "u64"
+          },
+          {
+            "name": "openOrderFee",
+            "type": {
+              "vec": {
+                "defined": "Fee"
+              }
             }
           }
         ]
@@ -3927,6 +4001,10 @@
             "type": {
               "option": "publicKey"
             }
+          },
+          {
+            "name": "feeAccount",
+            "type": "publicKey"
           }
         ]
       }
@@ -4388,6 +4466,22 @@
           {
             "name": "isStopped",
             "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Fee",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "spotPrice",
+            "type": "u64"
+          },
+          {
+            "name": "clientOrderId",
+            "type": "u64"
           }
         ]
       }
