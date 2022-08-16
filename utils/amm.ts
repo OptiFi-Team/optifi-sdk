@@ -151,6 +151,7 @@ interface UserEquity {
     lpTokenBalance: number, // user's lp token balance
     lpToeknValueInUsdc: number, // user's lp token value in usdc
     earnedValueInUsdc: number, // user's earned value in usdc
+    currentReturn: number
 }
 
 // return a user's equity on each AMM, based on user's amm tx history
@@ -209,11 +210,12 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
                     .dividedBy(new Decimal(lpSupply.toString()))
                     .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** USDC_DECIMALS).toNumber()
                 // .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
-
+                let earnedValueInUsdc = new Decimal(actualBalance).add(new Decimal(notionalBalance.get(asset)!)).toNumber()
                 equity.set(asset, {
                     lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                     lpToeknValueInUsdc: actualBalance,
-                    earnedValueInUsdc: new Decimal(actualBalance).add(new Decimal(notionalBalance.get(asset)!)).toNumber(),
+                    earnedValueInUsdc: earnedValueInUsdc,
+                    currentReturn: -1//default
                 })
             }
             resolve(equity)
@@ -257,10 +259,11 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
 
             // get the user's notional usdc balance
             let notionalBalance = new Map<number, number>()
+            let notioanlWithdrawable
             for (let amm of allAmm) {
                 // @ts-ignore
                 let ammEquity = userAccountInfo.ammEquities[amm[0].ammIdx - 1]
-                let notioanlWithdrawable = new Decimal(ammEquity.notioanlWithdrawable / 10 ** USDC_DECIMALS)
+                notioanlWithdrawable = new Decimal(ammEquity.notioanlWithdrawable / 10 ** USDC_DECIMALS)
 
                 // @ts-ignore
                 notionalBalance.set(amm[0].ammIdx - 1, notioanlWithdrawable.toNumber())
@@ -282,11 +285,14 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
                         .dividedBy(new Decimal(lpSupply.toString()))
                         .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** USDC_DECIMALS).toNumber()
                     // .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
-                    let tmpAsset = (asset == 3) ? asset-1 : asset
+                    let tmpAsset = (asset == 3) ? asset - 1 : asset
+                    let earnedValueInUsdc = new Decimal(actualBalance).sub(new Decimal(notionalBalance.get(tmpAsset)!)).toNumber()
+                    let currentReturn = (notioanlWithdrawable != 0) ? new Decimal(earnedValueInUsdc).div(notioanlWithdrawable).toNumber() : 0;
                     equity.set(asset, {
                         lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                         lpToeknValueInUsdc: actualBalance,
-                        earnedValueInUsdc: new Decimal(actualBalance).sub(new Decimal(notionalBalance.get(tmpAsset)!)).toNumber(),
+                        earnedValueInUsdc: earnedValueInUsdc,
+                        currentReturn: currentReturn
                     })
                 }
             }
