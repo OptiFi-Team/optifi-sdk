@@ -4,12 +4,12 @@ import InstructionResult from "../../types/instructionResult";
 import { findExchangeAccount, findUserAccount } from "../../utils/accounts";
 
 
-export default function setDelegation(context: Context, delegatee: String): Promise<InstructionResult<TransactionSignature>> {
+export default function setDelegation(context: Context, delegatee: PublicKey | null): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(([exchangeAddress, _]) => {
             findUserAccount(context).then(([userAccountAddress, _]) => {
                 context.program.rpc.setDelegation(
-                    new PublicKey(delegatee),
+                    delegatee,
                     {
                         accounts: {
                             optifiExchange: exchangeAddress,
