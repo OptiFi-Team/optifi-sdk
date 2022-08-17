@@ -2,9 +2,9 @@ import { PublicKey, Keypair, Connection } from "@solana/web3.js";
 import Context from "../types/context";
 
 import { findUserAccount } from "../utils/accounts";
-import { loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, Order ,getAllOpenOrdersForUser} from "../utils/orders";
+import { loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets, Order, getAllOpenOrdersForUser } from "../utils/orders";
 import { findOptifiMarketsWithFullData } from "../utils/market";
-import { getAllOrdersForAccount, OrderInstruction, getFilledData,getFilterOrdersForAccount } from "../utils/orderHistory";
+import { getAllOrdersForAccount, OrderInstruction, getFilledData, getFilterOrdersForAccount } from "../utils/orderHistory";
 import { retrievRecentTxs } from "./orderHistory";
 import base58, { decode } from "bs58";
 import Decimal from "decimal.js";
@@ -17,7 +17,7 @@ async function getOrders(context: Context): Promise<Order[]> {
   return new Promise(async (resolve, reject) => {
     // let [userAccount,] = await findUserAccount(context)
     let optifiMarkets = await findOptifiMarketsWithFullData(context)
-    let orders = await getAllOpenOrdersForUser(context,optifiMarkets)
+    let orders = await getAllOpenOrdersForUser(context, optifiMarkets)
     // let [userAccountAddress,] = await findUserAccount(context)
 
     // let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress)
@@ -107,7 +107,8 @@ async function pushInTrade(orderHistory: OrderInstruction, trades: Trade[]): Pro
       txid: orderHistory.txid,
       gasFee: orderHistory.gasFee,
       marketAddress: orderHistory.marketAddress,
-      start: orderHistory.start
+      start: orderHistory.start,
+      marketExpireDate: orderHistory.marketExpireDate
     }))
     resolve(trades)
   })
@@ -359,6 +360,7 @@ export class Trade {
   gasFee: number
   marketAddress: string
   start: Date
+  marketExpireDate: Date
 
   constructor({
     clientId,
@@ -373,7 +375,8 @@ export class Trade {
     txid,
     gasFee,
     marketAddress,
-    start
+    start,
+    marketExpireDate
   }: {
     clientId: number;
     limit: number;
@@ -388,6 +391,7 @@ export class Trade {
     gasFee: number
     marketAddress: string
     start: Date
+    marketExpireDate: Date
   }) {
     this.clientId = clientId
     this.limit = limit;
@@ -401,7 +405,8 @@ export class Trade {
     this.txid = txid;
     this.gasFee = gasFee;
     this.marketAddress = marketAddress;
-    this.start = start
+    this.start = start;
+    this.marketExpireDate = marketExpireDate;
   }
 
   public get shortForm(): string {

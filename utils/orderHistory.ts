@@ -117,6 +117,26 @@ async function getCancelledQuantity(logs: string[]): Promise<string> {
   })
 }
 
+async function getMarketExpireDate(context: Context, logs: string[]): Promise<Date> {
+  return new Promise(async (resolve, reject) => {
+    let stringRes: string;
+    let stringLen = 12
+    for (let i = 0; i < logs.length; i++) {
+      if (logs[i].search("instrument:") != -1) {
+        stringRes = logs[i].substring(logs[i].search("instrument:") + stringLen)
+
+        await context.program.account.chain.fetch(stringRes).then((chainRes) => {
+          // @ts-ignore
+          let chain = chainRes as Chain;
+          resolve(new Date(chain.expiryDate.toNumber() * 1000))
+
+        })
+      }
+    }
+    reject("can't find instrument in getMarketExpireDate");
+  })
+}
+
 const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
 
@@ -195,6 +215,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       record.checkPostOnlyFail = true;
                     }
                   }
+                  let marketExpireDate = await getMarketExpireDate(context, logs!);
 
                   // let newOrderJSON = JSON.stringify(decData);
                   // console.log("newOrderJSON: ", newOrderJSON);
@@ -205,11 +226,12 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   record.txType = "place order"
                   record.decimal = baseTokenDecimal
                   record.start = instrument.start
+                  record.marketExpireDate = marketExpireDate
                   orderTxs.push(Object.assign({}, record));
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
                   // get the orginal order details
                   let orginalOrder = orderTxs.find(e => e.clientId.toString() == decData.cancelOrderByClientIdV2.clientId.toString())!
-                  
+
                   // console.log("orginalOrder: ", orginalOrder, decData.cancelOrderByClientIdV2.clientId.toNumber())
                   if (orginalOrder) {
                     let record = JSON.parse(JSON.stringify(orginalOrder));
@@ -388,7 +410,8 @@ export class OrderInstruction {
   decimal: number
   start: Date
   filledData: number
-  checkPostOnlyFail:boolean
+  checkPostOnlyFail: boolean
+  marketExpireDate: Date
 
   constructor({
     clientId,
@@ -410,6 +433,7 @@ export class OrderInstruction {
     start,
     filledData,
     checkPostOnlyFail,
+    marketExpireDate
   }: {
     clientId: BN;
     limit: number;
@@ -429,7 +453,8 @@ export class OrderInstruction {
     decimal: number
     start: Date
     filledData: number
-    checkPostOnlyFail:boolean
+    checkPostOnlyFail: boolean
+    marketExpireDate: Date
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -450,6 +475,7 @@ export class OrderInstruction {
     this.start = start
     this.filledData = filledData
     this.checkPostOnlyFail = checkPostOnlyFail
+    this.marketExpireDate = marketExpireDate
   }
 
   public get shortForm(): string {
