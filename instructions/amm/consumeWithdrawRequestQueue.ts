@@ -10,6 +10,7 @@ import { USDC_TOKEN_MINT } from "../../constants";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { UserAccount } from "../../types/optifi-exchange-types";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
+import marginStress from "../marginStress";
 
 export default function consumeWithdrawRequestQueue(context: Context,
     ammAddress: PublicKey,
@@ -32,6 +33,10 @@ export default function consumeWithdrawRequestQueue(context: Context,
 
                                 findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
                                     let [marginStressAddress,] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
+
+                                    let ixs = [increaseComputeUnitsIx]
+                                    ixs.push(...await marginStress(context, amm.asset));
+
                                     console.log("userLpTokenVault: ", userLpTokenVault.toString())
                                     context.program.rpc.consumeWithdrawQueue(
                                         {
@@ -50,7 +55,7 @@ export default function consumeWithdrawRequestQueue(context: Context,
                                                 tokenProgram: TOKEN_PROGRAM_ID,
                                                 clock: SYSVAR_CLOCK_PUBKEY
                                             },
-                                            preInstructions: [increaseComputeUnitsIx]
+                                            preInstructions: ixs
                                         }
                                     ).then((res) => {
                                         resolve({
