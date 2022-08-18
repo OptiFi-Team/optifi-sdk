@@ -16,7 +16,7 @@ import {
   UserAccount,
 } from "../types/optifi-exchange-types";
 import { deriveVaultNonce, OptifiMarketFullData } from "./market";
-import { MAKER_FEE, TAKER_FEE, SERUM_DEX_PROGRAM_ID, SERUM_MAKER_FEE, SERUM_TAKER_FEE } from "../constants";
+import { OPTIFI_MAKER_FEE, OPTIFI_TAKER_FEE, SERUM_DEX_PROGRAM_ID, SERUM_MAKER_FEE, SERUM_TAKER_FEE } from "../constants";
 import { findOptifiMarketMintAuthPDA, findOptifiUSDCPoolAuthPDA } from "./pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
@@ -838,13 +838,13 @@ function filterForOpenOrders2(bids: Orderbook, asks: Orderbook, openOrdersAccoun
 
 
 // Fee Calculator
-function getTotalFee(context: Context, orderType: OrderType, is_registered_maker: Boolean): number {
+function getOptifiFee(context: Context, orderType: OrderType, is_registered_maker: Boolean): number {
   switch (orderType) {
     case OrderType.PostOnly: {
-      return MAKER_FEE[context.cluster];
+      return OPTIFI_MAKER_FEE[context.cluster];
     }
     default: {
-      return TAKER_FEE[context.cluster];
+      return OPTIFI_TAKER_FEE[context.cluster];
     }
   }
 }
@@ -858,11 +858,13 @@ function getSerumFee(context: Context, orderType: OrderType, is_registered_maker
     }
   }
 }
-export function calculatePcQtyAndFee(context: Context, maxPcQty: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
+export function calculatePcQtyAndFee(context: Context, spotPrice: number, maxPcQty: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
 
-  let totalFee = maxPcQty * getTotalFee(context, orderType, is_registered_maker);
+  let optifiFee = spotPrice * getOptifiFee(context, orderType, is_registered_maker);
   let serumFee = maxPcQty * getSerumFee(context, orderType, is_registered_maker);
+  let totalFee = optifiFee + serumFee;
 
+  // [totalPcQty, maxPcQty, totalFee]
   switch (orderSide) {
     case OrderSide.Ask:
       return [maxPcQty - totalFee, maxPcQty - serumFee, totalFee];

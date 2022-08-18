@@ -1,7 +1,8 @@
 import { Cluster, PublicKey } from "@solana/web3.js";
-import { SolanaCluster, } from "../constants";
+import { PYTH, SolanaCluster, } from "../constants";
 import { PythHttpClient, parsePriceData, parseBaseData, AccountType, getPythProgramKeyForCluster } from "@pythnetwork/client"
 import Context from "../types/context";
+import { resolve } from "path";
 
 
 /*
@@ -56,3 +57,21 @@ export function convertSolanaCulsterToCluster(solanaCluster: SolanaCluster): Clu
     }
     return cluster
 }
+
+export function getSpotPrice(context: Context, asset: number): Promise<number> {
+    switch (asset) {
+        case 0:
+            return getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD));
+        case 1:
+            return getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD));
+        case 2:
+            return getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD));
+        case 3:
+            return getPythData(context, new PublicKey(PYTH[context.cluster].SOL_USD));;
+        default:
+            return new Promise((resolve, reject) => {
+                reject()
+            })
+    }
+}
+
