@@ -312,6 +312,7 @@ export const OPTIFI_MAKER_FEE: EndpointConstant = {
     [SolanaCluster.Mainnet]: 0.0,
     [SolanaCluster.Testnet]: undefined
 }
+export const OPTIFI_MAX_FEE_RATIO = 0.1
 
 export const SERUM_TAKER_FEE: EndpointConstant = {
     [SolanaCluster.Devnet]: 0.0022,

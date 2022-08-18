@@ -16,7 +16,7 @@ import {
   UserAccount,
 } from "../types/optifi-exchange-types";
 import { deriveVaultNonce, OptifiMarketFullData } from "./market";
-import { OPTIFI_MAKER_FEE, OPTIFI_TAKER_FEE, SERUM_DEX_PROGRAM_ID, SERUM_MAKER_FEE, SERUM_TAKER_FEE } from "../constants";
+import { OPTIFI_MAKER_FEE, OPTIFI_MAX_FEE_RATIO, OPTIFI_TAKER_FEE, SERUM_DEX_PROGRAM_ID, SERUM_MAKER_FEE, SERUM_TAKER_FEE } from "../constants";
 import { findOptifiMarketMintAuthPDA, findOptifiUSDCPoolAuthPDA } from "./pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
@@ -32,6 +32,7 @@ import { getAllOrdersForAccount, OrderInstruction } from "./orderHistory";
 import { Market, Orderbook, OpenOrders } from "@project-serum/serum";
 import OrderType from "../types/OrderType";
 import { findUserFeeAccount } from "../instructions/user/initializeFeeAccount";
+import { max } from "superstruct";
 
 export enum TxType {
   PlaceOrder = 0,
@@ -861,6 +862,8 @@ function getSerumFee(context: Context, orderType: OrderType, is_registered_maker
 export function calculatePcQtyAndFee(context: Context, spotPrice: number, maxPcQty: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
 
   let optifiFee = spotPrice * getOptifiFee(context, orderType, is_registered_maker);
+  optifiFee = Math.min(optifiFee, maxPcQty * OPTIFI_MAX_FEE_RATIO)
+
   let serumFee = maxPcQty * getSerumFee(context, orderType, is_registered_maker);
   let totalFee = optifiFee + serumFee;
 
