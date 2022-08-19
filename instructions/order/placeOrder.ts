@@ -5,13 +5,14 @@ import InstructionResult from "../../types/instructionResult";
 import { calculatePcQtyAndFee, formPlaceOrderContext } from "../../utils/orders";
 import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
 import marginStress from "../marginStress";
-import { USDC_DECIMALS } from "../../constants";
+import { PYTH, USDC_DECIMALS } from "../../constants";
 import { numberAssetToDecimal } from "../../utils/generic";
 import OrderType, { orderTypeToNumber } from "../../types/OrderType";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { DexInstructions } from '@project-serum/serum';
 import { increaseComputeUnitsIx } from "../../utils/transactions";
 import { findMarginStressWithAsset } from "../../utils/margin";
+import { getPythData, getSpotPrice } from "../../utils/pyth";
 
 export default function placeOrder(context: Context,
     userAccount: UserAccount,
@@ -32,7 +33,9 @@ export default function placeOrder(context: Context,
 
             let PcQty = limit * maxCoinQty;
 
-            let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(context, PcQty, side, orderType, false)!;
+            let spotPrice = Math.round(await getSpotPrice(context, asset) / await getSpotPrice(context, 2) * 100) / 100
+
+            let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(context, spotPrice, PcQty, side, orderType, false)!;
 
             console.log("side: ", side);
             console.log("limit: ", limit);
@@ -63,23 +66,48 @@ export default function placeOrder(context: Context,
                 new anchor.BN(maxPcQty),
                 new anchor.BN(orderTypeToNumber(orderType)),
                 {
-                    accounts: orderContext,
+                    accounts: {
+                        optifiExchange: orderContext.optifiExchange,
+                        userAccount: orderContext.userAccount,
+                        optifiMarket: marketAddress,
+                        serumMarket: orderContext.serumMarket,
+                        openOrders: orderContext.openOrders,
+                        coinVault: orderContext.coinVault,
+                        pcVault: orderContext.pcVault,
+                        asks: orderContext.asks,
+                        bids: orderContext.bids,
+                        requestQueue: orderContext.requestQueue,
+                        eventQueue: orderContext.eventQueue,
+                        coinMint: orderContext.coinMint,
+                        instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
+                        userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
+                        userInstrumentShortTokenVault: orderContext.userInstrumentShortTokenVault,
+                        userMarginAccount: orderContext.userMarginAccount,
+                        tokenProgram: TOKEN_PROGRAM_ID,
+                        serumDexProgramId: orderContext.serumDexProgramId,
+                        feeAccount: orderContext.feeAccount,
+                        marginStressAccount: orderContext.marginStressAccount,
+                        user: orderContext.user,
+                        instrumentTokenMintAuthorityPda: orderContext.instrumentTokenMintAuthorityPda,
+                        usdcFeePool: orderContext.usdcFeePool,
+                        rent: orderContext.rent
+                    },
                 }
             );
 
             ixs.push(placeOrderIx);
 
-            let consumeEventInx = DexInstructions.consumeEvents({
-                market: orderContext.serumMarket,
-                openOrdersAccounts: [orderContext.openOrders],
-                eventQueue: orderContext.eventQueue,
-                pcFee: orderContext.userMarginAccount,
-                coinFee: orderContext.userInstrumentLongTokenVault,
-                limit: 65535,
-                programId: orderContext.serumDexProgramId,
-            })
+            // let consumeEventInx = DexInstructions.consumeEvents({
+            //     market: orderContext.serumMarket,
+            //     openOrdersAccounts: [orderContext.openOrders],
+            //     eventQueue: orderContext.eventQueue,
+            //     pcFee: orderContext.userMarginAccount,
+            //     coinFee: orderContext.userInstrumentLongTokenVault,
+            //     limit: 65535,
+            //     programId: orderContext.serumDexProgramId,
+            // })
 
-            ixs.push(consumeEventInx)
+            // ixs.push(consumeEventInx)
 
             let settleOrderIx = context.program.instruction.settleOrderFunds({
                 accounts: {
@@ -101,7 +129,8 @@ export default function placeOrder(context: Context,
                     userMarginAccount: orderContext.userMarginAccount,
                     vaultSigner: orderContext.vaultSigner,
                     tokenProgram: TOKEN_PROGRAM_ID,
-                    serumDexProgramId: orderContext.serumDexProgramId
+                    serumDexProgramId: orderContext.serumDexProgramId,
+                    feeAccount: orderContext.feeAccount
                 },
             });
 

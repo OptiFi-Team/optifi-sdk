@@ -1,8 +1,9 @@
 import { initializeContext } from "../index";
 import Context from "../types/context";
 import { PublicKey } from "@solana/web3.js";
-import { UserAccount } from "../types/optifi-exchange-types";
+import { FeeAccount, UserAccount } from "../types/optifi-exchange-types";
 import { findUserAccount } from "../utils/accounts";
+import { USDC_DECIMALS } from "../constants";
 
 // let userAccountAddress = new PublicKey("2HmuhmAQ74JRhzn2TVKCdfKvpcNvmZn8iTmaB1utfxWo");
 
@@ -26,8 +27,19 @@ initializeContext().then(async (context) => {
         console.log("userAccount temp pnl epoch:", new Date(userAccount.tempPnl.epoch.toNumber() * 1000));
 
         console.log("userMarginAccountUsdc is", userAccount.userMarginAccountUsdc.toString());
+
+
+        context.program.account.feeAccount.fetch(userAccount.feeAccount).then((res) => {
+            // @ts-ignore
+            let feeAccount = res as FeeAccount;
+
+            console.log("notionalTradingVolume :", feeAccount.notionalTradingVolume.toNumber() / 10 ** USDC_DECIMALS);
+
+            console.log("notionalTradingVolume :", feeAccount.accFee.toNumber() / 10 ** USDC_DECIMALS);
+
+            console.log("openOrderFee :", feeAccount.openOrderFee);
+
+        })
     })
-
-
 
 })

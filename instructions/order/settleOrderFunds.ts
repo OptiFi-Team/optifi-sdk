@@ -18,17 +18,17 @@ export default function settleOrderFunds(context: Context,
             let ixs = [increaseComputeUnitsIx]
             ixs.push(...await marginStress(context, asset));
 
-            let consumeEventInx = DexInstructions.consumeEvents({
-                market: orderContext.serumMarket,
-                openOrdersAccounts: [orderContext.openOrders],
-                eventQueue: orderContext.eventQueue,
-                pcFee: orderContext.userMarginAccount,
-                coinFee: orderContext.userInstrumentLongTokenVault,
-                limit: 65535,
-                programId: orderContext.serumDexProgramId,
-            })
+            // let consumeEventInx = DexInstructions.consumeEvents({
+            //     market: orderContext.serumMarket,
+            //     openOrdersAccounts: [orderContext.openOrders],
+            //     eventQueue: orderContext.eventQueue,
+            //     pcFee: orderContext.userMarginAccount,
+            //     coinFee: orderContext.userInstrumentLongTokenVault,
+            //     limit: 65535,
+            //     programId: orderContext.serumDexProgramId,
+            // })
 
-            ixs.push(consumeEventInx)
+            // ixs.push(consumeEventInx)
 
             let settleOrderIx = context.program.instruction.settleOrderFunds({
                 accounts: {
@@ -50,7 +50,8 @@ export default function settleOrderFunds(context: Context,
                     userMarginAccount: orderContext.userMarginAccount,
                     vaultSigner: orderContext.vaultSigner,
                     tokenProgram: TOKEN_PROGRAM_ID,
-                    serumDexProgramId: orderContext.serumDexProgramId
+                    serumDexProgramId: orderContext.serumDexProgramId,
+                    feeAccount: orderContext.feeAccount
                 },
             });
 

@@ -36,7 +36,7 @@ export const STRIKE_LADDER_SIZE: number = 5;
 export const AMM_TRADE_CAPACITY = 25;
 
 // How many assets are supported, should be in the same sequence as enum
-export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin, Asset.Ethereum];
+export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin, Asset.Ethereum, Asset.Solana];
 
 // How many duration are supported
 export const SUPPORTED_DURATION: Duration[] = [Duration.Weekly, Duration.Monthly];
@@ -301,22 +301,22 @@ export const PC_DUST_THRESHOLD: number = 2;
 export const USDC_DECIMALS = 6;
 export const SOL_DECIMALS = 9;
 
-// The fee for each transaction on the OptiFi system
-export const TAKER_FEE: EndpointConstant = {
-    [SolanaCluster.Devnet]: 0.0028,
-    [SolanaCluster.Mainnet]: 0.0004,
+
+export const OPTIFI_TAKER_FEE: EndpointConstant = {
+    [SolanaCluster.Devnet]: 0.0015,
+    [SolanaCluster.Mainnet]: 0.0,
     [SolanaCluster.Testnet]: undefined
 }
+export const OPTIFI_MAKER_FEE: EndpointConstant = {
+    [SolanaCluster.Devnet]: 0.0015,
+    [SolanaCluster.Mainnet]: 0.0,
+    [SolanaCluster.Testnet]: undefined
+}
+export const OPTIFI_MAX_FEE_RATIO = 0.1
+
 export const SERUM_TAKER_FEE: EndpointConstant = {
     [SolanaCluster.Devnet]: 0.0022,
     [SolanaCluster.Mainnet]: 0.0004,
-    [SolanaCluster.Testnet]: undefined
-}
-export const OPTIFI_TAKER_FEE: number = 0.0006;
-// PostOnly order
-export const MAKER_FEE: EndpointConstant = {
-    [SolanaCluster.Devnet]: 0.0028,
-    [SolanaCluster.Mainnet]: 0,
     [SolanaCluster.Testnet]: undefined
 }
 export const SERUM_MAKER_FEE: EndpointConstant = {
@@ -324,7 +324,6 @@ export const SERUM_MAKER_FEE: EndpointConstant = {
     [SolanaCluster.Mainnet]: 0.0,
     [SolanaCluster.Testnet]: undefined
 }
-export const OPTIFI_MAKER_FEE: number = 0.0006;
 
 // user margin deposit limit
 export const DEPOSIT_LIMIT: number = 10000 * (10 ** USDC_DECIMALS);
