@@ -1,14 +1,13 @@
 import Context from "../types/context";
 import InstructionResult from "../types/instructionResult";
-import { Exchange, UserAccount } from "../types/optifi-exchange-types";
+import { Exchange } from "../types/optifi-exchange-types";
 import * as anchor from "@project-serum/anchor";
-import { AccountMeta, Keypair, PublicKey, SystemProgram, TransactionSignature } from "@solana/web3.js";
+import { AccountMeta, PublicKey, SystemProgram, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findLiquidationState, findUserAccount, userAccountExists } from "../utils/accounts";
 import { AccountLayout, createAssociatedTokenAccountInstruction, createInitializeAccountInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { USDC_TOKEN_MINT } from "../constants";
-import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
-import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { findAssociatedTokenAccount } from "../utils/token";
+import { findUserFeeAccount } from "./user/initializeFeeAccount";
 
 /**
  * Create an Optifi controlled user account, to which users can deposit and withdrawal collateral for trading.
@@ -29,8 +28,8 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
 
             // Derive the address the new user account will be at
             findUserAccount(context).then((newUserAccount) => {
-                findExchangeAccount(context).then(async ([exchangeId, _]) => {
-                    let exchangeRes = await context.program.account.exchange.fetch(exchangeId);
+                findExchangeAccount(context).then(async ([exchangeAddress, _]) => {
+                    let exchangeRes = await context.program.account.exchange.fetch(exchangeAddress);
                     // @ts-ignore
                     let exchange = exchangeRes as Exchange;
 
@@ -88,6 +87,23 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                             }]
                         }
 
+                        let [feeAccount,] = await findUserFeeAccount(context, exchangeAddress, newUserAccount[0])
+
+
+                        let ix2 = context.program.instruction.initializeFeeAccount(
+                            {
+                                accounts: {
+                                    optifiExchange: exchangeAddress,
+                                    userAccount: newUserAccount[0],
+                                    feeAccount: feeAccount,
+                                    payer: context.provider.wallet.publicKey,
+                                    systemProgram: SystemProgram.programId,
+                                },
+                            }
+                        );
+
+                        let postInxs: TransactionInstruction[] = [ix2]
+
                         // Actually initialize the account
                         findLiquidationState(context, newUserAccount[0]).then(([liquidationAddress, liquidationBump]) => {
                             context.program.rpc.initUserAccount(
@@ -98,7 +114,7 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                 {
                                     accounts: {
                                         userAccount: newUserAccount[0],
-                                        optifiExchange: exchangeId,
+                                        optifiExchange: exchangeAddress,
                                         userMarginAccountUsdc: newUserMarginAccount.publicKey,
                                         owner: context.provider.wallet.publicKey,
                                         payer: context.provider.wallet.publicKey,
@@ -110,7 +126,8 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                                     remainingAccounts: remainingAccounts,//user nft vault (pubkey [])
                                     signers: [newUserMarginAccount],
                                     // These instructions transfer the necessary lamports to the new user vault
-                                    instructions: inxs
+                                    instructions: inxs,
+                                    postInstructions: postInxs
                                 },
                             ).then((calculateRes) => {
                                 resolve({
