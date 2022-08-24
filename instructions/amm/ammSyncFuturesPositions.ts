@@ -96,8 +96,17 @@ export default function ammSyncFuturesPositions(context: Context,
                             );
 
                             // settle pnl on mango market when amm has positions or pnl
+                            let hasOptionPos = false
                             // @ts-ignore
-                            if (amm.positions[0].latestPosition.toNumber() > 0 || !pnl.eq(ZERO_I80F48)) {
+                            for (let i = 1; i < amm.positions.length; i++) {
+                                // @ts-ignore
+                                if (amm.positions[i].latestPosition != 0) {
+                                    hasOptionPos = true
+                                    break
+                                }
+                            }
+                            // @ts-ignore
+                            if (!hasOptionPos && (amm.positions[0].latestPosition.toNumber() > 0 || !pnl.eq(ZERO_I80F48))) {
                                 let mangoAccounts = await client.getAllMangoAccounts(mangoGroupAccountInfo, [], false);
                                 let mangoSettlePnl = await client.settlePnl(mangoGroupAccountInfo, mangoCache, mangoAccountInfo, perpMarketAccountInfo, usdcRootBank, price, context.walletKeypair!, mangoAccounts)
                                 console.log("mangoSettlePnl: ", mangoSettlePnl)
