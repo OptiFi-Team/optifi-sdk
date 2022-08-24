@@ -10,6 +10,7 @@ import { USDC_DECIMALS } from "../constants";
 initializeContext().then(async (context) => {
     let [userAccountAddress, _] = await findUserAccount(context);
 
+    console.log("userAccountAddress: ", userAccountAddress.toString())
     context.program.account.userAccount.fetch(userAccountAddress).then((res) => {
         // @ts-ignore
         let userAccount = res as UserAccount;
@@ -28,10 +29,14 @@ initializeContext().then(async (context) => {
 
         console.log("userMarginAccountUsdc is", userAccount.userMarginAccountUsdc.toString());
 
+        console.log("userAccount.feeAccount is", userAccount.feeAccount.toString());
+
 
         context.program.account.feeAccount.fetch(userAccount.feeAccount).then((res) => {
             // @ts-ignore
             let feeAccount = res as FeeAccount;
+
+            console.log("feeAccount.userAccount: ", feeAccount.userAccount.toString())
 
             console.log("notionalTradingVolume :", feeAccount.notionalTradingVolume.toNumber() / 10 ** USDC_DECIMALS);
 

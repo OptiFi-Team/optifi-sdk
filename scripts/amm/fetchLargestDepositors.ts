@@ -1,13 +1,14 @@
 
 import Decimal from "decimal.js";
+import path from "path";
 import { initializeContext } from "../../index";
 import { findExchangeAccount } from "../../utils/accounts";
 import { findAllTokenAccountsByMint, getTokenMintFromAccountInfo } from "../../utils/token";
-
+import fs from "fs";
 
 initializeContext().then(async (context) => {
 
-    let lpPrices = [1.0030014027274843, 1.12309731933046743]
+    let lpPrices = [1.0027580335304787, 1.122844856859746]
     let [exchangeAddress,] = await findExchangeAccount(context)
     const filters = [
         {
@@ -68,6 +69,8 @@ initializeContext().then(async (context) => {
 
     console.log("depositors: ", depositors.length)
     console.log("depositors[0]: ", depositors[0])
+
+    saveJsonFile(depositors)
 })
 
 export interface Depositor {
@@ -84,4 +87,10 @@ function findDepositor(userAccount: string, depositors: Depositor[]): [number, D
         }
     }
     return [-1, null]
+}
+
+export function saveJsonFile(data: Depositor[]) {
+    let dateTime = new Date();
+    let filename = path.resolve(__dirname,"amm-depositors-" + dateTime.toISOString() + ".json");
+    fs.writeFileSync(filename, JSON.stringify(data, null, 4));
 }
