@@ -1,6 +1,7 @@
 import Context from "../types/context";
 import {
     AccountInfo,
+    Connection,
     PublicKey,
     SystemProgram,
     SYSVAR_RENT_PUBKEY,
@@ -197,4 +198,40 @@ export async function getTokenMintFromAccountInfo(
         /** Optional authority to freeze token accounts */
         freezeAuthority: rawMint.freezeAuthority,
     };
+}
+
+
+/**
+ * Retrieve all token accounts of a token mint
+ *
+ * @param connection Connection to use
+ * @param tokenMint    Mint Address
+ * @param programId  SPL Token program account
+ *
+ * @return Token accounts information
+ * 
+ * Note that this method may be excluded by some rpc nodes
+ */
+export function findAllTokenAccountsByMint(connection: Connection, tokenMint: PublicKey, programId?: PublicKey): Promise<Array<Account>> {
+    return new Promise(async (resolve, reject) => {
+        const filters = [
+            {
+                dataSize: 165
+            },
+            {
+                memcmp: {
+                    offset: 0,
+                    bytes: tokenMint.toBase58(),
+                },
+
+            },
+        ]
+        let tokenAccounts = await connection.getProgramAccounts(programId || TOKEN_PROGRAM_ID, { filters })
+        let res: Account[] = []
+        for (let tokenAccount of tokenAccounts) {
+            let temp = await getTokenAccountFromAccountInfo(tokenAccount.account, tokenAccount.pubkey)
+            res.push(temp)
+        }
+        resolve(res)
+    })
 }
