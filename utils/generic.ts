@@ -75,6 +75,22 @@ export function optifiAssetToNumber(asset: OptifiAsset): number {
     }
 }
 
+export function optifiAssetObjectToNumber(asset: Object): number {
+    let key = Object.keys(asset)[0]
+    switch (key) {
+        case "bitcoin":
+            return 0;
+        case "ethereum":
+            return 1;
+        case "usdc":
+            return 2;
+        case "solana":
+            return 3;
+        default:
+            return -1;
+    }
+}
+
 export function numberAssetToDecimal(asset: number): number | undefined {
     switch (asset) {
         case 0:
