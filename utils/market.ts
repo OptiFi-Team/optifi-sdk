@@ -14,6 +14,7 @@ import UserPosition from "../types/user";
 import {
     dateToAnchorTimestamp
 } from "./generic";
+import { getSerumMarket } from "./serum";
 const DECIMAL = 6;
 
 
@@ -116,8 +117,19 @@ export function getTotalSupply(context: Context): Promise<[OptifiMarket, PublicK
                     for (let i = 0; i < marketAddresses.length; i++) {
                         let longSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i]!, longAndShortMints[i])
                         let shortSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i + 1]!, longAndShortMints[2 * i + 1])
-                        console.log(marketAddresses[i].toString(), Number(longSupply.supply) / (10 ** longSupply.decimals))
-                        marketsWithKeys.push([marketsInfos[i], marketAddresses[i], Number(longSupply.supply) / (10 ** longSupply.decimals), Number(shortSupply.supply) / (10 ** shortSupply.decimals)])
+                        let serumMarket = await getSerumMarket(context, marketsInfos[i].serumMarket);
+
+                        let baseVault = serumMarket.decoded.baseVault;
+
+                        // console.log("baseVault ", baseVault.toString())
+
+                        let tokenAmount = await context.connection.getTokenAccountBalance(baseVault);
+
+                        // console.log("tokenAmount ", tokenAmount.value.uiAmount);
+                        let onOrderBook = tokenAmount.value.uiAmount!;
+
+
+                        marketsWithKeys.push([marketsInfos[i], marketAddresses[i], Number(longSupply.supply) / (10 ** longSupply.decimals), onOrderBook])
                     }
                 }
                 retrieveMarket().then(() => {
