@@ -125,6 +125,8 @@ export const SWITCHBOARD: EndpointConstant = {
         SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
         SWITCHBOARD_ETH_IV: "DkACWMFoJr9xnAwsttHmUQrhzRSnwG7J5cmFqG6VH44",
         SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW",
+        SWITCHBOARD_SOL_USD: "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR",
+        SWITCHBOARD_SOL_IV: "DkACWMFoJr9xnAwsttHmUQrhzRSnwG7J5cmFqG6VH44"
     },
     [SolanaCluster.Devnet]: {
         SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
