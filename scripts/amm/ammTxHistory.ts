@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { initializeContext } from "../../index";
-import { getAllUsersTxsOnAllAMM, getUserEquity, getUserEquityV2, getUserTxsOnAllAMM } from "../../utils/amm";
+import { getAllUsersTxsOnAllAMM, getUserEquity, getUserEquityV2, getUserTxsOnAllAMM, currentReturn } from "../../utils/amm";
 
 let amount = 100; // already including decimals
 
@@ -14,11 +14,11 @@ initializeContext(undefined, undefined, undefined, undefined, undefined, { disab
     // })
 
 
-    await getUserTxsOnAllAMM(context).then((res) => {
-        console.log("getAllUsersTxsOnAllAMM res", res);
-    }).catch((err) => {
-        console.error(err);
-    })
+    // await getUserTxsOnAllAMM(context).then((res) => {
+    //     console.log("getAllUsersTxsOnAllAMM res", res);
+    // }).catch((err) => {
+    //     console.error(err);
+    // })
 
 
     await getUserEquityV2(context).then((res) => {
@@ -26,5 +26,12 @@ initializeContext(undefined, undefined, undefined, undefined, undefined, { disab
     }).catch((err) => {
         console.error(err);
     })
+
+    await currentReturn(context).then((res) => {
+        console.log("getUserEquity res", res);
+    }).catch((err) => {
+        console.error(err);
+    })
+
 
 })

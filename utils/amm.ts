@@ -151,7 +151,8 @@ interface UserEquity {
     lpTokenBalance: number, // user's lp token balance
     lpToeknValueInUsdc: number, // user's lp token value in usdc
     earnedValueInUsdc: number, // user's earned value in usdc
-    currentReturn: number
+    currentReturn: number,
+    notioanlWithdrawable: number
 }
 
 // return a user's equity on each AMM, based on user's amm tx history
@@ -215,7 +216,8 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
                     lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                     lpToeknValueInUsdc: actualBalance,
                     earnedValueInUsdc: earnedValueInUsdc,
-                    currentReturn: -1//default
+                    currentReturn: -1,//default
+                    notioanlWithdrawable: -1
                 })
             }
             resolve(equity)
@@ -292,12 +294,34 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
                         lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                         lpToeknValueInUsdc: actualBalance,
                         earnedValueInUsdc: earnedValueInUsdc,
-                        currentReturn: currentReturn
+                        currentReturn: currentReturn,
+                        notioanlWithdrawable: notioanlWithdrawable.toNumber()
                     })
                 }
             }
             resolve(equity)
         } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+export function currentReturn(context: Context): Promise<number> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let userEquity = await getUserEquityV2(context)
+            let totalEarnedValueInUsdc = 0;
+            let totalNotioanlWithdrawable = 0;
+            let res = 0;
+            for (let e of userEquity) {
+                totalEarnedValueInUsdc += e[1].earnedValueInUsdc
+                totalNotioanlWithdrawable += e[1].notioanlWithdrawable
+            }
+            if (userEquity[0] != null)
+                res += new Decimal(totalEarnedValueInUsdc).div(new Decimal(totalNotioanlWithdrawable)).toNumber()
+            resolve(res)
+        }
+        catch (err) {
             reject(err)
         }
     })
