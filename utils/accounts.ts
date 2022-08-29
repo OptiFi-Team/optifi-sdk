@@ -210,9 +210,6 @@ export async function findOracleAccountFromAsset(context: Context,
             }
             return new PublicKey(PYTH[context.cluster].USDC_USD);
         case OptifiAsset.Solana:
-            if (context.cluster == SolanaCluster.Mainnet) {
-                throw new Error(`Unsupported asset ${asset}`);
-            }
             if (oracleAccountType === OracleAccountType.Spot) {
                 return new PublicKey(PYTH[context.cluster].SOL_USD);
             } else {
