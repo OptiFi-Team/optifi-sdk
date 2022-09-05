@@ -289,6 +289,7 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
                     // .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
                     let tmpAsset = (asset == 3) ? asset - 1 : asset
                     let earnedValueInUsdc = new Decimal(actualBalance).sub(new Decimal(notionalBalance.get(tmpAsset)!)).toNumber()
+                    notioanlWithdrawable = new Decimal(notionalBalance.get(tmpAsset)!)
                     let currentReturn = (notioanlWithdrawable != 0) ? new Decimal(earnedValueInUsdc).div(notioanlWithdrawable).toNumber() : 0;
                     equity.set(asset, {
                         lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
