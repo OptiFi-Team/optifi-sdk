@@ -6,7 +6,7 @@ import { findExchangeAccount, findUserAccount } from "../../utils/accounts";
 import { getMint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { getAmmLiquidityAuthPDA } from "../../utils/pda";
-import { USDC_TOKEN_MINT } from "../../constants";
+import { OPUSDC_TOKEN_MINT } from "../../constants";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { UserAccount } from "../../types/optifi-exchange-types";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
@@ -28,7 +28,7 @@ export default function consumeWithdrawRequestQueue(context: Context,
                             let user = userAccountRes as UserAccount;
                             // console.log(user.owner.toString())
 
-                            findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.cluster]), user.owner).then(([userQuoteTokenVault, _]) => {
+                            findAssociatedTokenAccount(context, new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]), user.owner).then(([userQuoteTokenVault, _]) => {
                                 // console.log(userQuoteTokenVault.toString())
 
                                 findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {

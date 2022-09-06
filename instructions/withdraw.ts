@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import Context from "../types/context";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findUserAccount, findUserUSDCAddress, userAccountExists } from "../utils/accounts";
-import { USDC_TOKEN_MINT } from "../constants";
+import { OPUSDC_TOKEN_MINT } from "../constants";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import InstructionResult from "../types/instructionResult";

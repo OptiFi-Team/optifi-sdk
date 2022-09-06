@@ -10,7 +10,7 @@ import {
 } from "@solana/web3.js";
 import { findOptifiUSDCPoolAuthPDA } from "../utils/pda";
 import { AccountLayout, createInitializeAccountInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { USDC_TOKEN_MINT } from "../constants";
+import { OPUSDC_TOKEN_MINT } from "../constants";
 import { Asset } from "../types/optifi-exchange-types";
 
 /**
@@ -39,7 +39,7 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                             uuid: context.exchangeUUID,
                             version: 1,
                             exchangeAuthority: context.provider.wallet.publicKey,
-                            usdcMint: new PublicKey(USDC_TOKEN_MINT[context.cluster]),
+                            usdcMint: new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]),
                             btcSpotOracle,
                             ethSpotOracle,
                             usdcSpotOracle,
@@ -69,7 +69,7 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                                 }),
                                 createInitializeAccountInstruction(
                                     usdcCentralPoolWallet.publicKey,
-                                    new PublicKey(USDC_TOKEN_MINT[context.cluster]),
+                                    new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]),
                                     poolAuthPDAAddress,
                                     TOKEN_PROGRAM_ID
                                 ),
@@ -83,7 +83,7 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                                 }),
                                 createInitializeAccountInstruction(
                                     usdcFeePoolWallet.publicKey,
-                                    new PublicKey(USDC_TOKEN_MINT[context.cluster]),
+                                    new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]),
                                     poolAuthPDAAddress,
                                     TOKEN_PROGRAM_ID
                                 )

@@ -3,7 +3,7 @@ import { PublicKey, TransactionSignature, Transaction } from "@solana/web3.js";
 import { DexInstructions } from '@project-serum/serum';
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
-import { SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT } from "../../constants";
+import { SERUM_DEX_PROGRAM_ID } from "../../constants";
 
 
 

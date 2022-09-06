@@ -5,7 +5,7 @@ import { findExchangeAccount, findMarketMakerAccount, findUserAccount } from "..
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "../../utils/token";
-import { USDC_TOKEN_MINT } from "../../constants";
+import { OPUSDC_TOKEN_MINT } from "../../constants";
 
 export default function executeMarketMakerWithdrawal(context: Context): Promise<InstructionResult<TransactionSignature>> {
     return new Promise((resolve, reject) => {
@@ -13,7 +13,7 @@ export default function executeMarketMakerWithdrawal(context: Context): Promise<
             findUserAccount(context).then(([userAccountAddress, _]) => {
                 context.program.account.userAccount.fetch(userAccountAddress).then((userAcctRaw) => {
                     findMarketMakerAccount(context).then(([marketMakerAccount]) => {
-                        findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.cluster])).then(([userQuoteTokenVault, _]) => {
+                        findAssociatedTokenAccount(context, new PublicKey(OPUSDC_TOKEN_MINT[context.cluster])).then(([userQuoteTokenVault, _]) => {
 
                             let marketMakerWithdrawTx = context.program.rpc.executeMarketMakerWithdrawal({
                                 accounts: {

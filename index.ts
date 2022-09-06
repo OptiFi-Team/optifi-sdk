@@ -1,10 +1,13 @@
 import * as anchor from "@project-serum/anchor";
 import { Connection, Keypair, PublicKey, ConnectionConfig, Commitment } from "@solana/web3.js";
 import Context from "./types/context";
-import { OPTIFI_EXCHANGE_ID, SolanaCluster } from "./constants";
+import { OPTIFI_EXCHANGE_ID, OPTIFI_USDC_PROGRAM_ID, SolanaCluster } from "./constants";
 import { isWalletProvider, readJsonFile } from './utils/generic';
 import { OptifiExchangeIDL } from './types/optifi-exchange-types';
 import optifiExchange from './idl/optifi_exchange.json';
+import optifiUSDC from './idl/optifi_usdc.json';
+import { OptifiUsdc } from './types/optifi_usdc';
+
 import { MathWallet, SlopeWallet, SolongWallet, SolWindow, WalletProvider } from './types/solanaTypes';
 import WalletType from "./types/walletType";
 
@@ -162,13 +165,20 @@ function initializeContext(wallet?: string | WalletProvider,
                     provider,
                     new anchor.BorshCoder(idl)
                 )
+                const optifiUSDCIdl = optifiUSDC as unknown as OptifiUsdc;
+                const optifiUSDCProgram = new anchor.Program(optifiUSDCIdl,
+                    OPTIFI_USDC_PROGRAM_ID[cluster!],
+                    provider,
+                    new anchor.BorshCoder(optifiUSDCIdl)
+                )
                 resolve({
                     program: program,
                     walletType: walletRes.walletType,
                     provider: provider,
                     cluster: cluster!,
                     connection: connection,
-                    exchangeUUID: uuid
+                    exchangeUUID: uuid,
+                    optifiUSDCProgram
                 })
             }).catch((err) => reject(err))
 
@@ -192,6 +202,13 @@ function initializeContext(wallet?: string | WalletProvider,
                 new anchor.BorshCoder(idl)
             )
 
+            const optifiUSDCIdl = optifiUSDC as unknown as OptifiUsdc;
+            const optifiUSDCProgram = new anchor.Program(optifiUSDCIdl,
+                OPTIFI_USDC_PROGRAM_ID[cluster!],
+                provider,
+                new anchor.BorshCoder(optifiUSDCIdl)
+            )
+
             resolve({
                 program: program,
                 provider: provider,
@@ -199,7 +216,8 @@ function initializeContext(wallet?: string | WalletProvider,
                 connection: connection,
                 walletType: WalletType.Keypair,
                 walletKeypair: keypair,
-                exchangeUUID: uuid
+                exchangeUUID: uuid,
+                optifiUSDCProgram
             })
         }
     })
@@ -243,6 +261,13 @@ function initializeContextWithoutWallet(
             new anchor.BorshCoder(idl)
         )
 
+        const optifiUSDCIdl = optifiUSDC as unknown as OptifiUsdc;
+        const optifiUSDCProgram = new anchor.Program(optifiUSDCIdl,
+            OPTIFI_USDC_PROGRAM_ID[cluster!],
+            provider,
+            new anchor.BorshCoder(optifiUSDCIdl)
+        )
+
         resolve({
             program: program,
             provider: provider,
@@ -250,7 +275,8 @@ function initializeContextWithoutWallet(
             connection: connection,
             walletType: WalletType.Keypair,
             walletKeypair: keypair,
-            exchangeUUID: uuid
+            exchangeUUID: uuid,
+            optifiUSDCProgram
         })
     })
 }
