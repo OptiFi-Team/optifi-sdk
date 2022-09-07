@@ -117,7 +117,7 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 export const OPTIFI_USDC_PROGRAM_ID: EndpointConstant = {
     [SolanaCluster.Mainnet]: "ER7cJ4tQza5fqzXWpi6TvGAg7WnJgW2L32SxVodDNoux",
     [SolanaCluster.Devnet]: "ER7cJ4tQza5fqzXWpi6TvGAg7WnJgW2L32SxVodDNoux",
-    [SolanaCluster.Testnet]: "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN"
+    [SolanaCluster.Testnet]: "ER7cJ4tQza5fqzXWpi6TvGAg7WnJgW2L32SxVodDNoux"
 }
 
 

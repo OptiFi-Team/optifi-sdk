@@ -13,6 +13,7 @@ import { DexInstructions } from '@project-serum/serum';
 import { increaseComputeUnitsIx } from "../../utils/transactions";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { getPythData, getSpotPrice } from "../../utils/pyth";
+import { findSerumAuthorityPDA } from "../../utils/pda";
 
 export default function placeOrder(context: Context,
     userAccount: UserAccount,
@@ -109,6 +110,7 @@ export default function placeOrder(context: Context,
 
             // ixs.push(consumeEventInx)
 
+            let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
             let settleOrderIx = context.program.instruction.settleOrderFunds({
                 accounts: {
                     optifiExchange: orderContext.optifiExchange,
@@ -118,9 +120,9 @@ export default function placeOrder(context: Context,
                     userSerumOpenOrders: orderContext.openOrders,
                     coinVault: orderContext.coinVault,
                     pcVault: orderContext.pcVault,
-                    asks: orderContext.asks,
-                    bids: orderContext.bids,
-                    requestQueue: orderContext.requestQueue,
+                    // asks: orderContext.asks,
+                    // bids: orderContext.bids,
+                    // requestQueue: orderContext.requestQueue,
                     eventQueue: orderContext.eventQueue,
                     instrumentLongSplTokenMint: orderContext.coinMint,
                     instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
@@ -130,7 +132,8 @@ export default function placeOrder(context: Context,
                     vaultSigner: orderContext.vaultSigner,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     serumDexProgramId: orderContext.serumDexProgramId,
-                    feeAccount: orderContext.feeAccount
+                    feeAccount: orderContext.feeAccount,
+                    consumeEventsAuthority: serumMarketAuthority
                 },
             });
 

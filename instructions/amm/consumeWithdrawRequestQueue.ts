@@ -1,12 +1,12 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, findUserAccount } from "../../utils/accounts";
-import { getMint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { PublicKey, SystemProgram, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { findExchangeAccount, findOpUsdcAuth, findUserAccount } from "../../utils/accounts";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, getMint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { getAmmLiquidityAuthPDA } from "../../utils/pda";
-import { OPUSDC_TOKEN_MINT } from "../../constants";
+import { OPUSDC_TOKEN_MINT, USDC_TOKEN_MINT } from "../../constants";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { UserAccount } from "../../types/optifi-exchange-types";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
@@ -37,7 +37,14 @@ export default function consumeWithdrawRequestQueue(context: Context,
                                     let ixs = [increaseComputeUnitsIx]
                                     ixs.push(...await marginStress(context, amm.asset));
 
-                                    console.log("userLpTokenVault: ", userLpTokenVault.toString())
+                                    let optifiUsdcMint = new PublicKey(OPUSDC_TOKEN_MINT[context.cluster])
+                                    let [userQuoteTokenVault,] = await findAssociatedTokenAccount(context, optifiUsdcMint)
+                                    let [authority] = await findOpUsdcAuth(context)
+                                    let usdcTokenMint = new PublicKey(USDC_TOKEN_MINT[context.cluster])
+                                    let [usdcVault] = await findAssociatedTokenAccount(context, usdcTokenMint, authority)
+                                    let [ownerUsdcAccount] = await findAssociatedTokenAccount(context, usdcTokenMint)
+
+                                    // console.log("userLpTokenVault: ", userLpTokenVault.toString())
                                     context.program.rpc.consumeWithdrawQueue(
                                         {
                                             accounts: {
@@ -53,9 +60,20 @@ export default function consumeWithdrawRequestQueue(context: Context,
                                                 userLpTokenVault: userLpTokenVault,
                                                 userAccount: userAccount,
                                                 tokenProgram: TOKEN_PROGRAM_ID,
-                                                clock: SYSVAR_CLOCK_PUBKEY
+                                                clock: SYSVAR_CLOCK_PUBKEY,
+
+                                                authority: authority,
+                                                optifiUsdc: optifiUsdcMint,
+                                                usdcMint: usdcTokenMint,
+                                                usdcVault: usdcVault,
+                                                userUsdcTokenVault: ownerUsdcAccount,
+                                                owner: context.provider.wallet.publicKey,
+                                                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                                                systemProgram: SystemProgram.programId,
+                                                rent: SYSVAR_RENT_PUBKEY,
+                                                optifiUsdcProgram: context.optifiUSDCProgram.programId
                                             },
-                                            preInstructions: ixs
+                                            preInstructions: ixs,
                                         }
                                     ).then((res) => {
                                         resolve({
