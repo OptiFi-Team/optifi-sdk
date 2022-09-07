@@ -318,8 +318,8 @@ export function currentReturn(context: Context): Promise<number> {
                 totalEarnedValueInUsdc += e[1].earnedValueInUsdc
                 totalNotioanlWithdrawable += e[1].notioanlWithdrawable
             }
-            if (userEquity[0] != null)
-                res += new Decimal(totalEarnedValueInUsdc).div(new Decimal(totalNotioanlWithdrawable)).toNumber()
+
+            res += new Decimal(totalEarnedValueInUsdc).div(new Decimal(totalNotioanlWithdrawable)).toNumber()
             resolve(res)
         }
         catch (err) {
