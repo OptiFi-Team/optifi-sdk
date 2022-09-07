@@ -11,9 +11,8 @@ import { findAssociatedTokenAccount } from "../utils/token";
 export default function deposit(context: Context, amount: number, userAccount: UserAccount): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {
         try {
-            let acctExists = true;
             let [userAccountAddress, _] = await findUserAccount(context)
-            if (acctExists && userAccount !== undefined) {
+            if (userAccount !== undefined) {
                 let [exchangeAddress,] = await findExchangeAccount(context)
                 let optifiUsdcMint = new PublicKey(OPUSDC_TOKEN_MINT[context.cluster])
                 let [authority] = await findOpUsdcAuth(context)
