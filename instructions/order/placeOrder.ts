@@ -1,18 +1,18 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../../types/context";
-import { ComputeBudgetInstruction, ComputeBudgetProgram, LAMPORTS_PER_SOL, PublicKey, SYSVAR_CLOCK_PUBKEY, Transaction, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
 import { calculatePcQtyAndFee, formPlaceOrderContext } from "../../utils/orders";
 import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
 import marginStress from "../marginStress";
-import { PYTH, USDC_DECIMALS } from "../../constants";
+import { USDC_DECIMALS } from "../../constants";
 import { numberAssetToDecimal } from "../../utils/generic";
 import OrderType, { orderTypeToNumber } from "../../types/OrderType";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { DexInstructions } from '@project-serum/serum';
 import { increaseComputeUnitsIx } from "../../utils/transactions";
 import { findMarginStressWithAsset } from "../../utils/margin";
-import { getPythData, getSpotPrice } from "../../utils/pyth";
+import { getSpotPrice } from "../../utils/pyth";
+import { findSerumAuthorityPDA } from "../../utils/pda";
 
 export default function placeOrder(context: Context,
     userAccount: UserAccount,
@@ -37,27 +37,16 @@ export default function placeOrder(context: Context,
 
             let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(context, spotPrice, PcQty, side, orderType, false)!;
 
-            console.log("side: ", side);
-            console.log("limit: ", limit);
-            console.log("maxCoinQty: ", maxCoinQty);
-            console.log("totalFee: ", totalFee);
-            console.log("maxPcQty: ", maxPcQty);
-            console.log("totalPcQty: ", totalPcQty);
+            // console.log("side: ", side);
+            // console.log("limit: ", limit);
+            // console.log("maxCoinQty: ", maxCoinQty);
+            // console.log("totalFee: ", totalFee);
+            // console.log("maxPcQty: ", maxPcQty);
+            // console.log("totalPcQty: ", totalPcQty);
 
 
             let ixs = [increaseComputeUnitsIx]
             ixs.push(...await marginStress(context, asset));
-
-            // // Add computing units, but currently no use in devnet 
-
-            // const params = {
-            //     units: 2000000,
-            //     additionalFee: 4 * LAMPORTS_PER_SOL,
-            // };
-
-            // let addComputeIx = ComputeBudgetProgram.requestUnits(params);
-
-            // ix.unshift(addComputeIx)
 
             let placeOrderIx = context.program.instruction.placeOrder(
                 side,
@@ -97,18 +86,7 @@ export default function placeOrder(context: Context,
 
             ixs.push(placeOrderIx);
 
-            // let consumeEventInx = DexInstructions.consumeEvents({
-            //     market: orderContext.serumMarket,
-            //     openOrdersAccounts: [orderContext.openOrders],
-            //     eventQueue: orderContext.eventQueue,
-            //     pcFee: orderContext.userMarginAccount,
-            //     coinFee: orderContext.userInstrumentLongTokenVault,
-            //     limit: 65535,
-            //     programId: orderContext.serumDexProgramId,
-            // })
-
-            // ixs.push(consumeEventInx)
-
+            let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
             let settleOrderIx = context.program.instruction.settleOrderFunds({
                 accounts: {
                     optifiExchange: orderContext.optifiExchange,
@@ -118,9 +96,9 @@ export default function placeOrder(context: Context,
                     userSerumOpenOrders: orderContext.openOrders,
                     coinVault: orderContext.coinVault,
                     pcVault: orderContext.pcVault,
-                    asks: orderContext.asks,
-                    bids: orderContext.bids,
-                    requestQueue: orderContext.requestQueue,
+                    // asks: orderContext.asks,
+                    // bids: orderContext.bids,
+                    // requestQueue: orderContext.requestQueue,
                     eventQueue: orderContext.eventQueue,
                     instrumentLongSplTokenMint: orderContext.coinMint,
                     instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
@@ -130,7 +108,8 @@ export default function placeOrder(context: Context,
                     vaultSigner: orderContext.vaultSigner,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     serumDexProgramId: orderContext.serumDexProgramId,
-                    feeAccount: orderContext.feeAccount
+                    feeAccount: orderContext.feeAccount,
+                    consumeEventsAuthority: serumMarketAuthority
                 },
             });
 
@@ -143,7 +122,6 @@ export default function placeOrder(context: Context,
                     optifiExchange: orderContext.optifiExchange,
                     marginStressAccount: marginStressAddress,
                     userAccount: orderContext.userAccount,
-                    clock: SYSVAR_CLOCK_PUBKEY
                 },
                 instructions: ixs
             });

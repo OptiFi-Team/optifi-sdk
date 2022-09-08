@@ -11,7 +11,7 @@ import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../utils/pda";
 import { assetToOptifiAsset, optifiAssetToNumber, optifiDurationToNumber } from "../utils/generic";
 import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { AccountLayout, createInitializeAccountInstruction, createInitializeMintInstruction, MintLayout, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { AMM_TRADE_CAPACITY, MANGO_GROUP_ID, MANGO_PROGRAM_ID, SERUM_MARKETS, USDC_TOKEN_MINT } from "../constants";
+import { AMM_TRADE_CAPACITY, MANGO_GROUP_ID, MANGO_PROGRAM_ID, SERUM_MARKETS, OPUSDC_TOKEN_MINT } from "../constants";
 import { findAMMAccounts, findAMMWithIdx } from "../utils/amm";
 import { findExchangeAccount } from "../utils/accounts";
 import Asset from "../types/asset";
@@ -89,7 +89,7 @@ export function initializeAmm(context: Context,
                                         }),
                                         createInitializeAccountInstruction(
                                             ammUSDCTokenVault.publicKey,
-                                            new PublicKey(USDC_TOKEN_MINT[context.cluster]),
+                                            new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]),
                                             ammLiquidityAuthAddress,
                                             TOKEN_PROGRAM_ID
                                         ),

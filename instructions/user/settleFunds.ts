@@ -3,7 +3,7 @@ import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
 import { findExchangeAccount } from "../../utils/accounts";
 import { findOptifiUSDCPoolAuthPDA } from "../../utils/pda";
-import { USDC_TOKEN_MINT } from "../../constants";
+import { OPUSDC_TOKEN_MINT } from "../../constants";
 import { Exchange, UserAccount } from "../../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { signAndSendTransaction, TransactionResultType } from "../../utils/transactions";
@@ -25,7 +25,7 @@ export default function settleFunds(context: Context,
                                 userMarginAccountUsdc: userAccount.userMarginAccountUsdc,
                                 centralUsdcPool: exchange.usdcCentralPool,
                                 centralUsdcPoolAuth: centralUSDCPoolAuth,
-                                usdcMint: new PublicKey(USDC_TOKEN_MINT[context.cluster]),
+                                usdcMint: new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]),
                                 tokenProgram: TOKEN_PROGRAM_ID
                             }
                         }).then((res) => {

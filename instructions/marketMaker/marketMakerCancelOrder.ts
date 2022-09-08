@@ -3,7 +3,7 @@ import InstructionResult from "../../types/instructionResult";
 import { PublicKey, SYSVAR_CLOCK_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findMarketMakerAccount, findUserAccount, getDexOpenOrders } from "../../utils/accounts";
 import { findAssociatedTokenAccount } from "../../utils/token";
-import { SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT } from "../../constants";
+import { SERUM_DEX_PROGRAM_ID, OPUSDC_TOKEN_MINT } from "../../constants";
 import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { findOptifiMarketMintAuthPDA, findOptifiUSDCPoolAuthPDA, findSerumAuthorityPDA, getAmmLiquidityAuthPDA } from "../../utils/pda";
 import { getSerumMarket } from "../../utils/serum";
@@ -25,7 +25,7 @@ export default function marketMakerCancelOrder(
                     context.program.account.userAccount.fetch(userAccountAddress).then((userAcctRaw) => {
                         findMarketMakerAccount(context).then(([marketMakerAccount]) => {
                             findAssociatedTokenAccount(context,
-                                new PublicKey(USDC_TOKEN_MINT[context.cluster]),
+                                new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]),
                                 userAccountAddress).then(([userMargin,]) => {
                                     let serumProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster])
                                     context.program.account.optifiMarket.fetch(marketAddress).then((marketRes) => {

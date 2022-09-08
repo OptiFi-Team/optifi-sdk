@@ -6,10 +6,12 @@ import {
     INSTRUMENT_PREFIX, LIQUIDATION_STATE_PREFIX, MARKET_MAKER_PREFIX,
     PYTH,
     SERUM_OPEN_ORDERS_PREFIX,
-    SolanaCluster,
-    SWITCHBOARD, USDC_TOKEN_MINT,
+    SWITCHBOARD, OPUSDC_TOKEN_MINT,
     USER_ACCOUNT_PREFIX,
-    USER_TOKEN_ACCOUNT_PDA
+    USER_TOKEN_ACCOUNT_PDA,
+    OPTIFI_USDC_AUTHORITY_PREFIX,
+    OPTIFI_USDC_PROGRAM_ID,
+    OPTIFI_USDC_MINT_PREFIX
 } from "../constants";
 import { Chain, Exchange, UserAccount } from "../types/optifi-exchange-types";
 import { Asset as OptifiAsset } from "../types/optifi-exchange-types";
@@ -36,6 +38,35 @@ export function findAccountWithSeeds(context: Context, seeds: (Buffer | Uint8Arr
     return anchor.web3.PublicKey.findProgramAddress(
         seeds,
         context.program.programId
+    )
+}
+
+
+/**
+ * Helper function for finding optifi USDC authority address
+ *
+ * @param context Program context
+ */
+export function findOpUsdcAuth(context: Context,): Promise<[PublicKey, number]> {
+    return anchor.web3.PublicKey.findProgramAddress(
+        [
+            Buffer.from(OPTIFI_USDC_AUTHORITY_PREFIX),
+        ],
+        new PublicKey(OPTIFI_USDC_PROGRAM_ID[context.cluster])
+    )
+}
+
+/**
+ * Helper function for finding optifi USDC mint address
+ *
+ * @param context Program context
+ */
+export function findOptifiUsdcMint(context: Context,): Promise<[PublicKey, number]> {
+    return anchor.web3.PublicKey.findProgramAddress(
+        [
+            Buffer.from(OPTIFI_USDC_MINT_PREFIX),
+        ],
+        new PublicKey(OPTIFI_USDC_PROGRAM_ID[context.cluster])
     )
 }
 
@@ -86,7 +117,7 @@ export function getDexOpenOrders(context: Context,
 
 
 export function findUserUSDCAddress(context: Context): Promise<[PublicKey, number]> {
-    return findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.cluster]))
+    return findAssociatedTokenAccount(context, new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]))
 }
 
 /**

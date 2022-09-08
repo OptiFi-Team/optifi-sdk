@@ -4,26 +4,41 @@
   "instructions": [
     {
       "name": "initialize",
+      "docs": [
+        "Initialize OptiFi Exchange"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account"
+          ]
         },
         {
           "name": "authority",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange's authority"
+          ]
         },
         {
           "name": "usdcCentralPool",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "usdc central pool for fund settlement, its authority should be the central_usdc_pool_auth_pda"
+          ]
         },
         {
           "name": "usdcFeePool",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "usdc fee pool for trade fee collection, its authority should be the central_usdc_pool_auth_pda"
+          ]
         },
         {
           "name": "payer",
@@ -56,6 +71,9 @@
     },
     {
       "name": "createNewInstrument",
+      "docs": [
+        "Create a new instrument with specified data"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -90,7 +108,10 @@
         {
           "name": "clock",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "Clock to get the timestamp"
+          ]
         }
       ],
       "args": [
@@ -108,6 +129,9 @@
     },
     {
       "name": "generateNextInstrument",
+      "docs": [
+        "dynamically add instruments with new strikes"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -147,7 +171,10 @@
         {
           "name": "clock",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "Clock to get the timestamp"
+          ]
         }
       ],
       "args": [
@@ -175,6 +202,9 @@
     },
     {
       "name": "cleanExpiredInstruments",
+      "docs": [
+        "Clean the expired instruments"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -184,18 +214,39 @@
         {
           "name": "clock",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "Clock to get the timestamp"
+          ]
         }
       ],
       "args": []
     },
     {
       "name": "initializeSerumOrderbook",
+      "docs": [
+        "Initialize a new serum market(orderbook)"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "0. `[writable]` the market to initialize",
+            "1. `[writable]` zeroed out request queue",
+            "2. `[writable]` zeroed out event queue",
+            "3. `[writable]` zeroed out bids",
+            "4. `[writable]` zeroed out asks",
+            "5. `[writable]` spl-token account for the coin currency",
+            "6. `[writable]` spl-token account for the price currency",
+            "7. `[]` coin currency Mint",
+            "8. `[]` price currency Mint",
+            "9. `[]` the rent sysvar",
+            "10. `[]` open orders market authority (optional)",
+            "11. `[]` prune authority (optional, requires open orders market authority)",
+            "12. `[]` crank authority (optional, requires prune authority)"
+          ]
         },
         {
           "name": "market",
@@ -284,36 +335,60 @@
     },
     {
       "name": "createOptifiMarket",
+      "docs": [
+        "Create a new optifi market with an instrument listed on it"
+      ],
       "accounts": [
         {
           "name": "optifiMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The optifi market to be created"
+          ]
         },
         {
           "name": "exchange",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "OptiFi Exchange account"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market on which the instrument will be listed"
+          ]
         },
         {
           "name": "instrument",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The instrument to be listed"
+          ]
         },
         {
           "name": "longSplTokenMint",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the mint address of spl token for buyers of the instrument,",
+            "it should be the base currency for the serum orderbook",
+            "it's mint authority should be this optifi_market_mint_auth pda"
+          ]
         },
         {
           "name": "shortSplTokenMint",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the mint address of spl token for sellers of the instrument,",
+            "it's mint authority should be this optifi_market_mint_auth pda"
+          ]
         },
         {
           "name": "payer",
@@ -340,31 +415,49 @@
     },
     {
       "name": "stopOptifiMarket",
+      "docs": [
+        "Stop an optifi market which is expired"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "OptiFi Exchange account"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The optifi market to be updated"
+          ]
         },
         {
           "name": "instrument",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The instrument listed on market"
+          ]
         },
         {
           "name": "instrumentLongSplToken",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "instrumentlong token mint address"
+          ]
         },
         {
           "name": "instrumentShortSplToken",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "instrument short token mint address"
+          ]
         },
         {
           "name": "clock",
@@ -376,26 +469,41 @@
     },
     {
       "name": "updateOptifiMarket",
+      "docs": [
+        "Update a stopped optifi market with a new instrument"
+      ],
       "accounts": [
         {
           "name": "exchange",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "OptiFi Exchange account"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The optifi market to be updated"
+          ]
         },
         {
           "name": "instrument",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The instrument to be listed"
+          ]
         },
         {
           "name": "instrumentLongSplToken",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "Long token mint of the optifi_market"
+          ]
         },
         {
           "name": "clock",
@@ -407,6 +515,9 @@
     },
     {
       "name": "initUserOnOptifiMarket",
+      "docs": [
+        "Init an open orders for the user to place orders on an optifi market"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -426,22 +537,34 @@
         {
           "name": "serumOpenOrders",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The account to use for placing orders on the DEX"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The optifi market to initialize for"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market the optifi market is using"
+          ]
         },
         {
           "name": "serumMarketAuthority",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "serum market authority which is required when init open orders if it is Some()"
+          ]
         },
         {
           "name": "serumDexProgramId",
@@ -473,6 +596,9 @@
     },
     {
       "name": "initAmmOnOptifiMarket",
+      "docs": [
+        "Init an open orders account for the amm to place orders on an optifi market"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -482,27 +608,42 @@
         {
           "name": "ammAuthority",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the amm to init"
+          ]
         },
         {
           "name": "serumOpenOrders",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The account to use for placing orders on the DEX"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The optifi market to initialize for"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market the optifi market is using"
+          ]
         },
         {
           "name": "serumMarketAuthority",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "serum market authority which is required when init open orders if it is Some()"
+          ]
         },
         {
           "name": "serumDexProgramId",
@@ -534,11 +675,17 @@
     },
     {
       "name": "placeOrder",
+      "docs": [
+        "Submit a limit order"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi_exchange account"
+          ]
         },
         {
           "name": "marginStressAccount",
@@ -548,42 +695,69 @@
         {
           "name": "user",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "the user's wallet"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's optifi account"
+          ]
         },
         {
           "name": "userMarginAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account which is controlled by a pda"
+          ]
         },
         {
           "name": "userInstrumentLongTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's instrument long spl token account which is controlled by a the user's user account(pda)",
+            "it stands for how many contracts the user sold for the instrument",
+            "and it should be the same as order_payer_token_account if the order is ask order"
+          ]
         },
         {
           "name": "userInstrumentShortTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's instrument short spl token account which is controlled by a the user's user account(pda)",
+            "it stands for how many contracts the user bought for the instrument"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi market that binds an instrument with a serum market(orderbook)"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market(orderbook)"
+          ]
         },
         {
           "name": "openOrders",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's open orders account"
+          ]
         },
         {
           "name": "requestQueue",
@@ -608,22 +782,34 @@
         {
           "name": "coinMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The token mint address of \"base\" currency, aka the instrument long spl token"
+          ]
         },
         {
           "name": "coinVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"base\" currency"
+          ]
         },
         {
           "name": "pcVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"quote\" currency"
+          ]
         },
         {
           "name": "instrumentTokenMintAuthorityPda",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the mint authoriity of both long and short spl tokens"
+          ]
         },
         {
           "name": "usdcFeePool",
@@ -633,7 +819,10 @@
         {
           "name": "instrumentShortSplTokenMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the instrument short spl token"
+          ]
         },
         {
           "name": "serumDexProgramId",
@@ -683,11 +872,17 @@
     },
     {
       "name": "cancelOrderByClientOrderId",
+      "docs": [
+        "Cancel a previously placed order"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi_exchange account"
+          ]
         },
         {
           "name": "marginStressAccount",
@@ -697,27 +892,42 @@
         {
           "name": "user",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "the user's wallet"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's optifi account"
+          ]
         },
         {
           "name": "userMarginAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account which is controlled by a pda"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market(orderbook)"
+          ]
         },
         {
           "name": "openOrders",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's open orders account"
+          ]
         },
         {
           "name": "eventQueue",
@@ -852,23 +1062,13 @@
           "isSigner": false
         },
         {
-          "name": "requestQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "eventQueue",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "bids",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "asks",
-          "isMut": true,
+          "name": "consumeEventsAuthority",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -880,37 +1080,94 @@
       "args": []
     },
     {
+      "name": "consumeEventQueue",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userSerumOpenOrders",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "consumeEventsAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "serumDexProgramId",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "initUserAccount",
+      "docs": [
+        "Initialize user's optifi account"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the optifi_exchange account"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's optifi account to be initialized"
+          ]
         },
         {
           "name": "liquidationAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's liquidation account to be initialized for liquidation use"
+          ]
         },
         {
           "name": "userMarginAccountUsdc",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the margin account into which user will deposits spl token"
+          ]
         },
         {
           "name": "owner",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "owner of the user account"
+          ]
         },
         {
           "name": "payer",
           "isMut": true,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "payer to pay accounts rent fee"
+          ]
         },
         {
           "name": "tokenProgram",
@@ -939,6 +1196,9 @@
     },
     {
       "name": "deposit",
+      "docs": [
+        "Deposit usdc tokens into user's margin account"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -948,22 +1208,34 @@
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user account - also the pda that controls the user's spl token accounts"
+          ]
         },
         {
           "name": "userMarginAccountUsdc",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account whose authority is user account(pda)"
+          ]
         },
         {
           "name": "user",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "The owner of user account"
+          ]
         },
         {
           "name": "depositSource",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "from address - user's usdc token account with the usdc tokens to be deposited"
+          ]
         },
         {
           "name": "tokenProgram",
@@ -980,6 +1252,9 @@
     },
     {
       "name": "withdraw",
+      "docs": [
+        "Withdrawal usdc tokens from user's margin account"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -989,22 +1264,34 @@
         {
           "name": "userAccount",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user account - also the pda that controls the user's spl token accounts"
+          ]
         },
         {
           "name": "userMarginAccountUsdc",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account whose authority is user account(pda)"
+          ]
         },
         {
           "name": "user",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "The owner of user account"
+          ]
         },
         {
           "name": "withdrawDest",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the destination token account to which funds will be withdrawed"
+          ]
         },
         {
           "name": "tokenProgram",
@@ -1021,62 +1308,91 @@
     },
     {
       "name": "userMarginCalculate",
+      "docs": [
+        "Re-calculate user's margin requirement"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi_exchange account"
+          ]
         },
         {
           "name": "marginStressAccount",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "margin stress account"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's optifi account"
+          ]
         }
       ],
       "args": []
     },
     {
       "name": "recordPnlForOneUser",
+      "docs": [
+        "Fund settlement - cranker function",
+        "Record pnl for one user on one optifi market(one instruments)"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's optifi account"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The optifi market to be settled"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market which the optifi market is using"
+          ]
         },
         {
           "name": "userSerumOpenOrders",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's serum open orders account"
+          ]
         },
         {
           "name": "instrument",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The expired instrument"
+          ]
         },
         {
           "name": "bids",
@@ -1101,12 +1417,18 @@
         {
           "name": "pcVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"quote\" currency"
+          ]
         },
         {
           "name": "vaultSigner",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "serum market vault owner (pda)"
+          ]
         },
         {
           "name": "userMarginAccountUsdc",
@@ -1168,26 +1490,42 @@
     },
     {
       "name": "settleFundForOneUser",
+      "docs": [
+        "Fund settlement - cranker function",
+        "Settle fund for one user for all markets with same expiry date - simultaneous settlement"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The optifi market to be settled"
+          ]
         },
         {
           "name": "userMarginAccountUsdc",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account"
+          ]
         },
         {
           "name": "centralUsdcPool",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "a central fund pool for fund settlemnet purpose"
+          ]
         },
         {
           "name": "centralUsdcPoolAuth",
@@ -1209,36 +1547,58 @@
     },
     {
       "name": "recordPnlForAmm",
+      "docs": [
+        "Fund settlement - cranker function",
+        "Record pnl for amm on one optifi market(one instruments)"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account"
+          ]
         },
         {
           "name": "ammAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm account to record pnl for"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The optifi market to be settled"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market which the optifi market is using"
+          ]
         },
         {
           "name": "ammSerumOpenOrders",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the amm's serum open orders account"
+          ]
         },
         {
           "name": "instrument",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The expired instrument"
+          ]
         },
         {
           "name": "bids",
@@ -1263,12 +1623,18 @@
         {
           "name": "pcVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"quote\" currency"
+          ]
         },
         {
           "name": "vaultSigner",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "serum market vault owner (pda)"
+          ]
         },
         {
           "name": "ammUsdcVault",
@@ -1328,7 +1694,10 @@
         {
           "name": "ammLiquidityAuth",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the authority of amm's amm_usdc_vault"
+          ]
         }
       ],
       "args": [
@@ -1340,31 +1709,50 @@
     },
     {
       "name": "settleFundForAmm",
+      "docs": [
+        "Fund settlement - cranker function",
+        "Settle fund for one user for all markets with same expiry date - simultaneous settlement"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account"
+          ]
         },
         {
           "name": "ammAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm account to settle"
+          ]
         },
         {
           "name": "ammUsdcVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "usdc vault of amm account"
+          ]
         },
         {
           "name": "ammLiquidityAuth",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the authority of amm's amm_usdc_vault"
+          ]
         },
         {
           "name": "centralUsdcPool",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "a central fund pool for fund settlemnet purpose"
+          ]
         },
         {
           "name": "centralUsdcPoolAuth",
@@ -1386,6 +1774,9 @@
     },
     {
       "name": "cleanExpiredInstrumentsForUser",
+      "docs": [
+        "Clean the expired instruments for user"
+      ],
       "accounts": [
         {
           "name": "userAccount",
@@ -1402,41 +1793,65 @@
     },
     {
       "name": "initializeAmm",
+      "docs": [
+        "Initialize AMM"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the optifi exchange"
+          ]
         },
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the amm account to be initialized"
+          ]
         },
         {
           "name": "withdrawQueue",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm withdraw request queue"
+          ]
         },
         {
           "name": "usdcTokenVault",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "its token mint must be the usdc recogonized by optifi exchange, and owner is amm's liquidity auth pda"
+          ]
         },
         {
           "name": "lpTokenMint",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's lp token mint address, whose mint authority is amm's liquidity auth pda"
+          ]
         },
         {
           "name": "ammLiqudityAuth",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "authority of usdc_token_vault and lp_token_mint"
+          ]
         },
         {
           "name": "payer",
           "isMut": true,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "The user that owns the deposits"
+          ]
         },
         {
           "name": "tokenProgram",
@@ -1456,7 +1871,10 @@
         {
           "name": "mangoProgram",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "mango accounts for amm delta hedging on mango market"
+          ]
         },
         {
           "name": "mangoGroup",
@@ -1466,12 +1884,18 @@
         {
           "name": "ammMangoAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's mango account on mango market"
+          ]
         },
         {
           "name": "perpMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "mango perp market which has the same underlying asset for amm hedging"
+          ]
         }
       ],
       "args": [
@@ -1489,6 +1913,9 @@
     },
     {
       "name": "ammDeposit",
+      "docs": [
+        "Deposit funds to AMM"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -1498,42 +1925,67 @@
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the amm to which user will deposits funds"
+          ]
         },
         {
           "name": "ammQuoteTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The quote token vault of amm - usdc vault"
+          ]
         },
         {
           "name": "userQuoteTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's quote token vault from which user will transfer funds"
+          ]
         },
         {
           "name": "lpTokenMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's lp token mint address"
+          ]
         },
         {
           "name": "ammLiquidityAuth",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's lp token mint authority, and usdc vault authority"
+          ]
         },
         {
           "name": "userLpTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's token vault for receiving lp tokens",
+            "in order to calc the performance fee, the authority of the lp token vault must be user account"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The user account that owns the deposits"
+          ]
         },
         {
           "name": "owner",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "The user that owns the user account"
+          ]
         },
         {
           "name": "tokenProgram",
@@ -1550,16 +2002,25 @@
     },
     {
       "name": "addWithdrawRequest",
+      "docs": [
+        "Add a request to withdraw queue"
+      ],
       "accounts": [
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the amm from which user will withdraw funds"
+          ]
         },
         {
           "name": "withdrawQueue",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm withdraw request queue"
+          ]
         },
         {
           "name": "userLpTokenVault",
@@ -1569,12 +2030,18 @@
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The user account that owns the deposits"
+          ]
         },
         {
           "name": "owner",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "The user that owns the user account"
+          ]
         },
         {
           "name": "clock",
@@ -1591,61 +2058,97 @@
     },
     {
       "name": "consumeWithdrawQueue",
+      "docs": [
+        "Consume withdraw queue"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange"
+          ]
         },
         {
           "name": "usdcFeePool",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "exchange usdc fee pool for collecting amm withdraw fees"
+          ]
         },
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the amm from which user will withdraw funds"
+          ]
         },
         {
           "name": "marginStressAccount",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "margin stress account"
+          ]
         },
         {
           "name": "withdrawQueue",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm withdraw request queue"
+          ]
         },
         {
           "name": "ammQuoteTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The quote token vault of the amm"
+          ]
         },
         {
           "name": "userQuoteTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's quote token vault from which user will transfer funds"
+          ]
         },
         {
           "name": "lpTokenMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's lp token mint address"
+          ]
         },
         {
           "name": "ammLiquidityAuth",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's lp token mint authority, and usdc vault authority"
+          ]
         },
         {
           "name": "userLpTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's lp token vault"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The user account that owns the deposits"
+          ]
         },
         {
           "name": "tokenProgram",
@@ -1656,47 +2159,121 @@
           "name": "clock",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "optifiUsdc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "usdcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "usdcMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userUsdcTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "optifiUsdcProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
     },
     {
       "name": "ammSyncPositions",
+      "docs": [
+        "Sync AMM opsitions"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange"
+          ]
         },
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm account"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the optifi market where the instrumnet to be synced is listed"
+          ]
         },
         {
           "name": "longTokenVault",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's base token vault (Long position)"
+          ]
         },
         {
           "name": "shortTokenVault",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's base token vault (Short position)"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market(orderbook)"
+          ]
         },
         {
           "name": "openOrdersAccount",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the open orders account"
+          ]
         },
         {
           "name": "openOrdersOwner",
@@ -1713,26 +2290,41 @@
     },
     {
       "name": "ammSyncFuturePositions",
+      "docs": [
+        "Sync AMM Future opsitions"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange"
+          ]
         },
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm account"
+          ]
         },
         {
           "name": "mangoProgram",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "mango program"
+          ]
         },
         {
           "name": "mangoGroup",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's mango account"
+          ]
         },
         {
           "name": "mangoGroupSigner",
@@ -1742,12 +2334,18 @@
         {
           "name": "mangoAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's mango account"
+          ]
         },
         {
           "name": "owner",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "owner of mango_account"
+          ]
         },
         {
           "name": "mangoCache",
@@ -1770,7 +2368,7 @@
           "isSigner": false
         },
         {
-          "name": "ownerTokenAccount",
+          "name": "ammQuoteTokenVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1803,6 +2401,51 @@
           "name": "asks",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "optifiUsdcMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "usdcVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "usdcMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammUsdcTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "optifiUsdcProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1814,31 +2457,49 @@
     },
     {
       "name": "ammUpdateFutureOrders",
+      "docs": [
+        "Place AMM future orders"
+      ],
       "accounts": [
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm account"
+          ]
         },
         {
           "name": "mangoProgram",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "mango program"
+          ]
         },
         {
           "name": "mangoGroup",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's mango account"
+          ]
         },
         {
           "name": "mangoAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's mango account"
+          ]
         },
         {
           "name": "owner",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "owner of mango_account"
+          ]
         },
         {
           "name": "mangoCache",
@@ -1895,63 +2556,99 @@
     },
     {
       "name": "ammCalculateDelta",
+      "docs": [
+        "Calculate AMM delta"
+      ],
       "accounts": [
         {
           "name": "marginStressAccount",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "margin stress account"
+          ]
         },
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm account"
+          ]
         },
         {
           "name": "quoteTokenVault",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's quote token vault to get the USDC balance"
+          ]
         },
         {
           "name": "lpTokenMint",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's lp token mint address"
+          ]
         }
       ],
       "args": []
     },
     {
       "name": "ammCalculateProposal",
+      "docs": [
+        "Calculate orders to update and save the orders in proposal"
+      ],
       "accounts": [
         {
           "name": "marginStressAccount",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "margin stress account"
+          ]
         },
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm account"
+          ]
         }
       ],
       "args": []
     },
     {
       "name": "ammUpdateOrders",
+      "docs": [
+        "Update AMM orders (place new orders)"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account"
+          ]
         },
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the amm to update oders for"
+          ]
         },
         {
           "name": "ammUsdcVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's margin account(usdc vault) which is controlled by amm_authority (a pda)"
+          ]
         },
         {
           "name": "ammAuthority",
@@ -1961,32 +2658,52 @@
         {
           "name": "ammInstrumentLongTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's instrument long spl token account"
+          ]
         },
         {
           "name": "ammInstrumentShortTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's instrument short spl token account"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi market that binds an instrument with a serum market(orderbook)",
+            "it's also the mint authority of the instrument spl token"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market(orderbook)"
+          ]
         },
         {
           "name": "instrument",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the instrument listed on optifi_market"
+          ]
         },
         {
           "name": "openOrders",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's open orders account for this optifi market,",
+            "its owner is amm account(pda)"
+          ]
         },
         {
           "name": "requestQueue",
@@ -2011,32 +2728,50 @@
         {
           "name": "coinMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The token mint address of \"base\" currency, aka the instrument long spl token"
+          ]
         },
         {
           "name": "coinVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"base\" currency"
+          ]
         },
         {
           "name": "pcVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"quote\" currency"
+          ]
         },
         {
           "name": "vaultSigner",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "serum market vault owner (pda)"
+          ]
         },
         {
           "name": "instrumentTokenMintAuthorityPda",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the mint authoriity of both long and short spl tokens"
+          ]
         },
         {
           "name": "instrumentShortSplTokenMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the instrument short spl token"
+          ]
         },
         {
           "name": "pruneAuthority",
@@ -2080,6 +2815,9 @@
     },
     {
       "name": "ammRemoveInstrument",
+      "docs": [
+        "Remove instrument for AMM"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -2089,12 +2827,18 @@
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the amm"
+          ]
         },
         {
           "name": "instrument",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the instrumnet to remove from amm's trading instrument list"
+          ]
         },
         {
           "name": "clock",
@@ -2106,6 +2850,9 @@
     },
     {
       "name": "ammAddInstrument",
+      "docs": [
+        "Add instrument for AMM"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -2115,17 +2862,26 @@
         {
           "name": "amm",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the amm"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the optifi_market which list the instrument"
+          ]
         },
         {
           "name": "instrument",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the instrumnet to add into amm's trading instrument list, it must not be expired"
+          ]
         },
         {
           "name": "ammLongTokenVault",
@@ -2191,7 +2947,10 @@
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi_exchange account"
+          ]
         },
         {
           "name": "marginStressAccount",
@@ -2232,7 +2991,10 @@
         {
           "name": "userMarginAccountUsdc",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account whose authority is user account(pda)"
+          ]
         },
         {
           "name": "liquidationState",
@@ -2631,22 +3393,34 @@
         {
           "name": "pcVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"quote\" currency"
+          ]
         },
         {
           "name": "instrumentTokenMintAuthorityPda",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the mint authoriity of both long and short spl tokens"
+          ]
         },
         {
           "name": "instrumentLongSplTokenMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The token mint address of \"base\" currency, aka the instrument long spl token"
+          ]
         },
         {
           "name": "instrumentShortSplTokenMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the instrument short spl token"
+          ]
         },
         {
           "name": "ammInstrumentLongTokenVault",
@@ -2656,7 +3430,10 @@
         {
           "name": "ammInstrumentShortTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "amm's instrument short spl token account"
+          ]
         },
         {
           "name": "ammLiquidityAuth",
@@ -2718,7 +3495,10 @@
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi_exchange account"
+          ]
         },
         {
           "name": "marginStressAccount",
@@ -2728,12 +3508,18 @@
         {
           "name": "user",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "the user's wallet"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's optifi account"
+          ]
         },
         {
           "name": "marketMakerAccount",
@@ -2743,32 +3529,54 @@
         {
           "name": "userMarginAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account which is controlled by a pda"
+          ]
         },
         {
           "name": "userInstrumentLongTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's instrument long spl token account which is controlled by a the user's user account(pda)",
+            "it stands for how many contracts the user sold for the instrument",
+            "and it should be the same as order_payer_token_account if the order is ask order"
+          ]
         },
         {
           "name": "userInstrumentShortTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's instrument short spl token account which is controlled by a the user's user account(pda)",
+            "it stands for how many contracts the user bought for the instrument"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi market that binds an instrument with a serum market(orderbook)",
+            "it's also the mint authority of the instrument spl token"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market(orderbook)"
+          ]
         },
         {
           "name": "openOrders",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's open orders account"
+          ]
         },
         {
           "name": "requestQueue",
@@ -2793,31 +3601,54 @@
         {
           "name": "coinMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The token mint address of \"base\" currency, aka the instrument long spl token"
+          ]
         },
         {
           "name": "coinVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"base\" currency"
+          ]
         },
         {
           "name": "pcVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"quote\" currency"
+          ]
         },
         {
           "name": "vaultSigner",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "serum market vault owner (pda)"
+          ]
         },
         {
           "name": "instrumentTokenMintAuthorityPda",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the mint authoriity of both long and short spl tokens"
+          ]
         },
         {
           "name": "instrumentShortSplTokenMint",
           "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "the instrument short spl token"
+          ]
+        },
+        {
+          "name": "consumeEventsAuthority",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -2921,6 +3752,11 @@
           "isSigner": false
         },
         {
+          "name": "consumeEventsAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "serumDexProgramId",
           "isMut": false,
           "isSigner": false
@@ -2934,17 +3770,26 @@
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi_exchange account"
+          ]
         },
         {
           "name": "user",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "the user's wallet"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's optifi account"
+          ]
         },
         {
           "name": "marketMakerAccount",
@@ -2954,32 +3799,54 @@
         {
           "name": "userMarginAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account which is controlled by a pda"
+          ]
         },
         {
           "name": "userInstrumentLongTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's instrument long spl token account which is controlled by a the user's user account(pda)",
+            "it stands for how many contracts the user sold for the instrument",
+            "and it should be the same as order_payer_token_account if the order is ask order"
+          ]
         },
         {
           "name": "userInstrumentShortTokenVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's instrument short spl token account which is controlled by a the user's user account(pda)",
+            "it stands for how many contracts the user bought for the instrument"
+          ]
         },
         {
           "name": "optifiMarket",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "optifi market that binds an instrument with a serum market(orderbook)",
+            "it's also the mint authority of the instrument spl token"
+          ]
         },
         {
           "name": "serumMarket",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the serum market(orderbook)"
+          ]
         },
         {
           "name": "openOrders",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's open orders account"
+          ]
         },
         {
           "name": "requestQueue",
@@ -3004,22 +3871,34 @@
         {
           "name": "coinMint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The token mint address of \"base\" currency, aka the instrument long spl token"
+          ]
         },
         {
           "name": "coinVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"base\" currency"
+          ]
         },
         {
           "name": "pcVault",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The vault for the \"quote\" currency"
+          ]
         },
         {
           "name": "vaultSigner",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "serum market vault owner (pda)"
+          ]
         },
         {
           "name": "instrumentShortSplTokenMint",
@@ -3101,7 +3980,10 @@
         {
           "name": "userMarginAccountUsdc",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account whose authority is user account(pda)"
+          ]
         },
         {
           "name": "marketMakerAccount",
@@ -3142,7 +4024,10 @@
         {
           "name": "userMarginAccountUsdc",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user's margin account whose authority is user account(pda)"
+          ]
         },
         {
           "name": "withdrawDest",
@@ -3321,12 +4206,18 @@
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "user account - also the pda that controls the user's spl token accounts"
+          ]
         },
         {
           "name": "user",
           "isMut": false,
-          "isSigner": true
+          "isSigner": true,
+          "docs": [
+            "The owner of user account"
+          ]
         }
       ],
       "args": [
@@ -3344,17 +4235,26 @@
         {
           "name": "optifiExchange",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the optifi_exchange account"
+          ]
         },
         {
           "name": "userAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's optifi account to be initialized"
+          ]
         },
         {
           "name": "feeAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the user's liquidation account to be initialized for liquidation use"
+          ]
         },
         {
           "name": "payer",
@@ -3378,22 +4278,37 @@
         "fields": [
           {
             "name": "optifiExchange",
+            "docs": [
+              "optifi exchange which the AMM belongs to"
+            ],
             "type": "publicKey"
           },
           {
             "name": "ammIdx",
+            "docs": [
+              "index of the amm"
+            ],
             "type": "u8"
           },
           {
             "name": "quoteTokenMint",
+            "docs": [
+              "quote token mint address"
+            ],
             "type": "publicKey"
           },
           {
             "name": "quoteTokenVault",
+            "docs": [
+              "quote token account address"
+            ],
             "type": "publicKey"
           },
           {
             "name": "lpTokenMint",
+            "docs": [
+              "LP tokens for liquidity providers"
+            ],
             "type": "publicKey"
           },
           {
@@ -3402,20 +4317,32 @@
           },
           {
             "name": "bump",
+            "docs": [
+              "bump seed used to derive this amm address"
+            ],
             "type": "u8"
           },
           {
             "name": "asset",
+            "docs": [
+              "underlying asset"
+            ],
             "type": "u8"
           },
           {
             "name": "tradingInstruments",
+            "docs": [
+              "a list of pubkeys of the instruments AMM will trade"
+            ],
             "type": {
               "vec": "publicKey"
             }
           },
           {
             "name": "positions",
+            "docs": [
+              "a list of Position struct by instruments"
+            ],
             "type": {
               "vec": {
                 "defined": "Position"
@@ -3424,6 +4351,9 @@
           },
           {
             "name": "proposals",
+            "docs": [
+              "a list of proposals of orders to excute for each instrument"
+            ],
             "type": {
               "vec": {
                 "defined": "Proposal"
@@ -3432,48 +4362,79 @@
           },
           {
             "name": "state",
+            "docs": [
+              "amm's state indicator"
+            ],
             "type": {
               "defined": "AmmState"
             }
           },
           {
             "name": "flags",
+            "docs": [
+              "each instrument's state flag under the current AMM state",
+              "the first flag is for future, while remaining flags for options"
+            ],
             "type": {
               "vec": "bool"
             }
           },
           {
             "name": "iv",
+            "docs": [
+              "the implied volatility"
+            ],
             "type": "u64"
           },
           {
             "name": "price",
+            "docs": [
+              "the underlying asset price based on USDC"
+            ],
             "type": "u64"
           },
           {
             "name": "netDelta",
+            "docs": [
+              "the net delta"
+            ],
             "type": "i64"
           },
           {
             "name": "timestamp",
+            "docs": [
+              "the timestamp when lastest update"
+            ],
             "type": "u64"
           },
           {
             "name": "totalLiquidityUsdc",
+            "docs": [
+              "the amm total liquidity based on USDC (with 6 decimals)"
+            ],
             "type": "u64"
           },
           {
             "name": "duration",
+            "docs": [
+              "the duration type (Weekly/Monthly)"
+            ],
             "type": {
               "defined": "Duration"
             }
           },
           {
             "name": "expiryDate",
+            "docs": [
+              "the expiry date"
+            ],
             "type": "u64"
           },
           {
             "name": "contractSize",
+            "docs": [
+              "the contract size *10000 (f_to_u_repr)"
+            ],
             "type": "u64"
           },
           {
@@ -3482,18 +4443,30 @@
           },
           {
             "name": "ammMangoAccount",
+            "docs": [
+              "amm's mango account for hedging on mango market"
+            ],
             "type": "publicKey"
           },
           {
             "name": "isHedgeNeeded",
+            "docs": [
+              "is mango hedging needed"
+            ],
             "type": "bool"
           },
           {
             "name": "isHedgeInProgress",
+            "docs": [
+              "is mango hedging in progress"
+            ],
             "type": "bool"
           },
           {
             "name": "tempPnl",
+            "docs": [
+              "temp PnL record for fund settlment purpose"
+            ],
             "type": {
               "defined": "TempPnL"
             }
@@ -3543,44 +4516,71 @@
         "fields": [
           {
             "name": "asset",
+            "docs": [
+              "underlying asset"
+            ],
             "type": "u8"
           },
           {
             "name": "instrumentType",
+            "docs": [
+              "option or future"
+            ],
             "type": {
               "defined": "InstrumentType"
             }
           },
           {
             "name": "strike",
+            "docs": [
+              "strike price of the instrument"
+            ],
             "type": "u64"
           },
           {
             "name": "expiryDate",
+            "docs": [
+              "expiry date of the instrument, unix timestamp"
+            ],
             "type": "u64"
           },
           {
             "name": "duration",
+            "docs": [
+              "Duration type"
+            ],
             "type": {
               "defined": "Duration"
             }
           },
           {
             "name": "start",
+            "docs": [
+              "Start date, as a unix timestamp"
+            ],
             "type": "u64"
           },
           {
             "name": "expiryType",
+            "docs": [
+              "Is this a perpetual contract? Only valid for futures"
+            ],
             "type": {
               "defined": "ExpiryType"
             }
           },
           {
             "name": "isListedOnMarket",
+            "docs": [
+              "Is the instrument listed on market for trading"
+            ],
             "type": "bool"
           },
           {
             "name": "contractSize",
+            "docs": [
+              "contract size *10000 (f_to_u_repr)"
+            ],
             "type": "u64"
           }
         ]
@@ -3593,34 +4593,58 @@
         "fields": [
           {
             "name": "uuid",
+            "docs": [
+              "id of the OptiFi Exchange"
+            ],
             "type": "string"
           },
           {
             "name": "version",
+            "docs": [
+              "OptiFi Exchange version"
+            ],
             "type": "u32"
           },
           {
             "name": "exchangeAuthority",
+            "docs": [
+              "the authority address"
+            ],
             "type": "publicKey"
           },
           {
             "name": "usdcMint",
+            "docs": [
+              "the recognized usdc token mint"
+            ],
             "type": "publicKey"
           },
           {
             "name": "usdcCentralPool",
+            "docs": [
+              "usdc central pool for fund settlement"
+            ],
             "type": "publicKey"
           },
           {
             "name": "usdcFeePool",
+            "docs": [
+              "usdc fee pool"
+            ],
             "type": "publicKey"
           },
           {
             "name": "userAccountIdCounter",
+            "docs": [
+              "user account id counter"
+            ],
             "type": "u64"
           },
           {
             "name": "oracle",
+            "docs": [
+              "oracle data by assets"
+            ],
             "type": {
               "vec": {
                 "defined": "OracleData"
@@ -3629,6 +4653,9 @@
           },
           {
             "name": "markets",
+            "docs": [
+              "a list of all created optifi markets, it should be updated when new market is created"
+            ],
             "type": {
               "vec": {
                 "defined": "OptifiMarketKeyData"
@@ -3655,12 +4682,18 @@
           },
           {
             "name": "ogNftMint",
+            "docs": [
+              "pubkey of og nft mint. None means og nft mode is turned off"
+            ],
             "type": {
               "option": "publicKey"
             }
           },
           {
             "name": "userDepositLimit",
+            "docs": [
+              "user deposit limit"
+            ],
             "type": {
               "option": "u64"
             }
@@ -3737,14 +4770,23 @@
         "fields": [
           {
             "name": "optifiExchange",
+            "docs": [
+              "optifi exchange which the MarginStress belongs to"
+            ],
             "type": "publicKey"
           },
           {
             "name": "bump",
+            "docs": [
+              "bump seed used to derive this MarginStress address"
+            ],
             "type": "u8"
           },
           {
             "name": "asset",
+            "docs": [
+              "underlying asset"
+            ],
             "type": {
               "defined": "Asset"
             }
@@ -3763,18 +4805,27 @@
           },
           {
             "name": "state",
+            "docs": [
+              "Deprecated: MarginStress's state indicator"
+            ],
             "type": {
               "defined": "MarginStressState"
             }
           },
           {
             "name": "flags",
+            "docs": [
+              "Deprecated: each instrument's state flag under the current MarginStress state"
+            ],
             "type": {
               "vec": "bool"
             }
           },
           {
             "name": "instruments",
+            "docs": [
+              "a list of pubkeys of the instruments"
+            ],
             "type": {
               "vec": "publicKey"
             }
@@ -3825,6 +4876,9 @@
         "fields": [
           {
             "name": "userAccount",
+            "docs": [
+              "The user that this market maker is associated with"
+            ],
             "type": "publicKey"
           },
           {
@@ -3833,6 +4887,11 @@
           },
           {
             "name": "withdrawTs",
+            "docs": [
+              "This is used for the market maker 24 hour withdrawl window - if this is 0, then",
+              "there's no withdrawal currently registered. If it's not 0, it's the timestamp at which",
+              "a withdrawal was started"
+            ],
             "type": "u64"
           },
           {
@@ -3857,31 +4916,61 @@
         "fields": [
           {
             "name": "optifiMarketId",
+            "docs": [
+              "id of the optifi market, we may have markets with id from 1 ~ 50"
+            ],
             "type": "u16"
           },
           {
             "name": "serumMarket",
+            "docs": [
+              "the serum orderbook market which is used to swap instrument spl token and quote token"
+            ],
             "type": "publicKey"
           },
           {
             "name": "instrument",
+            "docs": [
+              "the instrument which is listed on this market"
+            ],
             "type": "publicKey"
           },
           {
             "name": "instrumentLongSplToken",
+            "docs": [
+              "instrumnet long spl token which would be sent to instrument buyers"
+            ],
             "type": "publicKey"
           },
           {
             "name": "instrumentShortSplToken",
+            "docs": [
+              "instrumnet short spl token which would be minted to instrument seller"
+            ],
             "type": "publicKey"
           },
           {
             "name": "isStopped",
+            "docs": [
+              "whether the optitfi market is stopped, which may be updated when the listing instruments is expired"
+            ],
             "type": "bool"
           },
           {
             "name": "bump",
+            "docs": [
+              "bump seed which is used to generate this optifi market address"
+            ],
             "type": "u8"
+          },
+          {
+            "name": "settlePrice",
+            "docs": [
+              "settle price in expired (in f_to_u_repr)"
+            ],
+            "type": {
+              "option": "u64"
+            }
           }
         ]
       }
@@ -3893,34 +4982,56 @@
         "fields": [
           {
             "name": "optifiExchange",
+            "docs": [
+              "optifi exchange which the user account belongs to"
+            ],
             "type": "publicKey"
           },
           {
             "name": "owner",
+            "docs": [
+              "The owner of this account."
+            ],
             "type": "publicKey"
           },
           {
             "name": "id",
+            "docs": [
+              "user account id"
+            ],
             "type": "u64"
           },
           {
             "name": "userMarginAccountUsdc",
+            "docs": [
+              "The margin account which user deposits usdc token into",
+              "it's a spl token account"
+            ],
             "type": "publicKey"
           },
           {
             "name": "tempPnl",
+            "docs": [
+              "temp PnL record for fund settlment purpose"
+            ],
             "type": {
               "defined": "TempPnL"
             }
           },
           {
             "name": "state",
+            "docs": [
+              "The account's state"
+            ],
             "type": {
               "defined": "AccountState"
             }
           },
           {
             "name": "positions",
+            "docs": [
+              "a list of instrument Pubkey and position"
+            ],
             "type": {
               "vec": {
                 "defined": "UserPosition"
@@ -3937,10 +5048,16 @@
           },
           {
             "name": "bump",
+            "docs": [
+              "the bump seed to get the address of this user account"
+            ],
             "type": "u8"
           },
           {
             "name": "amountToReserve",
+            "docs": [
+              "margin requirement"
+            ],
             "type": {
               "array": [
                 "u64",
@@ -3959,12 +5076,18 @@
           },
           {
             "name": "tradingMarkets",
+            "docs": [
+              "user's trading markets"
+            ],
             "type": {
               "vec": "publicKey"
             }
           },
           {
             "name": "liquidateFlags",
+            "docs": [
+              "flags for liquidation use"
+            ],
             "type": {
               "vec": "bool"
             }
@@ -3975,6 +5098,9 @@
           },
           {
             "name": "ammEquities",
+            "docs": [
+              "user's equity for on each amm"
+            ],
             "type": {
               "array": [
                 {
@@ -3986,18 +5112,30 @@
           },
           {
             "name": "fee",
+            "docs": [
+              "the accumulated fee which user has paid (f_to_u)"
+            ],
             "type": "u64"
           },
           {
             "name": "tradingValue",
+            "docs": [
+              "the accumulated trading volume in USDC (f_to_u)"
+            ],
             "type": "u64"
           },
           {
             "name": "totalDeposit",
+            "docs": [
+              "user's total deposit"
+            ],
             "type": "u64"
           },
           {
             "name": "delegatee",
+            "docs": [
+              "the delegatee of this account."
+            ],
             "type": {
               "option": "publicKey"
             }
@@ -4025,6 +5163,9 @@
     },
     {
       "name": "StressFunctionResult",
+      "docs": [
+        "stress function result"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -4057,6 +5198,9 @@
     },
     {
       "name": "MarginFunctionResult",
+      "docs": [
+        "margin function result"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -4122,30 +5266,51 @@
         "fields": [
           {
             "name": "ammIdx",
+            "docs": [
+              "idx of the amm"
+            ],
             "type": "u8"
           },
           {
             "name": "ammCapacity",
+            "docs": [
+              "amm capacity percentage (25 is actually 25%)"
+            ],
             "type": "u64"
           },
           {
             "name": "bump",
+            "docs": [
+              "bump seed used to derive this amm address"
+            ],
             "type": "u8"
           },
           {
             "name": "asset",
+            "docs": [
+              "underlying asset"
+            ],
             "type": "u8"
           },
           {
             "name": "numInstruments",
+            "docs": [
+              "number of trading instruments"
+            ],
             "type": "u8"
           },
           {
             "name": "duration",
+            "docs": [
+              "Duration type"
+            ],
             "type": "u8"
           },
           {
             "name": "contractSize",
+            "docs": [
+              "the contract size *10^6 (f_to_u_repr)"
+            ],
             "type": "u64"
           }
         ]
@@ -4158,48 +5323,81 @@
         "fields": [
           {
             "name": "uuid",
+            "docs": [
+              "id of the OptiFi Exchange"
+            ],
             "type": "string"
           },
           {
             "name": "version",
+            "docs": [
+              "OptiFi Exchange version"
+            ],
             "type": "u32"
           },
           {
             "name": "exchangeAuthority",
+            "docs": [
+              "the authority address"
+            ],
             "type": "publicKey"
           },
           {
             "name": "usdcMint",
+            "docs": [
+              "the recognized usdc token mint"
+            ],
             "type": "publicKey"
           },
           {
             "name": "btcSpotOracle",
+            "docs": [
+              "trusted oracle account for BTC sopt price"
+            ],
             "type": "publicKey"
           },
           {
             "name": "ethSpotOracle",
+            "docs": [
+              "trusted oracle account for ETH sopt price"
+            ],
             "type": "publicKey"
           },
           {
             "name": "usdcSpotOracle",
+            "docs": [
+              "trusted oracle account for USDC sopt price"
+            ],
             "type": "publicKey"
           },
           {
             "name": "btcIvOracle",
+            "docs": [
+              "trusted oracle account for BTC IV"
+            ],
             "type": "publicKey"
           },
           {
             "name": "ethIvOracle",
+            "docs": [
+              "trusted oracle account for ETH IV"
+            ],
             "type": "publicKey"
           },
           {
             "name": "ogNftMint",
+            "docs": [
+              "pubkey of og nft mint. None means og nft mode is turned off"
+            ],
             "type": {
               "option": "publicKey"
             }
           },
           {
             "name": "userDepositLimit",
+            "docs": [
+              "user deposit limit"
+            ],
             "type": {
               "option": "u64"
             }
@@ -4214,30 +5412,51 @@
         "fields": [
           {
             "name": "asset",
+            "docs": [
+              "underlying asset"
+            ],
             "type": "u8"
           },
           {
             "name": "instrumentType",
+            "docs": [
+              "option or future"
+            ],
             "type": "u8"
           },
           {
             "name": "expiryDate",
+            "docs": [
+              "expiry date of the instrument, unix timestamp"
+            ],
             "type": "u64"
           },
           {
             "name": "duration",
+            "docs": [
+              "Duration type"
+            ],
             "type": "u8"
           },
           {
             "name": "start",
+            "docs": [
+              "Start date, as a unix timestamp"
+            ],
             "type": "u64"
           },
           {
             "name": "expiryType",
+            "docs": [
+              "Is this a perpetual contract? Only valid for futures"
+            ],
             "type": "u8"
           },
           {
             "name": "contractSize",
+            "docs": [
+              "contract size percentage: 1 means actually 0.01"
+            ],
             "type": "u64"
           },
           {
@@ -4270,56 +5489,86 @@
         "fields": [
           {
             "name": "instrument",
+            "docs": [
+              "instrument pubkey"
+            ],
             "type": "publicKey"
           },
           {
             "name": "isStarted",
+            "docs": [
+              "if the orders execution is started"
+            ],
             "type": "bool"
           },
           {
             "name": "askOrdersSize",
+            "docs": [
+              "all ask_orders_size"
+            ],
             "type": {
               "vec": "u64"
             }
           },
           {
             "name": "bidOrdersSize",
+            "docs": [
+              "all orders to execute"
+            ],
             "type": {
               "vec": "u64"
             }
           },
           {
             "name": "askOrdersPrice",
+            "docs": [
+              "all orders to execute"
+            ],
             "type": {
               "vec": "u64"
             }
           },
           {
             "name": "bidOrdersPrice",
+            "docs": [
+              "all orders to execute"
+            ],
             "type": {
               "vec": "u64"
             }
           },
           {
             "name": "askClientOrderIds",
+            "docs": [
+              "ask order ids of last round"
+            ],
             "type": {
               "vec": "u64"
             }
           },
           {
             "name": "bidClientOrderIds",
+            "docs": [
+              "bid order ids of last round"
+            ],
             "type": {
               "vec": "u64"
             }
           },
           {
             "name": "prevAskOrdersPrice",
+            "docs": [
+              "ask order prices of last round"
+            ],
             "type": {
               "vec": "u64"
             }
           },
           {
             "name": "prevBidOrdersPrice",
+            "docs": [
+              "bid order prices of last round"
+            ],
             "type": {
               "vec": "u64"
             }
@@ -4334,22 +5583,37 @@
         "fields": [
           {
             "name": "instruments",
+            "docs": [
+              "the instrument of the positions"
+            ],
             "type": "publicKey"
           },
           {
             "name": "longTokenVault",
+            "docs": [
+              "base token account address"
+            ],
             "type": "publicKey"
           },
           {
             "name": "shortTokenVault",
+            "docs": [
+              "base token account address"
+            ],
             "type": "publicKey"
           },
           {
             "name": "latestPosition",
+            "docs": [
+              "latest position updated by update_amm_positions"
+            ],
             "type": "i64"
           },
           {
             "name": "usdcBalance",
+            "docs": [
+              "the usdc remains in the vault"
+            ],
             "type": "u64"
           }
         ]
@@ -4362,18 +5626,30 @@
         "fields": [
           {
             "name": "requestId",
+            "docs": [
+              "request id"
+            ],
             "type": "u32"
           },
           {
             "name": "userAccountId",
+            "docs": [
+              "id of user account"
+            ],
             "type": "u32"
           },
           {
             "name": "amount",
+            "docs": [
+              "lp token amount to withdraw"
+            ],
             "type": "u64"
           },
           {
             "name": "requestTimestamp",
+            "docs": [
+              "the timestamp when the request is received"
+            ],
             "type": "u64"
           }
         ]
@@ -4381,6 +5657,9 @@
     },
     {
       "name": "OracleData",
+      "docs": [
+        "only keep the key data for a created Instrument"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -4392,12 +5671,18 @@
           },
           {
             "name": "spotOracle",
+            "docs": [
+              "trusted oracle account for sopt price"
+            ],
             "type": {
               "option": "publicKey"
             }
           },
           {
             "name": "ivOracle",
+            "docs": [
+              "trusted oracle account for iv"
+            ],
             "type": {
               "option": "publicKey"
             }
@@ -4407,17 +5692,26 @@
     },
     {
       "name": "InstrumentCommon",
+      "docs": [
+        "keep the common data for an instrument group"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "asset",
+            "docs": [
+              "underlying asset"
+            ],
             "type": {
               "defined": "Asset"
             }
           },
           {
             "name": "expiryDate",
+            "docs": [
+              "expiry date of the instrument, unix timestamp"
+            ],
             "type": "u64"
           },
           {
@@ -4431,15 +5725,24 @@
     },
     {
       "name": "InstrumentUnique",
+      "docs": [
+        "keep the unique data for an instrument"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "strike",
+            "docs": [
+              "strike price of the instrument"
+            ],
             "type": "u32"
           },
           {
             "name": "instrumentPubkeys",
+            "docs": [
+              "instrument pubkey (0: put 1: call)"
+            ],
             "type": {
               "array": [
                 "publicKey",
@@ -4452,19 +5755,31 @@
     },
     {
       "name": "OptifiMarketKeyData",
+      "docs": [
+        "only keep the key data for a created OptiFi Market"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "optifiMarketPubkey",
+            "docs": [
+              "pubkey of created optifi market"
+            ],
             "type": "publicKey"
           },
           {
             "name": "expiryDate",
+            "docs": [
+              "expiry date of the instrument which is listed on this market"
+            ],
             "type": "u64"
           },
           {
             "name": "isStopped",
+            "docs": [
+              "whether the optitfi market is stopped, which may be updated when the listing instruments is expired"
+            ],
             "type": "bool"
           }
         ]
@@ -4719,6 +6034,11 @@
     },
     {
       "name": "SpotInputOption",
+      "docs": [
+        "For constructing the spot input for fn d1() and fn d2()",
+        "It provids two options: one for single spot, one for array of spot",
+        ""
+      ],
       "type": {
         "kind": "enum",
         "variants": [
@@ -4757,6 +6077,21 @@
     },
     {
       "name": "AmmState",
+      "docs": [
+        "1. When AMM state is Sync. a syncing cranker finds instrument with false flag to sync positions.",
+        "If all flag are true, AMM state will change to Calculate, and flags will be reset to all false.",
+        "2. When AMM state is Calculate, a calculating crankers instrument finds instrument with false to calc",
+        "and save the proposal, and set this instrument's flag to true.",
+        "If all flags are true, AMM state will change to Execute, and flags will be reset to all false.",
+        "3. When AMM state is Execute, the first executing cranker find those instuments with false flags to",
+        "execute the orders in proposal.",
+        "In a propsal, if the flag is_started is false, so the cranker, as the first cranker will need",
+        "to cancel the previous orders of this instrumnet, and then submit some orders in orders_to_execute of the proposal.",
+        "If the length of orders_to_execute is 0, which means the proposal is finished. so the cranker will",
+        "set instrument's flag in AMM as true.",
+        "If all flags in AMM are true, the executing cranker will change AMM state into Sync and",
+        "reset all flags in AMM to false, which means next round of AMM update can be started."
+      ],
       "type": {
         "kind": "enum",
         "variants": [
@@ -4842,6 +6177,9 @@
     },
     {
       "name": "AccountState",
+      "docs": [
+        "Account state."
+      ],
       "type": {
         "kind": "enum",
         "variants": [
@@ -4859,6 +6197,9 @@
     },
     {
       "name": "OracleDataType",
+      "docs": [
+        "Oracle data type"
+      ],
       "type": {
         "kind": "enum",
         "variants": [
@@ -5170,6 +6511,6 @@
     }
   ],
   "metadata": {
-    "address": "DEvUATdStau6TRpuZTjjNpw89UkTGSFxnj2mJyNbdord"
+    "address": "2GaTQRMXs8QsDuHsxb1iGzT5SR8PtdYwqPUDrPJmuYat"
   }
 }

@@ -12,7 +12,7 @@ import {
     TransactionResultType
 } from "../utils/transactions";
 import { findExchangeAccount } from "../utils/accounts";
-import { COIN_LOT_SIZE, PC_DUST_THRESHOLD, PC_LOT_SIZE, SERUM_DEX_PROGRAM_ID, USDC_TOKEN_MINT } from "../constants";
+import { COIN_LOT_SIZE, OPUSDC_TOKEN_MINT, PC_DUST_THRESHOLD, PC_LOT_SIZE, SERUM_DEX_PROGRAM_ID, } from "../constants";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { findOptifiMarketMintAuthPDA, findSerumAuthorityPDA, findSerumPruneAuthorityPDA } from "../utils/pda";
 import { deriveVaultNonce } from "../utils/market";
@@ -156,7 +156,7 @@ export default function initializeSerumMarket(context: Context, decimal: number)
         let marketAccount = anchor.web3.Keypair.generate();
         let coinMintAccount = anchor.web3.Keypair.generate();
         let pcVaultAccount = anchor.web3.Keypair.generate();
-        let usdcMint = new PublicKey(USDC_TOKEN_MINT[context.cluster]);
+        let usdcMint = new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]);
         let coinVaultAccount = anchor.web3.Keypair.generate();
         let bidsAccount = anchor.web3.Keypair.generate();
         let asksAccount = anchor.web3.Keypair.generate();

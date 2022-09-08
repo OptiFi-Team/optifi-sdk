@@ -28,6 +28,8 @@ export const AMM_LIQUIDITY_AUTH_PREFIX: string = "amm_liquidity_auth";
 export const MARKET_MAKER_PREFIX: string = "market_maker";
 export const LIQUIDATION_STATE_PREFIX: string = "liquidation_state";
 export const PREFIX_MARGIN_STRESS: string = "margin_stress";
+export const OPTIFI_USDC_AUTHORITY_PREFIX: string = "authority";
+export const OPTIFI_USDC_MINT_PREFIX: string = "optifi_usdc";
 
 // Size of the strike ladder
 export const STRIKE_LADDER_SIZE: number = 5;
@@ -112,8 +114,21 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
     [SolanaCluster.Testnet]: "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN"
 }
 
+export const OPTIFI_USDC_PROGRAM_ID: EndpointConstant = {
+    [SolanaCluster.Mainnet]: "oPUDVzLhuwtLgZQoTUz912hikvgpTGGg3vNB7NGXbou",
+    [SolanaCluster.Devnet]: "oPUDVzLhuwtLgZQoTUz912hikvgpTGGg3vNB7NGXbou",
+    [SolanaCluster.Testnet]: "oPUDVzLhuwtLgZQoTUz912hikvgpTGGg3vNB7NGXbou"
+}
+
+
+export const OPUSDC_TOKEN_MINT: EndpointConstant = {
+    [SolanaCluster.Mainnet]: "9CqvpJVgqqitKyp1HRvCSApgCcuBkJ25n68fVcWwfKn7",
+    [SolanaCluster.Devnet]: "9CqvpJVgqqitKyp1HRvCSApgCcuBkJ25n68fVcWwfKn7",
+    [SolanaCluster.Testnet]: "9CqvpJVgqqitKyp1HRvCSApgCcuBkJ25n68fVcWwfKn7"
+}
+
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    [SolanaCluster.Devnet]: "220527",
+    [SolanaCluster.Devnet]: "220908",
     [SolanaCluster.Testnet]: "dmeWlh",
     [SolanaCluster.Mainnet]: "210001",
 }

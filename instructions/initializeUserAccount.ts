@@ -5,7 +5,7 @@ import * as anchor from "@project-serum/anchor";
 import { AccountMeta, PublicKey, SystemProgram, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, findLiquidationState, findUserAccount, userAccountExists } from "../utils/accounts";
 import { AccountLayout, createAssociatedTokenAccountInstruction, createInitializeAccountInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { USDC_TOKEN_MINT } from "../constants";
+import { OPUSDC_TOKEN_MINT } from "../constants";
 import { findAssociatedTokenAccount } from "../utils/token";
 import { findUserFeeAccount } from "./user/initializeFeeAccount";
 
@@ -38,7 +38,7 @@ export default function initializeUserAccount(context: Context): Promise<Instruc
                     // Get the minimum lamports for rent exemption
                     context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then(async (min) => {
 
-                        let usdcMint = new PublicKey(USDC_TOKEN_MINT[context.cluster])
+                        let usdcMint = new PublicKey(OPUSDC_TOKEN_MINT[context.cluster])
                         let inxs = [
                             anchor.web3.SystemProgram.createAccount({
                                 fromPubkey: context.provider.wallet.publicKey,

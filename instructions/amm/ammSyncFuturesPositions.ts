@@ -1,14 +1,15 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
-import { Connection, PublicKey, TransactionSignature } from "@solana/web3.js";
-import { findExchangeAccount, } from "../../utils/accounts";
+import { Connection, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { findExchangeAccount, findOpUsdcAuth, } from "../../utils/accounts";
 import { AmmAccount, } from "../../types/optifi-exchange-types";
-import { MANGO_GROUP_ID, MANGO_PROGRAM_ID, MANGO_USDC_CONFIG, } from "../../constants";
+import { MANGO_GROUP_ID, MANGO_PROGRAM_ID, MANGO_USDC_CONFIG, OPUSDC_TOKEN_MINT, USDC_TOKEN_MINT, } from "../../constants";
 import { increaseComputeUnitsIx, } from "../../utils/transactions";
 import { getAmmLiquidityAuthPDA, getMangoAccountPDA } from "../../utils/pda";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { MangoClient, MangoAccount, MangoAccountLayout, ZERO_I80F48 } from "@blockworks-foundation/mango-client";
 import { getMangoPerpMarketInfoByAsset } from "../../scripts/amm/utils";
+import { findAssociatedTokenAccount } from "../../utils/token";
 
 
 /**
@@ -112,6 +113,13 @@ export default function ammSyncFuturesPositions(context: Context,
                                 console.log("mangoSettlePnl: ", mangoSettlePnl)
                             }
 
+                            let optifiUsdcMint = new PublicKey(OPUSDC_TOKEN_MINT[context.cluster])
+                            let [authority] = await findOpUsdcAuth(context)
+                            let usdcTokenMint = new PublicKey(USDC_TOKEN_MINT[context.cluster])
+                            let [usdcVault] = await findAssociatedTokenAccount(context, usdcTokenMint, authority)
+                            let [ownerUsdcAccount] = await findAssociatedTokenAccount(context, usdcTokenMint)
+                            let [ownerOptifiUsdcAccount] = await findAssociatedTokenAccount(context, optifiUsdcMint)
+
                             context.program.rpc.ammSyncFuturePositions(
                                 perpMarketIndex,
                                 {
@@ -127,13 +135,24 @@ export default function ammSyncFuturesPositions(context: Context,
                                         rootBank: usdcRootBank.publicKey,
                                         nodeBank: filteredNodeBanks[0]!.publicKey,
                                         vault: vault,
-                                        ownerTokenAccount: amm.quoteTokenVault,
+                                        // ownerTokenAccount: amm.quoteTokenVault,
                                         payer: context.provider.wallet.publicKey,
                                         tokenProgram: TOKEN_PROGRAM_ID,
                                         perpMarket: perpMarket,
                                         eventQueue: eventQueue,
                                         bids,
-                                        asks
+                                        asks,
+
+                                        authority,
+                                        optifiUsdcMint,
+                                        usdcMint: usdcTokenMint,
+                                        usdcVault: usdcVault,
+                                        ammUsdcTokenAccount: ownerUsdcAccount,
+                                        ammQuoteTokenVault: ownerOptifiUsdcAccount,
+                                        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                                        systemProgram: SystemProgram.programId,
+                                        rent: SYSVAR_RENT_PUBKEY,
+                                        optifiUsdcProgram: context.optifiUSDCProgram.programId
                                     },
 
                                     remainingAccounts: mangoAccountInfo.spotOpenOrders.map((pubkey) => ({

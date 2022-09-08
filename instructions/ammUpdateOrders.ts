@@ -88,15 +88,26 @@ export function ammUpdateOrders(context: Context,
                                                         inxs.push(ammUpdateOrdersInx)
 
                                                         // add consume event inx
-                                                        let consumeEventInx = DexInstructions.consumeEvents({
-                                                            market: serumMarket.publicKey,
-                                                            openOrdersAccounts: [ammOpenOrders],
-                                                            eventQueue: serumMarket.decoded.eventQueue,
-                                                            pcFee: amm.quoteTokenVault,
-                                                            coinFee: ammLongTokenVault,
-                                                            limit: 65535,
-                                                            programId: serumId,
-                                                        });
+                                                        // let consumeEventInx = DexInstructions.consumeEvents({
+                                                        //     market: serumMarket.publicKey,
+                                                        //     openOrdersAccounts: [ammOpenOrders],
+                                                        //     eventQueue: serumMarket.decoded.eventQueue,
+                                                        //     pcFee: amm.quoteTokenVault,
+                                                        //     coinFee: ammLongTokenVault,
+                                                        //     limit: 65535,
+                                                        //     programId: serumId,
+                                                        // });
+
+                                                        let consumeEventInx = await context.program.methods.consumeEventQueue().accounts(
+                                                            {
+                                                                optifiExchange: exchangeAddress,
+                                                                serumMarket: optifiMarket.serumMarket,
+                                                                eventQueue: serumMarket.decoded.eventQueue,
+                                                                userSerumOpenOrders: ammOpenOrders,
+                                                                serumDexProgramId: serumId,
+                                                                consumeEventsAuthority: serumMarketAuthority
+                                                            }
+                                                        ).instruction()
 
                                                         inxs.push(consumeEventInx);
 
