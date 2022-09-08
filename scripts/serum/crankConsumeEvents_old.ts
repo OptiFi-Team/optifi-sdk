@@ -3,7 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 import { getSerumMarket, findOpenOrdersForSerumMarket } from "../../utils/serum";
 import { getAllUsersOnExchange, getDexOpenOrders } from "../../utils/accounts";
 import Context from "../../types/context";
-import { consumeEvents, consumeEventsQPermissioned, consumeEventsV2 } from "../../instructions/serum/consumeEvents";
+import { consumeEvents, consumeEventsV2 } from "../../instructions/serum/consumeEvents";
 import { sleep } from "../../utils/generic";
 import { findOptifiMarkets } from "../../utils/market";
 
@@ -13,7 +13,7 @@ initializeContext().then((context) => {
     findOptifiMarkets(context).then(async (res) => {
         console.log(`Found ${res.length} optifi markets - `);
         for (let market of res) {
-            consumeEventsLoop(context, market[1])
+            consumeEventsLoop2(context, market[1])
         }
     })
 
@@ -23,7 +23,7 @@ initializeContext().then((context) => {
     })
 })
 
-const consumeEventsLoop = async (context: Context, market: PublicKey) => {
+const consumeEventsLoop2 = async (context: Context, market: PublicKey) => {
 
     let optifiMarket = await context.program.account.optifiMarket.fetch(market) // optifi market
     let serumMarket = optifiMarket.serumMarket // serum market address of the optifi market
@@ -33,7 +33,7 @@ const consumeEventsLoop = async (context: Context, market: PublicKey) => {
 
     let dateTime = new Date()
 
-    console.log(dateTime, market.toString(), " event.length: ", event.length, event)
+    console.log(dateTime, market.toString(), " event.length: ", event.length,)
 
     while (event.length > 0) {
 
@@ -47,7 +47,7 @@ const consumeEventsLoop = async (context: Context, market: PublicKey) => {
         })
 
 
-        let res = await consumeEventsQPermissioned(
+        let res = await consumeEventsV2(
             context,
             serumMarket,
             // [event[0].openOrders],
@@ -62,6 +62,48 @@ const consumeEventsLoop = async (context: Context, market: PublicKey) => {
 
     }
     await sleep(60 * 1000);
-    consumeEventsLoop(context, market);
+    consumeEventsLoop2(context, market);
 }
 
+
+const consumeEventsLoop = async (context: Context, market: PublicKey) => {
+
+    let optifiMarket = await context.program.account.optifiMarket.fetch(market) // optifi market
+    let serumMarket = optifiMarket.serumMarket // serum market address of the optifi market
+    let serumMarketInfo = await getSerumMarket(context, serumMarket)
+
+    let openOrdersAccountsInfo = await findOpenOrdersForSerumMarket(context, serumMarket)
+    let openOrdersAccounts = openOrdersAccountsInfo.map(e => e.address)
+
+    console.log(`found ${openOrdersAccounts.length} open orders accounts`)
+
+    const batchSize = 10;
+    for (let i = 0; i < openOrdersAccounts.length; i += batchSize) {
+        const openOrdersAccountsToCrank = openOrdersAccounts.slice(i, i + batchSize);
+        let res = await consumeEvents(
+            context,
+            serumMarket,
+            openOrdersAccountsToCrank,
+            serumMarketInfo.decoded.eventQueue,
+            65535
+        )
+        console.log(res)
+    }
+
+    await sleep(5000);
+    openOrdersAccounts = openOrdersAccounts.reverse()
+    for (let i = 0; i < openOrdersAccounts.length; i += batchSize) {
+        const openOrdersAccountsToCrank = openOrdersAccounts.slice(i, i + batchSize);
+        let res = await consumeEvents(
+            context,
+            serumMarket,
+            openOrdersAccountsToCrank,
+            serumMarketInfo.decoded.eventQueue,
+            65535
+        )
+        console.log(res)
+    }
+
+    await sleep(5000);
+    consumeEventsLoop(context, market);
+}
