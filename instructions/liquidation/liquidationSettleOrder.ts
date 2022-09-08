@@ -82,7 +82,6 @@ export default function liquidationSettleOrder(context: Context,
                                                                             optifiExchange: exchangeAddress,
                                                                             marginStressAccount: marginStressAddress,
                                                                             userAccount: userAccountAddress,
-                                                                            clock: SYSVAR_CLOCK_PUBKEY
                                                                         },
                                                                         instructions: ixs
                                                                     }

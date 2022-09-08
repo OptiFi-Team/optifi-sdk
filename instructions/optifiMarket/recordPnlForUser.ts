@@ -79,7 +79,6 @@ export default function recordPnl(context: Context,
                                                                 optifiExchange: exchangeAddress,
                                                                 marginStressAccount: marginStressAddress,
                                                                 userAccount: userToSettle,
-                                                                clock: SYSVAR_CLOCK_PUBKEY
                                                             },
                                                             instructions: ixs
                                                         }

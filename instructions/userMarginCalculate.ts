@@ -69,7 +69,6 @@ export function marginCalculate(context: Context, userAccount: PublicKey
                     optifiExchange: exchangeAddress,
                     marginStressAccount: marginStressAddress,
                     userAccount,
-                    clock: SYSVAR_CLOCK_PUBKEY
                 },
                 instructions: ixs
             });

@@ -58,6 +58,7 @@ export default function marketMakerCancelOrder(
                                                                                             bids: serumMarket.bidsAddress,
                                                                                             asks: serumMarket.asksAddress,
                                                                                             serumDexProgramId: serumProgramId,
+                                                                                            consumeEventsAuthority: serumMarketAuthority
                                                                                         }
                                                                                     });
 

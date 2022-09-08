@@ -13,6 +13,7 @@ import { DexInstructions } from '@project-serum/serum';
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import marginStress from "../marginStress";
+import { findSerumAuthorityPDA } from "../../utils/pda";
 
 // =========================================================================================
 //  the cancelOrder in Optifi program is deprecated, use cancelOrderByClientOrderId instead
@@ -81,6 +82,7 @@ export default function cancelOrderByClientOrderId(
         // })
         // ixs.push(consumeEventInx)
 
+        let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
 
         let settleOrderIx = context.program.instruction.settleOrderFunds({
           accounts: {
@@ -91,9 +93,9 @@ export default function cancelOrderByClientOrderId(
             userSerumOpenOrders: orderContext.openOrders,
             coinVault: orderContext.coinVault,
             pcVault: orderContext.pcVault,
-            asks: orderContext.asks,
-            bids: orderContext.bids,
-            requestQueue: orderContext.requestQueue,
+            // asks: orderContext.asks,
+            // bids: orderContext.bids,
+            // requestQueue: orderContext.requestQueue,
             eventQueue: orderContext.eventQueue,
             instrumentLongSplTokenMint: orderContext.coinMint,
             instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
@@ -103,7 +105,8 @@ export default function cancelOrderByClientOrderId(
             vaultSigner: orderContext.vaultSigner,
             tokenProgram: TOKEN_PROGRAM_ID,
             serumDexProgramId: orderContext.serumDexProgramId,
-            feeAccount: orderContext.feeAccount
+            feeAccount: orderContext.feeAccount,
+            consumeEventsAuthority: serumMarketAuthority
           },
         });
 
@@ -116,7 +119,6 @@ export default function cancelOrderByClientOrderId(
             optifiExchange: orderContext.optifiExchange,
             marginStressAccount: marginStressAddress,
             userAccount: orderContext.userAccount,
-            clock: SYSVAR_CLOCK_PUBKEY
           },
           instructions: ixs
         });

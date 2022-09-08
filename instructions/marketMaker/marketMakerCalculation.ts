@@ -8,7 +8,7 @@ import { formatExplorerAddress, SolanaEntityType } from "../../utils/debug";
 import { getSerumMarket } from "../../utils/serum";
 import { Chain, OptifiMarket, OrderSide } from "../../types/optifi-exchange-types";
 import { findMarginStressWithAsset } from "../../utils/margin";
-import { findOptifiUSDCPoolAuthPDA } from "../../utils/pda";
+import { findOptifiUSDCPoolAuthPDA, findSerumAuthorityPDA } from "../../utils/pda";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function marketMakerCalculation(
@@ -35,42 +35,40 @@ export default function marketMakerCalculation(
                                                             .fetch(marketRes.instrument).then(chainRes => {
                                                                 // @ts-ignore
                                                                 let chain = chainRes as Chain;
-                                                                findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(([marginStressAddress, _bump]) => {
-                                                                    findOptifiUSDCPoolAuthPDA(context).then(([centralUsdcPoolAuth,]) => {
-                                                                        let marketMakerCalculationTx = context.program.rpc.mmCalculation(
-                                                                            {
-                                                                                accounts: {
-                                                                                    optifiExchange: exchangeAddress,
-                                                                                    marginStressAccount: marginStressAddress,
-                                                                                    userAccount: userAccountAddress,
-                                                                                    userMarginAccount: userAcctRaw.userMarginAccountUsdc,
-                                                                                    marketMakerAccount: marketMakerAccount,
-                                                                                    optifiMarket: marketAddress,
-                                                                                    userInstrumentLongTokenVault: userLongTokenVault,
-                                                                                    serumMarket: optifiMarket.serumMarket,
-                                                                                    openOrders: userOpenOrdersAccount,
-                                                                                    eventQueue: serumMarket.decoded.eventQueue,
-                                                                                    bids: serumMarket.bidsAddress,
-                                                                                    asks: serumMarket.asksAddress,
-                                                                                    serumDexProgramId: serumProgramId,
-                                                                                    // usdcFeePool: exchangeInfo.usdcFeePool,
-                                                                                    // centralUsdcPoolAuth: centralUsdcPoolAuth,
-                                                                                },
-                                                                                preInstructions: [increaseComputeUnitsIx]
-                                                                            });
-                                                                        marketMakerCalculationTx.then((res) => {
-                                                                            console.log("Successfully executed market maker calculation",
-                                                                                formatExplorerAddress(context, res as string,
-                                                                                    SolanaEntityType.Transaction));
-                                                                            resolve({
-                                                                                successful: true,
-                                                                                data: res as TransactionSignature
-                                                                            })
-                                                                        }).catch((err) => {
-                                                                            console.error(err);
-                                                                            reject(err);
+                                                                findMarginStressWithAsset(context, exchangeAddress, chain.asset).then(async ([marginStressAddress, _bump]) => {
+                                                                    let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
+                                                                    let marketMakerCalculationTx = context.program.rpc.mmCalculation(
+                                                                        {
+                                                                            accounts: {
+                                                                                optifiExchange: exchangeAddress,
+                                                                                marginStressAccount: marginStressAddress,
+                                                                                userAccount: userAccountAddress,
+                                                                                userMarginAccount: userAcctRaw.userMarginAccountUsdc,
+                                                                                marketMakerAccount: marketMakerAccount,
+                                                                                optifiMarket: marketAddress,
+                                                                                userInstrumentLongTokenVault: userLongTokenVault,
+                                                                                serumMarket: optifiMarket.serumMarket,
+                                                                                openOrders: userOpenOrdersAccount,
+                                                                                eventQueue: serumMarket.decoded.eventQueue,
+                                                                                bids: serumMarket.bidsAddress,
+                                                                                asks: serumMarket.asksAddress,
+                                                                                serumDexProgramId: serumProgramId,
+                                                                                consumeEventsAuthority: serumMarketAuthority
+                                                                            },
+                                                                            preInstructions: [increaseComputeUnitsIx]
+                                                                        });
+                                                                    marketMakerCalculationTx.then((res) => {
+                                                                        console.log("Successfully executed market maker calculation",
+                                                                            formatExplorerAddress(context, res as string,
+                                                                                SolanaEntityType.Transaction));
+                                                                        resolve({
+                                                                            successful: true,
+                                                                            data: res as TransactionSignature
                                                                         })
-                                                                    }).catch((err) => reject(err))
+                                                                    }).catch((err) => {
+                                                                        console.error(err);
+                                                                        reject(err);
+                                                                    })
                                                                 }).catch((err) => reject(err))
                                                             }).catch((err) => reject(err))
                                                     }).catch((err) => reject(err))

@@ -65,6 +65,7 @@ export default function marketMakerPostOnlyOrder(
                                                                                             bids: serumMarket.bidsAddress,
                                                                                             asks: serumMarket.asksAddress,
                                                                                             serumDexProgramId: serumProgramId,
+                                                                                            consumeEventsAuthority: serumMarketAuthority
                                                                                         }
                                                                                     });
 
@@ -109,6 +110,7 @@ export default function marketMakerPostOnlyOrder(
                                                                                             serumDexProgramId: serumProgramId,
                                                                                             tokenProgram: TOKEN_PROGRAM_ID,
                                                                                             rent: SYSVAR_RENT_PUBKEY,
+                                                                                            consumeEventsAuthority: serumMarketAuthority
                                                                                         },
                                                                                         instructions
                                                                                     });
