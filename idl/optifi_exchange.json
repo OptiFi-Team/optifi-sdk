@@ -1335,14 +1335,6 @@
           "docs": [
             "user's optifi account"
           ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Clock to get the timestamp"
-          ]
         }
       ],
       "args": []
