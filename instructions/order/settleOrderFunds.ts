@@ -67,7 +67,6 @@ export default function settleOrderFunds(context: Context,
                     optifiExchange: orderContext.optifiExchange,
                     marginStressAccount: marginStressAddress,
                     userAccount: orderContext.userAccount,
-                    clock: SYSVAR_CLOCK_PUBKEY
                 },
                 instructions: ixs
             });
