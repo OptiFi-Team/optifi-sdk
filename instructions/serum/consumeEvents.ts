@@ -6,6 +6,7 @@ import InstructionResult from "../../types/instructionResult";
 import { SERUM_DEX_PROGRAM_ID } from "../../constants";
 import { findExchangeAccount } from "../../utils/accounts";
 import { findSerumAuthorityPDA } from "../../utils/pda";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 
 // consume Serum Events queue permissioned
@@ -26,6 +27,7 @@ export async function consumeEventsQPermissioned(
             let [consumeEventsAuthority,] = await findSerumAuthorityPDA(context)
 
             const tx1 = new Transaction();
+            tx1.add(increaseComputeUnitsIx)
             openOrdersAccounts.forEach(async e => {
                 tx1.add(
                     await context.program.methods.consumeEventQueue().accounts({
