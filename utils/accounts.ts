@@ -11,7 +11,8 @@ import {
     USER_TOKEN_ACCOUNT_PDA,
     OPTIFI_USDC_AUTHORITY_PREFIX,
     OPTIFI_USDC_PROGRAM_ID,
-    OPTIFI_USDC_MINT_PREFIX
+    OPTIFI_USDC_MINT_PREFIX,
+    USDC_TOKEN_MINT
 } from "../constants";
 import { Chain, Exchange, UserAccount } from "../types/optifi-exchange-types";
 import { Asset as OptifiAsset } from "../types/optifi-exchange-types";
@@ -117,6 +118,10 @@ export function getDexOpenOrders(context: Context,
 
 
 export function findUserUSDCAddress(context: Context): Promise<[PublicKey, number]> {
+    return findAssociatedTokenAccount(context, new PublicKey(USDC_TOKEN_MINT[context.cluster]))
+}
+
+export function findUserOPUSDCAddress(context: Context): Promise<[PublicKey, number]> {
     return findAssociatedTokenAccount(context, new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]))
 }
 
