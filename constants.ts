@@ -128,7 +128,7 @@ export const OPUSDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    [SolanaCluster.Devnet]: "111113",
+    [SolanaCluster.Devnet]: "111114",
     [SolanaCluster.Testnet]: "dmeWlh",
     [SolanaCluster.Mainnet]: "210001",
 }

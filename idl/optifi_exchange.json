@@ -2976,6 +2976,27 @@
       ]
     },
     {
+      "name": "addAuthority",
+      "accounts": [
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "initLiquidation",
       "accounts": [
         {
