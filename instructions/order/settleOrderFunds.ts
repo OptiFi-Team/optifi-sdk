@@ -5,7 +5,7 @@ import { UserAccount } from "../../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
 import { findMarginStressWithAsset } from "../../utils/margin";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 import { formPlaceOrderContext } from "../../utils/orders";
 import { DexInstructions } from "@project-serum/serum";
 import { findSerumAuthorityPDA } from "../../utils/pda";

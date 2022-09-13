@@ -11,7 +11,7 @@ import { findAssociatedTokenAccount } from "../utils/token";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { getSerumMarket } from "../utils/serum";
-import marginStress from "./marginStress";
+import marginStress from "./marginStress/marginStress";
 import { DexInstructions } from '@project-serum/serum';
 
 export function ammUpdateOrders(context: Context,

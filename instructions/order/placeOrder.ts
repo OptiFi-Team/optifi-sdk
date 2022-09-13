@@ -4,7 +4,7 @@ import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../../types/instructionResult";
 import { calculatePcQtyAndFee, formPlaceOrderContext } from "../../utils/orders";
 import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 import { USDC_DECIMALS } from "../../constants";
 import { numberAssetToDecimal } from "../../utils/generic";
 import OrderType, { orderTypeToNumber } from "../../types/OrderType";

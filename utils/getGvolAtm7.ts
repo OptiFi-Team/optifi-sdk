@@ -1,7 +1,22 @@
 import fetch from 'node-fetch';
+import Asset from '../types/asset';
 
-async function getGvolAtm7(asset) {
+export async function getGvolAtm7(asset: Asset) {
     try {
+        let symbol: string;
+
+        switch (asset) {
+            case Asset.Bitcoin:
+                symbol = 'BTC';
+                break
+            case Asset.Ethereum:
+                symbol = 'ETH';
+                break
+            case Asset.Solana:
+                symbol = 'SOL';
+                break
+        }
+
         let now = new Date();
         let from = new Date(now.getTime() - 60 * 60 * 1000);
         const response = await fetch('https://app.pinkswantrading.com/graphql', {
@@ -9,7 +24,8 @@ async function getGvolAtm7(asset) {
             body: JSON.stringify({
                 "query": "query ConstantMaturityAtm1Min($symbol: BTCOrETHEnumType, $dateStart: String, $dateEnd: String, $interval: String){\n ConstantMaturityAtm1Min(symbol:$symbol, dateStart:$dateStart, dateEnd: $dateEnd, interval: $interval) {\n date\n atm7}\n}\n",
                 "variables": {
-                    "symbol": asset,
+                    // @ts-ignore
+                    "symbol": symbol,
                     "dateStart": formatDate(from),
                     "dateEnd": formatDate(now),
                     "interval": "1 minute"

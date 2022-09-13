@@ -16,6 +16,8 @@ initializeContext().then(async (context) => {
 
     console.log(`found ${openOrdersAccounts.length} open orders accounts`)
 
+    console.log("serumMarketInfo.decoded.eventQueue", serumMarketInfo.decoded.eventQueue.toString())
+
     const batchSize = 10;
     for (let i = 0; i < openOrdersAccounts.length; i += batchSize) {
         const openOrdersAccountsToCrank = openOrdersAccounts.slice(i, i + batchSize);

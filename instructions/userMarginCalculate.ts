@@ -6,7 +6,7 @@ import { findMarginStressWithAsset } from "../utils/margin";
 import { findExchangeAccount, findUserAccount } from "../utils/accounts";
 import { assetToOptifiAsset, optifiAssetToNumber } from "../utils/generic";
 import { SUPPORTED_ASSETS } from "../constants";
-import marginStress from "./marginStress";
+import marginStress from "./marginStress/marginStress";
 import { increaseComputeUnitsIx } from "../utils/transactions";
 
 

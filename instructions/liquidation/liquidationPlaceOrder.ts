@@ -11,7 +11,7 @@ import { deriveVaultNonce } from "../../utils/market";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { findSerumAuthorityPDA } from "../../utils/pda";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 
 export default function liquidationPlaceOrder(context: Context,
     userAccountAddress: PublicKey,

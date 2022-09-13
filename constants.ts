@@ -6,8 +6,8 @@ import { Duration } from "./types/optifi-exchange-types";
 
 // solana cluster with default rpc endpoint
 export enum SolanaCluster {
-    Mainnet = "https://optifil-main-c161.mainnet.rpcpool.com",
-    Devnet = "https://api-switchboard.devnet.rpcpool.com",
+    Mainnet = "https://optifil-main-c161.mainnet.rpcpool.com/9de64c66-39f3-485f-bb23-b24f24610368",
+    Devnet = "https://optifil-develope-610c.devnet.rpcpool.com/2fc9e4ee-7e7b-47c5-a9af-a3a4dc0f79c9",
     Testnet = "https://api.testnet.solana.com"
 }
 
@@ -115,20 +115,20 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_USDC_PROGRAM_ID: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "oPUDVzLhuwtLgZQoTUz912hikvgpTGGg3vNB7NGXbou",
-    [SolanaCluster.Devnet]: "oPUDVzLhuwtLgZQoTUz912hikvgpTGGg3vNB7NGXbou",
-    [SolanaCluster.Testnet]: "oPUDVzLhuwtLgZQoTUz912hikvgpTGGg3vNB7NGXbou"
+    [SolanaCluster.Mainnet]: "4teikyzGWvMBjFG7NSJbRt7UXpNbJvr159k8pz96ajnq",
+    [SolanaCluster.Devnet]: "4teikyzGWvMBjFG7NSJbRt7UXpNbJvr159k8pz96ajnq",
+    [SolanaCluster.Testnet]: "4teikyzGWvMBjFG7NSJbRt7UXpNbJvr159k8pz96ajnq"
 }
 
 
 export const OPUSDC_TOKEN_MINT: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "9CqvpJVgqqitKyp1HRvCSApgCcuBkJ25n68fVcWwfKn7",
-    [SolanaCluster.Devnet]: "9CqvpJVgqqitKyp1HRvCSApgCcuBkJ25n68fVcWwfKn7",
-    [SolanaCluster.Testnet]: "9CqvpJVgqqitKyp1HRvCSApgCcuBkJ25n68fVcWwfKn7"
+    [SolanaCluster.Mainnet]: "2B2RdeQn9UsqhyzNh48Si4ycVppFUfh8ZbmCdMPRUicA",
+    [SolanaCluster.Devnet]: "2B2RdeQn9UsqhyzNh48Si4ycVppFUfh8ZbmCdMPRUicA",
+    [SolanaCluster.Testnet]: "2B2RdeQn9UsqhyzNh48Si4ycVppFUfh8ZbmCdMPRUicA"
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    [SolanaCluster.Devnet]: "220908",
+    [SolanaCluster.Devnet]: "111113",
     [SolanaCluster.Testnet]: "dmeWlh",
     [SolanaCluster.Mainnet]: "210001",
 }

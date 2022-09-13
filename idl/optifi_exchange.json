@@ -101,17 +101,9 @@
           "isSigner": false
         },
         {
-          "name": "assetIvOracleFeed",
-          "isMut": false,
+          "name": "marginStressAccount",
+          "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Clock to get the timestamp"
-          ]
         }
       ],
       "args": [
@@ -164,17 +156,9 @@
           "isSigner": false
         },
         {
-          "name": "assetIvOracleFeed",
-          "isMut": false,
+          "name": "marginStressAccount",
+          "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Clock to get the timestamp"
-          ]
         }
       ],
       "args": [
@@ -2966,14 +2950,30 @@
           "name": "usdcFeed",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "ivFeed",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
+    },
+    {
+      "name": "updateIv",
+      "accounts": [
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "iv",
+          "type": "f64"
+        }
+      ]
     },
     {
       "name": "initLiquidation",
@@ -4722,7 +4722,7 @@
             "name": "openOrderFee",
             "type": {
               "vec": {
-                "defined": "Fee"
+                "defined": "FeeLog"
               }
             }
           }
@@ -4864,6 +4864,12 @@
               "vec": {
                 "vec": "i64"
               }
+            }
+          },
+          {
+            "name": "updateAuthority",
+            "type": {
+              "vec": "publicKey"
             }
           }
         ]
@@ -5786,16 +5792,24 @@
       }
     },
     {
-      "name": "Fee",
+      "name": "FeeLog",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "spotPrice",
+            "name": "maxCoinQty",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
             "type": "u64"
           },
           {
             "name": "clientOrderId",
+            "type": "u64"
+          },
+          {
+            "name": "spotPrice",
             "type": "u64"
           }
         ]
@@ -6511,6 +6525,6 @@
     }
   ],
   "metadata": {
-    "address": "2GaTQRMXs8QsDuHsxb1iGzT5SR8PtdYwqPUDrPJmuYat"
+    "address": "G35gJ4KwoHf8azXad3PoNDTpuQqgptbT6VgwWyKrGSsp"
   }
 }

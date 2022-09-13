@@ -7,7 +7,7 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { numberToOptifiAsset } from "../utils/generic";
 import { findMarginStressWithAsset } from "../utils/margin";
-import marginStress from "./marginStress";
+import marginStress from "./marginStress/marginStress";
 
 export default function calculateAmmDelta(context: Context,
     ammAddress: PublicKey): Promise<InstructionResult<TransactionSignature>> {

@@ -19,6 +19,7 @@ import * as anchor from "@project-serum/anchor";
 import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { Duration } from "../types/optifi-exchange-types";
+import { findMarginStressWithAsset } from "../utils/margin";
 
 export interface InstrumentContext {
     asset: Asset,
@@ -32,12 +33,14 @@ export interface InstrumentContext {
 export function initializeChain(context: Context,
     instrumentContext: InstrumentContext): Promise<InstructionResult<PublicKey[]>> {
     return new Promise((resolve, reject) => {
-        findExchangeAccount(context).then(([exchangeAddress, _]) => {
+        findExchangeAccount(context).then(async ([exchangeAddress, _]) => {
             console.log("Found exchange account ", exchangeAddress);
             let foundInstruments: { [idx: number]: [PublicKey, number, string] } = {};
             let instrumentPromises: Promise<any>[] = [];
             let a = assetToOptifiAsset(instrumentContext.asset);
             console.log("Asset optifi is ", a);
+            let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, instrumentContext.asset);
+
             for (let i = 0; i < STRIKE_LADDER_SIZE; i++) {
                 instrumentPromises.push(findInstrument(
                     context,
@@ -82,8 +85,7 @@ export function initializeChain(context: Context,
                                     payer: context.provider.wallet.publicKey,
                                     systemProgram: SystemProgram.programId,
                                     assetSpotPriceOracleFeed: await findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Spot),
-                                    assetIvOracleFeed: await findOracleAccountFromAsset(context, optifiAsset, OracleAccountType.Iv),
-                                    clock: SYSVAR_CLOCK_PUBKEY
+                                    marginStressAccount: marginStressAddress
                                 },
                                 preInstructions: [increaseComputeUnitsIx]
                             }

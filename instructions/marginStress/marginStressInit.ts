@@ -1,10 +1,10 @@
-import Context from "../types/context";
+import Context from "../../types/context";
 import { SystemProgram, SYSVAR_RENT_PUBKEY, TransactionSignature } from "@solana/web3.js";
-import InstructionResult from "../types/instructionResult";
-import Asset from "../types/asset";
-import { findMarginStressWithAsset } from "../utils/margin";
-import { findExchangeAccount } from "../utils/accounts";
-import { assetToOptifiAsset, optifiAssetToNumber } from "../utils/generic";
+import InstructionResult from "../../types/instructionResult";
+import Asset from "../../types/asset";
+import { findMarginStressWithAsset } from "../../utils/margin";
+import { findExchangeAccount } from "../../utils/accounts";
+import { assetToOptifiAsset, optifiAssetToNumber } from "../../utils/generic";
 
 export default function marginStressInit(context: Context,
     asset: Asset

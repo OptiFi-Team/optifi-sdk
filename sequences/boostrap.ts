@@ -13,12 +13,15 @@ import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import { createInstruments } from "./createInstruments";
 import { createNextOptifiMarket, createOptifiMarketWithIdx } from "../instructions/createOptifiMarket";
-import { numberAssetToDecimal, readJsonFile, sleep } from "../utils/generic";
+import { assetToOptifiAsset, numberAssetToDecimal, readJsonFile, sleep } from "../utils/generic";
 import { findOptifiMarkets, findOptifiMarketWithIdx } from "../utils/market";
 import { createMarginStress } from "./createMarginStress";
 import fs from "fs";
 import path from "path";
 import createAMMAccounts from "./createAMMAccounts";
+import updateIv from "../instructions/marginStress/updateIv";
+import updateOracle from "../instructions/authority/authUpdateOracle";
+import Asset from "../types/asset";
 
 export interface BootstrapResult {
     exchange: Exchange,
@@ -247,6 +250,21 @@ export default function boostrap(context: Context, ogNftMint?: PublicKey, deposi
         materials.exchangeAddress = exchangeAddress.toString();
         saveMaterailsForExchange(exchangeAddress, materials);
 
+
+        // Add Sol Oracle
+        let res = await updateOracle(context, assetToOptifiAsset(Asset.Solana));
+        console.log("updateOracle res: ", res)
+
+        // Create MarginStress
+        console.log("Creating MarginStress accounts");
+        await createMarginStress(context);
+        console.log("Created MarginStress accounts");
+        await sleep(5 * 1000)
+
+        // Update IV
+        console.log("Updating Iv");
+        await updateIv(context);
+        console.log("Updated Iv");
 
         // create new instruments
         console.debug("Creating Instruments")

@@ -10,7 +10,7 @@ import { OPUSDC_TOKEN_MINT, USDC_TOKEN_MINT } from "../../constants";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import { UserAccount } from "../../types/optifi-exchange-types";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 
 export default function consumeWithdrawRequestQueue(context: Context,
     ammAddress: PublicKey,

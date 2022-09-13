@@ -1,6 +1,6 @@
 import Context from "../../types/context";
 import InstructionResult from "../../types/instructionResult";
-import { PublicKey, TransactionSignature } from "@solana/web3.js";
+import { TransactionSignature } from "@solana/web3.js";
 import { findExchangeAccount, OracleAccountType, findOracleAccountFromAsset } from "../../utils/accounts";
 import { Asset as OptifiAsset } from "../../types/optifi-exchange-types";
 

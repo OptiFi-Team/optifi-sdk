@@ -1,14 +1,11 @@
-import Context from "../types/context";
-import { SYSVAR_CLOCK_PUBKEY, Transaction, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
-import InstructionResult from "../types/instructionResult";
-
-import Asset from "../types/asset";
-import { findMarginStressWithAsset } from "../utils/margin";
-import { findExchangeAccount, findOracleAccountFromAsset, OracleAccountType } from "../utils/accounts";
-import { assetToOptifiAsset, numberToOptifiAsset, optifiAssetToNumber } from "../utils/generic";
+import Context from "../../types/context";
+import { TransactionInstruction } from "@solana/web3.js";
+import { findMarginStressWithAsset } from "../../utils/margin";
+import { findExchangeAccount, findOracleAccountFromAsset, OracleAccountType } from "../../utils/accounts";
+import { numberToOptifiAsset } from "../../utils/generic";
 import {
     Asset as OptifiAsset,
-} from '../types/optifi-exchange-types';
+} from '../../types/optifi-exchange-types';
 
 export default function marginStress(context: Context,
     asset: number
@@ -27,33 +24,12 @@ export default function marginStress(context: Context,
                         asset
                     )
                 );
-            let ivOracle =
-                await findOracleAccountFromAsset(
-                    context,
-                    numberToOptifiAsset(
-                        asset
-                    ),
-                    OracleAccountType.Iv
-                );
             let usdcSpotOracle =
                 await findOracleAccountFromAsset(
                     context,
                     OptifiAsset.USDC,
                     OracleAccountType.Spot
                 );
-
-            // let ix1 = context.program.instruction.marginStressSync(
-            //     {
-            //         accounts: {
-            //             optifiExchange: exchangeAddress,
-            //             marginStressAccount: marginStressAddress,
-            //             assetFeed: spotOracle,
-            //             usdcFeed: usdcSpotOracle,
-            //             ivFeed: ivOracle,
-            //             clock: SYSVAR_CLOCK_PUBKEY
-            //         },
-            //     }
-            // );
 
             let ix2 = context.program.instruction.marginStressCalculate(
                 {
@@ -62,7 +38,6 @@ export default function marginStress(context: Context,
                         marginStressAccount: marginStressAddress,
                         assetFeed: spotOracle,
                         usdcFeed: usdcSpotOracle,
-                        ivFeed: ivOracle,
                     },
                 }
             );

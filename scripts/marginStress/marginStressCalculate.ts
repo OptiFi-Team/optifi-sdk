@@ -1,9 +1,7 @@
 import { sleep } from "@blockworks-foundation/mango-client";
 import { Transaction } from "@solana/web3.js";
-import { async } from "rxjs";
-import { SUPPORTED_ASSETS } from "../../constants";
 import { initializeContext } from "../../index";
-import marginStress from "../../instructions/marginStress";
+import marginStress from "../../instructions/marginStress/marginStress";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 let assets = [0, 1, 3];
