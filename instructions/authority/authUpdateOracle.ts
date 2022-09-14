@@ -10,13 +10,7 @@ export default function updateOracle(context: Context,
     return new Promise((resolve, reject) => {
         findExchangeAccount(context).then(async ([exchangeAddress, _]) => {
             let spotOracle = await findOracleAccountFromAsset(context, asset);
-            let ivOracle;
-            if (asset == OptifiAsset.USDC) {
-                ivOracle = null;
-            }
-            else {
-                ivOracle = await findOracleAccountFromAsset(context, asset, OracleAccountType.Iv);
-            }
+            let ivOracle = null // No need to save iv oracle
             context.program.rpc.updateOracle(
                 asset,
                 spotOracle,
