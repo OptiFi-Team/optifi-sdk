@@ -15,7 +15,7 @@ import base58, { decode } from "bs58";
 import { Order } from "../utils/orders";
 import { populateInxAccountKeys } from "./transactions"
 
-const inxNames = ["placeOrder", "cancelOrderByClientOrderId", "liquidationRegister"];
+const inxNames = ["placeOrder", "cancelOrderByClientOrderId", "liquidationRegister", "liquidationPlaceOrder"];
 
 // get recent tx  - 1000 tx by default
 export const retrievRecentTxs = async (context: Context,
@@ -147,6 +147,18 @@ async function getMarketExpireDate(context: Context, logs: string[]): Promise<Da
         })
       }
     }
+
+    //liquidation place order log
+    stringLen = 15
+    for (let i = 0; i < logs.length; i++) {
+      if (logs[i].search("market_address") != -1) {
+        stringRes = logs[i].substring(logs[i].search("market_address") + stringLen, logs[i].search("ctx.accounts.optifi_market.key()") - 1)
+
+        let marketsWithFullDatas = await findOptifiMarketsWithFullData(context);
+        let market = marketsWithFullDatas.find(e => e.marketAddress.toString() == stringRes)
+        resolve(market?.expiryDate!)
+      }
+    }
     reject("can't find instrument in getMarketExpireDate");
   })
 }
@@ -181,6 +193,21 @@ async function placedLiquidateOrder(clientId: number, orderTxs: OrderInstruction
   return false
 }
 
+async function isLiquidationPlaceOrder(logs: string[]): Promise<Boolean> {
+  return new Promise(async (resolve, reject) => {
+    for (let i = 0; i < logs.length; i++) {
+      if (logs[i].search("total_net_option_premiun") != -1) {
+        for (let i = 0; i < logs.length; i++) {
+          if (logs[i].search("Created new order instruction") != -1) {
+            resolve(true)
+          }
+        }
+      }
+    }
+    resolve(false)
+  })
+}
+
 const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
 
@@ -213,6 +240,9 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                     decData.newOrderV3
                   );
 
+                  if (await isLiquidationPlaceOrder(tx.meta?.logMessages!)) {// place order when be liquidated
+                    record.orderType = "Liquidation"
+                  }
                   // convert the base amount to ui amount
                   // let marketAddress = tx.transaction.message.accountKeys[inx.accounts[7]].toString() // market address index is 7 in the place order inx
                   //@ts-ignore
@@ -314,16 +344,14 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                     record.txType = "cancel order"
                     orderTxs.push(record);
                   }
-                }
-
-                //liquidate tx
-                else if (await isLiquidateTx(tx.meta?.logMessages!)) {
+                } else if (await isLiquidateTx(tx.meta?.logMessages!)) {     //liquidate tx
                   let clientId = await getLiquidateTxClientId(tx.meta?.logMessages!)
                   let liquidateTx = orderTxs.find(e => e.clientId === clientId)
                   let record: any = [];
                   record = JSON.parse(JSON.stringify(liquidateTx));
                   if (record && (! await placedLiquidateOrder(clientId, orderTxs))) {//sometime there are mul same tx. Avoid place duplicate orders
                     record.orderType = "Liquidation"
+                    record.txType = "cancel order"
                     record.timestamp = new Date(tx.blockTime! * 1000);
                     record.liquidateAmount = await getLiquidateAmount(tx.meta?.logMessages!);
                     orderTxs.push(record)
@@ -600,7 +628,7 @@ export function addStatusInOrderHistory(
 
       for (let orderHistory of orderHistorys) {
 
-        if (orderHistory.txType == "cancel order" || orderHistory.orderType == "Liquidation") {
+        if (orderHistory.txType == "cancel order") {
           orderHistory.status = "Canceled";
           continue;
         }
@@ -632,7 +660,7 @@ export function addStatusInOrderHistory(
                 continue;
               } else {
                 let res = ((order.fillPercentage * 100).toFixed(2))?.toString();
-                console.log("no canceled filled %")
+                console.log("no canceled filled " + res + "%")
                 orderHistory.status = "Filled " + res + "%";
                 continue;
               }
@@ -659,7 +687,7 @@ export function addStatusInOrderHistory(
             orderHistory.status = "Filled"
           }
           else orderHistory.status = "Failed"
-        } else {
+        } else if (orderHistory.orderType == "postOnly") {
           if (orderHistory.checkPostOnlyFail) {
             orderHistory.status = "Failed";
             continue;
@@ -705,6 +733,53 @@ export function addStatusInOrderHistory(
             }
           }
 
+        } else if (orderHistory.orderType == "Liquidation") {
+          if (orderHistory.txType == "place order") {//place order when user is liquidated
+            //the order history which is liquidated, but is place order, not the liquidated order 
+            if (!isLiquidated[orderHistory.clientId].equals(new Decimal(0))) {
+              if (originalSize[clientId].equals(isLiquidated[clientId])) {//在open的狀況下被liquidate
+                console.log("liquidated open")
+                orderHistory.status = "Open";
+                continue;
+              } else {
+                let filledAmt = originalSize[clientId].minus(isLiquidated[clientId]);
+                let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
+                orderHistory.status = "Filled " + res + "%";
+                continue;
+              }
+            }
+
+            if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
+              let order = orders.find(e => e.clientId?.toNumber() == clientId)
+              if (order) {//沒有被totally fill
+                if (!order.fillPercentage) {//open
+                  console.log("no canceled open")
+                  orderHistory.status = "Open";
+                  continue;
+                } else {
+                  let res = ((order.fillPercentage * 100).toFixed(2))?.toString();
+                  console.log("no canceled filled " + res + "%")
+                  orderHistory.status = "Filled " + res + "%";
+                  continue;
+                }
+              } else {//totally fill
+                console.log("no canceled totally filled ")
+                orderHistory.status = "Filled 100%";
+              }
+            } else {//最後被cancel 了
+              if (originalSize[clientId].equals(cancelSize[clientId])) {//在open的狀況下被cancel
+                console.log("canceled open")
+                orderHistory.status = "Open";
+                continue;
+              } else {
+                let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+                let res = Math.floor(filledAmt.mul(100).div(originalSize[clientId]).toNumber()).toString();
+                orderHistory.status = "Filled " + res + "%";
+                continue;
+              }
+            }
+
+          }
         }
       }
       resolve(orderHistorys);
