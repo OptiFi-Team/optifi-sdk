@@ -26,12 +26,6 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                 const usdcCentralPoolWallet = anchor.web3.Keypair.generate();
                 const usdcFeePoolWallet = anchor.web3.Keypair.generate();
 
-                let btcSpotOracle = await findOracleAccountFromAsset(context, Asset.Bitcoin, OracleAccountType.Spot)
-                let ethSpotOracle = await findOracleAccountFromAsset(context, Asset.Ethereum, OracleAccountType.Spot)
-                let usdcSpotOracle = await findOracleAccountFromAsset(context, Asset.USDC, OracleAccountType.Spot)
-                let btcIvOracle = await findOracleAccountFromAsset(context, Asset.Bitcoin, OracleAccountType.Iv)
-                let ethIvOracle = await findOracleAccountFromAsset(context, Asset.Ethereum, OracleAccountType.Iv)
-
                 context.connection.getMinimumBalanceForRentExemption(AccountLayout.span).then((min) => {
                     context.program.rpc.initialize(
                         bump,
@@ -39,12 +33,8 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                             uuid: context.exchangeUUID,
                             version: 1,
                             exchangeAuthority: context.provider.wallet.publicKey,
+                            operationAuthority: context.provider.wallet.publicKey,
                             usdcMint: new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]),
-                            btcSpotOracle,
-                            ethSpotOracle,
-                            usdcSpotOracle,
-                            btcIvOracle,
-                            ethIvOracle,
                             ogNftMint: ogNftMint ? ogNftMint : null,
                             userDepositLimit: depositLimit ? new anchor.BN(depositLimit) : null,
                         },

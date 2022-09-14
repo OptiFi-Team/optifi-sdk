@@ -252,6 +252,12 @@ export default function boostrap(context: Context, ogNftMint?: PublicKey, deposi
 
 
         // Add Sol Oracle
+        for (let asset of SUPPORTED_ASSETS.concat(Asset.USDC)) {
+            console.log(asset)
+            let res = await updateOracle(context, assetToOptifiAsset(asset));
+            console.log("updateOracle res: ", res)
+        }
+
         let res = await updateOracle(context, assetToOptifiAsset(Asset.Solana));
         console.log("updateOracle res: ", res)
 

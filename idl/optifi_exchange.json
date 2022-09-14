@@ -4136,7 +4136,7 @@
       ]
     },
     {
-      "name": "updateOgNftMint",
+      "name": "updateOperationAuthority",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -4145,6 +4145,27 @@
         },
         {
           "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newOperationAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "updateOgNftMint",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "operationAuthority",
           "isMut": false,
           "isSigner": true
         }
@@ -4167,7 +4188,7 @@
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "operationAuthority",
           "isMut": false,
           "isSigner": true
         }
@@ -4190,7 +4211,7 @@
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "operationAuthority",
           "isMut": false,
           "isSigner": true
         }
@@ -4718,6 +4739,13 @@
             "type": {
               "option": "u64"
             }
+          },
+          {
+            "name": "operationAuthority",
+            "docs": [
+              "operation authority address"
+            ],
+            "type": "publicKey"
           }
         ]
       }
@@ -4732,11 +4760,27 @@
             "type": "publicKey"
           },
           {
+            "name": "feeTier",
+            "type": {
+              "defined": "FeeTier"
+            }
+          },
+          {
             "name": "notionalTradingVolume",
             "type": "u64"
           },
           {
             "name": "accFee",
+            "type": "u64"
+          },
+          {
+            "name": "referrer",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "accRebateFee",
             "type": "u64"
           },
           {
@@ -5377,41 +5421,6 @@
             "type": "publicKey"
           },
           {
-            "name": "btcSpotOracle",
-            "docs": [
-              "trusted oracle account for BTC sopt price"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "ethSpotOracle",
-            "docs": [
-              "trusted oracle account for ETH sopt price"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "usdcSpotOracle",
-            "docs": [
-              "trusted oracle account for USDC sopt price"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "btcIvOracle",
-            "docs": [
-              "trusted oracle account for BTC IV"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "ethIvOracle",
-            "docs": [
-              "trusted oracle account for ETH IV"
-            ],
-            "type": "publicKey"
-          },
-          {
             "name": "ogNftMint",
             "docs": [
               "pubkey of og nft mint. None means og nft mode is turned off"
@@ -5428,6 +5437,10 @@
             "type": {
               "option": "u64"
             }
+          },
+          {
+            "name": "operationAuthority",
+            "type": "publicKey"
           }
         ]
       }
@@ -6160,6 +6173,23 @@
       }
     },
     {
+      "name": "FeeTier",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Level1"
+          },
+          {
+            "name": "Level2"
+          },
+          {
+            "name": "Level3"
+          }
+        ]
+      }
+    },
+    {
       "name": "LiquidationStatus",
       "type": {
         "kind": "enum",
@@ -6546,6 +6576,6 @@
     }
   ],
   "metadata": {
-    "address": "G35gJ4KwoHf8azXad3PoNDTpuQqgptbT6VgwWyKrGSsp"
+    "address": "2GaTQRMXs8QsDuHsxb1iGzT5SR8PtdYwqPUDrPJmuYat"
   }
 }
