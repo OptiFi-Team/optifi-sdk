@@ -15,7 +15,7 @@ export default function updateUserDepositLimit(context: Context,
                 {
                     accounts: {
                         optifiExchange: exchangeAddress,
-                        authority: context.provider.wallet.publicKey
+                        operationAuthority: context.provider.wallet.publicKey
                     }
                 }
             ).then((res) => {

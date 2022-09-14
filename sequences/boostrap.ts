@@ -258,9 +258,6 @@ export default function boostrap(context: Context, ogNftMint?: PublicKey, deposi
             console.log("updateOracle res: ", res)
         }
 
-        let res = await updateOracle(context, assetToOptifiAsset(Asset.Solana));
-        console.log("updateOracle res: ", res)
-
         // Create MarginStress
         console.log("Creating MarginStress accounts");
         await createMarginStress(context);
