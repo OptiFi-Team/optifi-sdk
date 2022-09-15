@@ -18,7 +18,7 @@ export async function getGvolAtm7(asset: Asset) {
         }
 
         let now = new Date();
-        let from = new Date(now.getTime() - 60 * 60 * 1000);
+        let from = new Date(now.getTime() - 2 * 60 * 60 * 1000);
         const response = await fetch('https://app.pinkswantrading.com/graphql', {
             method: 'POST',
             body: JSON.stringify({
@@ -43,11 +43,15 @@ export async function getGvolAtm7(asset: Asset) {
 
         const result = await response.json();
 
-        const atm7 = result.data.ConstantMaturityAtm1Min[0].atm7;
+        for (let atm of result.data.ConstantMaturityAtm1Min) {
+            if (atm.atm7 != null) {
+                console.log(atm);
+                return atm;
+            }
+        }
 
-        // console.log(asset, ": ", atm7);
-
-        return atm7;
+        console.log('All atm7 is null');
+        return 'All atm7 is null';
     } catch (error) {
         if (error instanceof Error) {
             console.log('error message: ', error.message);
@@ -80,6 +84,6 @@ function formatDate(date: Date) {
     );
 }
 
-// getGvolAtm7('BTC');
-// getGvolAtm7('ETH');
-// getGvolAtm7('SOL');
+getGvolAtm7(Asset.Bitcoin);
+getGvolAtm7(Asset.Ethereum);
+getGvolAtm7(Asset.Solana);
