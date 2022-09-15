@@ -23,9 +23,11 @@ export default function updateIv(context: Context):
 
                 if (asset == SUPPORTED_ASSETS[SUPPORTED_ASSETS.length - 1]) {
                     let res = await context.program.rpc.updateIv(
-                        new anchor.BN(iv),
+                        iv.atm7,
+                        new anchor.BN(iv.date / 1000),
                         {
                             accounts: {
+                                optifiExchange: exchangeAddress,
                                 marginStressAccount: marginStressAddress,
                                 signer: context.provider.wallet.publicKey,
                             },
@@ -40,9 +42,11 @@ export default function updateIv(context: Context):
                 }
                 else {
                     let ix = context.program.instruction.updateIv(
-                        new anchor.BN(iv),
+                        iv.atm7,
+                        new anchor.BN(iv.date / 1000),
                         {
                             accounts: {
+                                optifiExchange: exchangeAddress,
                                 marginStressAccount: marginStressAddress,
                                 signer: context.provider.wallet.publicKey,
                             },

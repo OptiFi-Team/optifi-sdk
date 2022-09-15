@@ -34,6 +34,7 @@ export default function initialize(context: Context, ogNftMint?: PublicKey, depo
                             version: 1,
                             exchangeAuthority: context.provider.wallet.publicKey,
                             operationAuthority: context.provider.wallet.publicKey,
+                            ivAuthority: context.provider.wallet.publicKey,
                             usdcMint: new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]),
                             ogNftMint: ogNftMint ? ogNftMint : null,
                             userDepositLimit: depositLimit ? new anchor.BN(depositLimit) : null,

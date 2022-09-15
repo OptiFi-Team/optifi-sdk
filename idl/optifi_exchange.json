@@ -2958,6 +2958,11 @@
       "name": "updateIv",
       "accounts": [
         {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "marginStressAccount",
           "isMut": true,
           "isSigner": false
@@ -2972,27 +2977,10 @@
         {
           "name": "iv",
           "type": "f64"
-        }
-      ]
-    },
-    {
-      "name": "addAuthority",
-      "accounts": [
-        {
-          "name": "marginStressAccount",
-          "isMut": true,
-          "isSigner": false
         },
         {
-          "name": "signer",
-          "isMut": false,
-          "isSigner": true
-        }
-      ],
-      "args": [
-        {
-          "name": "newAuthority",
-          "type": "publicKey"
+          "name": "timestamp",
+          "type": "u64"
         }
       ]
     },
@@ -4157,6 +4145,27 @@
       ]
     },
     {
+      "name": "updateIvAuthority",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newIvAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "updateOgNftMint",
       "accounts": [
         {
@@ -4746,6 +4755,13 @@
               "operation authority address"
             ],
             "type": "publicKey"
+          },
+          {
+            "name": "ivAuthority",
+            "docs": [
+              "iv authority address"
+            ],
+            "type": "publicKey"
           }
         ]
       }
@@ -4869,6 +4885,10 @@
             "type": "u64"
           },
           {
+            "name": "timestampIv",
+            "type": "u64"
+          },
+          {
             "name": "state",
             "docs": [
               "Deprecated: MarginStress's state indicator"
@@ -4929,12 +4949,6 @@
               "vec": {
                 "vec": "i64"
               }
-            }
-          },
-          {
-            "name": "updateAuthority",
-            "type": {
-              "vec": "publicKey"
             }
           }
         ]
@@ -5440,6 +5454,10 @@
           },
           {
             "name": "operationAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "ivAuthority",
             "type": "publicKey"
           }
         ]
@@ -6576,6 +6594,6 @@
     }
   ],
   "metadata": {
-    "address": "2GaTQRMXs8QsDuHsxb1iGzT5SR8PtdYwqPUDrPJmuYat"
+    "address": "G35gJ4KwoHf8azXad3PoNDTpuQqgptbT6VgwWyKrGSsp"
   }
 }
