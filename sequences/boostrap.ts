@@ -268,6 +268,7 @@ export default function boostrap(context: Context, ogNftMint?: PublicKey, deposi
         console.log("Updating Iv");
         await updateIv(context);
         console.log("Updated Iv");
+        await sleep(5 * 1000)
 
         // create new instruments
         console.debug("Creating Instruments")
