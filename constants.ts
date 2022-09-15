@@ -115,20 +115,20 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_USDC_PROGRAM_ID: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "4teikyzGWvMBjFG7NSJbRt7UXpNbJvr159k8pz96ajnq",
-    [SolanaCluster.Devnet]: "4teikyzGWvMBjFG7NSJbRt7UXpNbJvr159k8pz96ajnq",
-    [SolanaCluster.Testnet]: "4teikyzGWvMBjFG7NSJbRt7UXpNbJvr159k8pz96ajnq"
+    [SolanaCluster.Mainnet]: "oudvxi2FrrgAS8boTYg4XWVkNsDE8ASK4AveVZGEjQ4",
+    [SolanaCluster.Devnet]: "oudvxi2FrrgAS8boTYg4XWVkNsDE8ASK4AveVZGEjQ4",
+    [SolanaCluster.Testnet]: "oudvxi2FrrgAS8boTYg4XWVkNsDE8ASK4AveVZGEjQ4"
 }
 
 
 export const OPUSDC_TOKEN_MINT: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "2B2RdeQn9UsqhyzNh48Si4ycVppFUfh8ZbmCdMPRUicA",
-    [SolanaCluster.Devnet]: "2B2RdeQn9UsqhyzNh48Si4ycVppFUfh8ZbmCdMPRUicA",
-    [SolanaCluster.Testnet]: "2B2RdeQn9UsqhyzNh48Si4ycVppFUfh8ZbmCdMPRUicA"
+    [SolanaCluster.Mainnet]: "631ThWccqm92emGT8cCr6ceMNLWEX3xQdDiyL3NGPkV5",
+    [SolanaCluster.Devnet]: "631ThWccqm92emGT8cCr6ceMNLWEX3xQdDiyL3NGPkV5",
+    [SolanaCluster.Testnet]: "631ThWccqm92emGT8cCr6ceMNLWEX3xQdDiyL3NGPkV5"
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    [SolanaCluster.Devnet]: "111115",
+    [SolanaCluster.Devnet]: "220915",
     [SolanaCluster.Testnet]: "dmeWlh",
     [SolanaCluster.Mainnet]: "210001",
 }
