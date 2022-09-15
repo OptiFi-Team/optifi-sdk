@@ -325,7 +325,7 @@ export const OPTIFI_TAKER_FEE: EndpointConstant = {
     [SolanaCluster.Testnet]: undefined
 }
 export const OPTIFI_MAKER_FEE: EndpointConstant = {
-    [SolanaCluster.Devnet]: 0.0015,
+    [SolanaCluster.Devnet]: 0.0005,
     [SolanaCluster.Mainnet]: 0.0,
     [SolanaCluster.Testnet]: undefined
 }
