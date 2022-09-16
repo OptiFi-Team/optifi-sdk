@@ -28,59 +28,57 @@ export default function consumeWithdrawRequestQueue(context: Context,
                             let user = userAccountRes as UserAccount;
                             // console.log(user.owner.toString())
 
-                            findAssociatedTokenAccount(context, new PublicKey(OPUSDC_TOKEN_MINT[context.cluster]), user.owner).then(([userQuoteTokenVault, _]) => {
-                                // console.log(userQuoteTokenVault.toString())
 
-                                findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
-                                    let [marginStressAddress,] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
+                            findAssociatedTokenAccount(context, amm.lpTokenMint, userAccount).then(async ([userLpTokenVault, _]) => {
+                                let [marginStressAddress,] = await findMarginStressWithAsset(context, exchangeAddress, amm.asset)
 
-                                    let ixs = [increaseComputeUnitsIx]
-                                    ixs.push(...await marginStress(context, amm.asset));
+                                let ixs = [increaseComputeUnitsIx]
+                                ixs.push(...await marginStress(context, amm.asset));
 
-                                    let optifiUsdcMint = new PublicKey(OPUSDC_TOKEN_MINT[context.cluster])
-                                    let [userQuoteTokenVault,] = await findAssociatedTokenAccount(context, optifiUsdcMint)
-                                    let [authority] = await findOpUsdcAuth(context)
-                                    let usdcTokenMint = new PublicKey(USDC_TOKEN_MINT[context.cluster])
-                                    let [usdcVault] = await findAssociatedTokenAccount(context, usdcTokenMint, authority)
-                                    let [ownerUsdcAccount] = await findAssociatedTokenAccount(context, usdcTokenMint)
+                                let optifiUsdcMint = new PublicKey(OPUSDC_TOKEN_MINT[context.cluster])
+                                let [userQuoteTokenVault,] = await findAssociatedTokenAccount(context, optifiUsdcMint, user.owner)
+                                let [authority] = await findOpUsdcAuth(context)
+                                let usdcTokenMint = new PublicKey(USDC_TOKEN_MINT[context.cluster])
+                                let [usdcVault] = await findAssociatedTokenAccount(context, usdcTokenMint, authority)
+                                let [ownerUsdcAccount] = await findAssociatedTokenAccount(context, usdcTokenMint, user.owner)
 
-                                    // console.log("userLpTokenVault: ", userLpTokenVault.toString())
-                                    context.program.rpc.consumeWithdrawQueue(
-                                        {
-                                            accounts: {
-                                                optifiExchange: exchangeAddress,
-                                                usdcFeePool: exchangeInfo.usdcFeePool,
-                                                amm: ammAddress,
-                                                marginStressAccount: marginStressAddress,
-                                                withdrawQueue: amm.withdrawQueue,
-                                                ammQuoteTokenVault: amm.quoteTokenVault,
-                                                userQuoteTokenVault: userQuoteTokenVault,
-                                                lpTokenMint: amm.lpTokenMint,
-                                                ammLiquidityAuth: liquidityAuthPDA,
-                                                userLpTokenVault: userLpTokenVault,
-                                                userAccount: userAccount,
-                                                tokenProgram: TOKEN_PROGRAM_ID,
-                                                clock: SYSVAR_CLOCK_PUBKEY,
+                                console.log("liquidityAuthPDA: ", liquidityAuthPDA.toBase58())
+                                console.log("amm.quoteTokenVault: ", amm.quoteTokenVault.toBase58())
 
-                                                authority: authority,
-                                                optifiUsdc: optifiUsdcMint,
-                                                usdcMint: usdcTokenMint,
-                                                usdcVault: usdcVault,
-                                                userUsdcTokenVault: ownerUsdcAccount,
-                                                owner: context.provider.wallet.publicKey,
-                                                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-                                                systemProgram: SystemProgram.programId,
-                                                rent: SYSVAR_RENT_PUBKEY,
-                                                optifiUsdcProgram: context.optifiUSDCProgram.programId
-                                            },
-                                            preInstructions: ixs,
-                                        }
-                                    ).then((res) => {
-                                        resolve({
-                                            successful: true,
-                                            data: res as TransactionSignature
-                                        })
-                                    }).catch((err) => reject(err))
+                                // console.log("userLpTokenVault: ", userLpTokenVault.toString())
+                                context.program.rpc.consumeWithdrawQueue(
+                                    {
+                                        accounts: {
+                                            optifiExchange: exchangeAddress,
+                                            usdcFeePool: exchangeInfo.usdcFeePool,
+                                            amm: ammAddress,
+                                            marginStressAccount: marginStressAddress,
+                                            withdrawQueue: amm.withdrawQueue,
+                                            ammQuoteTokenVault: amm.quoteTokenVault,
+                                            userQuoteTokenVault: userQuoteTokenVault,
+                                            lpTokenMint: amm.lpTokenMint,
+                                            ammLiquidityAuth: liquidityAuthPDA,
+                                            userLpTokenVault: userLpTokenVault,
+                                            userAccount: userAccount,
+                                            tokenProgram: TOKEN_PROGRAM_ID,
+
+                                            authority: authority,
+                                            optifiUsdc: optifiUsdcMint,
+                                            usdcMint: usdcTokenMint,
+                                            usdcVault: usdcVault,
+                                            userUsdcTokenVault: ownerUsdcAccount,
+                                            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                                            systemProgram: SystemProgram.programId,
+                                            rent: SYSVAR_RENT_PUBKEY,
+                                            optifiUsdcProgram: context.optifiUSDCProgram.programId
+                                        },
+                                        preInstructions: ixs,
+                                    }
+                                ).then((res) => {
+                                    resolve({
+                                        successful: true,
+                                        data: res as TransactionSignature
+                                    })
                                 }).catch((err) => reject(err))
                             }).catch((err) => reject(err))
                         }).catch((err) => reject(err))

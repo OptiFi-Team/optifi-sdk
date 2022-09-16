@@ -2112,7 +2112,7 @@
         },
         {
           "name": "ammLiquidityAuth",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "amm's lp token mint authority, and usdc vault authority"
@@ -2140,11 +2140,6 @@
           "isSigner": false
         },
         {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": false
@@ -2167,11 +2162,6 @@
         {
           "name": "userUsdcTokenVault",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "owner",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -2325,7 +2315,7 @@
         },
         {
           "name": "owner",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "owner of mango_account"

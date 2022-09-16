@@ -6,6 +6,11 @@
       "name": "USDC_MINT",
       "type": "string",
       "value": "\"8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN\""
+    },
+    {
+      "name": "USDC_MINT",
+      "type": "string",
+      "value": "\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\""
     }
   ],
   "instructions": [
@@ -286,7 +291,7 @@
           "isSigner": false
         },
         {
-          "name": "ownerUsdc",
+          "name": "receiverUsdc",
           "isMut": true,
           "isSigner": false
         },
@@ -297,7 +302,7 @@
         },
         {
           "name": "owner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -391,5 +396,8 @@
       "name": "Locked",
       "msg": "the wrap/unwrap is currently locked"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "oudvxi2FrrgAS8boTYg4XWVkNsDE8ASK4AveVZGEjQ4"
+  }
 }
