@@ -6,7 +6,29 @@ import { sleep } from "../../utils/generic";
 import Context from "../../types/context";
 import { PublicKey } from "@solana/web3.js";
 import { getUserBalance } from "../../utils/user";
-import { sendNotifiAlert } from "../../utils/notifi";
+import { notifiMarginCallAlert, notifiLiquidationAlert } from "../../utils/notifi";
+import { loadOrdersForOwnerOnAllMarkets } from "../../utils/orders";
+import { findOptifiMarketsWithFullData } from "../../utils/market";
+import { Order, loadOrdersAccountsForOwnerV2 } from "../../utils/orders"
+import { findUserAccount } from "../../utils/accounts";
+import { getAllOrdersForAccount } from "../../utils/orderHistory";
+import { Position, getUserPositions } from "../../utils/market";
+
+
+async function getUserOpenOrderAndPosition(context: Context): Promise<[Array<Order>, Array<Position>]> {
+    return new Promise(async (resolve, reject) => {
+        let optifiMarkets = await findOptifiMarketsWithFullData(context)
+        let [userAccount,] = await findUserAccount(context)
+        let [userAccountAddress,] = await findUserAccount(context)
+        let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress)
+        let context2 = await initializeContext(undefined, undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" })
+        let orderHistory = await getAllOrdersForAccount(context2, userAccount,)
+        let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
+        let userPositions = await getUserPositions(context, userAccountAddress)
+        resolve([orders, userPositions])
+    })
+}
+
 const liquidationLoop = async (context: Context) => {
     try {
         let Users = await getAllUsersOnExchange(context);
@@ -34,29 +56,38 @@ const liquidationLoop = async (context: Context) => {
 
             // console.log("userToLiquidate: " + userToLiquidate.toString() + ", margin ratio: " + (margin + netOptionValue) / marginRequirement)
 
+            let userBalance = await getUserBalance(context); // total balance
+            let totalOptionValue = netOptionValue;
+            let accountEquity: number = userBalance + totalOptionValue;
+            let availableBalance: number = accountEquity - marginRequirement;
             //send notifi alert 
             if (margin + netOptionValue < marginRequirement) {
                 console.log("send alert to user " + userAccount.owner.toString() + " via notifi...")
-                let userBalance = await getUserBalance(context); // total balance
 
-                let totalOptionValue = netOptionValue;
-                let accountEquity = userBalance + totalOptionValue;
-                let availableBalance = accountEquity - marginRequirement;
                 let liquidation = marginRequirement * 0.9;
-                let liquidationBuffer = accountEquity - liquidation;
+                let liquidationBuffer: number = accountEquity - liquidation;
+                //add "$" if number
+                let availableBalanceStr = (availableBalance < 0) ? "-$" + (-availableBalance).toString() : "$" + availableBalance.toString()
+                let accountEquityStr = (accountEquity < 0) ? "-$" + (-accountEquity).toString() : "$" + accountEquity.toString()
+                let marginRequirementStr = (marginRequirement < 0) ? "-$" + (-marginRequirement).toString() : "$" + marginRequirement.toString()
+                let liquidationBufferStr = (liquidationBuffer < 0) ? "-$" + (-liquidationBuffer).toString() : "$" + liquidationBuffer.toString()
+
                 let data = {
-                    "availableBalance": availableBalance,
-                    "accountEquity": accountEquity,
-                    "marginRequirement": marginRequirement,
-                    "liquidationBuffer": liquidationBuffer,
+                    "availableBalance": availableBalanceStr,
+                    "accountEquity": accountEquityStr,
+                    "marginRequirement": marginRequirementStr,
+                    "liquidationBuffer": liquidationBufferStr,
                 }
 
-                await sendNotifiAlert(userAccount.owner.toString(), data)
+                await notifiMarginCallAlert(userAccount.owner.toString(), data)
             }
 
             if (margin + netOptionValue < marginRequirement * 0.9) {
+                let [openOrdersBefore, positionBefore] = await getUserOpenOrderAndPosition(context)
                 console.log("userToLiquidate: " + userToLiquidate.toString() + ", margin: " + margin + ", liquidation: " + marginRequirement * 0.9)
-                liquidateUser(context, userToLiquidate)
+                await liquidateUser(context, userToLiquidate)
+                let [openOrdersAfter, positionAfter] = await getUserOpenOrderAndPosition(context)
+                await notifiLiquidationAlert(context, userAccount.owner.toString(), availableBalance, openOrdersBefore, openOrdersAfter, positionBefore, positionAfter)
             }
         }
         await sleep(3000);
