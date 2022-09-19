@@ -78,7 +78,7 @@ export default function marketMakerPostOnlyOrder(
                                                                                 let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(chain.asset)!); // price for 1 lot_size 
                                                                                 let maxCoinQty = size * (10 ** numberAssetToDecimal(chain.asset)!);
                                                                                 let PcQty = limit * maxCoinQty;
-                                                                                let [maxPcQty] = calculatePcQtyAndFee(context, 0, PcQty, side, OrderType.PostOnly, false)!;
+                                                                                let [maxPcQty] = calculatePcQtyAndFee(context, 0, size, PcQty, side, OrderType.PostOnly, false)!;
                                                                                 let marketMakerPostOnlyOrderTx = context.program.rpc.mmPostOnlyOrder(
                                                                                     side,
                                                                                     new BN(limit),
