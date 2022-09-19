@@ -35,7 +35,7 @@ export default function placeOrder(context: Context,
 
             let spotPrice = Math.round(await getSpotPrice(context, asset) / await getSpotPrice(context, 2) * 100) / 100
 
-            let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(context, spotPrice, PcQty, side, orderType, false)!;
+            let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(context, spotPrice, size, PcQty, side, orderType, false)!;
 
             // console.log("side: ", side);
             // console.log("limit: ", limit);

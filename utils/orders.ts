@@ -16,7 +16,7 @@ import {
   UserAccount,
 } from "../types/optifi-exchange-types";
 import { deriveVaultNonce, OptifiMarketFullData } from "./market";
-import { OPTIFI_MAKER_FEE, OPTIFI_MAX_FEE_RATIO, OPTIFI_TAKER_FEE, SERUM_DEX_PROGRAM_ID, SERUM_MAKER_FEE, SERUM_TAKER_FEE } from "../constants";
+import { OPTIFI_MAKER_FEE, OPTIFI_MAX_FEE_RATIO, OPTIFI_TAKER_FEE, SERUM_DEX_PROGRAM_ID, SERUM_MAKER_FEE, SERUM_TAKER_FEE, USDC_DECIMALS } from "../constants";
 import { findOptifiMarketMintAuthPDA, findOptifiUSDCPoolAuthPDA } from "./pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
@@ -859,10 +859,16 @@ function getSerumFee(context: Context, orderType: OrderType, is_registered_maker
     }
   }
 }
-export function calculatePcQtyAndFee(context: Context, spotPrice: number, maxPcQty: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
+export function calculatePcQtyAndFee(context: Context, spotPrice: number, size: number, maxPcQty: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
 
-  let optifiFee = spotPrice * getOptifiFee(context, orderType, is_registered_maker);
+  spotPrice *= (10 ** USDC_DECIMALS)
+  // console.log("spotPrice: ", spotPrice)
+  // console.log("size: ", size)
+  let optifiFee = spotPrice * size * getOptifiFee(context, orderType, is_registered_maker);
+  // console.log(optifiFee)
+  // console.log(maxPcQty * OPTIFI_MAX_FEE_RATIO)
   optifiFee = Math.min(optifiFee, maxPcQty * OPTIFI_MAX_FEE_RATIO)
+  // console.log("optifiFee: ", optifiFee)
 
   let serumFee = maxPcQty * getSerumFee(context, orderType, is_registered_maker);
   let totalFee = optifiFee + serumFee;

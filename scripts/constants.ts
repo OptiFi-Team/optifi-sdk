@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 
 // export const market = new PublicKey("BSsk4tchYyJMKTZPuZWDZBom7TfHSRJ7jSrQYbXe9GPA");
 // export const market = new PublicKey("DP4u2294wcvBybFDeroqNhFNRjFyZcBMLZnaCE1AfkRp");
-export const market = new PublicKey("9TGTqwbLXXo7M3DgNQpC37vawrJTkqnJxmvyUp5PyLDq");
+export const market = new PublicKey("2uNaMdcBctr7PbRYog14osWHu4TFPWDg2wTXBtHFbCUS");
 
 
 // export const market = new PublicKey("jAPyyZqQLG6nSwoaa6MHTkrtEpkvqfTrm5XGYdBr4gQ");
