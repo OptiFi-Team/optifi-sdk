@@ -4,7 +4,7 @@ import InstructionResult from "../types/instructionResult";
 import { findExchangeAccount } from "../utils/accounts";
 import { AmmAccount } from "../types/optifi-exchange-types";
 import { findMarginStressWithAsset } from "../utils/margin";
-import marginStress from "./marginStress";
+import marginStress from "./marginStress/marginStress";
 import { increaseComputeUnitsIx } from "../utils/transactions";
 
 export default function calculateAmmProposal(context: Context,
@@ -50,7 +50,7 @@ export function calculateAmmProposalInBatch(context: Context,
             let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, ammAccount.asset)
 
             let inxs: TransactionInstruction[] = [increaseComputeUnitsIx]
-           
+
             // add margin stress calc inx for the first batch
             if (batchIndex == 0) {
                 let updateMarginStressInx = await marginStress(context, ammAccount.asset);

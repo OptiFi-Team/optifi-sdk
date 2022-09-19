@@ -101,17 +101,9 @@
           "isSigner": false
         },
         {
-          "name": "assetIvOracleFeed",
-          "isMut": false,
+          "name": "marginStressAccount",
+          "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Clock to get the timestamp"
-          ]
         }
       ],
       "args": [
@@ -164,17 +156,9 @@
           "isSigner": false
         },
         {
-          "name": "assetIvOracleFeed",
-          "isMut": false,
+          "name": "marginStressAccount",
+          "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Clock to get the timestamp"
-          ]
         }
       ],
       "args": [
@@ -2128,7 +2112,7 @@
         },
         {
           "name": "ammLiquidityAuth",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "amm's lp token mint authority, and usdc vault authority"
@@ -2156,11 +2140,6 @@
           "isSigner": false
         },
         {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": false
@@ -2183,11 +2162,6 @@
         {
           "name": "userUsdcTokenVault",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "owner",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -2341,7 +2315,7 @@
         },
         {
           "name": "owner",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "owner of mango_account"
@@ -2966,14 +2940,39 @@
           "name": "usdcFeed",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "ivFeed",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
+    },
+    {
+      "name": "updateIv",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "marginStressAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "iv",
+          "type": "f64"
+        },
+        {
+          "name": "timestamp",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "initLiquidation",
@@ -4115,7 +4114,7 @@
       ]
     },
     {
-      "name": "updateOgNftMint",
+      "name": "updateOperationAuthority",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -4124,6 +4123,48 @@
         },
         {
           "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newOperationAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "updateIvAuthority",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newIvAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "updateOgNftMint",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "operationAuthority",
           "isMut": false,
           "isSigner": true
         }
@@ -4146,7 +4187,7 @@
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "operationAuthority",
           "isMut": false,
           "isSigner": true
         }
@@ -4169,7 +4210,7 @@
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "operationAuthority",
           "isMut": false,
           "isSigner": true
         }
@@ -4697,6 +4738,20 @@
             "type": {
               "option": "u64"
             }
+          },
+          {
+            "name": "operationAuthority",
+            "docs": [
+              "operation authority address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "ivAuthority",
+            "docs": [
+              "iv authority address"
+            ],
+            "type": "publicKey"
           }
         ]
       }
@@ -4711,6 +4766,12 @@
             "type": "publicKey"
           },
           {
+            "name": "feeTier",
+            "type": {
+              "defined": "FeeTier"
+            }
+          },
+          {
             "name": "notionalTradingVolume",
             "type": "u64"
           },
@@ -4719,10 +4780,20 @@
             "type": "u64"
           },
           {
+            "name": "referrer",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "accRebateFee",
+            "type": "u64"
+          },
+          {
             "name": "openOrderFee",
             "type": {
               "vec": {
-                "defined": "Fee"
+                "defined": "FeeLog"
               }
             }
           }
@@ -4801,6 +4872,10 @@
           },
           {
             "name": "timestamp",
+            "type": "u64"
+          },
+          {
+            "name": "timestampIv",
             "type": "u64"
           },
           {
@@ -5350,41 +5425,6 @@
             "type": "publicKey"
           },
           {
-            "name": "btcSpotOracle",
-            "docs": [
-              "trusted oracle account for BTC sopt price"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "ethSpotOracle",
-            "docs": [
-              "trusted oracle account for ETH sopt price"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "usdcSpotOracle",
-            "docs": [
-              "trusted oracle account for USDC sopt price"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "btcIvOracle",
-            "docs": [
-              "trusted oracle account for BTC IV"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "ethIvOracle",
-            "docs": [
-              "trusted oracle account for ETH IV"
-            ],
-            "type": "publicKey"
-          },
-          {
             "name": "ogNftMint",
             "docs": [
               "pubkey of og nft mint. None means og nft mode is turned off"
@@ -5401,6 +5441,14 @@
             "type": {
               "option": "u64"
             }
+          },
+          {
+            "name": "operationAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "ivAuthority",
+            "type": "publicKey"
           }
         ]
       }
@@ -5786,16 +5834,24 @@
       }
     },
     {
-      "name": "Fee",
+      "name": "FeeLog",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "spotPrice",
+            "name": "maxCoinQty",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
             "type": "u64"
           },
           {
             "name": "clientOrderId",
+            "type": "u64"
+          },
+          {
+            "name": "spotPrice",
             "type": "u64"
           }
         ]
@@ -6120,6 +6176,23 @@
           },
           {
             "name": "Monthly"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeTier",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Level1"
+          },
+          {
+            "name": "Level2"
+          },
+          {
+            "name": "Level3"
           }
         ]
       }
@@ -6511,6 +6584,6 @@
     }
   ],
   "metadata": {
-    "address": "2GaTQRMXs8QsDuHsxb1iGzT5SR8PtdYwqPUDrPJmuYat"
+    "address": "opDV2tLVsRPGk9aYqm4gdtGotiRwjuYKUmWzWB7NfCR"
   }
 }

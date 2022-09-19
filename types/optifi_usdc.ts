@@ -1,6 +1,18 @@
 export type OptifiUsdc = {
   "version": "0.1.0",
   "name": "optifi_usdc",
+  "constants": [
+    {
+      "name": "USDC_MINT",
+      "type": "string",
+      "value": "\"8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN\""
+    },
+    {
+      "name": "USDC_MINT",
+      "type": "string",
+      "value": "\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\""
+    }
+  ],
   "instructions": [
     {
       "name": "initialize",
@@ -111,6 +123,22 @@ export type OptifiUsdc = {
       "args": []
     },
     {
+      "name": "unfreeze",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "addAuthority",
       "accounts": [
         {
@@ -127,6 +155,48 @@ export type OptifiUsdc = {
       "args": [
         {
           "name": "newAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "transferSuperAuthority",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "removeAuthority",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "removeAuthority",
           "type": "publicKey"
         }
       ]
@@ -221,7 +291,7 @@ export type OptifiUsdc = {
           "isSigner": false
         },
         {
-          "name": "ownerUsdc",
+          "name": "receiverUsdc",
           "isMut": true,
           "isSigner": false
         },
@@ -232,7 +302,7 @@ export type OptifiUsdc = {
         },
         {
           "name": "owner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -277,11 +347,47 @@ export type OptifiUsdc = {
             }
           },
           {
+            "name": "superAuthority",
+            "type": "publicKey"
+          },
+          {
             "name": "locked",
             "type": "bool"
           }
         ]
       }
+    }
+  ],
+  "events": [
+    {
+      "name": "UnwrapEvent",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "singer",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "WrapEvent",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "singer",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -296,6 +402,18 @@ export type OptifiUsdc = {
 export const IDL: OptifiUsdc = {
   "version": "0.1.0",
   "name": "optifi_usdc",
+  "constants": [
+    {
+      "name": "USDC_MINT",
+      "type": "string",
+      "value": "\"8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN\""
+    },
+    {
+      "name": "USDC_MINT",
+      "type": "string",
+      "value": "\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\""
+    }
+  ],
   "instructions": [
     {
       "name": "initialize",
@@ -406,6 +524,22 @@ export const IDL: OptifiUsdc = {
       "args": []
     },
     {
+      "name": "unfreeze",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "addAuthority",
       "accounts": [
         {
@@ -422,6 +556,48 @@ export const IDL: OptifiUsdc = {
       "args": [
         {
           "name": "newAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "transferSuperAuthority",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "removeAuthority",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "removeAuthority",
           "type": "publicKey"
         }
       ]
@@ -516,7 +692,7 @@ export const IDL: OptifiUsdc = {
           "isSigner": false
         },
         {
-          "name": "ownerUsdc",
+          "name": "receiverUsdc",
           "isMut": true,
           "isSigner": false
         },
@@ -527,7 +703,7 @@ export const IDL: OptifiUsdc = {
         },
         {
           "name": "owner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -572,11 +748,47 @@ export const IDL: OptifiUsdc = {
             }
           },
           {
+            "name": "superAuthority",
+            "type": "publicKey"
+          },
+          {
             "name": "locked",
             "type": "bool"
           }
         ]
       }
+    }
+  ],
+  "events": [
+    {
+      "name": "UnwrapEvent",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "singer",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "WrapEvent",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "singer",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [

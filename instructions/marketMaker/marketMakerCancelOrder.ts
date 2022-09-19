@@ -11,7 +11,7 @@ import { deriveVaultNonce } from "../../utils/market";
 import { Chain, OptifiMarket } from "../../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findMarginStressWithAsset } from "../../utils/margin";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function marketMakerCancelOrder(

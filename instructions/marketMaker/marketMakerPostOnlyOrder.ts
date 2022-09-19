@@ -15,7 +15,7 @@ import { numberAssetToDecimal } from "../../utils/generic";
 import { calculatePcQtyAndFee } from "../../utils/orders";
 import OrderType from "../../types/OrderType";
 import BN from "bn.js";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 import { increaseComputeUnitsIx } from "../../utils/transactions";
 
 export default function marketMakerPostOnlyOrder(

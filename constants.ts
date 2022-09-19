@@ -6,8 +6,8 @@ import { Duration } from "./types/optifi-exchange-types";
 
 // solana cluster with default rpc endpoint
 export enum SolanaCluster {
-    Mainnet = "https://optifil-main-c161.mainnet.rpcpool.com",
-    Devnet = "https://api-switchboard.devnet.rpcpool.com",
+    Mainnet = "https://optifil-main-c161.mainnet.rpcpool.com/9de64c66-39f3-485f-bb23-b24f24610368",
+    Devnet = "https://optifil-develope-610c.devnet.rpcpool.com/2fc9e4ee-7e7b-47c5-a9af-a3a4dc0f79c9",
     Testnet = "https://api.testnet.solana.com"
 }
 
@@ -111,25 +111,25 @@ export type EndpointConstant = {
 export const USDC_TOKEN_MINT: EndpointConstant = {
     [SolanaCluster.Mainnet]: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     [SolanaCluster.Devnet]: "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
-    [SolanaCluster.Testnet]: "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN"
+    [SolanaCluster.Testnet]: undefined
 }
 
 export const OPTIFI_USDC_PROGRAM_ID: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "oPUDVzLhuwtLgZQoTUz912hikvgpTGGg3vNB7NGXbou",
-    [SolanaCluster.Devnet]: "oPUDVzLhuwtLgZQoTUz912hikvgpTGGg3vNB7NGXbou",
-    [SolanaCluster.Testnet]: "oPUDVzLhuwtLgZQoTUz912hikvgpTGGg3vNB7NGXbou"
+    [SolanaCluster.Mainnet]: undefined,
+    [SolanaCluster.Devnet]: "oudvxi2FrrgAS8boTYg4XWVkNsDE8ASK4AveVZGEjQ4",
+    [SolanaCluster.Testnet]: undefined
 }
 
 
 export const OPUSDC_TOKEN_MINT: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "9CqvpJVgqqitKyp1HRvCSApgCcuBkJ25n68fVcWwfKn7",
-    [SolanaCluster.Devnet]: "9CqvpJVgqqitKyp1HRvCSApgCcuBkJ25n68fVcWwfKn7",
-    [SolanaCluster.Testnet]: "9CqvpJVgqqitKyp1HRvCSApgCcuBkJ25n68fVcWwfKn7"
+    [SolanaCluster.Mainnet]: undefined,
+    [SolanaCluster.Devnet]: "631ThWccqm92emGT8cCr6ceMNLWEX3xQdDiyL3NGPkV5",
+    [SolanaCluster.Testnet]: undefined
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    [SolanaCluster.Devnet]: "220908",
-    [SolanaCluster.Testnet]: "dmeWlh",
+    [SolanaCluster.Devnet]: "220915",
+    [SolanaCluster.Testnet]: undefined,
     [SolanaCluster.Mainnet]: "210001",
 }
 
@@ -325,7 +325,7 @@ export const OPTIFI_TAKER_FEE: EndpointConstant = {
     [SolanaCluster.Testnet]: undefined
 }
 export const OPTIFI_MAKER_FEE: EndpointConstant = {
-    [SolanaCluster.Devnet]: 0.0015,
+    [SolanaCluster.Devnet]: 0.0005,
     [SolanaCluster.Mainnet]: 0.0,
     [SolanaCluster.Testnet]: undefined
 }

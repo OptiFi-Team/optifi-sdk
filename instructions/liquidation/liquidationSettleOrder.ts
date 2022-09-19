@@ -10,7 +10,7 @@ import InstructionResult from "../../types/instructionResult";
 import { getSerumMarket } from "../../utils/serum";
 import { deriveVaultNonce } from "../../utils/market";
 import { findMarginStressWithAsset } from "../../utils/margin";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 
 export default function liquidationSettleOrder(context: Context,
     userAccountAddress: PublicKey,

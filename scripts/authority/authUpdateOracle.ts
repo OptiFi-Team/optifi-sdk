@@ -1,13 +1,13 @@
+import { SUPPORTED_ASSETS } from "../../constants";
 import { initializeContext } from "../../index";
 import updateOracle from "../../instructions/authority/authUpdateOracle";
-import { Asset as OptifiAsset } from "../../types/optifi-exchange-types";
+import { assetToOptifiAsset } from "../../utils/generic";
 
-const assets = [OptifiAsset.Bitcoin, OptifiAsset.Ethereum, OptifiAsset.USDC, OptifiAsset.Solana];
 
 initializeContext().then(async (context) => {
-    for (let asset of assets) {
+    for (let asset of SUPPORTED_ASSETS) {
         console.log(asset)
-        let res = await updateOracle(context, asset);
+        let res = await updateOracle(context, assetToOptifiAsset(asset));
         console.log("updateOracle res: ", res)
     }
 })

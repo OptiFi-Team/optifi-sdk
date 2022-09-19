@@ -10,7 +10,7 @@ import { increaseComputeUnitsIx, signAndSendTransaction } from "../../utils/tran
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { getSerumMarket } from "../../utils/serum";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 import { findMarginStressWithAsset } from "../../utils/margin";
 
 

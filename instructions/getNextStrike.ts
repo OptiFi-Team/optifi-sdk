@@ -19,6 +19,7 @@ import {
 import * as anchor from "@project-serum/anchor";
 import InstructionResult from "../types/instructionResult";
 import { increaseComputeUnitsIx } from "../utils/transactions";
+import { findMarginStressWithAsset } from "../utils/margin";
 //TODO: use account.chain.account
 export const instrumentIdx = 5; //if instrument address is already in use, plus 1
 
@@ -35,6 +36,8 @@ export function getNextStrike(
     findExchangeAccount(context)
       .then(async ([exchangeAddress, _]) => {
         let optifiAsset = assetToOptifiAsset(instrumentContext.asset);
+
+        let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, exchangeAddress, instrumentContext.asset);
 
         let data = {
           asset: optifiAssetToNumber(optifiAsset),
@@ -85,12 +88,7 @@ export function getNextStrike(
                 optifiAsset,
                 OracleAccountType.Spot
               ),
-            assetIvOracleFeed: await findOracleAccountFromAsset(
-              context,
-              optifiAsset,
-              OracleAccountType.Iv
-            ),
-            clock: SYSVAR_CLOCK_PUBKEY,
+            marginStressAccount: marginStressAddress
           },
           preInstructions: [increaseComputeUnitsIx]
         });

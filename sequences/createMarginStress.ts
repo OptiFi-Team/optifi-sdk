@@ -1,5 +1,5 @@
 import { SUPPORTED_ASSETS } from "../constants";
-import marginStressInit from "../instructions/marginStressInit";
+import marginStressInit from "../instructions/marginStress/marginStressInit";
 import Context from "../types/context";
 
 /**
@@ -12,7 +12,7 @@ export function createMarginStress(context: Context): Promise<void> {
         try {
             for (let asset of SUPPORTED_ASSETS) {
                 marginStressInit(context, asset).then((res) => {
-                    console.log("Got init res", res);
+                    console.log("Got marginStressInit res", res);
                 }).catch((err) => {
                     console.error(err);
                 })

@@ -12,7 +12,7 @@ import {
 import { DexInstructions } from '@project-serum/serum';
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findMarginStressWithAsset } from "../../utils/margin";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 import { findSerumAuthorityPDA } from "../../utils/pda";
 
 // =========================================================================================

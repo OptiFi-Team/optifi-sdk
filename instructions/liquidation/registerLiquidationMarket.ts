@@ -11,7 +11,7 @@ import { findMarginStressWithAsset } from "../../utils/margin";
 import { findSerumAuthorityPDA } from "../../utils/pda";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { deriveVaultNonce } from "../../utils/market";
-import marginStress from "../marginStress";
+import marginStress from "../marginStress/marginStress";
 
 export default function registerLiquidationMarket(context: Context,
     userAccountAddress: PublicKey,
