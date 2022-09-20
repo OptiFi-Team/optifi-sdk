@@ -33,6 +33,14 @@ export function createOptifiMarket(context: Context,
                     context.connection.getMinimumBalanceForRentExemption(MintLayout.span).then((min) => {
                         let shortSplTokenMint = anchor.web3.Keypair.generate();
 
+                        // console.log("optifiMarket", derivedMarketAddress.toString(),
+                        //     "exchange", exchangeAddress.toString(),
+                        //     "serumMarket", serumMarket.toString(),
+                        //     "instrument", initialInstrument.toString(),
+                        //     "longSplTokenMint", coinMintPk.toString(),
+                        //     "shortSplTokenMint", shortSplTokenMint.publicKey.toString(),
+                        //     "payer", context.provider.wallet.publicKey.toString())
+
                         let createMarketTx = context.program.transaction.createOptifiMarket(
                             bump,
                             {

@@ -70,7 +70,7 @@ export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
     // ]
 }
 
-// We want our maturities to end on Friday, 8:00PM UTC as same as Deribit
+// We want our maturities to end on Friday, 8:00AM UTC as same as Deribit
 export const EXPIRATION_WEEKDAY: number = 5;
 export const EXPIRATION_TIME: number = 8;
 
@@ -115,22 +115,22 @@ export const USDC_TOKEN_MINT: EndpointConstant = {
 }
 
 export const OPTIFI_USDC_PROGRAM_ID: EndpointConstant = {
-    [SolanaCluster.Mainnet]: undefined,
+    [SolanaCluster.Mainnet]: "opucrGSP5hyYAEfQMjYrchfLtwowjiAjAMwUmmjoYGP",
     [SolanaCluster.Devnet]: "oudvxi2FrrgAS8boTYg4XWVkNsDE8ASK4AveVZGEjQ4",
     [SolanaCluster.Testnet]: undefined
 }
 
 
 export const OPUSDC_TOKEN_MINT: EndpointConstant = {
-    [SolanaCluster.Mainnet]: undefined,
+    [SolanaCluster.Mainnet]: "9dspv968mZJkduroPvV4yFxJHCiURTrQxwrn694vdQci",
     [SolanaCluster.Devnet]: "631ThWccqm92emGT8cCr6ceMNLWEX3xQdDiyL3NGPkV5",
     [SolanaCluster.Testnet]: undefined
 }
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
+    [SolanaCluster.Mainnet]: "220920",
     [SolanaCluster.Devnet]: "220915",
     [SolanaCluster.Testnet]: undefined,
-    [SolanaCluster.Mainnet]: "210001",
 }
 
 export const SWITCHBOARD: EndpointConstant = {
