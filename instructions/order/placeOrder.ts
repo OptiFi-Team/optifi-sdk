@@ -35,7 +35,7 @@ export default function placeOrder(context: Context,
 
             let spotPrice = Math.round(await getSpotPrice(context, asset) / await getSpotPrice(context, 2) * 100) / 100
 
-            let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(context, spotPrice, size, PcQty, side, orderType, false)!;
+            let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(context, spotPrice, size, price, side, orderType, false)!;
 
             // console.log("side: ", side);
             // console.log("limit: ", limit);
@@ -52,7 +52,7 @@ export default function placeOrder(context: Context,
                 side,
                 new anchor.BN(limit),
                 new anchor.BN(maxCoinQty),
-                new anchor.BN(maxPcQty),
+                new anchor.BN(maxPcQty * (10 ** USDC_DECIMALS)),
                 new anchor.BN(orderTypeToNumber(orderType)),
                 {
                     accounts: {

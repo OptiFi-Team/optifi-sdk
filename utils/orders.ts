@@ -859,25 +859,25 @@ function getSerumFee(context: Context, orderType: OrderType, is_registered_maker
     }
   }
 }
-export function calculatePcQtyAndFee(context: Context, spotPrice: number, size: number, maxPcQty: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
+export function calculatePcQtyAndFee(context: Context, spotPrice: number, size: number, price: number, orderSide: OrderSide, orderType: OrderType, is_registered_maker: Boolean): [number, number, number] | undefined {
 
-  spotPrice *= (10 ** USDC_DECIMALS)
-  // console.log("spotPrice: ", spotPrice)
-  // console.log("size: ", size)
   let optifiFee = spotPrice * size * getOptifiFee(context, orderType, is_registered_maker);
   // console.log(optifiFee)
-  // console.log(maxPcQty * OPTIFI_MAX_FEE_RATIO)
-  optifiFee = Math.min(optifiFee, maxPcQty * OPTIFI_MAX_FEE_RATIO)
+  // console.log(size * price * OPTIFI_MAX_FEE_RATIO)
+  optifiFee = Math.min(optifiFee, size * price * OPTIFI_MAX_FEE_RATIO)
   // console.log("optifiFee: ", optifiFee)
 
-  let serumFee = maxPcQty * getSerumFee(context, orderType, is_registered_maker);
+  let serumFee = size * price * getSerumFee(context, orderType, is_registered_maker);
   let totalFee = optifiFee + serumFee;
 
-  // [totalPcQty, maxPcQty, totalFee]
+  // console.log("serumFee: ", serumFee)
+  // console.log("totalFee: ", totalFee)
+
+  // [totalPcQty, size * price, totalFee]
   switch (orderSide) {
     case OrderSide.Ask:
-      return [maxPcQty - totalFee, maxPcQty - serumFee, totalFee];
+      return [size * price - totalFee, size * price - serumFee, totalFee];
     case OrderSide.Bid:
-      return [maxPcQty + totalFee, maxPcQty + serumFee, totalFee];
+      return [size * price + totalFee, size * price + serumFee, totalFee];
   }
 }
