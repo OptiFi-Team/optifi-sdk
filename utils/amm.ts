@@ -676,27 +676,28 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                     for (let inx of tx.transaction.message.instructions) {
                         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
                         if (programId.toString() == context.program.programId.toString()) {
+                            console.log("hello")
+
                             let programAccounts = populateInxAccountKeys(context, tx.transaction.message.accountKeys, inx)
                             let coder = context.program.coder as BorshCoder;
                             let decoded = coder.instruction.decode(base58.decode(inx.data))
 
                             if (decoded) {
                                 if (decoded.name == "ammDeposit") {
-                                    // let userUsdcAccountIndex = inx.accounts[3]
                                     //@ts-ignore
-                                    let userUsdcAccountIndex = programAccounts.userQuoteTokenVault.accountIndex
-                                    // let userLpAccountIndex = inx.accounts[6]
+                                    let ammQuoteTokenVaultIndex = programAccounts.ammQuoteTokenVault.accountIndex
                                     //@ts-ignore
                                     let userLpAccountIndex = programAccounts.userLpTokenVault.accountIndex
 
-                                    let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
-                                    let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userUsdcAccountIndex)!
+                                    // Calculate USDC change
+                                    let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == ammQuoteTokenVaultIndex)!
+                                    let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == ammQuoteTokenVaultIndex)!
+                                    let usdcAmount = new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(
+                                        new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
 
-                                    let usdcAmount = new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(
-                                        new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
+                                    // Calculate lp token change
                                     let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
                                     let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
-
                                     let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
                                         new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
                                         : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
