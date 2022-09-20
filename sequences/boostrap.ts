@@ -18,7 +18,6 @@ import { findOptifiMarkets, findOptifiMarketWithIdx } from "../utils/market";
 import { createMarginStress } from "./createMarginStress";
 import fs from "fs";
 import path from "path";
-import createAMMAccounts from "./createAMMAccounts";
 import updateIv from "../instructions/marginStress/updateIv";
 import updateOracle from "../instructions/authority/authUpdateOracle";
 import Asset from "../types/asset";
