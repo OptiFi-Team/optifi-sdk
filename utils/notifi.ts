@@ -16,17 +16,17 @@ import moment from 'moment';
 export async function notifiMarginCallAlert(walletAddress: string, data: any) {
     try {
         let dataGet = {
-            optifi_program_id: process.env.REACT_APP_OPTIFI_PROGRAM_ID,
+            optifi_program_id: process.env.OPTIFI_PROGRAM_ID,
             wallet_address: walletAddress
         }
-
+        console.log(dataGet)
         let userNotifiData = (await sendGet(dataGet)).result;// if this wallet_address hasn't register Notifi, it will be null
 
         if (userNotifiData) {//this user has registered
             let alertTimestamp = userNotifiData.alert_timestamp;
             if (alertTimestamp == "0") {//hasn't been alerted yet
                 let dataPost = {
-                    optifi_program_id: process.env.REACT_APP_OPTIFI_PROGRAM_ID,
+                    optifi_program_id: process.env.OPTIFI_PROGRAM_ID,
                     wallet_address: walletAddress,
                     notifi_id: userNotifiData.notifi_id,
                     magic: process.env.REACT_APP_UPDATE_USER_NOTIFI_PROFILE_MAGIC,
@@ -34,12 +34,14 @@ export async function notifiMarginCallAlert(walletAddress: string, data: any) {
                     email_address: userNotifiData.email_address,
                     alert_timestamp: Math.floor(Date.now() / 1000).toString(),
                 };
+                console.log(dataPost)
                 sendPost(dataPost)
-                sendNotifiLiquidationAlert(walletAddress, data)
+                sendNotifiMarginCallAlert(walletAddress, data)
             } else {//has been alerted
                 let timePassed = new BN(Math.floor(Date.now() / 1000)).sub(new BN(userNotifiData.alert_timestamp)).toNumber();
-                if (timePassed = 60 * 60 * 24) {//1 day
-                    sendNotifiLiquidationAlert(walletAddress, data)
+                console.log("now is " + Date.now() / 1000 + " , and send margin call alert before is " + userNotifiData.alert_timestamp)
+                if (timePassed == 60 * 60 * 24) {//1 day
+                    sendNotifiMarginCallAlert(walletAddress, data)
                     console.log("send notifi alert to user " + walletAddress + " again!")
                 }
             }
@@ -146,8 +148,8 @@ export async function notifiLiquidationAlert(
             walletPublicKey: walletAddress, // Or other address
             message: 'Optifi alert',
             template: {
-                emailTemplate: "",
-                telegramTemplate: "",
+                emailTemplate: "1a09872a-8eeb-42e2-8392-2e06260dbd0e",
+                telegramTemplate: "1a09872a-8eeb-42e2-8392-2e06260dbd0e",
                 variables: {
                     "availableBalance": data.availableBalance,
                     "orderCanceled": data.orderCanceled,
@@ -191,7 +193,7 @@ export async function sendGet(data: any) {
     } catch (error) { console.log(error) }
 }
 
-export async function sendNotifiLiquidationAlert(walletAddress: string, data: any) {
+export async function sendNotifiMarginCallAlert(walletAddress: string, data: any) {
     try {
         const env: NotifiEnvironment = 'Development';
         const axiosInstance = createAxiosInstance(axios, env);
@@ -206,8 +208,8 @@ export async function sendNotifiLiquidationAlert(walletAddress: string, data: an
             walletPublicKey: walletAddress, // Or other address
             message: 'Optifi alert',
             template: {
-                emailTemplate: "",
-                telegramTemplate: "",
+                emailTemplate: "663a713e-2873-49d2-8e12-deb4f436db9c",
+                telegramTemplate: "663a713e-2873-49d2-8e12-deb4f436db9c",
                 variables: {
                     "availableBalance": data.availableBalance,
                     "accountEquity": data.accountEquity,
