@@ -360,6 +360,30 @@ export function getFilterTradesForAccount(
             }
           }
         }
+
+        if (orderHistory.orderType == "Liquidation") {
+          if (cancelSize[clientId].equals(new Decimal(0))) {//最後沒被cancel
+            let order = orders.find(e => e.clientId?.toNumber() == clientId)
+            if (order) {//沒有被totally fill
+              if (order.fillPercentage) {//2. Partial Filled 
+                orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
+                trades = await pushInTrade(orderHistory, trades)
+                continue;
+              }
+            } else {//1. totally Filled
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          } else {//最後被cancel 了
+            if (!originalSize[clientId].equals(cancelSize[clientId]) && (orderHistory.txType != "cancel order")) {// 3. Partial Filled and be canceled 
+              let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
+              let res = (filledAmt.div(originalSize[clientId]));
+              orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
+              trades = await pushInTrade(orderHistory, trades)
+              continue;
+            }
+          }
+        }
       }
 
       trades.reverse()
