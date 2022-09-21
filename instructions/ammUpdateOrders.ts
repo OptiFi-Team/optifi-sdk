@@ -98,7 +98,7 @@ export function ammUpdateOrders(context: Context,
                                                         //     programId: serumId,
                                                         // });
 
-                                                        let consumeEventInx = await context.program.methods.consumeEventQueue().accounts(
+                                                        let consumeEventInx = await context.program.methods.consumeEventQueue(null).accounts(
                                                             {
                                                                 optifiExchange: exchangeAddress,
                                                                 serumMarket: optifiMarket.serumMarket,

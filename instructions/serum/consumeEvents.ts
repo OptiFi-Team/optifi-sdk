@@ -30,7 +30,7 @@ export async function consumeEventsQPermissioned(
             tx1.add(increaseComputeUnitsIx)
             openOrdersAccounts.forEach(async e => {
                 tx1.add(
-                    await context.program.methods.consumeEventQueue().accounts({
+                    await context.program.methods.consumeEventQueue(20).accounts({
                         optifiExchange,
                         serumMarket,
                         eventQueue,
