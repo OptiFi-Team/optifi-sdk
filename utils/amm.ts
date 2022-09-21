@@ -866,12 +866,25 @@ export function lpToUsdcAmount(
     return amount
 }
 
-// calculate amm withdraw fees - decimals considered
+/**
+ * Calculate amm withdraw fees
+ *
+ * @param connection Solana RPC connection
+ *
+ * @param amm amm account that the user is trying to withdraw from
+ *
+ * @param userAccount user account info
+ *
+ * @param lpAmountToWithdraw lp token amount to withdraw - decimals considered
+ * 
+ * @param lpBalance balance in user's LP token account for this amm - decimals considered. It's the same as `lpTokenBalance` in interface `UserEquity`
+ */
 export async function calcAmmWithdrawFees(
     connection: Connection,
     amm: AmmAccount,
     userAccount: UserAccount,
-    lpAmountToWithdraw: number
+    lpAmountToWithdraw: number,
+    lpBalance: number
 ): Promise<[withdrawAmountInUSDC: number, withdrawFee: number, performanceFee: number]> {
     return new Promise(async (resolve, reject) => {
         try {
@@ -880,11 +893,15 @@ export async function calcAmmWithdrawFees(
             let lpTokenSupply = new BN(lpMint.supply.toString()).toNumber();
 
             //@ts-ignore
-            let notioanlWithdrawableRaw = userAccount.ammEquities[amm.ammIdx - 1].notioanlWithdrawable;
-            let notioanlWithdrawable = notioanlWithdrawableRaw / (10 ** USDC_DECIMALS)
+            let notionalWithdrawableRaw = userAccount.ammEquities[amm.ammIdx - 1].notioanlWithdrawable;
+            let notionalWithdrawable = notionalWithdrawableRaw / (10 ** USDC_DECIMALS)
 
             // console.log("notioanlWithdrawable: ", notioanlWithdrawable)
             // console.log("lpAmountToWithdraw: ", lpAmountToWithdraw)
+
+            // actual withdraw amount in usdc, aka. lp balance in USDC
+            let actualWithdrawableRaw = lpToUsdcAmount(lpBalance * 10 ** lpMint.decimals, lpTokenSupply, amm.totalLiquidityUsdc.toNumber())
+            let actualWithdrawable = actualWithdrawableRaw / (10 ** USDC_DECIMALS)
 
             // withdraw amount in usdc
             let withdrawAmountRaw = lpToUsdcAmount(lpAmountToWithdraw * 10 ** lpMint.decimals, lpTokenSupply, amm.totalLiquidityUsdc.toNumber())
@@ -899,27 +916,13 @@ export async function calcAmmWithdrawFees(
             let performanceFee: number = 0;
 
             // calc performance fee: 10%
-            if (withdrawAmount > notioanlWithdrawable) {
-                console.log("calculating performance fee");
-
+            if (actualWithdrawable > notionalWithdrawable) {
                 // clac user's profit
-                profit = withdrawAmount - notioanlWithdrawable;
+                profit = actualWithdrawable - notionalWithdrawable;
 
                 // calc performance fee
                 performanceFee = profit * PERFORMANCE_FEE_PERCENTAGE;
             }
-
-            let totalFee = withdrawFee + performanceFee;
-
-            //     // round up to integer
-            //     let fee = if fee_f % 1f64 == 0f64 {
-            //         fee_f as u64
-            //     } else {
-            //         (fee_f - (fee_f % 1f64) + 1f64) as u64
-            //     };
-            //     return fee;
-
-            console.log(`withdraw amount in usdc: ${withdrawAmount}, withdraw fee: ${withdrawFee}, total profit: ${profit}, performance fee: ${performanceFee}, total fee: ${totalFee}`);
 
             resolve([withdrawAmount, withdrawFee, performanceFee])
 
