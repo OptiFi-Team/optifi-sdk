@@ -47,7 +47,7 @@ export async function notifiMarginCallAlert(walletAddress: string, data: any) {
             }
         }
         else {
-            console.log(walletAddress + "in liquidate alert, but hasn't subscribe Notifi")
+            console.log(walletAddress + "in margin call alert, but hasn't subscribe Notifi")
         }
     } catch (e) {
 
@@ -146,7 +146,7 @@ export async function notifiLiquidationAlert(
             key: randomUUID(), // Idempotency key, use the same value for each unique event
             walletBlockchain: 'SOLANA', // Or 'SOLANA'
             walletPublicKey: walletAddress, // Or other address
-            message: 'Optifi alert',
+            message: 'Optifi liquidate alert',
             template: {
                 emailTemplate: "1a09872a-8eeb-42e2-8392-2e06260dbd0e",
                 telegramTemplate: "1a09872a-8eeb-42e2-8392-2e06260dbd0e",
@@ -206,7 +206,7 @@ export async function sendNotifiMarginCallAlert(walletAddress: string, data: any
             key: randomUUID(), // Idempotency key, use the same value for each unique event
             walletBlockchain: 'SOLANA', // Or 'SOLANA'
             walletPublicKey: walletAddress, // Or other address
-            message: 'Optifi alert',
+            message: 'Optifi margin call alert',
             template: {
                 emailTemplate: "663a713e-2873-49d2-8e12-deb4f436db9c",
                 telegramTemplate: "663a713e-2873-49d2-8e12-deb4f436db9c",
