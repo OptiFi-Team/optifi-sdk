@@ -22,7 +22,7 @@ export async function getGvolAtm7(asset: Asset) {
         const response = await fetch('https://app.pinkswantrading.com/graphql', {
             method: 'POST',
             body: JSON.stringify({
-                "query": "query ConstantMaturityAtm1Min($symbol: BTCOrETHEnumType, $dateStart: String, $dateEnd: String, $interval: String){\n ConstantMaturityAtm1Min(symbol:$symbol, dateStart:$dateStart, dateEnd: $dateEnd, interval: $interval) {\n date\n atm7}\n}\n",
+                "query": "query ConstantMaturityAtm1Min($symbol: BTCOrETHEnumType, $dateStart: String, $dateEnd: String, $interval: String){ConstantMaturityAtm1Min(symbol:$symbol, dateStart:$dateStart, dateEnd: $dateEnd, interval: $interval) {date, atm7, atm30, atm60, atm90, atm180}}",
                 "variables": {
                     // @ts-ignore
                     "symbol": symbol,
@@ -45,7 +45,7 @@ export async function getGvolAtm7(asset: Asset) {
 
         for (let atm of result.data.ConstantMaturityAtm1Min) {
             if (atm.atm7 != null) {
-                console.log(atm);
+                // console.log(atm);
                 return atm;
             }
         }
