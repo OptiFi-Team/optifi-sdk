@@ -40,7 +40,7 @@ export async function getGvolTermStructure(asset: Asset) {
         let json = await response.json();
 
         let result = json.data.OrderbookForwardImpliedVolatilityCurve;
-        console.log(result)
+        // console.log(result)
 
         return result;
     } catch (error) {
