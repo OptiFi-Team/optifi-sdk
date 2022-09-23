@@ -600,9 +600,9 @@ export function addStatusInOrderHistory(
         if (orderHistory.cancelledQuantity) {
           cancelSize[orderHistory.clientId] = new Decimal(orderHistory.cancelledQuantity)
           // find decimal from place order history, since no assign decimal when generate cancel order history
-          let decimal = orderHistorys.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
-          if (decimal)
-            cancelSize[orderHistory.clientId] = (cancelSize[orderHistory.clientId]).div(10 ** decimal)
+          // let decimal = orderHistorys.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
+          // if (decimal)
+          //   cancelSize[orderHistory.clientId] = (cancelSize[orderHistory.clientId]).div(10 ** decimal)
         }
       }
       for (let orderHistory of orderHistorys) {
