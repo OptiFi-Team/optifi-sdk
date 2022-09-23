@@ -13,52 +13,56 @@ import { Order } from "./orders"
 import { Position } from "./market";
 import moment from 'moment';
 
-export async function notifiMarginCallAlert(walletAddress: string, data: any) {
-    try {
-        let dataGet = {
-            optifi_program_id: process.env.OPTIFI_PROGRAM_ID,
-            wallet_address: walletAddress
-        }
-        console.log(dataGet)
-        let userNotifiData = (await sendGet(dataGet)).result;// if this wallet_address hasn't register Notifi, it will be null
-
-        if (userNotifiData) {//this user has registered
-            let alertTimestamp = userNotifiData.alert_timestamp;
-            if (alertTimestamp == "0") {//hasn't been alerted yet
-                let dataPost = {
-                    optifi_program_id: process.env.OPTIFI_PROGRAM_ID,
-                    wallet_address: walletAddress,
-                    notifi_id: userNotifiData.notifi_id,
-                    magic: process.env.REACT_APP_UPDATE_USER_NOTIFI_PROFILE_MAGIC,
-                    telegram_id: userNotifiData.telegram_id,
-                    email_address: userNotifiData.email_address,
-                    alert_timestamp: Math.floor(Date.now() / 1000).toString(),
-                };
-                console.log(dataPost)
-                sendPost(dataPost)
-                sendNotifiMarginCallAlert(walletAddress, data)
-            } else {//has been alerted
-                let timePassed = new BN(Math.floor(Date.now() / 1000)).sub(new BN(userNotifiData.alert_timestamp)).toNumber();
-                console.log("now is " + Date.now() / 1000 + " , and send margin call alert before is " + userNotifiData.alert_timestamp)
-                if (timePassed == 60 * 60 * 24) {//1 day
-                    sendNotifiMarginCallAlert(walletAddress, data)
-                    console.log("send notifi alert to user " + walletAddress + " again!")
-                }
-            }
-        }
-        else {
-            console.log(walletAddress + "in margin call alert, but hasn't subscribe Notifi")
-        }
-    } catch (e) {
-
-    }
-}
-
 function cmpArray(before, after) {
     let result = before.filter((e) => {
         return after.indexOf(e) === -1
     })
     return result;
+}
+
+export async function sendPost(data: any) {
+    try {
+        const response = await fetch("https://lambda.optifi.app/update_user_notifi_profile", {
+            method: "POST",
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error! status: ${response.status}`);
+        }
+    } catch (error) { console.log(error) }
+}
+
+//https://lambda.optifi.app/get_user_notifi_profile?optifi_program_id=DeVoPfWrDn2UTA1MbSfagvpQxA91MpNFQnhHRw19dK34&wallet_address=AhpECjgohVD1zqR4CjmcGgyQZFyFJqewfntRbggP7E36
+export async function sendNotifiMarginCallAlertGet(data: any) {
+    try {
+        let url = "https://lambda.optifi.app/get_user_notifi_profile?optifi_program_id=" + data.optifi_program_id +
+            "&wallet_address=" + data.wallet_address
+        const response = await fetch(url, {
+            method: "GET",
+        });
+        let res = await response.json()
+        if (!response.ok) {
+            console.log("no user data in notifi");
+        }
+        return res;
+    } catch (error) { console.log(error) }
+}
+
+export async function sendNotifiAMMWithdrawalSuccessfulAlertGet(data: any) {
+    try {
+        let url = "https://lambda.optifi.app/get_user_usdc_balance_change_ui?optifi_program_id=" + data.optifi_program_id +
+            "&uid=" + data.uid
+
+        const response = await fetch(url, {
+            method: "GET",
+        });
+        let res = await response.json()
+        if (!response.ok) {
+            console.log("err in sendNotifiAMMWithdrawalSuccessfulAlertGet");
+        }
+        return res.result.userUsdcBalanceChangeUi[0];
+    } catch (error) { console.log(error) }
 }
 
 export async function notifiLiquidationAlert(
@@ -164,33 +168,45 @@ export async function notifiLiquidationAlert(
     }
 }
 
-export async function sendPost(data: any) {
+export async function notifiMarginCallAlert(walletAddress: string, data: any) {
     try {
-        const response = await fetch("https://lambda.optifi.app/update_user_notifi_profile", {
-            method: "POST",
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error! status: ${response.status}`);
+        let dataGet = {
+            optifi_program_id: process.env.OPTIFI_PROGRAM_ID,
+            wallet_address: walletAddress
         }
-    } catch (error) { console.log(error) }
-}
+        console.log(dataGet)
+        let userNotifiData = (await sendNotifiMarginCallAlertGet(dataGet)).result;// if this wallet_address hasn't register Notifi, it will be null
 
-//https://lambda.optifi.app/get_user_notifi_profile?optifi_program_id=DeVoPfWrDn2UTA1MbSfagvpQxA91MpNFQnhHRw19dK34&wallet_address=AhpECjgohVD1zqR4CjmcGgyQZFyFJqewfntRbggP7E36
-export async function sendGet(data: any) {
-    try {
-        let url = "https://lambda.optifi.app/get_user_notifi_profile?optifi_program_id=" + data.optifi_program_id +
-            "&wallet_address=" + data.wallet_address
-        const response = await fetch(url, {
-            method: "GET",
-        });
-        let res = await response.json()
-        if (!response.ok) {
-            console.log("no user data in notifi");
+        if (userNotifiData) {//this user has registered
+            let alertTimestamp = userNotifiData.alert_timestamp;
+            if (alertTimestamp == "0") {//hasn't been alerted yet
+                let dataPost = {
+                    optifi_program_id: process.env.OPTIFI_PROGRAM_ID,
+                    wallet_address: walletAddress,
+                    notifi_id: userNotifiData.notifi_id,
+                    magic: process.env.REACT_APP_UPDATE_USER_NOTIFI_PROFILE_MAGIC,
+                    telegram_id: userNotifiData.telegram_id,
+                    email_address: userNotifiData.email_address,
+                    alert_timestamp: Math.floor(Date.now() / 1000).toString(),
+                };
+                console.log(dataPost)
+                sendPost(dataPost)
+                sendNotifiMarginCallAlert(walletAddress, data)
+            } else {//has been alerted
+                let timePassed = new BN(Math.floor(Date.now() / 1000)).sub(new BN(userNotifiData.alert_timestamp)).toNumber();
+                console.log("now is " + Date.now() / 1000 + " , and send margin call alert before is " + userNotifiData.alert_timestamp)
+                if (timePassed == 60 * 60 * 24) {//1 day
+                    sendNotifiMarginCallAlert(walletAddress, data)
+                    console.log("send notifi alert to user " + walletAddress + " again!")
+                }
+            }
         }
-        return res;
-    } catch (error) { console.log(error) }
+        else {
+            console.log(walletAddress + "in margin call alert, but hasn't subscribe Notifi")
+        }
+    } catch (e) {
+
+    }
 }
 
 export async function sendNotifiMarginCallAlert(walletAddress: string, data: any) {
@@ -223,5 +239,48 @@ export async function sendNotifiMarginCallAlert(walletAddress: string, data: any
     } catch (e) {
         console.log("send margin call alert to notifi fail")
         console.log(e)
+    }
+}
+
+export async function notifiAMMWithdrawalSuccessfulAlert(uid: number, assetNum: number, walletAddress: string) {
+    try {
+        //1.userUsdcBalanceChangeUi: uid -> comsumeWithdrawQueueInxes table userUsdcBalanceChangeUi
+        let data = {
+            optifi_program_id: process.env.OPTIFI_PROGRAM_ID,
+            uid: uid.toString()
+        }
+        let userUsdcBalanceChangeUi: string = await sendNotifiAMMWithdrawalSuccessfulAlertGet(data)
+        //2.asset: uid -> comsumeWithdrawQueueInxes table amm_id(x) -> from onchain
+        let asset: string = (assetNum == 1) ? "BTC" : (assetNum == 2) ? "ETH" : (assetNum == 3) ? "SOL" : "" //TODO check
+        //3.onwerAddress ->walletAddress
+        let onwerAddress: string = walletAddress;
+
+        const env: NotifiEnvironment = 'Development';
+        const axiosInstance = createAxiosInstance(axios, env);
+        const client = new NotifiClient(axiosInstance);
+        // Log in to obtain a token
+        const { token } = await client.logIn({ sid: process.env.REACT_APP_NOTIFI_SID!, secret: process.env.REACT_APP_NOTIFI_SECRET! });//BREAK HERE
+
+        // Use the token to send a message to anyone subscribed to that wallet
+
+        await client.sendDirectPush(token, {
+            key: randomUUID(), // Idempotency key, use the same value for each unique event
+            walletBlockchain: 'SOLANA', // Or 'SOLANA'
+            walletPublicKey: walletAddress, // Or other address
+            message: 'Optifi liquidate alert',
+            template: {
+                emailTemplate: "",
+                telegramTemplate: "",
+                variables: {
+                    "userUsdcBalanceChangeUi": userUsdcBalanceChangeUi,
+                    "asset": asset,
+                    "onwerAddress": onwerAddress,
+                }
+            }
+        });
+        console.log("success sendDirectPush to notifi!")
+
+    } catch (e) {
+        console.log("notifiAMMWithdrawalSuccessfulAlert fail for " + walletAddress)
     }
 }
