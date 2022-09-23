@@ -5,8 +5,9 @@ import { findAMMWithIdx, getAmmWithdrawQueue } from "../../utils/amm";
 import Context from "../../types/context"
 import { SolanaCluster } from "../../constants";
 import { sleep } from "../../utils/generic";
+import { notifiAMMWithdrawalSuccessfulAlert } from "../../utils/notifi"
 
-let ammIndexes = [1, 2]
+let ammIndexes = [1, 2, 3]
 initializeContext().then(async (context) => {
     let [optifiExchange,] = await findOptifiExchange(context)
     ammIndexes.forEach(async ammIndex => {
@@ -44,8 +45,12 @@ initializeContext().then(async (context) => {
                 if (isReqeustInCorrectTimeWindow(context, requestTimestamp.toNumber())) {
                     let userAccount = await getUserAccountById(context, userId)
                     console.log("userId: ", userId, " ,userAccount: ", userAccount.publicKey.toString())
-                    await consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then((res) => {
+                    await consumeWithdrawRequestQueue(context, ammAddress, userAccount.publicKey).then(async (res) => {
                         console.log("Got consumeWithdrawRequestQueue res", res);
+                        //@ts-ignore
+                        let asset: number = amm.asset
+                        if (!asset) console.log("can't get amm asset")
+                        await notifiAMMWithdrawalSuccessfulAlert(userId, asset, userAccount.publicKey.toString())
                     }).catch((err) => {
                         console.error(err);
                     })

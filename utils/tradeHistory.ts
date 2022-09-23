@@ -139,9 +139,9 @@ export function getAllTradesForAccount(
         if (orderHistory.cancelledQuantity) {
           cancelSize[orderHistory.clientId] = new Decimal(orderHistory.cancelledQuantity)
           // find decimal from place order history, since no assign decimal when generate cancel order history
-          let decimal = res.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
-          if (decimal)
-            cancelSize[orderHistory.clientId] = (cancelSize[orderHistory.clientId]).div(10 ** decimal)
+          // let decimal = res.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
+          // if (decimal)
+          //   cancelSize[orderHistory.clientId] = (cancelSize[orderHistory.clientId]).div(10 ** decimal)
         }
       }
       for (let orderHistory of res) {
@@ -279,9 +279,9 @@ export function getFilterTradesForAccount(
         if (orderHistory.cancelledQuantity) {
           cancelSize[orderHistory.clientId] = new Decimal(orderHistory.cancelledQuantity)
           // find decimal from place order history, since no assign decimal when generate cancel order history
-          let decimal = res.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
-          if (decimal)
-            cancelSize[orderHistory.clientId] = (cancelSize[orderHistory.clientId]).div(10 ** decimal)
+          // let decimal = res.find(e => e.clientId == orderHistory.clientId && e.decimal)?.decimal
+          // if (decimal)
+          //   cancelSize[orderHistory.clientId] = (cancelSize[orderHistory.clientId]).div(10 ** decimal)
         }
       }
       for (let orderHistory of res) {
