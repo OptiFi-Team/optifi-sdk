@@ -31,12 +31,22 @@ export default function updateIv(context: Context):
                     if (element.expiration == marginStressAccount.expiryDate[0] * 1000) {
                         iv = element.markIv
                         now = Math.floor(Date.now() / 1000);
-                    } else {
-                        iv = await getGvolAtm7(asset);
-                        now = iv.date / 1000;
                     }
                 });
 
+                // Second source
+                if (iv == null) {
+                    let _iv = await getGvolAtm7(asset);
+                    iv = _iv.atm7;
+                    now = iv.date / 1000;
+                    console.log("iv", iv)
+                }
+
+                // Third source
+                if (iv == null) {
+                    iv = termStructure[0].markIv
+                    now = Math.floor(Date.now() / 1000);
+                }
 
                 if (asset == SUPPORTED_ASSETS[SUPPORTED_ASSETS.length - 1]) {
                     let res = await context.program.rpc.updateIv(
