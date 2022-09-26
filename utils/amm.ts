@@ -622,9 +622,9 @@ function getConsumeWithdrawDetailsFromLog(programLog: string) {
     // )
     return {
         userAccountId: parseInt(temp["user_account_id"]),
-        burnedLpTokenAmount: parseInt(temp["burned lp token amount"]),
+        burnedLpTokenAmount: parseInt(temp["actual_withdraw_lp_amount"]),
         withdrawUsdcAmount: parseInt(temp["withdraw_usdc_amount"]),
-        totalFee: parseInt(temp["total fee"]),
+        totalFee: parseInt(temp["total_fee"]),
         finalWithdrawUsdcAmount: parseInt(temp["final_withdraw_usdc_amount"]),
     }
 }
