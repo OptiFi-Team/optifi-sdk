@@ -14,8 +14,9 @@ import { BTC_DECIMALS, ETH_DECIMALS, getIOCSizeForAsk, getIOCSide, getClientId, 
 import base58, { decode } from "bs58";
 import { Order } from "../utils/orders";
 import { populateInxAccountKeys } from "./transactions"
+import { convertSolanaCulsterToCluster } from "./pyth";
 
-const inxNames = ["placeOrder", "cancelOrderByClientOrderId", "liquidationRegister", "liquidationPlaceOrder"];
+const inxNames = ["placeOrder", "cancelOrderByClientOrderId", "liquidationRegister", "liquidationPlaceOrder", "userMarginCalculate"];
 
 // get recent tx  - 1000 tx by default
 export const retrievRecentTxs = async (context: Context,
@@ -163,7 +164,7 @@ async function getMarketExpireDate(context: Context, logs: string[]): Promise<Da
   })
 }
 
-async function isLiquidateTx(logs: string[]): Promise<boolean> {
+async function isLiquidatedOrCancelOrdersDuringFundSettlementTx(logs: string[]): Promise<boolean> {
   return new Promise(async (resolve, reject) => {
     for (let i = 0; i < logs.length; i++) {
       if (logs[i].search("found order to prune") != -1) {
@@ -174,7 +175,7 @@ async function isLiquidateTx(logs: string[]): Promise<boolean> {
   })
 }
 
-async function getLiquidateTxClientId(logs: string[]) {
+async function getTxClientId(logs: string[]) {
   let stringLen = 16
   let stringRes: string;
   for (let log of logs) {
@@ -309,31 +310,8 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   // console.log("orginalOrder: ", orginalOrder, decData.cancelOrderByClientIdV2.clientId.toNumber())
                   if (orginalOrder) {
                     let record = JSON.parse(JSON.stringify(orginalOrder));
-                    // let marketAddress = tx.transaction.message.accountKeys[inx.accounts[6]].toString() // market address index is 6 in the cancel order inx
                     //@ts-ignore
                     let marketAddress = programAccounts.serumMarket.pubkey.toString();
-                    // console.log("tx.meta?.preTokenBalances: ", tx.meta?.preTokenBalances)
-                    // console.log("tx.meta?.postTokenBalances: ", tx.meta?.postTokenBalances)
-                    // console.log("inx.accounts: ", inx.accounts)
-                    //  tx.transaction.message.accountKeys[inx.accounts[6]].toString()
-                    // let userMarginAccountIndex = inx.accounts[3]
-                    //@ts-ignore
-                    let userMarginAccountIndex = programAccounts.userMarginAccount.accountIndex
-                    let longTokenVaultIndex = inx.accounts[5]//TODO(no match data() now)
-                    // console.log("long vault: ",longTokenVaultIndex,  tx.transaction.message.accountKeys[longTokenVaultIndex].toString())
-                    let cancelledQuantity: number = 0
-                    if (record.side == "buy") {
-                      let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userMarginAccountIndex)!
-                      let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userMarginAccountIndex)!
-                      // cancelledQuantity = (new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()
-                    } else {
-                      let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == longTokenVaultIndex)!
-                      let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == longTokenVaultIndex)!
-                      // console.log("preTokenAccount: ", preTokenAccount, "postTokenAccount: " , postTokenAccount)
-                      // console.log("tx.meta?.preTokenBalances? ", tx.meta?.preTokenBalances)
-                      // console.log("tx.meta?.postTokenBalances? ", tx.meta?.postTokenBalances)
-                      // cancelledQuantity = (preTokenAccount && postTokenAccount) ? ((new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!))).toNumber()) : -1;
-                    }
 
                     // console.log("cancelledAmount: ", cancelledAmount)
                     record.cancelledQuantity = await getCancelledQuantity(tx.meta?.logMessages!);//cancelledQuantity
@@ -344,17 +322,33 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                     record.txType = "cancel order"
                     orderTxs.push(record);
                   }
-                } else if (await isLiquidateTx(tx.meta?.logMessages!)) {     //liquidate tx
-                  let clientId = await getLiquidateTxClientId(tx.meta?.logMessages!)
-                  let liquidateTx = orderTxs.find(e => e.clientId === clientId)
-                  let record: any = [];
-                  record = JSON.parse(JSON.stringify(liquidateTx));
-                  if (record && (! await placedLiquidateOrder(clientId, orderTxs))) {//sometime there are mul same tx. Avoid place duplicate orders
-                    record.orderType = "Liquidation"
-                    record.txType = "cancel order"
-                    record.timestamp = new Date(tx.blockTime! * 1000);
-                    record.liquidateAmount = await getLiquidateAmount(tx.meta?.logMessages!);
-                    orderTxs.push(record)
+                }
+                //since cancel order by Liquidate and fund settlement tx logs are same, so now we can't separate it  
+                else if (await isLiquidatedOrCancelOrdersDuringFundSettlementTx(tx.meta?.logMessages!) && decData.hasOwnProperty("settleFunds")) {
+                  if (decodedInx.name == "userMarginCalculate") { //fund settlement tx 
+                    let clientId = await getTxClientId(tx.meta?.logMessages!)
+                    let cancelOrdersDuringFundSettlementTx = orderTxs.find(e => e.clientId === clientId)
+                    let record: any = [];
+                    record = JSON.parse(JSON.stringify(cancelOrdersDuringFundSettlementTx));
+                    if (record) {
+                      record.orderType = "ioc"
+                      record.txType = "cancel order"
+                      record.timestamp = new Date(tx.blockTime! * 1000);
+                      orderTxs.push(record)
+                    }
+                  }
+                  else if (decodedInx.name == "liquidationRegister") {//liquidate tx
+                    let clientId = await getTxClientId(tx.meta?.logMessages!)
+                    let liquidateTx = orderTxs.find(e => e.clientId === clientId)
+                    let record: any = [];
+                    record = JSON.parse(JSON.stringify(liquidateTx));
+                    if (record && (! await placedLiquidateOrder(clientId, orderTxs))) {//sometime there are mul same tx. Avoid place duplicate orders
+                      record.orderType = "Liquidation"
+                      record.txType = "cancel order"
+                      record.timestamp = new Date(tx.blockTime! * 1000);
+                      record.liquidateAmount = await getLiquidateAmount(tx.meta?.logMessages!);
+                      orderTxs.push(record)
+                    }
                   }
                 }
 
