@@ -107,23 +107,23 @@
     "@types/yargs" "^17.0.8"
     chalk "^4.0.0"
 
-"@notifi-network/notifi-axios-utils@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@notifi-network/notifi-axios-utils/-/notifi-axios-utils-0.31.0.tgz"
-  integrity sha512-SH0rC8Jd2Of748Wb37bU9pv8x6EDipYwoirsVqQNxKlqISr4un/ZyX8Ina3ntUNPoP2ji3QJTuFbWI+gM69mQg==
+"@notifi-network/notifi-axios-utils@^0.35.0":
+  version "0.35.0"
+  resolved "https://registry.yarnpkg.com/@notifi-network/notifi-axios-utils/-/notifi-axios-utils-0.35.0.tgz#0d23a3ecb004dc2ab906c0c5ef6fc51605663f29"
+  integrity sha512-rricuL5s9QbVBk2UnKx/bw9DHD+VLuaCGOPJbTzHxHNswA4ZDHMqguafH+BRuZ1MT6CJeGAWKLnMnmtYQvxZog==
 
-"@notifi-network/notifi-core@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@notifi-network/notifi-core/-/notifi-core-0.31.0.tgz"
-  integrity sha512-0AnQ918FR7r9oBMf/KbKHrXTMnuJ/uUsJgyd+F8jf9rzYthVniZw/2tBUf9hRBPxJUSoqrEz7McHrjT/rV7tGw==
+"@notifi-network/notifi-core@^0.35.0":
+  version "0.35.0"
+  resolved "https://registry.yarnpkg.com/@notifi-network/notifi-core/-/notifi-core-0.35.0.tgz#b7082cb5dd5c53c82af974832bb332b625e599fc"
+  integrity sha512-L8bNu/HgeSL4H7EqAzqlqKzTmyiV9NeHWu6jQ1ZhDUgHGR4hb+XWGMfhTMRynX+zbyIuD1r/MvZWeuz6ClGzjQ==
 
-"@notifi-network/notifi-node@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@notifi-network/notifi-node/-/notifi-node-0.31.0.tgz"
-  integrity sha512-AZUlDMjH6XPUXtSZNbXvw++hfSKRxnr41l2bbXa5UaoRiMNgMPkDPe/SaAVyGOGywjGo8wP37XZk/al5dD2h/g==
+"@notifi-network/notifi-node@^0.35.0":
+  version "0.35.0"
+  resolved "https://registry.yarnpkg.com/@notifi-network/notifi-node/-/notifi-node-0.35.0.tgz#14217d5b81096d9ff869343a5e9776d1f203137f"
+  integrity sha512-onLVrXQhqegTPlPv7lLdWK7OcTa9l7cUvU+q4Ds/IM6Dm0gI6qHQ2vWsPj11qx/1nLcMamsyErgVWD1oyz1bvg==
   dependencies:
-    "@notifi-network/notifi-axios-utils" "^0.31.0"
-    "@notifi-network/notifi-core" "^0.31.0"
+    "@notifi-network/notifi-axios-utils" "^0.35.0"
+    "@notifi-network/notifi-core" "^0.35.0"
 
 "@project-serum/anchor@0.24.2":
   version "0.24.2"
