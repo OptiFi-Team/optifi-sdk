@@ -1,11 +1,9 @@
 import { ndf, d2Call, d2Put, reshap, ndfBid } from "./calculateMargin"
 import Context from "../types/context";
-import { PYTH, SWITCHBOARD } from "../constants";
-import { PublicKey } from "@solana/web3.js";
 import { OptifiMarketFullData } from "./market";
-import { getSwitchboard } from "./switchboardV2";
-import { getPythData } from "./pyth";
-import { rejects } from "assert";
+import { getSpotPrice } from "./pyth";
+import { getGvolIV } from "./getGvolIV";
+import Asset from "../types/asset";
 
 interface ProfitChance {
     breakEven: number,
@@ -183,16 +181,15 @@ function getMarketData(
 ): Promise<BreakEvenDataRes> {
     return new Promise(async (resolve, rejects) => {
         try {
-            let spotRes_btc = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD));
-            let ivRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
+            let spotRes_btc = await getSpotPrice(context, Asset.Bitcoin);
+            let spotRes_eth = await getSpotPrice(context, Asset.Ethereum);
+            let spotRes_sol = await getSpotPrice(context, Asset.Solana);
+            // TODO: check the expiryDate
+            let [ivRes_btc] = await getGvolIV(Asset.Bitcoin, optifiMarkets[0].expiryDate.getTime())
+            let [ivRes_eth] = await getGvolIV(Asset.Ethereum, optifiMarkets[0].expiryDate.getTime())
+            let [ivRes_sol] = await getGvolIV(Asset.Solana, optifiMarkets[0].expiryDate.getTime())
 
-            let spotRes_eth = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD));
-            let ivRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
-
-            let spotRes_sol = await getPythData(context, new PublicKey(PYTH[context.cluster].SOL_USD));
-            let ivRes_sol = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_IV))
-
-            let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
+            let usdcSpot = await getSpotPrice(context, Asset.USDC);
 
             let spot_btc = Math.round(spotRes_btc / usdcSpot * 100) / 100
             let spot_eth = Math.round(spotRes_eth / usdcSpot * 100) / 100

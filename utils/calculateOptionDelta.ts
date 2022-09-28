@@ -2,9 +2,10 @@ import Context from "../types/context";
 import { OptifiMarketFullData } from "./market"
 import { option_delta } from "./calculateMargin";
 import { PublicKey } from "@solana/web3.js";
-import { PYTH, SWITCHBOARD } from "../constants";
-import { getSwitchboard } from "./switchboardV2";
+import { PYTH } from "../constants";
 import { getPythData } from "./pyth";
+import { getGvolIV } from "./getGvolIV";
+import Asset from "../types/asset";
 
 export const r = 0;
 export const q = 0;
@@ -41,25 +42,28 @@ export function calculateOptionDelta(
             let usdcSpot = await getPythData(context, new PublicKey(PYTH[context.cluster].USDC_USD))
             let today = new Date().getTime();
             let res: any = [];
+
+            // TODO: check the expiryDate
+            let spotRes_btc = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD));
+            let [ivRes_btc] = await getGvolIV(Asset.Bitcoin, optifiMarket[0].expiryDate.getTime())
+            let spotRes_eth = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD));
+            let [ivRes_eth] = await getGvolIV(Asset.Ethereum, optifiMarket[0].expiryDate.getTime())
+            let spotRes_sol = await getPythData(context, new PublicKey(PYTH[context.cluster].SOL_USD));
+            let [ivRes_sol] = await getGvolIV(Asset.Solana, optifiMarket[0].expiryDate.getTime())
+
             for (let market of optifiMarket) {
                 let spot: number;
                 let iv: number;
                 switch (market.asset) {
                     case "BTC":
-                        let spotRes_btc = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD));
-                        let ivRes_btc = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
                         spot = Math.round(spotRes_btc / usdcSpot * 100) / 100
                         iv = ivRes_btc / 100
                         break
                     case "ETH":
-                        let spotRes_eth = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD));
-                        let ivRes_eth = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
                         spot = Math.round(spotRes_eth / usdcSpot * 100) / 100
                         iv = ivRes_eth / 100
                         break
                     case "SOL":
-                        let spotRes_sol = await getPythData(context, new PublicKey(PYTH[context.cluster].SOL_USD));
-                        let ivRes_sol = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_IV))
                         spot = Math.round(spotRes_sol / usdcSpot * 100) / 100
                         iv = ivRes_sol / 100
                         break
