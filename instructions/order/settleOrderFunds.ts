@@ -1,5 +1,5 @@
 import InstructionResult from "../../types/instructionResult";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, TransactionSignature } from "@solana/web3.js";
 import Context from "../../types/context";
 import { UserAccount } from "../../types/optifi-exchange-types";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -7,8 +7,6 @@ import { increaseComputeUnitsIx } from "../../utils/transactions";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import marginStress from "../marginStress/marginStress";
 import { formPlaceOrderContext } from "../../utils/orders";
-import { DexInstructions } from "@project-serum/serum";
-import { findSerumAuthorityPDA } from "../../utils/pda";
 
 export default function settleOrderFunds(context: Context,
     marketAddress: PublicKey, userAccount: UserAccount): Promise<InstructionResult<TransactionSignature>> {
@@ -19,19 +17,6 @@ export default function settleOrderFunds(context: Context,
             let ixs = [increaseComputeUnitsIx]
             ixs.push(...await marginStress(context, asset));
 
-            // let consumeEventInx = DexInstructions.consumeEvents({
-            //     market: orderContext.serumMarket,
-            //     openOrdersAccounts: [orderContext.openOrders],
-            //     eventQueue: orderContext.eventQueue,
-            //     pcFee: orderContext.userMarginAccount,
-            //     coinFee: orderContext.userInstrumentLongTokenVault,
-            //     limit: 65535,
-            //     programId: orderContext.serumDexProgramId,
-            // })
-
-            // ixs.push(consumeEventInx)
-
-            let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
             let settleOrderIx = context.program.instruction.settleOrderFunds({
                 accounts: {
                     optifiExchange: orderContext.optifiExchange,
@@ -41,10 +26,6 @@ export default function settleOrderFunds(context: Context,
                     userSerumOpenOrders: orderContext.openOrders,
                     coinVault: orderContext.coinVault,
                     pcVault: orderContext.pcVault,
-                    // asks: orderContext.asks,
-                    // bids: orderContext.bids,
-                    // requestQueue: orderContext.requestQueue,
-                    eventQueue: orderContext.eventQueue,
                     instrumentLongSplTokenMint: orderContext.coinMint,
                     instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
                     userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
@@ -54,7 +35,6 @@ export default function settleOrderFunds(context: Context,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     serumDexProgramId: orderContext.serumDexProgramId,
                     feeAccount: orderContext.feeAccount,
-                    consumeEventsAuthority: serumMarketAuthority
                 },
             });
 

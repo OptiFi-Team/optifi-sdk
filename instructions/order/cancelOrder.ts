@@ -1,15 +1,10 @@
 import * as anchor from "@project-serum/anchor";
 import Context from "../../types/context";
-import { PublicKey, SYSVAR_CLOCK_PUBKEY, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
+import { PublicKey, TransactionInstruction, TransactionSignature } from "@solana/web3.js";
 import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
 import InstructionResult from "../../types/instructionResult";
 import { formCancelOrderContext } from "../../utils/orders";
-import {
-  increaseComputeUnitsIx,
-  signAndSendTransaction,
-  TransactionResultType,
-} from "../../utils/transactions";
-import { DexInstructions } from '@project-serum/serum';
+import { increaseComputeUnitsIx, } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import marginStress from "../marginStress/marginStress";
@@ -62,6 +57,7 @@ export default function cancelOrderByClientOrderId(
         let ixs: TransactionInstruction[] = [increaseComputeUnitsIx]
         ixs.push(...await marginStress(context, asset));
 
+        // add cancel order by client order id inx
         let cancelOrderByClientOrderIdInx = context.program.instruction.cancelOrderByClientOrderId(
           side,
           clientOrderId,
@@ -71,19 +67,21 @@ export default function cancelOrderByClientOrderId(
         );
         ixs.push(cancelOrderByClientOrderIdInx)
 
-        // let consumeEventInx = DexInstructions.consumeEvents({
-        //   market: orderContext.serumMarket,
-        //   openOrdersAccounts: [orderContext.openOrders],
-        //   eventQueue: orderContext.eventQueue,
-        //   pcFee: orderContext.userMarginAccount,
-        //   coinFee: orderContext.userInstrumentLongTokenVault,
-        //   limit: 65535,
-        //   programId: orderContext.serumDexProgramId,
-        // })
-        // ixs.push(consumeEventInx)
-
+        // add consume event inx
         let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
+        let consumeEventInx = await context.program.methods.consumeEventQueue(5).accounts(
+          {
+            optifiExchange: orderContext.optifiExchange,
+            serumMarket: orderContext.serumMarket,
+            eventQueue: orderContext.eventQueue,
+            userSerumOpenOrders: orderContext.openOrders,
+            serumDexProgramId: orderContext.serumDexProgramId,
+            consumeEventsAuthority: serumMarketAuthority
+          }
+        ).instruction()
+        ixs.push(consumeEventInx)
 
+        // add settle order inx
         let settleOrderIx = context.program.instruction.settleOrderFunds({
           accounts: {
             optifiExchange: orderContext.optifiExchange,
@@ -93,10 +91,6 @@ export default function cancelOrderByClientOrderId(
             userSerumOpenOrders: orderContext.openOrders,
             coinVault: orderContext.coinVault,
             pcVault: orderContext.pcVault,
-            // asks: orderContext.asks,
-            // bids: orderContext.bids,
-            // requestQueue: orderContext.requestQueue,
-            eventQueue: orderContext.eventQueue,
             instrumentLongSplTokenMint: orderContext.coinMint,
             instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
             userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
@@ -106,7 +100,6 @@ export default function cancelOrderByClientOrderId(
             tokenProgram: TOKEN_PROGRAM_ID,
             serumDexProgramId: orderContext.serumDexProgramId,
             feeAccount: orderContext.feeAccount,
-            consumeEventsAuthority: serumMarketAuthority
           },
         });
 
