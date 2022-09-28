@@ -1,5 +1,4 @@
 import { getAccount } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
 import Decimal from "decimal.js";
 import { USDC_DECIMALS } from "../../constants";
 import { initializeContext } from "../../index";
@@ -7,7 +6,6 @@ import addWithdrawRequest from "../../instructions/amm/addWithdrawRequest";
 import { AmmAccount, UserAccount } from "../../types/optifi-exchange-types";
 import { findOptifiExchange, findUserAccount } from "../../utils/accounts";
 import { calcAmmWithdrawFees, findAMMWithIdx, getAmmWithdrawCapacity } from "../../utils/amm";
-import { getSwitchboard } from "../../utils/switchboardV2";
 import { findAssociatedTokenAccount } from "../../utils/token";
 import { ammIndex } from "./constants";
 
