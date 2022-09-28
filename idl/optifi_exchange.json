@@ -1046,16 +1046,6 @@
           "isSigner": false
         },
         {
-          "name": "eventQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "consumeEventsAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "feeAccount",
           "isMut": true,
           "isSigner": false
@@ -4437,14 +4427,14 @@
           {
             "name": "price",
             "docs": [
-              "the underlying asset price based on USDC"
+              "the underlying asset price denominated in USDC"
             ],
             "type": "u64"
           },
           {
             "name": "netDelta",
             "docs": [
-              "the net delta"
+              "the net delta denominated in underlying asset"
             ],
             "type": "i64"
           },
@@ -4458,7 +4448,7 @@
           {
             "name": "totalLiquidityUsdc",
             "docs": [
-              "the amm total liquidity based on USDC (with 6 decimals)"
+              "the amm total liquidity denominated in USDC (with 6 decimals)"
             ],
             "type": "u64"
           },
@@ -4487,6 +4477,9 @@
           },
           {
             "name": "clientOrderIdCounter",
+            "docs": [
+              "client order id counter for amm placing orders"
+            ],
             "type": "u64"
           },
           {
@@ -4521,6 +4514,9 @@
           },
           {
             "name": "withdrawQueue",
+            "docs": [
+              "pubkey of amm's withdraw queue"
+            ],
             "type": "publicKey"
           }
         ]
@@ -6016,7 +6012,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "notioanlWithdrawable",
+            "name": "notionalWithdrawable",
             "type": "u64"
           },
           {

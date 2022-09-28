@@ -48,6 +48,7 @@ export default function placeOrder(context: Context,
             let ixs = [increaseComputeUnitsIx]
             ixs.push(...await marginStress(context, asset));
 
+            // add place order ix
             let placeOrderIx = context.program.instruction.placeOrder(
                 side,
                 new anchor.BN(limit),
@@ -83,10 +84,23 @@ export default function placeOrder(context: Context,
                     },
                 }
             );
-
             ixs.push(placeOrderIx);
 
+            // add consume event inx
             let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
+            let consumeEventInx = await context.program.methods.consumeEventQueue(5).accounts(
+                {
+                    optifiExchange: orderContext.optifiExchange,
+                    serumMarket: orderContext.serumMarket,
+                    eventQueue: orderContext.eventQueue,
+                    userSerumOpenOrders: orderContext.openOrders,
+                    serumDexProgramId: orderContext.serumDexProgramId,
+                    consumeEventsAuthority: serumMarketAuthority
+                }
+            ).instruction()
+            ixs.push(consumeEventInx)
+
+            // add settle order inx
             let settleOrderIx = context.program.instruction.settleOrderFunds({
                 accounts: {
                     optifiExchange: orderContext.optifiExchange,
@@ -96,10 +110,6 @@ export default function placeOrder(context: Context,
                     userSerumOpenOrders: orderContext.openOrders,
                     coinVault: orderContext.coinVault,
                     pcVault: orderContext.pcVault,
-                    // asks: orderContext.asks,
-                    // bids: orderContext.bids,
-                    // requestQueue: orderContext.requestQueue,
-                    eventQueue: orderContext.eventQueue,
                     instrumentLongSplTokenMint: orderContext.coinMint,
                     instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
                     userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
@@ -109,7 +119,6 @@ export default function placeOrder(context: Context,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     serumDexProgramId: orderContext.serumDexProgramId,
                     feeAccount: orderContext.feeAccount,
-                    consumeEventsAuthority: serumMarketAuthority
                 },
             });
 
