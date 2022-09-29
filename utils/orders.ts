@@ -33,7 +33,7 @@ import { Market, Orderbook, OpenOrders } from "@project-serum/serum";
 import OrderType from "../types/OrderType";
 import { findUserFeeAccount } from "../instructions/user/initializeFeeAccount";
 import { max } from "superstruct";
-
+import { findOptifiMarketsWithFullData } from "../utils/market";
 export enum TxType {
   PlaceOrder = 0,
   CancelOrder = 1,
@@ -653,7 +653,7 @@ export function getAllOpenOrdersForUser(
     try {
       const [userAddress, _] = await findUserAccount(context)
       const userAccountRaw = await context.program.account.userAccount.fetch(userAddress);
-      const orderHistory = await getAllOrdersForAccount(context, userAddress)
+      const orderHistory = await getAllOrdersForAccount(context, userAddress, optifiMarkets)
       let clientGuide = {}
 
       orderHistory.map((history) => {

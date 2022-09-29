@@ -51,13 +51,13 @@ initializeContext().then(async (context) => {
 
   // must use "confirmed" as commitment level for tx hostory related requests 
   let context2 = await initializeContext(undefined, undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" })
-  let orderHistory = await getAllOrdersForAccount(context2, userAccount,)
-  console.log("filter: ", await getFilterOrdersForAccount(context2, userAccount,))
+  let orderHistory = await getAllOrdersForAccount(context2, userAccount, optifiMarkets)
+  // console.log("filter: ", await getFilterOrdersForAccount(context2, userAccount, optifiMarkets))
   // order history is optional, get call loadOrdersForOwnerOnAllMarkets without it first. and whenever you get user's order history,
   // just call this loadOrdersForOwnerOnAllMarkets again
   let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
   console.log("orders: ", orders)
-  let res = await addStatusInOrderHistory(orders,orderHistory,context2,userAccount)
+  let res = await addStatusInOrderHistory(orders, orderHistory, context2, userAccount)
   console.log(res)
 });
 

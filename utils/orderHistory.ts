@@ -15,7 +15,7 @@ import base58, { decode } from "bs58";
 import { Order } from "../utils/orders";
 import { populateInxAccountKeys } from "./transactions"
 import { convertSolanaCulsterToCluster } from "./pyth";
-
+import { OptifiMarketFullData } from "./market";
 const inxNames = ["placeOrder", "cancelOrderByClientOrderId", "liquidationRegister", "liquidationPlaceOrder", "userMarginCalculate"];
 
 // get recent tx  - 1000 tx by default
@@ -132,7 +132,7 @@ async function getLiquidateAmount(logs: string[]): Promise<number> {
   })
 }
 
-async function getMarketExpireDate(context: Context, logs: string[]): Promise<Date> {
+async function getMarketExpireDate(context: Context, logs: string[], marketsWithFullDatas: OptifiMarketFullData[]): Promise<Date> {
   return new Promise(async (resolve, reject) => {
     let stringRes: string;
     let stringLen = 12
@@ -155,7 +155,6 @@ async function getMarketExpireDate(context: Context, logs: string[]): Promise<Da
       if (logs[i].search("market_address") != -1) {
         stringRes = logs[i].substring(logs[i].search("market_address") + stringLen, logs[i].search("ctx.accounts.optifi_market.key()") - 1)
 
-        let marketsWithFullDatas = await findOptifiMarketsWithFullData(context);
         let market = marketsWithFullDatas.find(e => e.marketAddress.toString() == stringRes)
         resolve(market?.expiryDate!)
       }
@@ -209,7 +208,7 @@ async function isLiquidationPlaceOrder(logs: string[]): Promise<Boolean> {
   })
 }
 
-const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any): Promise<OrderInstruction[]> => {
+const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any, optifiMarkets: OptifiMarketFullData[]): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
 
   for (let tx of txs) {
@@ -261,7 +260,6 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   let clientId = record.clientId
                   //@ts-ignore
                   let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
-                  let optifiMarkets = await findOptifiMarketsWithFullData(context)
                   let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == marketAddress)
                   if (optifiMarket) {//can find optifiMarket(not cancel order)
                     let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
@@ -290,7 +288,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       record.checkPostOnlyFail = true;
                     }
                   }
-                  let marketExpireDate = await getMarketExpireDate(context, logs!);
+                  let marketExpireDate = await getMarketExpireDate(context, logs!, optifiMarkets);
 
                   // let newOrderJSON = JSON.stringify(decData);
                   // console.log("newOrderJSON: ", newOrderJSON);
@@ -368,7 +366,8 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
 export function getAllOrdersForAccount(
   context: Context,
   account: PublicKey,
-  instrumentsWithOptifiMarketAddress?: any
+  optifiMarkets: OptifiMarketFullData[],
+  instrumentsWithOptifiMarketAddress?: any,
 ): Promise<OrderInstruction[]> {
   return new Promise(async (resolve, reject) => {
     try {
@@ -396,7 +395,7 @@ export function getAllOrdersForAccount(
 
       // parse order txs, inlcuding place order, cancel order
       let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
-      let orderTxs = await parseOrderTxs(context, allTxs, serumId, instruments)
+      let orderTxs = await parseOrderTxs(context, allTxs, serumId, instruments, optifiMarkets)
       // sort them back to descending time order
       orderTxs.sort(function (a, b) {
         // Compare the 2 dates
@@ -425,6 +424,7 @@ function filterByDate(instrument: any, allTxs: TransactionResponse[]) {
 export function getFilterOrdersForAccount(
   context: Context,
   account: PublicKey,
+  optifiMarkets: OptifiMarketFullData[],
   instrumentsWithOptifiMarketAddress?: any
 ): Promise<OrderInstruction[]> {
   return new Promise(async (resolve, reject) => {
@@ -455,7 +455,7 @@ export function getFilterOrdersForAccount(
 
       // parse order txs, inlcuding place order, cancel order
       let serumId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster]);
-      let orderTxs = await parseOrderTxs(context, filterAllTxs, serumId, instruments)
+      let orderTxs = await parseOrderTxs(context, filterAllTxs, serumId, instruments, optifiMarkets)
       // sort them back to descending time order
       orderTxs.sort(function (a, b) {
         // Compare the 2 dates

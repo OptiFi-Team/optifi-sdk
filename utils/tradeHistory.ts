@@ -119,7 +119,8 @@ export function getAllTradesForAccount(
   account: PublicKey
 ): Promise<Trade[]> {
   return new Promise(async (resolve, reject) => {
-    getAllOrdersForAccount(context, account).then(async (res) => {
+    let optifiMarkets = await findOptifiMarketsWithFullData(context)
+    getAllOrdersForAccount(context, account, optifiMarkets).then(async (res) => {
       // resolve(res)
       res.reverse()
       let trades: Trade[] = []
@@ -259,7 +260,8 @@ export function getFilterTradesForAccount(
   account: PublicKey
 ): Promise<Trade[]> {
   return new Promise(async (resolve, reject) => {
-    getFilterOrdersForAccount(context, account).then(async (res) => {
+    let optifiMarkets = await findOptifiMarketsWithFullData(context)
+    getFilterOrdersForAccount(context, account, optifiMarkets).then(async (res) => {
       // resolve(res)
       res.reverse()
       let trades: Trade[] = []

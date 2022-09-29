@@ -22,7 +22,7 @@ async function getUserOpenOrderAndPosition(context: Context): Promise<[Array<Ord
         let [userAccountAddress,] = await findUserAccount(context)
         let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress)
         let context2 = await initializeContext(undefined, undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" })
-        let orderHistory = await getAllOrdersForAccount(context2, userAccount,)
+        let orderHistory = await getAllOrdersForAccount(context2, userAccount, optifiMarkets)
         let orders = await loadOrdersForOwnerOnAllMarkets(optifiMarkets, openOrdersAccount.map(e => e.openOrdersAccount), orderHistory)
         let userPositions = await getUserPositions(context, userAccountAddress)
         resolve([orders, userPositions])
