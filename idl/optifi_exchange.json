@@ -3363,12 +3363,12 @@
         },
         {
           "name": "userInstrumentLongTokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "userInstrumentShortTokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -3728,11 +3728,6 @@
           "isSigner": false
         },
         {
-          "name": "eventQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "userInstrumentLongTokenVault",
           "isMut": true,
           "isSigner": false
@@ -3745,11 +3740,6 @@
         {
           "name": "asks",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "consumeEventsAuthority",
-          "isMut": false,
           "isSigner": false
         },
         {

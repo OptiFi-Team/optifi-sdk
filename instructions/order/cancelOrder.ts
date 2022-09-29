@@ -4,7 +4,7 @@ import { PublicKey, TransactionInstruction, TransactionSignature } from "@solana
 import { OrderSide, UserAccount } from "../../types/optifi-exchange-types";
 import InstructionResult from "../../types/instructionResult";
 import { formCancelOrderContext } from "../../utils/orders";
-import { increaseComputeUnitsIx, } from "../../utils/transactions";
+import { increaseComputeUnitsIx } from "../../utils/transactions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { findMarginStressWithAsset } from "../../utils/margin";
 import marginStress from "../marginStress/marginStress";
@@ -44,83 +44,77 @@ import { findSerumAuthorityPDA } from "../../utils/pda";
 // }
 
 export default function cancelOrderByClientOrderId(
-  context: Context,
-  userAccount: UserAccount,
-  marketAddress: PublicKey,
-  side: OrderSide,
-  clientOrderId: anchor.BN
+    context: Context,
+    userAccount: UserAccount,
+    marketAddress: PublicKey,
+    side: OrderSide,
+    clientOrderId: anchor.BN
 ): Promise<InstructionResult<TransactionSignature>> {
-  return new Promise((resolve, reject) => {
-    formCancelOrderContext(context, marketAddress, userAccount)
-      .then(async ([orderContext, asset]) => {
+    return new Promise((resolve, reject) => {
+        formCancelOrderContext(context, marketAddress, userAccount)
+            .then(async ([orderContext, asset]) => {
+                let ixs: TransactionInstruction[] = [increaseComputeUnitsIx];
+                ixs.push(...(await marginStress(context, asset)));
 
-        let ixs: TransactionInstruction[] = [increaseComputeUnitsIx]
-        ixs.push(...await marginStress(context, asset));
+                // add cancel order by client order id inx
+                let cancelOrderByClientOrderIdInx = context.program.instruction.cancelOrderByClientOrderId(side, clientOrderId, {
+                    accounts: orderContext,
+                });
+                ixs.push(cancelOrderByClientOrderIdInx);
 
-        // add cancel order by client order id inx
-        let cancelOrderByClientOrderIdInx = context.program.instruction.cancelOrderByClientOrderId(
-          side,
-          clientOrderId,
-          {
-            accounts: orderContext,
-          }
-        );
-        ixs.push(cancelOrderByClientOrderIdInx)
+                // add consume event inx
+                let [serumMarketAuthority] = await findSerumAuthorityPDA(context);
+                let consumeEventInx = await context.program.methods
+                    .consumeEventQueue(5)
+                    .accounts({
+                        optifiExchange: orderContext.optifiExchange,
+                        serumMarket: orderContext.serumMarket,
+                        eventQueue: orderContext.eventQueue,
+                        userSerumOpenOrders: orderContext.openOrders,
+                        serumDexProgramId: orderContext.serumDexProgramId,
+                        consumeEventsAuthority: serumMarketAuthority,
+                    })
+                    .instruction();
+                ixs.push(consumeEventInx);
 
-        // add consume event inx
-        let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
-        let consumeEventInx = await context.program.methods.consumeEventQueue(5).accounts(
-          {
-            optifiExchange: orderContext.optifiExchange,
-            serumMarket: orderContext.serumMarket,
-            eventQueue: orderContext.eventQueue,
-            userSerumOpenOrders: orderContext.openOrders,
-            serumDexProgramId: orderContext.serumDexProgramId,
-            consumeEventsAuthority: serumMarketAuthority
-          }
-        ).instruction()
-        ixs.push(consumeEventInx)
+                // add settle order inx
+                let settleOrderIx = context.program.instruction.settleOrderFunds({
+                    accounts: {
+                        optifiExchange: orderContext.optifiExchange,
+                        userAccount: orderContext.userAccount,
+                        optifiMarket: marketAddress,
+                        serumMarket: orderContext.serumMarket,
+                        userSerumOpenOrders: orderContext.openOrders,
+                        coinVault: orderContext.coinVault,
+                        pcVault: orderContext.pcVault,
+                        instrumentLongSplTokenMint: orderContext.coinMint,
+                        instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
+                        userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
+                        userInstrumentShortTokenVault: orderContext.userInstrumentShortTokenVault,
+                        userMarginAccount: orderContext.userMarginAccount,
+                        vaultSigner: orderContext.vaultSigner,
+                        tokenProgram: TOKEN_PROGRAM_ID,
+                        serumDexProgramId: orderContext.serumDexProgramId,
+                        feeAccount: orderContext.feeAccount,
+                    },
+                });
 
-        // add settle order inx
-        let settleOrderIx = context.program.instruction.settleOrderFunds({
-          accounts: {
-            optifiExchange: orderContext.optifiExchange,
-            userAccount: orderContext.userAccount,
-            optifiMarket: marketAddress,
-            serumMarket: orderContext.serumMarket,
-            userSerumOpenOrders: orderContext.openOrders,
-            coinVault: orderContext.coinVault,
-            pcVault: orderContext.pcVault,
-            instrumentLongSplTokenMint: orderContext.coinMint,
-            instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
-            userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
-            userInstrumentShortTokenVault: orderContext.userInstrumentShortTokenVault,
-            userMarginAccount: orderContext.userMarginAccount,
-            vaultSigner: orderContext.vaultSigner,
-            tokenProgram: TOKEN_PROGRAM_ID,
-            serumDexProgramId: orderContext.serumDexProgramId,
-            feeAccount: orderContext.feeAccount,
-          },
-        });
+                let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, orderContext.optifiExchange, asset);
 
-        ixs.push(settleOrderIx);
+                let cancelOrderRes = await context.program.rpc.userMarginCalculate({
+                    accounts: {
+                        optifiExchange: orderContext.optifiExchange,
+                        marginStressAccount: marginStressAddress,
+                        userAccount: orderContext.userAccount,
+                    },
+                    instructions: ixs,
+                });
 
-        let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, orderContext.optifiExchange, asset);
-
-        let cancelOrderRes = await context.program.rpc.userMarginCalculate({
-          accounts: {
-            optifiExchange: orderContext.optifiExchange,
-            marginStressAccount: marginStressAddress,
-            userAccount: orderContext.userAccount,
-          },
-          instructions: ixs
-        });
-
-        resolve({
-          successful: true,
-          data: cancelOrderRes as TransactionSignature
-        })
-      })
-      .catch((err) => reject(err));
-  });
+                resolve({
+                    successful: true,
+                    data: cancelOrderRes as TransactionSignature,
+                });
+            })
+            .catch((err) => reject(err));
+    });
 }

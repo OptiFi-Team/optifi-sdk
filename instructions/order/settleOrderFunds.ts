@@ -8,14 +8,13 @@ import { findMarginStressWithAsset } from "../../utils/margin";
 import marginStress from "../marginStress/marginStress";
 import { formPlaceOrderContext } from "../../utils/orders";
 
-export default function settleOrderFunds(context: Context,
-    marketAddress: PublicKey, userAccount: UserAccount): Promise<InstructionResult<TransactionSignature>> {
+export default function settleOrderFunds(context: Context, marketAddress: PublicKey, userAccount: UserAccount): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {
         try {
-            let [orderContext, asset] = await formPlaceOrderContext(context, marketAddress, userAccount)
+            let [orderContext, asset] = await formPlaceOrderContext(context, marketAddress, userAccount);
 
-            let ixs = [increaseComputeUnitsIx]
-            ixs.push(...await marginStress(context, asset));
+            let ixs = [increaseComputeUnitsIx];
+            ixs.push(...(await marginStress(context, asset)));
 
             let settleOrderIx = context.program.instruction.settleOrderFunds({
                 accounts: {
@@ -38,7 +37,7 @@ export default function settleOrderFunds(context: Context,
                 },
             });
 
-            ixs.push(settleOrderIx)
+            ixs.push(settleOrderIx);
 
             let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, orderContext.optifiExchange, asset);
 
@@ -48,15 +47,15 @@ export default function settleOrderFunds(context: Context,
                     marginStressAccount: marginStressAddress,
                     userAccount: orderContext.userAccount,
                 },
-                instructions: ixs
+                instructions: ixs,
             });
 
             resolve({
                 successful: true,
-                data: placeOrderRes as TransactionSignature
-            })
+                data: placeOrderRes as TransactionSignature,
+            });
         } catch (err) {
-            reject(err)
+            reject(err);
         }
-    })
+    });
 }
