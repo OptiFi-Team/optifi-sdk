@@ -1,5 +1,5 @@
 export type OptifiExchangeIDL = {
-    version: "1.1.26";
+    version: "1.2.1";
     name: "optifi_exchange";
     instructions: [
         {
