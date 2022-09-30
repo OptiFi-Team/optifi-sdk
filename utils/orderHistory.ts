@@ -245,62 +245,65 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   }
                   // convert the base amount to ui amount
                   // let marketAddress = tx.transaction.message.accountKeys[inx.accounts[7]].toString() // market address index is 7 in the place order inx
-                  //@ts-ignore
-                  let marketAddress = programAccounts.optifiMarket.pubkey.toString();
-                  let instrument = instruments.find((instrument: any) => {
-                    return marketAddress === instrument.marketAddress.toString();
-                  });
-                  let baseTokenDecimal = numberAssetToDecimal(instrument.asset)!
-                  record.maxBaseQuantity = record.maxBaseQuantity / 10 ** baseTokenDecimal//original size
-
-                  //getFilledData
-                  //@ts-ignore
-                  let types = await getIOCSide(tx.meta?.logMessages)
-                  //@ts-ignore
-                  let clientId = record.clientId
-                  //@ts-ignore
-                  let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
-                  let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == marketAddress)
-                  if (optifiMarket) {//can find optifiMarket(not cancel order)
-                    let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
-                    if (types == "Ask") {
-                      //user place Ask: market_open_orders.native_coin_total will be the amt after fill
-                      //(ex: open order bid 2, user ask 3,  market_open_orders.native_coin_total will be 1;
-                      //user ask 1 ,market_open_orders.native_coin_total will be 0
-                      //->ask amt - market_open_orders.native_coin_total = fillAmt 
-
+                  if (programAccounts)
+                    if (programAccounts.hasOwnProperty("optifiMarket")) {
                       //@ts-ignore
-                      let askAmt = await getIOCSizeForAsk(tx.meta?.logMessages)
-                      if (clientId)
-                        record.filledData = (askAmt - fillAmt) / (10 ** decimal)
-                    } else {
-                      if (clientId && fillAmt)
-                        record.filledData = fillAmt / (10 ** decimal)
-                    }
-                  }
+                      let marketAddress = programAccounts.optifiMarket.pubkey.toString();
+                      let instrument = instruments.find((instrument: any) => {
+                        return marketAddress === instrument.marketAddress.toString();
+                      });
+                      let baseTokenDecimal = numberAssetToDecimal(instrument.asset)!
+                      record.maxBaseQuantity = record.maxBaseQuantity / 10 ** baseTokenDecimal//original size
 
-                  //checkPostOnlyFail
-                  record.checkPostOnlyFail = false;
-                  let logs = tx.meta?.logMessages
-                  //@ts-ignore
-                  for (let log of logs) {
-                    if (log.search("Order is failed...") != -1) {
-                      record.checkPostOnlyFail = true;
-                    }
-                  }
-                  let marketExpireDate = await getMarketExpireDate(context, logs!, optifiMarkets);
+                      //getFilledData
+                      //@ts-ignore
+                      let types = await getIOCSide(tx.meta?.logMessages)
+                      //@ts-ignore
+                      let clientId = record.clientId
+                      //@ts-ignore
+                      let fillAmt = await getIOCFillAmt(tx.meta?.logMessages)
+                      let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == marketAddress)
+                      if (optifiMarket) {//can find optifiMarket(not cancel order)
+                        let decimal = (optifiMarket.asset == "BTC") ? BTC_DECIMALS : ETH_DECIMALS;
+                        if (types == "Ask") {
+                          //user place Ask: market_open_orders.native_coin_total will be the amt after fill
+                          //(ex: open order bid 2, user ask 3,  market_open_orders.native_coin_total will be 1;
+                          //user ask 1 ,market_open_orders.native_coin_total will be 0
+                          //->ask amt - market_open_orders.native_coin_total = fillAmt 
 
-                  // let newOrderJSON = JSON.stringify(decData);
-                  // console.log("newOrderJSON: ", newOrderJSON);
-                  record.timestamp = new Date(tx.blockTime! * 1000);
-                  record.txid = tx.transaction.signatures[0]
-                  record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
-                  record.marketAddress = marketAddress
-                  record.txType = "place order"
-                  record.decimal = baseTokenDecimal
-                  record.start = instrument.start
-                  record.marketExpireDate = marketExpireDate
-                  orderTxs.push(Object.assign({}, record));
+                          //@ts-ignore
+                          let askAmt = await getIOCSizeForAsk(tx.meta?.logMessages)
+                          if (clientId)
+                            record.filledData = (askAmt - fillAmt) / (10 ** decimal)
+                        } else {
+                          if (clientId && fillAmt)
+                            record.filledData = fillAmt / (10 ** decimal)
+                        }
+                      }
+
+                      //checkPostOnlyFail
+                      record.checkPostOnlyFail = false;
+                      let logs = tx.meta?.logMessages
+                      //@ts-ignore
+                      for (let log of logs) {
+                        if (log.search("Order is failed...") != -1) {
+                          record.checkPostOnlyFail = true;
+                        }
+                      }
+                      let marketExpireDate = await getMarketExpireDate(context, logs!, optifiMarkets);
+
+                      // let newOrderJSON = JSON.stringify(decData);
+                      // console.log("newOrderJSON: ", newOrderJSON);
+                      record.timestamp = new Date(tx.blockTime! * 1000);
+                      record.txid = tx.transaction.signatures[0]
+                      record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
+                      record.marketAddress = marketAddress
+                      record.txType = "place order"
+                      record.decimal = baseTokenDecimal
+                      record.start = instrument.start
+                      record.marketExpireDate = marketExpireDate
+                      orderTxs.push(Object.assign({}, record));
+                    }
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
                   // get the orginal order details
                   let orginalOrder = orderTxs.find(e => e.clientId.toString() == decData.cancelOrderByClientIdV2.clientId.toString())!
@@ -308,17 +311,21 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                   // console.log("orginalOrder: ", orginalOrder, decData.cancelOrderByClientIdV2.clientId.toNumber())
                   if (orginalOrder) {
                     let record = JSON.parse(JSON.stringify(orginalOrder));
-                    //@ts-ignore
-                    let marketAddress = programAccounts.serumMarket.pubkey.toString();
+                    if (programAccounts) {
+                      if (programAccounts.hasOwnProperty("serumMarket")) {
+                        //@ts-ignore
+                        let marketAddress = programAccounts.serumMarket.pubkey.toString();
 
-                    // console.log("cancelledAmount: ", cancelledAmount)
-                    record.cancelledQuantity = await getCancelledQuantity(tx.meta?.logMessages!);//cancelledQuantity
-                    record.timestamp = new Date(tx.blockTime! * 1000);
-                    record.txid = tx.transaction.signatures[0]
-                    record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
-                    record.marketAddress = marketAddress
-                    record.txType = "cancel order"
-                    orderTxs.push(record);
+                        // console.log("cancelledAmount: ", cancelledAmount)
+                        record.cancelledQuantity = await getCancelledQuantity(tx.meta?.logMessages!);//cancelledQuantity
+                        record.timestamp = new Date(tx.blockTime! * 1000);
+                        record.txid = tx.transaction.signatures[0]
+                        record.gasFee = tx.meta?.fee! / Math.pow(10, SOL_DECIMALS); // SOL has 9 decimals
+                        record.marketAddress = marketAddress
+                        record.txType = "cancel order"
+                        orderTxs.push(record);
+                      }
+                    }
                   }
                 }
                 //since cancel order by Liquidate and fund settlement tx logs are same, so now we can't separate it  
