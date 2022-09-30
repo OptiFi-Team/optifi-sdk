@@ -3,9 +3,9 @@ import { PublicKey } from "@solana/web3.js";
 import { Chain, OrderSide } from "../types/optifi-exchange-types";
 import { findUserAccount } from './accounts'
 import { calculateMargin, stress_function, option_intrinsic_value, reshap } from "./calculateMargin";
-import { PYTH, SWITCHBOARD, USDC_DECIMALS } from "../constants";
-import { getSwitchboard } from "./switchboardV2";
-import { getPythData } from "./pyth";
+import { PYTH, USDC_DECIMALS } from "../constants";
+import { getPythData, getSpotPrice } from "./pyth";
+import { getGvolIV } from "./getGvolIV";
 
 export const r = 0;
 export const q = 0;
@@ -52,8 +52,8 @@ export function calcMarginRequirementForUser(
             let instrumentAccountInfosRaw = await context.program.account.chain.fetchMultiple(userTradingInstruments);
             let instrumentAccountInfos = instrumentAccountInfosRaw as Chain[];
             instrumentAccountInfos.forEach((instrument, i) => {
-                let maturity = (instrument.expiryDate.toNumber() - new Date().getTime() / 1000) / (60 * 60 * 24 * 365)
-                if (maturity < 0) {
+                let maturity = instrument.expiryDate.toNumber()
+                if (maturity < new Date().getTime() / 1000) {
                     return
                 }
                 if (instrument.asset == 0) {
@@ -195,8 +195,8 @@ export function preCalcMarginForNewOrder(
             let instrumentAccountInfosRaw = await context.program.account.chain.fetchMultiple(userTradingInstruments);
             let instrumentAccountInfos = instrumentAccountInfosRaw as Chain[];
             instrumentAccountInfos.forEach((instrument, i) => {
-                let maturity = (instrument.expiryDate.toNumber() - new Date().getTime() / 1000) / (60 * 60 * 24 * 365)
-                if (maturity < 0) {
+                let maturity = instrument.expiryDate.toNumber()
+                if (maturity < new Date().getTime() / 1000) {
                     return
                 }
                 if (instrument.asset == 0) {
@@ -307,41 +307,26 @@ export function isMarginSufficientForNewOrder(
     })
 }
 
-export async function getSpotnIv(context: Context) {
-    let result = await Promise.all([
-        getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD)),
-        getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
-    ]);
-
-    return result
-}
-
-async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: number, strikeRaw: number[], isCallRaw: number[], userPositionsRaw: number[], tRaw: number[]): Promise<[number, number]> {
+async function calcMarginForOneAsset(context: Context, asset: number, usdcSpot: number, strikeRaw: number[], isCallRaw: number[], userPositionsRaw: number[], expiryDateRaw: number[]): Promise<[number, number]> {
     let strike = reshap(strikeRaw)
+
+    let tRaw = expiryDateRaw.map((expiryDate) => {
+        let maturity = (expiryDate - new Date().getTime() / 1000) / (60 * 60 * 24 * 365)
+        if (maturity < 0) {
+            maturity = 0
+        }
+        return maturity
+    })
+
     let t = reshap(tRaw)
     let isCall = reshap(isCallRaw)
     let userPositions = reshap(userPositionsRaw)
 
-    let spotRes: number;
-    let ivRes: number;
-    switch (asset) {
-        case 0:
-            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD))
-            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
-            break
-        case 1:
-            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD))
-            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
-            break
-        case 3:
-            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].SOL_USD))
-            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_SOL_IV))
-            break
-        default:
-            throw Error("unsupported asset type")
-    }
+    let spotRes = await getSpotPrice(context, asset);
     let spot = spotRes / usdcSpot
-    let iv = ivRes / 100
+
+    let [iv] = await getGvolIV(0, expiryDateRaw[0])
+    iv = iv / 100
 
     let intrinsic = option_intrinsic_value(spot, strike, isCall);
 

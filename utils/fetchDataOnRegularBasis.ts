@@ -5,10 +5,9 @@ import { getUserBalance } from "./user"
 import { Order, loadOrdersAccountsForOwnerV2, loadOrdersForOwnerOnAllMarkets } from "../utils/orders";
 import { loadPositionsFromUserAccount, findOptifiMarketsWithFullData, Position } from "./market"
 import { UserAccount } from "../types/optifi-exchange-types";
-import { PYTH, SWITCHBOARD } from "../constants";
+import { PYTH } from "../constants";
 import { initializeContext } from "../index";
 import { getAllOrdersForAccount } from "../utils/orderHistory";
-import { getSwitchboard } from "./switchboardV2";
 import { getPythData } from "./pyth";
 
 //   const market = new PublicKey("Dv3WX52binT7rxYfruhRN9B3uVxioF7UUHDNXvwaykZL");

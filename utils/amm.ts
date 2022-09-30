@@ -152,7 +152,7 @@ interface UserEquity {
     lpToeknValueInUsdc: number, // user's lp token value in usdc
     earnedValueInUsdc: number, // user's earned value in usdc
     currentReturn: number,
-    notioanlWithdrawable: number
+    notionalWithdrawable: number
 }
 
 // return a user's equity on each AMM, based on user's amm tx history
@@ -217,7 +217,7 @@ export function getUserEquity(context: Context): Promise<Map<number, UserEquity>
                     lpToeknValueInUsdc: actualBalance,
                     earnedValueInUsdc: earnedValueInUsdc,
                     currentReturn: -1,//default
-                    notioanlWithdrawable: -1
+                    notionalWithdrawable: -1
                 })
             }
             resolve(equity)
@@ -261,14 +261,14 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
 
             // get the user's notional usdc balance
             let notionalBalance = new Map<number, number>()
-            let notioanlWithdrawable
+            let notionalWithdrawable
             for (let amm of allAmm) {
                 // @ts-ignore
                 let ammEquity = userAccountInfo.ammEquities[amm[0].ammIdx - 1]
-                notioanlWithdrawable = new Decimal(ammEquity.notioanlWithdrawable / 10 ** USDC_DECIMALS)
+                notionalWithdrawable = new Decimal(ammEquity.notionalWithdrawable / 10 ** USDC_DECIMALS)
 
                 // @ts-ignore
-                notionalBalance.set(amm[0].ammIdx - 1, notioanlWithdrawable.toNumber())
+                notionalBalance.set(amm[0].ammIdx - 1, notionalWithdrawable.toNumber())
             }
 
             // get actual usdc balance according to user lp token balance
@@ -289,14 +289,14 @@ export function getUserEquityV2(context: Context): Promise<Map<number, UserEquit
                     // .mul(new Decimal(ammUsdcVaultBalance.toString())).div(10 ** usdcMintInfo.decimals).toNumber()
                     let tmpAsset = (asset == 3) ? asset - 1 : asset
                     let earnedValueInUsdc = new Decimal(actualBalance).sub(new Decimal(notionalBalance.get(tmpAsset)!)).toNumber()
-                    notioanlWithdrawable = new Decimal(notionalBalance.get(tmpAsset)!)
-                    let currentReturn = (notioanlWithdrawable != 0) ? new Decimal(earnedValueInUsdc).div(notioanlWithdrawable).toNumber() : 0;
+                    notionalWithdrawable = new Decimal(notionalBalance.get(tmpAsset)!)
+                    let currentReturn = (notionalWithdrawable != 0) ? new Decimal(earnedValueInUsdc).div(notionalWithdrawable).toNumber() : 0;
                     equity.set(asset, {
                         lpTokenBalance: new Decimal(userLpTokenBalance.toString()).div(10 ** lpTokenMintInfo.decimals).toNumber(),
                         lpToeknValueInUsdc: actualBalance,
                         earnedValueInUsdc: earnedValueInUsdc,
                         currentReturn: currentReturn,
-                        notioanlWithdrawable: notioanlWithdrawable.toNumber()
+                        notionalWithdrawable: notionalWithdrawable.toNumber()
                     })
                 }
             }
@@ -312,14 +312,14 @@ export function currentReturn(context: Context): Promise<number> {
         try {
             let userEquity = await getUserEquityV2(context)
             let totalEarnedValueInUsdc = 0;
-            let totalNotioanlWithdrawable = 0;
+            let totalNotionalWithdrawable = 0;
             let res = 0;
             for (let e of userEquity) {
                 totalEarnedValueInUsdc += e[1].earnedValueInUsdc
-                totalNotioanlWithdrawable += e[1].notioanlWithdrawable
+                totalNotionalWithdrawable += e[1].notionalWithdrawable
             }
 
-            res += new Decimal(totalEarnedValueInUsdc).div(new Decimal(totalNotioanlWithdrawable)).toNumber()
+            res += new Decimal(totalEarnedValueInUsdc).div(new Decimal(totalNotionalWithdrawable)).toNumber()
             resolve(res)
         }
         catch (err) {
@@ -893,10 +893,10 @@ export async function calcAmmWithdrawFees(
             let lpTokenSupply = new BN(lpMint.supply.toString()).toNumber();
 
             //@ts-ignore
-            let notionalWithdrawableRaw = userAccount.ammEquities[amm.ammIdx - 1].notioanlWithdrawable;
+            let notionalWithdrawableRaw = userAccount.ammEquities[amm.ammIdx - 1].notionalWithdrawable;
             let notionalWithdrawable = notionalWithdrawableRaw / (10 ** USDC_DECIMALS)
 
-            // console.log("notioanlWithdrawable: ", notioanlWithdrawable)
+            // console.log("notionalWithdrawable: ", notionalWithdrawable)
             // console.log("lpAmountToWithdraw: ", lpAmountToWithdraw)
 
             // actual withdraw amount in usdc, aka. lp balance in USDC

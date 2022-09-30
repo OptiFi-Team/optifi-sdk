@@ -4,9 +4,8 @@ import { findMarginStressWithAsset } from "../../utils/margin";
 import { findExchangeAccount } from "../../utils/accounts";
 import * as anchor from "@project-serum/anchor";
 import { SUPPORTED_ASSETS } from "../../constants";
-import { getGvolAtm7 } from "../../utils/getGvolAtm7";
 import InstructionResult from "../../types/instructionResult";
-import { getGvolTermStructure } from "../../utils/getGvolTermStructure";
+import { getGvolIV } from "../../utils/getGvolIV";
 
 export default function updateIv(context: Context):
     Promise<InstructionResult<TransactionSignature>> {
@@ -22,31 +21,7 @@ export default function updateIv(context: Context):
 
                 let marginStressAccount = await context.program.account.marginStressAccount.fetch(marginStressAddress);
 
-                let termStructure = await getGvolTermStructure(asset);
-
-                let iv;
-                let now;
-
-                termStructure.forEach(async element => {
-                    if (element.expiration == marginStressAccount.expiryDate[0] * 1000) {
-                        iv = element.markIv
-                        now = Math.floor(Date.now() / 1000);
-                    }
-                });
-
-                // Second source
-                if (iv == null) {
-                    let _iv = await getGvolAtm7(asset);
-                    iv = _iv.atm7;
-                    now = iv.date / 1000;
-                    console.log("iv", iv)
-                }
-
-                // Third source
-                if (iv == null) {
-                    iv = termStructure[0].markIv
-                    now = Math.floor(Date.now() / 1000);
-                }
+                let [iv, now] = await getGvolIV(asset, marginStressAccount.expiryDate[0] * 1000)
 
                 if (asset == SUPPORTED_ASSETS[SUPPORTED_ASSETS.length - 1]) {
                     let res = await context.program.rpc.updateIv(

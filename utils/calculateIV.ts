@@ -1,9 +1,8 @@
 import Context from "../types/context";
 import { OptifiMarketFullData } from "./market"
 import { PublicKey } from "@solana/web3.js";
-import { PYTH, SWITCHBOARD } from "../constants";
+import { PYTH } from "../constants";
 import erf from "math-erf";
-import { getSwitchboard } from "./switchboardV2";
 import { getPythData } from "./pyth";
 
 export const r = 0;

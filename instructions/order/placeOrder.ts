@@ -14,7 +14,8 @@ import { findMarginStressWithAsset } from "../../utils/margin";
 import { getSpotPrice } from "../../utils/pyth";
 import { findSerumAuthorityPDA } from "../../utils/pda";
 
-export default function placeOrder(context: Context,
+export default function placeOrder(
+    context: Context,
     userAccount: UserAccount,
     marketAddress: PublicKey,
     side: OrderSide,
@@ -24,16 +25,15 @@ export default function placeOrder(context: Context,
 ): Promise<InstructionResult<TransactionSignature>> {
     return new Promise(async (resolve, reject) => {
         try {
+            let [orderContext, asset] = await formPlaceOrderContext(context, marketAddress, userAccount);
 
-            let [orderContext, asset] = await formPlaceOrderContext(context, marketAddress, userAccount)
+            let limit = (price * 10 ** USDC_DECIMALS) / 10 ** numberAssetToDecimal(asset)!; // price for 1 lot_size
 
-            let limit = price * (10 ** USDC_DECIMALS) / (10 ** numberAssetToDecimal(asset)!); // price for 1 lot_size 
-
-            let maxCoinQty = size * (10 ** numberAssetToDecimal(asset)!);
+            let maxCoinQty = size * 10 ** numberAssetToDecimal(asset)!;
 
             let PcQty = limit * maxCoinQty;
 
-            let spotPrice = Math.round(await getSpotPrice(context, asset) / await getSpotPrice(context, 2) * 100) / 100
+            let spotPrice = Math.round(((await getSpotPrice(context, asset)) / (await getSpotPrice(context, 2))) * 100) / 100;
 
             let [totalPcQty, maxPcQty, totalFee] = calculatePcQtyAndFee(context, spotPrice, size, price, side, orderType, false)!;
 
@@ -44,15 +44,15 @@ export default function placeOrder(context: Context,
             // console.log("maxPcQty: ", maxPcQty);
             // console.log("totalPcQty: ", totalPcQty);
 
+            let ixs = [increaseComputeUnitsIx];
+            ixs.push(...(await marginStress(context, asset)));
 
-            let ixs = [increaseComputeUnitsIx]
-            ixs.push(...await marginStress(context, asset));
-
+            // add place order ix
             let placeOrderIx = context.program.instruction.placeOrder(
                 side,
                 new anchor.BN(limit),
                 new anchor.BN(maxCoinQty),
-                new anchor.BN(maxPcQty * (10 ** USDC_DECIMALS)),
+                new anchor.BN(maxPcQty * 10 ** USDC_DECIMALS),
                 new anchor.BN(orderTypeToNumber(orderType)),
                 {
                     accounts: {
@@ -79,14 +79,28 @@ export default function placeOrder(context: Context,
                         user: orderContext.user,
                         instrumentTokenMintAuthorityPda: orderContext.instrumentTokenMintAuthorityPda,
                         usdcFeePool: orderContext.usdcFeePool,
-                        rent: orderContext.rent
+                        rent: orderContext.rent,
                     },
                 }
             );
-
             ixs.push(placeOrderIx);
 
-            let [serumMarketAuthority,] = await findSerumAuthorityPDA(context)
+            // add consume event inx
+            let [serumMarketAuthority] = await findSerumAuthorityPDA(context);
+            let consumeEventInx = await context.program.methods
+                .consumeEventQueue(5)
+                .accounts({
+                    optifiExchange: orderContext.optifiExchange,
+                    serumMarket: orderContext.serumMarket,
+                    eventQueue: orderContext.eventQueue,
+                    userSerumOpenOrders: orderContext.openOrders,
+                    serumDexProgramId: orderContext.serumDexProgramId,
+                    consumeEventsAuthority: serumMarketAuthority,
+                })
+                .instruction();
+            ixs.push(consumeEventInx);
+
+            // add settle order inx
             let settleOrderIx = context.program.instruction.settleOrderFunds({
                 accounts: {
                     optifiExchange: orderContext.optifiExchange,
@@ -96,10 +110,6 @@ export default function placeOrder(context: Context,
                     userSerumOpenOrders: orderContext.openOrders,
                     coinVault: orderContext.coinVault,
                     pcVault: orderContext.pcVault,
-                    // asks: orderContext.asks,
-                    // bids: orderContext.bids,
-                    // requestQueue: orderContext.requestQueue,
-                    eventQueue: orderContext.eventQueue,
                     instrumentLongSplTokenMint: orderContext.coinMint,
                     instrumentShortSplTokenMint: orderContext.instrumentShortSplTokenMint,
                     userInstrumentLongTokenVault: orderContext.userInstrumentLongTokenVault,
@@ -109,11 +119,10 @@ export default function placeOrder(context: Context,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     serumDexProgramId: orderContext.serumDexProgramId,
                     feeAccount: orderContext.feeAccount,
-                    consumeEventsAuthority: serumMarketAuthority
                 },
             });
 
-            ixs.push(settleOrderIx)
+            ixs.push(settleOrderIx);
 
             let [marginStressAddress, _bump] = await findMarginStressWithAsset(context, orderContext.optifiExchange, asset);
 
@@ -123,15 +132,15 @@ export default function placeOrder(context: Context,
                     marginStressAccount: marginStressAddress,
                     userAccount: orderContext.userAccount,
                 },
-                instructions: ixs
+                instructions: ixs,
             });
 
             resolve({
                 successful: true,
-                data: placeOrderRes as TransactionSignature
-            })
+                data: placeOrderRes as TransactionSignature,
+            });
         } catch (err) {
-            reject(err)
+            reject(err);
         }
-    })
+    });
 }

@@ -1,16 +1,15 @@
 import { PublicKey } from "@solana/web3.js";
-import { PYTH, SWITCHBOARD } from "../../constants";
+import { PYTH } from "../../constants";
 import { initializeContext } from "../../index";
 import marketMakerCancelOrder from "../../instructions/marketMaker/marketMakerCancelOrder";
 import marketMakerPostOnlyOrder from "../../instructions/marketMaker/marketMakerPostOnlyOrder";
 import { OrderSide } from "../../types/optifi-exchange-types";
 import { option_price } from "../../utils/calculateMargin";
 import { sleep } from "../../utils/generic";
+import { getGvolIV } from "../../utils/getGvolIV";
 import { findOptifiMarketsWithFullData } from "../../utils/market";
-import { getPythData } from "../../utils/pyth";
-import { getSwitchboard } from "../../utils/switchboardV2";
+import { getPythData, getSpotPrice } from "../../utils/pyth";
 
-const usdcSpot = 1;
 const asset: number = 0;
 
 initializeContext().then(async (context) => {
@@ -18,24 +17,11 @@ initializeContext().then(async (context) => {
 
     console.log(`Found ${MarketsWithFullDatas.length} optifi markets - `);
 
+    let spotRes = await getSpotPrice(context, asset);
 
-    let spotRes: number;
-    let ivRes: number;
-    switch (asset) {
-        case 0:
-            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].BTC_USD))
-            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_BTC_IV))
-            break
-        case 1:
-            spotRes = await getPythData(context, new PublicKey(PYTH[context.cluster].ETH_USD))
-            ivRes = await getSwitchboard(context, new PublicKey(SWITCHBOARD[context.cluster].SWITCHBOARD_ETH_IV))
-            break
-        default:
-            throw Error("unsupported asset type")
-    }
+    let usdcSpot = await getSpotPrice(context, 2);
+
     let spot = spotRes / usdcSpot
-    let iv = ivRes / 100
-    console.log("spot price: ", spot, " iv: ", iv)
 
     for (let MarketsWithFullData of MarketsWithFullDatas) {
 
@@ -43,6 +29,7 @@ initializeContext().then(async (context) => {
 
             // console.log(MarketsWithFullData)
 
+            let [iv, now] = await getGvolIV(asset, MarketsWithFullData.expiryDate.getTime())
             let market = MarketsWithFullData.marketAddress;
             let strike = MarketsWithFullData.strike;
             let t = (MarketsWithFullData.expiryDate.getTime() - new Date().getTime()) / 1000 / (60 * 60 * 24 * 365)
