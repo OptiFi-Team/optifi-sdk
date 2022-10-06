@@ -6,9 +6,9 @@ import { Duration } from "./types/optifi-exchange-types";
 
 // solana cluster with default rpc endpoint
 export enum SolanaCluster {
-    Mainnet = "https://optifil-main-c161.mainnet.rpcpool.com/9de64c66-39f3-485f-bb23-b24f24610368",
-    Devnet = "https://devnet.genesysgo.net/",
-    Testnet = "https://api.testnet.solana.com"
+  Mainnet = "https://optifil-main-c161.mainnet.rpcpool.com/9de64c66-39f3-485f-bb23-b24f24610368",
+  Devnet = "https://devnet.genesysgo.net/",
+  Testnet = "https://api.testnet.solana.com",
 }
 
 // Constant prefixes for account seeds
@@ -44,271 +44,263 @@ export const SUPPORTED_ASSETS: Asset[] = [Asset.Bitcoin, Asset.Ethereum, Asset.S
 export const SUPPORTED_DURATION: Duration[] = [Duration.Weekly, Duration.Monthly];
 
 // The expiration durations we're supporting for standard expiries
-export const SUPPORTED_MATURITIES = [
-    MaturityType.Weekly
-]
+export const SUPPORTED_MATURITIES = [MaturityType.Weekly];
 
 //How many instrument types are supported
 export const SUPPORTED_INSTRUMENTS: InstrumentType[] = [InstrumentType.Put, InstrumentType.Call];
 
 type ExpirationMapping = {
-    [instrumentType in InstrumentType]: ExpiryType[]
-}
+  [instrumentType in InstrumentType]: ExpiryType[];
+};
 // What expiration types we're currently supporting for each instrument
 export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
-    // Puts
-    0: [
-        ExpiryType.Standard
-    ],
-    // Calls
-    1: [
-        ExpiryType.Standard
-    ],
-    // Futures
-    // 2: [
-    //     ExpiryType.Perpetual
-    // ]
-}
+  // Puts
+  0: [ExpiryType.Standard],
+  // Calls
+  1: [ExpiryType.Standard],
+  // Futures
+  // 2: [
+  //     ExpiryType.Perpetual
+  // ]
+};
 
 // We want our maturities to end on Friday, 8:00AM UTC as same as Deribit
 export const EXPIRATION_WEEKDAY: number = 5;
 export const EXPIRATION_TIME: number = 8;
 
-export const SECONDS_IN_YEAR: number = (60 * 60) * 24 * 365;
+export const SECONDS_IN_YEAR: number = 60 * 60 * 24 * 365;
 
 export function calculateSerumMarketsCount(): number {
-    let totalMarkets = 0;
+  let totalMarkets = 0;
 
-    for (let instrumentType of Object.keys(SUPPORTED_EXPIRATION_TYPES)) {
-        let supportedExpirations: ExpiryType[] = SUPPORTED_EXPIRATION_TYPES[Number(instrumentType) as InstrumentType];
-        for (let supportedExpiryType of supportedExpirations) {
-            switch (supportedExpiryType) {
-                case ExpiryType.Perpetual:
-                    totalMarkets += 1;
-                    break;
-                case ExpiryType.Standard:
-                    totalMarkets += SUPPORTED_MATURITIES.length;
-                    break;
-            }
-        }
+  for (let instrumentType of Object.keys(SUPPORTED_EXPIRATION_TYPES)) {
+    let supportedExpirations: ExpiryType[] = SUPPORTED_EXPIRATION_TYPES[Number(instrumentType) as InstrumentType];
+    for (let supportedExpiryType of supportedExpirations) {
+      switch (supportedExpiryType) {
+        case ExpiryType.Perpetual:
+          totalMarkets += 1;
+          break;
+        case ExpiryType.Standard:
+          totalMarkets += SUPPORTED_MATURITIES.length;
+          break;
+      }
     }
+  }
 
-    totalMarkets *= SUPPORTED_ASSETS.length;
-    totalMarkets *= STRIKE_LADDER_SIZE;
+  totalMarkets *= SUPPORTED_ASSETS.length;
+  totalMarkets *= STRIKE_LADDER_SIZE;
 
-    console.debug(`${totalMarkets} total serum markets`);
+  console.debug(`${totalMarkets} total serum markets`);
 
-    return totalMarkets;
+  return totalMarkets;
 }
 
 // How many serum markets the program should keep
 export const SERUM_MARKETS: number = calculateSerumMarketsCount();
 
 export type EndpointConstant = {
-    [cluster in SolanaCluster]: any;
-}
+  [cluster in SolanaCluster]: any;
+};
 
 export const USDC_TOKEN_MINT: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    [SolanaCluster.Devnet]: "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
-    [SolanaCluster.Testnet]: undefined
-}
+  [SolanaCluster.Mainnet]: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  [SolanaCluster.Devnet]: "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+  [SolanaCluster.Testnet]: undefined,
+};
 
 export const OPTIFI_USDC_PROGRAM_ID: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "opucrGSP5hyYAEfQMjYrchfLtwowjiAjAMwUmmjoYGP",
-    [SolanaCluster.Devnet]: "oudvxi2FrrgAS8boTYg4XWVkNsDE8ASK4AveVZGEjQ4",
-    [SolanaCluster.Testnet]: undefined
-}
-
+  [SolanaCluster.Mainnet]: "opucrGSP5hyYAEfQMjYrchfLtwowjiAjAMwUmmjoYGP",
+  [SolanaCluster.Devnet]: "oudvxi2FrrgAS8boTYg4XWVkNsDE8ASK4AveVZGEjQ4",
+  [SolanaCluster.Testnet]: undefined,
+};
 
 export const OPUSDC_TOKEN_MINT: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "9dspv968mZJkduroPvV4yFxJHCiURTrQxwrn694vdQci",
-    [SolanaCluster.Devnet]: "631ThWccqm92emGT8cCr6ceMNLWEX3xQdDiyL3NGPkV5",
-    [SolanaCluster.Testnet]: undefined
-}
+  [SolanaCluster.Mainnet]: "9dspv968mZJkduroPvV4yFxJHCiURTrQxwrn694vdQci",
+  [SolanaCluster.Devnet]: "631ThWccqm92emGT8cCr6ceMNLWEX3xQdDiyL3NGPkV5",
+  [SolanaCluster.Testnet]: undefined,
+};
 
 export const OPTIFI_EXCHANGE_ID: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "220920",
-    [SolanaCluster.Devnet]: "220915",
-    [SolanaCluster.Testnet]: undefined,
-}
+  [SolanaCluster.Mainnet]: "220920",
+  [SolanaCluster.Devnet]: "220915",
+  [SolanaCluster.Testnet]: undefined,
+};
 
 export const SWITCHBOARD: EndpointConstant = {
-    [SolanaCluster.Mainnet]: {
-        SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
-        SWITCHBOARD_BTC_IV: "BQekWds7W79CVeKnG3McESWa94YrChT4VPUYqPzGcHon",
-        SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
-        SWITCHBOARD_ETH_IV: "DkACWMFoJr9xnAwsttHmUQrhzRSnwG7J5cmFqG6VH44",
-        SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW",
-        SWITCHBOARD_SOL_USD: "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR",
-        SWITCHBOARD_SOL_IV: "GN7d1xzkduGw1LbTpUYkttQhUiyi1PHWkggZ7B5G8FW6"
-    },
-    [SolanaCluster.Devnet]: {
-        SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
-        SWITCHBOARD_BTC_IV: "6MrFTTN6125HDHze3Yn6Me59w8PdYfzvAqGT7TBztk7U",
-        SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
-        SWITCHBOARD_ETH_IV: "GikZAw9st7HcUn2bhcFCiM2fkwvgUXGt2CvQXLYZcBZN",
-        SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW",
-        SWITCHBOARD_SOL_USD: "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR",
-        SWITCHBOARD_SOL_IV: "5YWQE6W9MnsXPymN2Ud5NoRwTGgFu9TehT542MBvdqWB"
-    },
-    [SolanaCluster.Testnet]: {
-        SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
-        SWITCHBOARD_BTC_IV: "CX1PvW4qUDy4PPq8egnMVCbVJt8TcPCt7WCZuwmvCfo7",
-        SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
-        SWITCHBOARD_ETH_IV: "4AGPMUEfBCSNqVd4Y6veHAep6VPtrkMa89rBhPqMYegz",
-        SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW"
-    }
-}
+  [SolanaCluster.Mainnet]: {
+    SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
+    SWITCHBOARD_BTC_IV: "BQekWds7W79CVeKnG3McESWa94YrChT4VPUYqPzGcHon",
+    SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
+    SWITCHBOARD_ETH_IV: "DkACWMFoJr9xnAwsttHmUQrhzRSnwG7J5cmFqG6VH44",
+    SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW",
+    SWITCHBOARD_SOL_USD: "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR",
+    SWITCHBOARD_SOL_IV: "GN7d1xzkduGw1LbTpUYkttQhUiyi1PHWkggZ7B5G8FW6",
+  },
+  [SolanaCluster.Devnet]: {
+    SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
+    SWITCHBOARD_BTC_IV: "6MrFTTN6125HDHze3Yn6Me59w8PdYfzvAqGT7TBztk7U",
+    SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
+    SWITCHBOARD_ETH_IV: "GikZAw9st7HcUn2bhcFCiM2fkwvgUXGt2CvQXLYZcBZN",
+    SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW",
+    SWITCHBOARD_SOL_USD: "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR",
+    SWITCHBOARD_SOL_IV: "5YWQE6W9MnsXPymN2Ud5NoRwTGgFu9TehT542MBvdqWB",
+  },
+  [SolanaCluster.Testnet]: {
+    SWITCHBOARD_BTC_USD: "8SXvChNYFhRq4EZuZvnhjrB3jJRQCv4k3P4W6hesH3Ee",
+    SWITCHBOARD_BTC_IV: "CX1PvW4qUDy4PPq8egnMVCbVJt8TcPCt7WCZuwmvCfo7",
+    SWITCHBOARD_ETH_USD: "HNStfhaLnqwF2ZtJUizaA9uHDAVB976r2AgTUx9LrdEo",
+    SWITCHBOARD_ETH_IV: "4AGPMUEfBCSNqVd4Y6veHAep6VPtrkMa89rBhPqMYegz",
+    SWITCHBOARD_USDC_USD: "BjUgj6YCnFBZ49wF54ddBVA9qu8TeqkFtkbqmZcee8uW",
+  },
+};
 
 export const PYTH: EndpointConstant = {
-    [SolanaCluster.Mainnet]: {
-        BTC_USD: "GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU",
-        ETH_USD: "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB",
-        SOL_USD: "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG",
-        USDC_USD: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
-    },
-    [SolanaCluster.Devnet]: {
-        BTC_USD: "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J",
-        ETH_USD: "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw",
-        SOL_USD: "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix",
-        USDC_USD: "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7",
-    },
-    [SolanaCluster.Testnet]: {
-        BTC_USD: "DJW6f4ZVqCnpYNN9rNuzqUcCvkVtBgixo8mq9FKSsCbJ",
-        ETH_USD: "7A98y76fcETLHnkCxjmnUrsuNrbUae7asy4TiVeGqLSs",
-        SOL_USD: "7VJsBtJzgTftYzEeooSDYyjKXvYRWJHdwvbwfBvTg9K",
-        USDC_USD: "GBvYgUMCt4nvycUZMEBpHyLEXGbKjr6G9HjMjmLyf6mA",
-    }
-}
+  [SolanaCluster.Mainnet]: {
+    BTC_USD: "GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU",
+    ETH_USD: "JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB",
+    SOL_USD: "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG",
+    USDC_USD: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD",
+  },
+  [SolanaCluster.Devnet]: {
+    BTC_USD: "HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J",
+    ETH_USD: "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw",
+    SOL_USD: "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix",
+    USDC_USD: "5SSkXsEKQepHHAewytPVwdej4epN1nxgLVM84L4KXgy7",
+  },
+  [SolanaCluster.Testnet]: {
+    BTC_USD: "DJW6f4ZVqCnpYNN9rNuzqUcCvkVtBgixo8mq9FKSsCbJ",
+    ETH_USD: "7A98y76fcETLHnkCxjmnUrsuNrbUae7asy4TiVeGqLSs",
+    SOL_USD: "7VJsBtJzgTftYzEeooSDYyjKXvYRWJHdwvbwfBvTg9K",
+    USDC_USD: "GBvYgUMCt4nvycUZMEBpHyLEXGbKjr6G9HjMjmLyf6mA",
+  },
+};
 
 export const SERUM_DEX_PROGRAM_ID: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
-    [SolanaCluster.Devnet]: "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY",
-    [SolanaCluster.Testnet]: "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
-}
+  [SolanaCluster.Mainnet]: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+  [SolanaCluster.Devnet]: "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY",
+  [SolanaCluster.Testnet]: "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY",
+};
 
 // Mango market program ids
 // from https://github.com/blockworks-foundation/mango-client-v3/blob/main/src/ids.json
 export const MANGO_PROGRAM_ID: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "mv3ekLzLbnVPNxjSKvqBpU3ZeZXPQdEC3bp5MDEBG68",
-    [SolanaCluster.Devnet]: "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA",
-    [SolanaCluster.Testnet]: "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA"
-}
+  [SolanaCluster.Mainnet]: "mv3ekLzLbnVPNxjSKvqBpU3ZeZXPQdEC3bp5MDEBG68",
+  [SolanaCluster.Devnet]: "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA",
+  [SolanaCluster.Testnet]: "4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA",
+};
 
 // Mango group pubkey
 export const MANGO_GROUP_ID: EndpointConstant = {
-    [SolanaCluster.Mainnet]: "98pjRuQjK3qA6gXts96PqZT4Ze5QmnCmt3QYjhbUSPue",
-    [SolanaCluster.Devnet]: "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA",
-    [SolanaCluster.Testnet]: "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA"
-}
+  [SolanaCluster.Mainnet]: "98pjRuQjK3qA6gXts96PqZT4Ze5QmnCmt3QYjhbUSPue",
+  [SolanaCluster.Devnet]: "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA",
+  [SolanaCluster.Testnet]: "Ec2enZyoC4nGpEfu2sUNAa2nUGJHWxoUWYSEJ2hNTWTA",
+};
 
 // Mango usdc token
 export const MANGO_USDC_CONFIG: EndpointConstant = {
-    [SolanaCluster.Mainnet]: {
-        "symbol": "USDC",
-        "mintKey": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-        "decimals": 6,
-        "rootKey": "AMzanZxMirPCgGcBoH9kw4Jzi9LFMomyUCXbpzDeL2T8",
-        "nodeKeys": ["BGcwkj1WudQwUUjFk78hAjwd1uAm8trh1N4CJSa51euh"]
-    },
-    [SolanaCluster.Devnet]: {
-        "symbol": "USDC",
-        "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
-        "decimals": 6,
-        "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
-        "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
-    },
-    [SolanaCluster.Testnet]: {
-        "symbol": "USDC",
-        "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
-        "decimals": 6,
-        "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
-        "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
-    },
-}
+  [SolanaCluster.Mainnet]: {
+    symbol: "USDC",
+    mintKey: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    decimals: 6,
+    rootKey: "AMzanZxMirPCgGcBoH9kw4Jzi9LFMomyUCXbpzDeL2T8",
+    nodeKeys: ["BGcwkj1WudQwUUjFk78hAjwd1uAm8trh1N4CJSa51euh"],
+  },
+  [SolanaCluster.Devnet]: {
+    symbol: "USDC",
+    mintKey: "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+    decimals: 6,
+    rootKey: "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
+    nodeKeys: ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"],
+  },
+  [SolanaCluster.Testnet]: {
+    symbol: "USDC",
+    mintKey: "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+    decimals: 6,
+    rootKey: "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
+    nodeKeys: ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"],
+  },
+};
 
 // Mango usdc token
 export const MANGO_PERP_MARKETS: EndpointConstant = {
-    [SolanaCluster.Mainnet]: [
-        {
-            "name": "BTC-PERP",
-            "publicKey": "DtEcjPLyD4YtTBB4q8xwFZ9q49W89xZCZtJyrGebi5t8",
-            "baseSymbol": "BTC",
-            "baseDecimals": 6,
-            "quoteDecimals": 6,
-            "marketIndex": 1,
-            "bidsKey": "Bc8XaK5UTuDSCBtiESSUxBSb9t6xczhbAJnesPamMRir",
-            "asksKey": "BkWRiarqxP5Gwx7115LQPbjRmr3NjuSRXWBnduXXLGWR",
-            "eventsKey": "7t5Me8RieYKsFpfLEV8jnpqcqswNpyWD95ZqgUXuLV8Z"
-        },
-        {
-            "name": "ETH-PERP",
-            "publicKey": "DVXWg6mfwFvHQbGyaHke4h3LE9pSkgbooDSDgA4JBC8d",
-            "baseSymbol": "ETH",
-            "baseDecimals": 6,
-            "quoteDecimals": 6,
-            "marketIndex": 2,
-            "bidsKey": "DQv2sWhaHYbKrobHH6jAdkAXw13mnDdM9hVfRQtrUcMe",
-            "asksKey": "8NhLMV6huneGAqijuUgUFSshbAfXxdNj6ZMHSLb9aW8K",
-            "eventsKey": "9vDfKNPJkCvQv9bzR4JNTGciQC2RVHPVNMMHiVDgT1mw"
-        },
-        {
-            "name": "SOL-PERP",
-            "publicKey": "2TgaaVoHgnSeEtXvWTx13zQeTf4hYWAMEiMQdcG6EwHi",
-            "baseSymbol": "SOL",
-            "baseDecimals": 9,
-            "quoteDecimals": 6,
-            "marketIndex": 3,
-            "bidsKey": "Fu8q5EiFunGwSRrjFKjRUoMABj5yCoMEPccMbUiAT6PD",
-            "asksKey": "9qUxMSWBGAeNmXusQHuLfgSuYJqADyYoNLwZ63JJSi6V",
-            "eventsKey": "31cKs646dt1YkA3zPyxZ7rUAkxTBz279w4XEobFXcAKP"
-        },
-    ],
-    [SolanaCluster.Devnet]: [
-        {
-            "name": "BTC-PERP",
-            "publicKey": "FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z",
-            "baseSymbol": "BTC",
-            "baseDecimals": 6,
-            "quoteDecimals": 6,
-            "marketIndex": 1,
-            "bidsKey": "F1Dcnq6F8NXR3gXADdsYqrXYBUUwoT7pfCtRuQWSyQFd",
-            "asksKey": "BFEBZsLYmEhj4quWDRKbyMKhW1Q9c7gu3LqsnipNGTVn",
-            "eventsKey": "Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU"
-        },
-        {
-            "name": "ETH-PERP",
-            "publicKey": "8jKPf3KJKWvvSbbYnunwZYv62UoRPpyGb93NWLaswzcS",
-            "baseSymbol": "ETH",
-            "baseDecimals": 6,
-            "quoteDecimals": 6,
-            "marketIndex": 2,
-            "bidsKey": "6jGBscmZgRXk6oVLWbnQDpRftmzrDVu82TARci9VHKuW",
-            "asksKey": "FXSvghvoaWFHRXzWUHi5tjK9YhgcPgMPpypFXBd4Aq3r",
-            "eventsKey": "8WLv5fKLYkyZpFG74kRmp2RALHQFcNKmH7eJn8ebHC13"
-        },
-        {
-            "name": "SOL-PERP",
-            "publicKey": "58vac8i9QXStG1hpaa4ouwE1X7ngeDjY9oY7R15hcbKJ",
-            "baseSymbol": "SOL",
-            "baseDecimals": 9,
-            "quoteDecimals": 6,
-            "marketIndex": 3,
-            "bidsKey": "7HRgm8iXEDx2TmSETo3Lq9SXkF954HMVKNiq8t5sKvQS",
-            "asksKey": "4oNxXQv1Rx3h7aNWjhTs3PWBoXdoPZjCaikSThV4yGb8",
-            "eventsKey": "CZ5MCRvkN38d5pnZDDEEyMiED3drgDUVpEUjkuJq31Kf"
-        }
-    ],
-    [SolanaCluster.Testnet]: {
-        "symbol": "USDC",
-        "mintKey": "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
-        "decimals": 6,
-        "rootKey": "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
-        "nodeKeys": ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"]
+  [SolanaCluster.Mainnet]: [
+    {
+      name: "BTC-PERP",
+      publicKey: "DtEcjPLyD4YtTBB4q8xwFZ9q49W89xZCZtJyrGebi5t8",
+      baseSymbol: "BTC",
+      baseDecimals: 6,
+      quoteDecimals: 6,
+      marketIndex: 1,
+      bidsKey: "Bc8XaK5UTuDSCBtiESSUxBSb9t6xczhbAJnesPamMRir",
+      asksKey: "BkWRiarqxP5Gwx7115LQPbjRmr3NjuSRXWBnduXXLGWR",
+      eventsKey: "7t5Me8RieYKsFpfLEV8jnpqcqswNpyWD95ZqgUXuLV8Z",
     },
-}
-
+    {
+      name: "ETH-PERP",
+      publicKey: "DVXWg6mfwFvHQbGyaHke4h3LE9pSkgbooDSDgA4JBC8d",
+      baseSymbol: "ETH",
+      baseDecimals: 6,
+      quoteDecimals: 6,
+      marketIndex: 2,
+      bidsKey: "DQv2sWhaHYbKrobHH6jAdkAXw13mnDdM9hVfRQtrUcMe",
+      asksKey: "8NhLMV6huneGAqijuUgUFSshbAfXxdNj6ZMHSLb9aW8K",
+      eventsKey: "9vDfKNPJkCvQv9bzR4JNTGciQC2RVHPVNMMHiVDgT1mw",
+    },
+    {
+      name: "SOL-PERP",
+      publicKey: "2TgaaVoHgnSeEtXvWTx13zQeTf4hYWAMEiMQdcG6EwHi",
+      baseSymbol: "SOL",
+      baseDecimals: 9,
+      quoteDecimals: 6,
+      marketIndex: 3,
+      bidsKey: "Fu8q5EiFunGwSRrjFKjRUoMABj5yCoMEPccMbUiAT6PD",
+      asksKey: "9qUxMSWBGAeNmXusQHuLfgSuYJqADyYoNLwZ63JJSi6V",
+      eventsKey: "31cKs646dt1YkA3zPyxZ7rUAkxTBz279w4XEobFXcAKP",
+    },
+  ],
+  [SolanaCluster.Devnet]: [
+    {
+      name: "BTC-PERP",
+      publicKey: "FHQtNjRHA9U5ahrH7mWky3gamouhesyQ5QvpeGKrTh2z",
+      baseSymbol: "BTC",
+      baseDecimals: 6,
+      quoteDecimals: 6,
+      marketIndex: 1,
+      bidsKey: "F1Dcnq6F8NXR3gXADdsYqrXYBUUwoT7pfCtRuQWSyQFd",
+      asksKey: "BFEBZsLYmEhj4quWDRKbyMKhW1Q9c7gu3LqsnipNGTVn",
+      eventsKey: "Bu17U2YdBM9gRrqQ1zD6MpngQBb71RRAAn8dbxoFDSkU",
+    },
+    {
+      name: "ETH-PERP",
+      publicKey: "8jKPf3KJKWvvSbbYnunwZYv62UoRPpyGb93NWLaswzcS",
+      baseSymbol: "ETH",
+      baseDecimals: 6,
+      quoteDecimals: 6,
+      marketIndex: 2,
+      bidsKey: "6jGBscmZgRXk6oVLWbnQDpRftmzrDVu82TARci9VHKuW",
+      asksKey: "FXSvghvoaWFHRXzWUHi5tjK9YhgcPgMPpypFXBd4Aq3r",
+      eventsKey: "8WLv5fKLYkyZpFG74kRmp2RALHQFcNKmH7eJn8ebHC13",
+    },
+    {
+      name: "SOL-PERP",
+      publicKey: "58vac8i9QXStG1hpaa4ouwE1X7ngeDjY9oY7R15hcbKJ",
+      baseSymbol: "SOL",
+      baseDecimals: 9,
+      quoteDecimals: 6,
+      marketIndex: 3,
+      bidsKey: "7HRgm8iXEDx2TmSETo3Lq9SXkF954HMVKNiq8t5sKvQS",
+      asksKey: "4oNxXQv1Rx3h7aNWjhTs3PWBoXdoPZjCaikSThV4yGb8",
+      eventsKey: "CZ5MCRvkN38d5pnZDDEEyMiED3drgDUVpEUjkuJq31Kf",
+    },
+  ],
+  [SolanaCluster.Testnet]: {
+    symbol: "USDC",
+    mintKey: "8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN",
+    decimals: 6,
+    rootKey: "HUBX4iwWEUK5VrXXXcB7uhuKrfT4fpu2T9iZbg712JrN",
+    nodeKeys: ["J2Lmnc1e4frMnBEJARPoHtfpcohLfN67HdK1inXjTFSM"],
+  },
+};
 
 // Serum market constants
 export const COIN_LOT_SIZE: number = 1; // let's set 1 as one instrument spl token represents 1 contract
@@ -318,36 +310,35 @@ export const PC_DUST_THRESHOLD: number = 2;
 export const USDC_DECIMALS = 6;
 export const SOL_DECIMALS = 9;
 
-
 export const OPTIFI_TAKER_FEE: EndpointConstant = {
-    [SolanaCluster.Devnet]: 0.0015,
-    [SolanaCluster.Mainnet]: 0.0,
-    [SolanaCluster.Testnet]: undefined
-}
+  [SolanaCluster.Devnet]: 0.0015,
+  [SolanaCluster.Mainnet]: 0.0,
+  [SolanaCluster.Testnet]: undefined,
+};
 export const OPTIFI_MAKER_FEE: EndpointConstant = {
-    [SolanaCluster.Devnet]: 0.0005,
-    [SolanaCluster.Mainnet]: 0.0,
-    [SolanaCluster.Testnet]: undefined
-}
-export const OPTIFI_MAX_FEE_RATIO = 0.1
+  [SolanaCluster.Devnet]: 0.0005,
+  [SolanaCluster.Mainnet]: 0.0,
+  [SolanaCluster.Testnet]: undefined,
+};
+export const OPTIFI_MAX_FEE_RATIO = 0.1;
 
 export const SERUM_TAKER_FEE: EndpointConstant = {
-    [SolanaCluster.Devnet]: 0.0022,
-    [SolanaCluster.Mainnet]: 0.0004,
-    [SolanaCluster.Testnet]: undefined
-}
+  [SolanaCluster.Devnet]: 0.0004,
+  [SolanaCluster.Mainnet]: 0.0004,
+  [SolanaCluster.Testnet]: undefined,
+};
 export const SERUM_MAKER_FEE: EndpointConstant = {
-    [SolanaCluster.Devnet]: 0.0022,
-    [SolanaCluster.Mainnet]: 0.0,
-    [SolanaCluster.Testnet]: undefined
-}
+  [SolanaCluster.Devnet]: 0.0,
+  [SolanaCluster.Mainnet]: 0.0,
+  [SolanaCluster.Testnet]: undefined,
+};
 
 // user margin deposit limit
-export const DEPOSIT_LIMIT: number = 10000 * (10 ** USDC_DECIMALS);
+export const DEPOSIT_LIMIT: number = 10000 * 10 ** USDC_DECIMALS;
 
 // OG NFT token mint address
 export const OG_NFT_MINT = {
-    [SolanaCluster.Devnet]: "u5vbDPVKUJMDXimVzT46FqCZzj1MvozGjhQ4LuwXMFr",
-    [SolanaCluster.Mainnet]: "GA3oHKD9F8o8peET6p5icmnwtusx7k1dGxvnaT3dVAg1",
-    [SolanaCluster.Testnet]: ""
-}
+  [SolanaCluster.Devnet]: "u5vbDPVKUJMDXimVzT46FqCZzj1MvozGjhQ4LuwXMFr",
+  [SolanaCluster.Mainnet]: "GA3oHKD9F8o8peET6p5icmnwtusx7k1dGxvnaT3dVAg1",
+  [SolanaCluster.Testnet]: "",
+};
