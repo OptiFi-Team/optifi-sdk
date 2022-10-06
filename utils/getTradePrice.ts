@@ -1,3 +1,5 @@
+import fetch from 'cross-fetch';
+
 // input example
 // optifiProgramId: opDV2tLVsRPGk9aYqm4gdtGotiRwjuYKUmWzWB7NfCR
 // clientOrderId: 11

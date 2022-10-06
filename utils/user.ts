@@ -9,6 +9,7 @@ import { BN } from "@project-serum/anchor";
 import {
     dateToAnchorTimestamp,
 } from "../utils/generic";
+import { getTradePrice } from "./getTradePrice"
 export function getAmountToReserve(
     context: Context
 ): Promise<number> {
@@ -141,8 +142,10 @@ export function calcPnLForUserPositions(
                 marketPrices = prices
             }
 
-            let positionPnLs = userPositions.map((position, i) => calPnLForOnePosition(position, marketPrices![i], userTradesHistory!))
-
+            let positionPnLs: PnL[] = [];
+            for (let i = 0; i < userPositions.length; i++) {
+                positionPnLs.push(await calPnLForOnePosition(userPositions[i], marketPrices![i], userTradesHistory!, userAccountAddress!))
+            }
             resolve(positionPnLs)
         } catch (err) {
             reject(err)
@@ -161,32 +164,52 @@ interface PnL {
     pnl: number
 }
 
-export function calPnLForOnePosition(postion: Position, marketPrice: number, tradeHistory: Trade[]): PnL {
+export async function calPnLForOnePosition(postion: Position, marketPrice: number, tradeHistory: Trade[], userAccountAddress: PublicKey): Promise<PnL> {
     let pnl: number = 0
     let netPosition = postion.netPosition
     let entryUnitPrice: number = 0
     if (netPosition != 0) {
         // get entry price from trade history
         let relatedTrades = tradeHistory.filter(e => e.marketAddress.toString() == postion.marketId.toString())
-        let netBaseAmount = 0
+        let netBaseAmount = new Decimal(0)
         let netQuoteAmount = 0
-        relatedTrades.forEach(e => {
-            if (e.side === "buy") {
-                netQuoteAmount -= e.maxQuoteQuantity
-                netBaseAmount += e.maxBaseQuantity
-            } else {
-                netQuoteAmount += e.maxQuoteQuantity
-                netBaseAmount -= e.maxBaseQuantity
-
+        let totalAmount = 0
+        for (let i = 0; i < relatedTrades.length; i++) {
+            let e = relatedTrades[i]
+            // relatedTrades.forEach(async (e) => {
+            let maxBaseQuantity = (e.side == "buy") ? e.maxBaseQuantity : -e.maxBaseQuantity;
+            if (!userAccountAddress) console.log("no userAccountAddress!")
+            let data = {
+                optifiProgramId: process.env.OPTIFI_PROGRAM_ID,
+                clientOrderId: e.clientId.toString(),
+                userAccountAddress: userAccountAddress,
             }
-        })
-        if (netBaseAmount != 0) {
-            entryUnitPrice = Math.abs(new Decimal(netQuoteAmount).div(new Decimal(netBaseAmount)).toNumber())
+            let tradePrice = await getTradePrice(data)
+            tradePrice = tradePrice.result[0]
+            if (!tradePrice) {
+                console.log("no tradePrice!")
+                tradePrice = -1
+            }
+            totalAmount += tradePrice * maxBaseQuantity
+
+            if (e.side === "buy") {
+                // netQuoteAmount -= e.maxQuoteQuantity
+                netBaseAmount = netBaseAmount.add(new Decimal(e.maxBaseQuantity))
+            } else {
+                // netQuoteAmount += e.maxQuoteQuantity
+                netBaseAmount = netBaseAmount.sub(new Decimal(e.maxBaseQuantity))
+            }
+        }
+
+        if (!netBaseAmount.equals(new Decimal(0))) {
+            // entryUnitPrice = Math.abs(new Decimal(netQuoteAmount).div(new Decimal(netBaseAmount)).toNumber())
             // console.log("netPosition: ", netPosition, marketPrice, entryUnitPrice)
+
+            entryUnitPrice = Math.abs(new Decimal(totalAmount).div(new Decimal(netBaseAmount)).toNumber())
 
             // calc pnl
             pnl = netPosition * (marketPrice - entryUnitPrice)
-        }
+        } else { console.log("netBaseAmount = 0") }
 
     }
     return {

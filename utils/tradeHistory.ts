@@ -9,7 +9,7 @@ import { retrievRecentTxs } from "./orderHistory";
 import base58, { decode } from "bs58";
 import Decimal from "decimal.js";
 import { BorshCoder } from "@project-serum/anchor";
-
+import { getTradePrice } from "./getTradePrice"
 export const BTC_DECIMALS = 2;
 export const ETH_DECIMALS = 1;
 
@@ -92,12 +92,20 @@ export async function getIOCSizeForAsk(logs: string[]) {
   return Number(stringRes)
 }
 
-async function pushInTrade(orderHistory: OrderInstruction, trades: Trade[]): Promise<Trade[]> {
+async function pushInTrade(orderHistory: OrderInstruction, trades: Trade[], userAccountAddress: string): Promise<Trade[]> {
   return new Promise(async (resolve, reject) => {
+    let data = {
+      optifiProgramId: process.env.OPTIFI_PROGRAM_ID,
+      clientOrderId: orderHistory.clientId.toString(),
+      userAccountAddress: userAccountAddress,
+    }
+    let tradePrice = await getTradePrice(data)
+    if (!tradePrice) tradePrice = -1//can't find
     trades.push(new Trade({
       clientId: orderHistory.clientId,
       limit: orderHistory.limit,
-      limitPrice: orderHistory.limitPrice,
+      // tradePrice: orderHistory.limitPrice
+      tradePrice: (tradePrice == -1) ? -1 : tradePrice.result[0],
       maxBaseQuantity: orderHistory.maxBaseQuantity,
       maxQuoteQuantity: orderHistory.maxQuoteQuantity,
       orderType: orderHistory.orderType,
@@ -118,6 +126,7 @@ export function getAllTradesForAccount(
   context: Context,
   account: PublicKey
 ): Promise<Trade[]> {
+  let userAccountAddress = account.toString()
   return new Promise(async (resolve, reject) => {
     let optifiMarkets = await findOptifiMarketsWithFullData(context)
     getAllOrdersForAccount(context, account, optifiMarkets).then(async (res) => {
@@ -163,11 +172,11 @@ export function getAllTradesForAccount(
             if (order) {//沒有被totally fill
               if (order.fillPercentage) {//2. Partial Filled 
                 orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
-                trades = await pushInTrade(orderHistory, trades)
+                trades = await pushInTrade(orderHistory, trades, userAccountAddress)
                 continue;
               }
             } else {//1. totally Filled
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           } else {//最後被cancel 了
@@ -175,7 +184,7 @@ export function getAllTradesForAccount(
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
               let res = (filledAmt.div(originalSize[clientId]));
               orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           }
@@ -186,7 +195,7 @@ export function getAllTradesForAccount(
         if (orderHistory.orderType == "ioc") {
           if (orderHistory.filledData) {
             orderHistory.maxBaseQuantity = orderHistory.filledData
-            trades = await pushInTrade(orderHistory, trades)
+            trades = await pushInTrade(orderHistory, trades, userAccountAddress)
             continue;
           }
         }
@@ -204,11 +213,11 @@ export function getAllTradesForAccount(
             if (order) {//沒有被totally fill
               if (order.fillPercentage) {// 2. Partial Filled 
                 orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
-                trades = await pushInTrade(orderHistory, trades)
+                trades = await pushInTrade(orderHistory, trades, userAccountAddress)
                 continue;
               }
             } else {// 1. totally Filled
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           } else {//最後被cancel 了
@@ -216,7 +225,7 @@ export function getAllTradesForAccount(
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
               let res = (filledAmt.div(originalSize[clientId]));
               orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           }
@@ -228,11 +237,11 @@ export function getAllTradesForAccount(
             if (order) {//沒有被totally fill
               if (order.fillPercentage) {//2. Partial Filled 
                 orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
-                trades = await pushInTrade(orderHistory, trades)
+                trades = await pushInTrade(orderHistory, trades, userAccountAddress)
                 continue;
               }
             } else {//1. totally Filled
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           } else {//最後被cancel 了
@@ -240,7 +249,7 @@ export function getAllTradesForAccount(
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
               let res = (filledAmt.div(originalSize[clientId]));
               orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           }
@@ -259,6 +268,7 @@ export function getFilterTradesForAccount(
   context: Context,
   account: PublicKey
 ): Promise<Trade[]> {
+  let userAccountAddress = account.toString()
   return new Promise(async (resolve, reject) => {
     let optifiMarkets = await findOptifiMarketsWithFullData(context)
     getFilterOrdersForAccount(context, account, optifiMarkets).then(async (res) => {
@@ -304,11 +314,11 @@ export function getFilterTradesForAccount(
             if (order) {//沒有被totally fill
               if (order.fillPercentage) {//2. Partial Filled 
                 orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
-                trades = await pushInTrade(orderHistory, trades)
+                trades = await pushInTrade(orderHistory, trades, userAccountAddress)
                 continue;
               }
             } else {//1. totally Filled
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           } else {//最後被cancel 了
@@ -316,7 +326,7 @@ export function getFilterTradesForAccount(
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
               let res = (filledAmt.div(originalSize[clientId]));
               orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           }
@@ -327,7 +337,7 @@ export function getFilterTradesForAccount(
         if (orderHistory.orderType == "ioc") {
           if (orderHistory.filledData) {
             orderHistory.maxBaseQuantity = orderHistory.filledData
-            trades = await pushInTrade(orderHistory, trades)
+            trades = await pushInTrade(orderHistory, trades, userAccountAddress)
             continue;
           }
         }
@@ -345,11 +355,11 @@ export function getFilterTradesForAccount(
             if (order) {//沒有被totally fill
               if (order.fillPercentage) {// 2. Partial Filled 
                 orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
-                trades = await pushInTrade(orderHistory, trades)
+                trades = await pushInTrade(orderHistory, trades, userAccountAddress)
                 continue;
               }
             } else {// 1. totally Filled
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           } else {//最後被cancel 了
@@ -357,7 +367,7 @@ export function getFilterTradesForAccount(
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
               let res = (filledAmt.div(originalSize[clientId]));
               orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           }
@@ -369,11 +379,11 @@ export function getFilterTradesForAccount(
             if (order) {//沒有被totally fill
               if (order.fillPercentage) {//2. Partial Filled 
                 orderHistory.maxBaseQuantity = Number((orderHistory.maxBaseQuantity * order.fillPercentage!).toFixed(2))
-                trades = await pushInTrade(orderHistory, trades)
+                trades = await pushInTrade(orderHistory, trades, userAccountAddress)
                 continue;
               }
             } else {//1. totally Filled
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           } else {//最後被cancel 了
@@ -381,7 +391,7 @@ export function getFilterTradesForAccount(
               let filledAmt = originalSize[clientId].minus(cancelSize[clientId]);
               let res = (filledAmt.div(originalSize[clientId]));
               orderHistory.maxBaseQuantity = Number((new Decimal(orderHistory.maxBaseQuantity).mul(res)).toFixed(2))
-              trades = await pushInTrade(orderHistory, trades)
+              trades = await pushInTrade(orderHistory, trades, userAccountAddress)
               continue;
             }
           }
@@ -399,7 +409,7 @@ export function getFilterTradesForAccount(
 export class Trade {
   clientId: number; // BN {negative: 0, words: Array(3), length: 1, red: null}
   limit: number; // 65535
-  limitPrice: number; // BN {negative: 0, words: Array(3), length: 1, red: null}
+  tradePrice: number; // BN {negative: 0, words: Array(3), length: 1, red: null} 
   maxBaseQuantity: number; // BN {negative: 0, words: Array(3), length: 1, red: null}
   maxQuoteQuantity: number; // BN {negative: 0, words: Array(3), length: 2, red: null}
   orderType: string; // "limit"
@@ -415,7 +425,7 @@ export class Trade {
   constructor({
     clientId,
     limit,
-    limitPrice,
+    tradePrice,
     maxBaseQuantity,
     maxQuoteQuantity,
     orderType,
@@ -430,7 +440,7 @@ export class Trade {
   }: {
     clientId: number;
     limit: number;
-    limitPrice: number;
+    tradePrice: number;
     maxBaseQuantity: number;
     maxQuoteQuantity: number;
     orderType: string;
@@ -445,7 +455,7 @@ export class Trade {
   }) {
     this.clientId = clientId
     this.limit = limit;
-    this.limitPrice = limitPrice
+    this.tradePrice = tradePrice
     this.maxBaseQuantity = maxBaseQuantity
     this.maxQuoteQuantity = maxQuoteQuantity
     this.orderType = orderType;
@@ -460,6 +470,6 @@ export class Trade {
   }
 
   public get shortForm(): string {
-    return `${this.side} ${this.limit} @ ${this.limitPrice}`;
+    return `${this.side} ${this.limit} @ ${this.tradePrice}`;
   }
 }
