@@ -632,14 +632,11 @@ function getConsumeWithdrawDetailsFromLog(programLog: string) {
 
 //refer :logAMMAccounts
 async function getLpAmountAfterConsume(logs: string[]) {
-    let requestStringLen = 22 + 1;//"request_id:" + " "
+    let requestStringLen = 27;//"request_id:" + " "
     let stringRes;
     for (let log of logs) {
-        //Program log: Successfully processed withdraw request: request_id: 1, user_account_id: 1,
-        //burned lp token amount: 100000000, withdraw_usdc_amount: 100000000, total fee: 100000, 
-        //final_withdraw_usdc_amount: 99900000'
-        if (log.search("burned lp token amount") != -1) {
-            stringRes = log.substring(log.search("burned lp token amount") + requestStringLen, log.search("withdraw_usdc_amount") - 1)
+        if (log.search("actual_withdraw_lp_amount") != -1) {
+            stringRes = log.substring(log.search("actual_withdraw_lp_amount") + requestStringLen, log.search("processable_lp_token_amount") - 1)
         }
     }
     let decimal = 6;
@@ -676,8 +673,6 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                     for (let inx of tx.transaction.message.instructions) {
                         let programId = tx.transaction.message.accountKeys[inx.programIdIndex];
                         if (programId.toString() == context.program.programId.toString()) {
-                            console.log("hello")
-
                             let programAccounts = populateInxAccountKeys(context, tx.transaction.message.accountKeys, inx)
                             let coder = context.program.coder as BorshCoder;
                             let decoded = coder.instruction.decode(base58.decode(inx.data))
@@ -803,6 +798,7 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
 
                             if (decoded) {
                                 if (decoded.name == "consumeWithdrawQueue") {
+
                                     //@ts-ignore
                                     let requestId = await getRequestIdAfterConsume(tx.meta?.logMessages)
                                     for (let e of res) {
@@ -812,12 +808,12 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                             let usdcAmount = await getUsdcAfterConsume(tx.meta?.logMessages)
                                             let feeAmount = await getWtihdrawFeeAfterConsume(tx.meta?.logMessages!)
                                             //@ts-ignore
-                                            let userBurnLpAmountAfterConsume = await getLpAmountAfterConsume(tx.meta?.logMessages)
-
+                                            let userBurnLpAmountAfterConsume: number = await getLpAmountAfterConsume(tx.meta?.logMessages)
+                                            userBurnLpAmountAfterConsume = Number(userBurnLpAmountAfterConsume.toFixed(2))
+                                            e.lpAmount = Number(e.lpAmount.toFixed(2))
                                             e.platformFee = e.platformFee ? e.platformFee + feeAmount : feeAmount;
                                             e.usdcAmount += usdcAmount;
                                             let percentage = 0;
-
                                             // finish consume
                                             if (userBurnLpAmountAfterConsume == e.lpAmount) {
                                                 e.status = "Completed"
