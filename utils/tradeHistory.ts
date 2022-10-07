@@ -100,12 +100,16 @@ async function pushInTrade(orderHistory: OrderInstruction, trades: Trade[], user
       userAccountAddress: userAccountAddress,
     }
     let tradePrice = await getTradePrice(data)
-    if (!tradePrice) tradePrice = -1//can't find
+    if (tradePrice.result) {
+      tradePrice = tradePrice.result[0]
+    }
+    else tradePrice = -1 //can't find
+
     trades.push(new Trade({
       clientId: orderHistory.clientId,
       limit: orderHistory.limit,
       // tradePrice: orderHistory.limitPrice
-      tradePrice: (tradePrice == -1) ? -1 : tradePrice.result[0],
+      tradePrice: tradePrice,
       maxBaseQuantity: orderHistory.maxBaseQuantity,
       maxQuoteQuantity: orderHistory.maxQuoteQuantity,
       orderType: orderHistory.orderType,
