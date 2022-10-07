@@ -16,6 +16,7 @@ import { Order } from "../utils/orders";
 import { populateInxAccountKeys } from "./transactions"
 import { convertSolanaCulsterToCluster } from "./pyth";
 import { OptifiMarketFullData } from "./market";
+import fetch from 'cross-fetch';
 const inxNames = ["placeOrder", "cancelOrderByClientOrderId", "liquidationRegister", "liquidationPlaceOrder", "userMarginCalculate"];
 
 // get recent tx  - 1000 tx by default
@@ -220,6 +221,21 @@ async function isLiquidationPlaceOrder(logs: string[]): Promise<Boolean> {
   })
 }
 
+async function getStrikeFromInstrumentAddr(addr: string) {
+  try {
+    let url = "https://lambda.optifi.app/get_instrument_strike?optifi_program_id=" + process.env.OPTIFI_PROGRAM_ID +
+      "&instrument_addr=" + addr
+    const response = await fetch(url, {
+      method: "GET",
+    });
+    let res = await response.json()
+    if (!response.ok) {
+      console.log("err in getStrikeFromInstrumentAddr");
+    }
+    return res;
+  } catch (error) { console.log(error) }
+}
+
 const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any, optifiMarkets: OptifiMarketFullData[]): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
   for (let tx of txs) {
@@ -261,6 +277,8 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       //@ts-ignore
                       let marketAddress = programAccounts.optifiMarket.pubkey.toString();
                       let instrumentAddr = await getInstrument(tx.meta?.logMessages!)
+                      let strike = await getStrikeFromInstrumentAddr(instrumentAddr)
+                      strike = strike.result[0]
                       let instrument = instruments.find((instrument: any) => {
                         return marketAddress === instrument.marketAddress.toString();
                       });
@@ -315,6 +333,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       record.start = instrument.start
                       record.marketExpireDate = marketExpireDate
                       record.instrumentAddr = instrumentAddr
+                      record.strike = strike
                       orderTxs.push(Object.assign({}, record));
                     }
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
@@ -515,6 +534,7 @@ export class OrderInstruction {
   marketExpireDate: Date
   liquidateAmount: number | undefined
   instrumentAddr: string
+  strike: string
 
   constructor({
     clientId,
@@ -538,7 +558,8 @@ export class OrderInstruction {
     checkPostOnlyFail,
     marketExpireDate,
     liquidateAmount,
-    instrumentAddr
+    instrumentAddr,
+    strike
   }: {
     clientId: BN;
     limit: number;
@@ -562,6 +583,7 @@ export class OrderInstruction {
     marketExpireDate: Date
     liquidateAmount: number | undefined
     instrumentAddr: string
+    strike: string
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -585,6 +607,7 @@ export class OrderInstruction {
     this.marketExpireDate = marketExpireDate
     this.liquidateAmount = liquidateAmount
     this.instrumentAddr = instrumentAddr
+    this.strike = strike
   }
 
   public get shortForm(): string {
