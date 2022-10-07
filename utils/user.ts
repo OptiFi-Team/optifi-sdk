@@ -144,7 +144,7 @@ export function calcPnLForUserPositions(
 
             let positionPnLs: PnL[] = [];
             for (let i = 0; i < userPositions.length; i++) {
-                positionPnLs.push(await calPnLForOnePosition(userPositions[i], marketPrices![i], userTradesHistory!, userAccountAddress!))
+                positionPnLs.push(await calPnLForOnePosition(context.program.programId.toString(), userPositions[i], marketPrices![i], userTradesHistory!, userAccountAddress!))
             }
             resolve(positionPnLs)
         } catch (err) {
@@ -164,7 +164,7 @@ interface PnL {
     pnl: number
 }
 
-export async function calPnLForOnePosition(postion: Position, marketPrice: number, tradeHistory: Trade[], userAccountAddress: PublicKey): Promise<PnL> {
+export async function calPnLForOnePosition(programId: string, postion: Position, marketPrice: number, tradeHistory: Trade[], userAccountAddress: PublicKey): Promise<PnL> {
     let pnl: number = 0
     let netPosition = postion.netPosition
     let entryUnitPrice: number = 0
@@ -180,24 +180,23 @@ export async function calPnLForOnePosition(postion: Position, marketPrice: numbe
             let maxBaseQuantity = (e.side == "buy") ? e.maxBaseQuantity : -e.maxBaseQuantity;
             if (!userAccountAddress) console.log("no userAccountAddress!")
             let data = {
-                optifiProgramId: process.env.OPTIFI_PROGRAM_ID,
+                optifiProgramId: programId,
                 clientOrderId: e.clientId.toString(),
                 userAccountAddress: userAccountAddress,
             }
             let tradePrice = await getTradePrice(data)
-            tradePrice = tradePrice.result[0]
-            if (!tradePrice) {
-                console.log("no tradePrice!")
-                tradePrice = -1
-            }
-            totalAmount += tradePrice * maxBaseQuantity
+            if (tradePrice.result) {
+                tradePrice = tradePrice.result[0]
 
-            if (e.side === "buy") {
-                // netQuoteAmount -= e.maxQuoteQuantity
-                netBaseAmount = netBaseAmount.add(new Decimal(e.maxBaseQuantity))
-            } else {
-                // netQuoteAmount += e.maxQuoteQuantity
-                netBaseAmount = netBaseAmount.sub(new Decimal(e.maxBaseQuantity))
+                totalAmount += tradePrice * maxBaseQuantity
+
+                if (e.side === "buy") {
+                    // netQuoteAmount -= e.maxQuoteQuantity
+                    netBaseAmount = netBaseAmount.add(new Decimal(e.maxBaseQuantity))
+                } else {
+                    // netQuoteAmount += e.maxQuoteQuantity
+                    netBaseAmount = netBaseAmount.sub(new Decimal(e.maxBaseQuantity))
+                }
             }
         }
 

@@ -221,9 +221,9 @@ async function isLiquidationPlaceOrder(logs: string[]): Promise<Boolean> {
   })
 }
 
-async function getStrikeFromInstrumentAddr(addr: string) {
+async function getStrikeFromInstrumentAddr(programId: string, addr: string) {
   try {
-    let url = "https://lambda.optifi.app/get_instrument_strike?optifi_program_id=" + process.env.OPTIFI_PROGRAM_ID +
+    let url = "https://lambda.optifi.app/get_instrument_strike?optifi_program_id=" + programId +
       "&instrument_addr=" + addr
     const response = await fetch(url, {
       method: "GET",
@@ -277,7 +277,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       //@ts-ignore
                       let marketAddress = programAccounts.optifiMarket.pubkey.toString();
                       let instrumentAddr = await getInstrument(tx.meta?.logMessages!)
-                      let strike = await getStrikeFromInstrumentAddr(instrumentAddr)
+                      let strike = await getStrikeFromInstrumentAddr(context.program.programId.toString(), instrumentAddr)
                       strike = strike.result[0]
                       let instrument = instruments.find((instrument: any) => {
                         return marketAddress === instrument.marketAddress.toString();
