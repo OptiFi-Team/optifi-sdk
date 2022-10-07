@@ -186,6 +186,18 @@ async function getTxClientId(logs: string[]) {
   return Number(stringRes)
 }
 
+async function getInstrument(logs: string[]) {
+  let stringLen = 12
+  let stringRes: string;
+  for (let log of logs) {
+    if (log.search("instrument:") != -1) {
+      stringRes = log.substring(log.search("instrument:") + stringLen)
+    }
+  }
+  //@ts-ignore
+  return stringRes
+}
+
 async function placedLiquidateOrder(clientId: number, orderTxs: OrderInstruction[]) {
   for (let e of orderTxs) {
     if (e.clientId == clientId && e.orderType == "Liquidation") return true
@@ -210,7 +222,6 @@ async function isLiquidationPlaceOrder(logs: string[]): Promise<Boolean> {
 
 const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serumId: PublicKey, instruments: any, optifiMarkets: OptifiMarketFullData[]): Promise<OrderInstruction[]> => {
   let orderTxs: OrderInstruction[] = [];
-
   for (let tx of txs) {
     let inxs = tx.transaction.message.instructions;
     for (let inx of inxs) {
@@ -249,6 +260,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                     if (programAccounts.hasOwnProperty("optifiMarket")) {
                       //@ts-ignore
                       let marketAddress = programAccounts.optifiMarket.pubkey.toString();
+                      let instrumentAddr = await getInstrument(tx.meta?.logMessages!)
                       let instrument = instruments.find((instrument: any) => {
                         return marketAddress === instrument.marketAddress.toString();
                       });
@@ -302,6 +314,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       record.decimal = baseTokenDecimal
                       record.start = instrument.start
                       record.marketExpireDate = marketExpireDate
+                      record.instrumentAddr = instrumentAddr
                       orderTxs.push(Object.assign({}, record));
                     }
                 } else if (decData.hasOwnProperty("cancelOrderByClientIdV2")) {
@@ -501,6 +514,7 @@ export class OrderInstruction {
   checkPostOnlyFail: boolean
   marketExpireDate: Date
   liquidateAmount: number | undefined
+  instrumentAddr: string
 
   constructor({
     clientId,
@@ -523,7 +537,8 @@ export class OrderInstruction {
     filledData,
     checkPostOnlyFail,
     marketExpireDate,
-    liquidateAmount
+    liquidateAmount,
+    instrumentAddr
   }: {
     clientId: BN;
     limit: number;
@@ -546,6 +561,7 @@ export class OrderInstruction {
     checkPostOnlyFail: boolean
     marketExpireDate: Date
     liquidateAmount: number | undefined
+    instrumentAddr: string
   }) {
     this.clientId = clientId.toNumber();
     this.limit = limit;
@@ -568,6 +584,7 @@ export class OrderInstruction {
     this.checkPostOnlyFail = checkPostOnlyFail
     this.marketExpireDate = marketExpireDate
     this.liquidateAmount = liquidateAmount
+    this.instrumentAddr = instrumentAddr
   }
 
   public get shortForm(): string {
