@@ -50,7 +50,7 @@ initializeContext().then(async (context) => {
                         //@ts-ignore
                         let asset: number = amm.asset
                         if (!asset) console.log("can't get amm asset")
-                        await notifiAMMWithdrawalSuccessfulAlert(userId, asset, userAccount.publicKey.toString())
+                        await notifiAMMWithdrawalSuccessfulAlert(context.program.programId.toString(), userId, asset, userAccount.publicKey.toString())
                     }).catch((err) => {
                         console.error(err);
                     })
