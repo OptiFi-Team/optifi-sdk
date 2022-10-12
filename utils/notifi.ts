@@ -65,6 +65,17 @@ export async function sendNotifiAMMWithdrawalSuccessfulAlertGet(data: any) {
     } catch (error) { console.log(error) }
 }
 
+function format(str: string) {
+    str = str.replace(new RegExp("name", 'g'), "\\\"name\\\"")
+    // positionsLiquidatedStr = positionsLiquidatedStr.replace(new RegExp("\"\\", 'g'), "\\")
+    str = str.replace(/\"\\/g, "\\")
+    str = str.replace(new RegExp("\\\"\"", 'g'), "\"")
+    str = str.replace(new RegExp(":\"", 'g'), ":\\\"")
+    str = str.replace(new RegExp("\"}", 'g'), "\\\"}")
+    str = "\"" + str + "\""
+    return str
+}
+
 export async function notifiLiquidationAlert(
     context: Context,
     walletAddress: string,
@@ -105,21 +116,21 @@ export async function notifiLiquidationAlert(
         })
 
         //4. turn array to json, then turn to string , if number , add "$"
-        let orderCanceledJson = {
-            "orderCanceled":
-                orderCanceled.map(e => {
-                    return { "orderCanceledName": e }
-                })
-        }
-        let orderCanceledStr = JSON.stringify(orderCanceledJson)
+        let orderCanceledJson =
+            orderCanceled.map(e => {
+                return { name: e }
+            })
 
-        let positionsLiquidatedJson = {
-            "positionsLiquidated":
-                positionsLiquidated.map(e => {
-                    return { "positionsLiquidatedName": e }
-                })
-        }
+        let orderCanceledStr = JSON.stringify(orderCanceledJson)
+        orderCanceledStr = format(orderCanceledStr)
+
+        let positionsLiquidatedJson =
+            positionsLiquidated.map(e => {
+                return { name: e }
+            })
+
         let positionsLiquidatedStr = JSON.stringify(positionsLiquidatedJson)
+        positionsLiquidatedStr = format(positionsLiquidatedStr)
 
         let availableBalanceStr = (availableBalance < 0) ? "-$" + (-availableBalance).toString() : "$" + availableBalance.toString()
         //5.send these data by notifiLiquidationAlert
@@ -146,10 +157,10 @@ export async function notifiLiquidationAlert(
                 emailTemplate: "1a09872a-8eeb-42e2-8392-2e06260dbd0e",
                 telegramTemplate: "1a09872a-8eeb-42e2-8392-2e06260dbd0e",
                 variables: {
-                    "availableBalance": data.availableBalance,
-                    "orderCanceled": data.orderCanceled,
-                    'positionsLiquidated': '[{ "name" : "hello" }]',
-                    "subject": 'Optifi liquidate alert',
+                    'availableBalance': data.availableBalance,
+                    'orderCanceled': data.orderCanceled,//'[{\"name\": \"test\"},{\"name\": \"test2\"}]',
+                    'positionsLiquidated': data.positionsLiquidated,//"[{\"name\": \"test\"},{\"name\": \"test3\"}]",
+                    'subject': 'Optifi liquidate alert'
                 }
             }
         });
