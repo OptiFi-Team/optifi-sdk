@@ -80,7 +80,7 @@ const liquidationLoop = async (context: Context) => {
                     liquidationBuffer: liquidationBufferStr,
                 };
 
-                await notifiMarginCallAlert(userAccount.owner.toString(), data);
+                await notifiMarginCallAlert(context.program.programId.toString(), userAccount.owner.toString(), data);
             }
 
             if (margin + netOptionValue < marginRequirement * 0.9) {
