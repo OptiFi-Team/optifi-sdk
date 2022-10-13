@@ -278,7 +278,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       let marketAddress = programAccounts.optifiMarket.pubkey.toString();
                       let instrumentAddr = await getInstrument(tx.meta?.logMessages!)
                       let strike = await getStrikeFromInstrumentAddr(context.program.programId.toString(), instrumentAddr)
-                      strike = (strike.result[0]) ? strike.result[0] : null;
+                      strike = (strike.result) ? strike.result[0] : null;
                       let instrument = instruments.find((instrument: any) => {
                         return marketAddress === instrument.marketAddress.toString();
                       });
