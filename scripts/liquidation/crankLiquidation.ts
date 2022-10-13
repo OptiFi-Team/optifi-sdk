@@ -14,12 +14,11 @@ import { findUserAccount } from "../../utils/accounts";
 import { getAllOrdersForAccount } from "../../utils/orderHistory";
 import { Position, getUserPositions } from "../../utils/market";
 
-async function getUserOpenOrderAndPosition(context: Context): Promise<[Array<Order>, Array<Position>]> {
+async function getUserOpenOrderAndPosition(context: Context, user: PublicKey): Promise<[Array<Order>, Array<Position>]> {
     return new Promise(async (resolve, reject) => {
         let optifiMarkets = await findOptifiMarketsWithFullData(context);
-        let [userAccount] = await findUserAccount(context);
-        let [userAccountAddress] = await findUserAccount(context);
-        let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccountAddress);
+        let [userAccount] = await findUserAccount(context, user);
+        let openOrdersAccount = await loadOrdersAccountsForOwnerV2(context, optifiMarkets, userAccount);
         let context2 = await initializeContext(undefined, undefined, undefined, undefined, undefined, { disableRetryOnRateLimit: true, commitment: "confirmed" });
         let orderHistory = await getAllOrdersForAccount(context2, userAccount, optifiMarkets);
         let orders = await loadOrdersForOwnerOnAllMarkets(
@@ -27,7 +26,7 @@ async function getUserOpenOrderAndPosition(context: Context): Promise<[Array<Ord
             openOrdersAccount.map((e) => e.openOrdersAccount),
             orderHistory
         );
-        let userPositions = await getUserPositions(context, userAccountAddress);
+        let userPositions = await getUserPositions(context, userAccount);
         resolve([orders, userPositions]);
     });
 }
@@ -37,7 +36,6 @@ const liquidationLoop = async (context: Context) => {
         let Users = await getAllUsersOnExchange(context);
 
         let dateTime = new Date();
-
         console.log(dateTime, "find ", Users.length, " user on the exchange...");
 
         for (let user of Users) {
@@ -84,10 +82,10 @@ const liquidationLoop = async (context: Context) => {
             }
 
             if (margin + netOptionValue < marginRequirement * 0.9) {
-                let [openOrdersBefore, positionBefore] = await getUserOpenOrderAndPosition(context);
+                let [openOrdersBefore, positionBefore] = await getUserOpenOrderAndPosition(context, userAccount.owner);
                 console.log("userToLiquidate: " + userToLiquidate.toString() + ", margin: " + margin + ", liquidation: " + marginRequirement * 0.9);
                 await liquidateUser(context, userToLiquidate);
-                let [openOrdersAfter, positionAfter] = await getUserOpenOrderAndPosition(context);
+                let [openOrdersAfter, positionAfter] = await getUserOpenOrderAndPosition(context, userAccount.owner);
                 await notifiLiquidationAlert(context, userAccount.owner.toString(), availableBalance, openOrdersBefore, openOrdersAfter, positionBefore, positionAfter);
             }
         }
