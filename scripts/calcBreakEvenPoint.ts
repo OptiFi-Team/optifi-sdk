@@ -12,6 +12,8 @@ initializeContext().then(async (context) => {
         let price = 1234
         let res = await calcBreakEvenPoint(context, markets, side, marketAddress, price);
         console.log(res);
+        //output:
+        // { breakEven: '1312.24', toBreakEven: '-0.01' }
     } catch (err) {
         console.log(err);
     }
