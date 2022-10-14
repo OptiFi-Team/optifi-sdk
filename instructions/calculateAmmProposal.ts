@@ -51,11 +51,9 @@ export function calculateAmmProposalInBatch(context: Context,
 
             let inxs: TransactionInstruction[] = [increaseComputeUnitsIx]
 
-            // add margin stress calc inx for the first batch
-            if (batchIndex == 0) {
-                let updateMarginStressInx = await marginStress(context, ammAccount.asset);
-                inxs.push(...updateMarginStressInx)
-            }
+            // add margin stress calc inx
+            let updateMarginStressInx = await marginStress(context, ammAccount.asset);
+            inxs.push(...updateMarginStressInx)
 
             for (let i = 0; i < batchSize - 1; i++) {
                 inxs.push(context.program.instruction.ammCalculateProposal({
