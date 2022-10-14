@@ -66,8 +66,4 @@ initializeContext().then(async (context) => {
 
     ammIdxs.forEach(idx => ammLoop(context, optifiExchange, idx))
 
-    process.on('uncaughtException', err => {
-        console.log(`Uncaught Exception: ${err.message}`)
-        // process.exit(1)
-    })
 })
