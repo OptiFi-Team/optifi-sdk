@@ -11,7 +11,7 @@ import Decimal from "decimal.js";
 import { findAssociatedTokenAccount } from "./token";
 import { decodeBurnInstruction, getAccount, getMint } from "@solana/spl-token";
 import { populateInxAccountKeys } from "./transactions"
-
+import { ammIndex } from "../scripts/amm/constants";
 export const DELTA_LIMIT = 0.05;
 export const WITHDRAW_FEE_PERCENTAGE = 0.001;
 export const PERFORMANCE_FEE_PERCENTAGE = 0.1;
@@ -667,6 +667,12 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                 lpAmountConsumed[i] = 0;
             }
 
+            let [optifiExchange] = await findOptifiExchange(context)
+            let [ammAddress] = await findAMMWithIdx(context, optifiExchange, ammIndex)
+            let amm = await context.program.account.ammAccount.fetch(ammAddress)
+            let ammWithdrawRequestQueue = await getAmmWithdrawQueue(context, amm.withdrawQueue)
+            let WithdrawRequestQueueHeadRequest = ammWithdrawRequestQueue.requests[ammWithdrawRequestQueue.head]
+
             for (const [asset, txs] of txsMap) {
                 for (let tx of txs) {//number of transactions people send
 
@@ -803,7 +809,6 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                     let requestId = await getRequestIdAfterConsume(tx.meta?.logMessages)
                                     for (let e of res) {
                                         if (e.requestId == requestId) {
-
                                             //@ts-ignore
                                             let usdcAmount = await getUsdcAfterConsume(tx.meta?.logMessages)
                                             let feeAmount = await getWtihdrawFeeAfterConsume(tx.meta?.logMessages!)
@@ -813,16 +818,22 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                             e.lpAmount = Number(e.lpAmount.toFixed(2))
                                             e.platformFee = e.platformFee ? e.platformFee + feeAmount : feeAmount;
                                             e.usdcAmount += usdcAmount;
-                                            let percentage = 0;
-                                            // finish consume
-                                            if (userBurnLpAmountAfterConsume == e.lpAmount) {
+
+                                            //status
+                                            if (WithdrawRequestQueueHeadRequest.requestId == 0) {//no pending in queue
                                                 e.status = "Completed"
                                             } else {
-                                                lpAmountConsumed[requestId] += userBurnLpAmountAfterConsume;
-                                                percentage = Math.ceil(lpAmountConsumed[requestId] * 100 / e.lpAmount)
-                                                e.status = "Processing(" + percentage.toString() + "%)"
+                                                if (WithdrawRequestQueueHeadRequest.requestId > requestId) {//already processed
+                                                    e.status = "Completed"
+                                                } else if (WithdrawRequestQueueHeadRequest.requestId == requestId) {
+                                                    let remainingAmt = WithdrawRequestQueueHeadRequest.amount.toNumber()
+                                                    let percentage = Math.ceil(remainingAmt.div(10 ** 6) * 100 / e.lpAmount)
+                                                    e.status = "Processing(" + percentage.toString() + "%)"
+                                                }
+                                                else {//not yet processed
+                                                    e.status = "Pending"
+                                                }
                                             }
-
 
                                         }
                                     }
