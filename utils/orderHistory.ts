@@ -366,7 +366,7 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                     let clientId = await getTxClientId(tx.meta?.logMessages!)
                     let cancelOrdersDuringFundSettlementTx = orderTxs.find(e => e.clientId === clientId)
                     let record: any = [];
-                    record = JSON.parse(JSON.stringify(cancelOrdersDuringFundSettlementTx));
+                    record = (cancelOrdersDuringFundSettlementTx) ? JSON.parse(JSON.stringify(cancelOrdersDuringFundSettlementTx)) : null;
                     if (record) {
                       record.orderType = "ioc"
                       record.txType = "cancel order"
