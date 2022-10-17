@@ -177,14 +177,15 @@ async function isLiquidatedOrCancelOrdersDuringFundSettlementTx(logs: string[]):
 
 async function getTxClientId(logs: string[]) {
   let stringLen = 16
-  let stringRes: string;
+  let res: number[] = [];
   for (let log of logs) {
     if (log.search("client_order_id") != -1) {
-      stringRes = log.substring(log.search("client_order_id") + stringLen, log.search("remaining_size") - 2)
+      let str = log.substring(log.search("client_order_id") + stringLen, log.search("remaining_size") - 2)
+      res.push(Number(str))
     }
   }
   //@ts-ignore
-  return Number(stringRes)
+  return res
 }
 
 async function getInstrument(logs: string[]) {
@@ -363,28 +364,31 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                 //since cancel order by Liquidate and fund settlement tx logs are same, so now we can't separate it  
                 else if (await isLiquidatedOrCancelOrdersDuringFundSettlementTx(tx.meta?.logMessages!) && decData.hasOwnProperty("settleFunds")) {
                   if (decodedInx.name == "userMarginCalculate") { //fund settlement tx 
-                    let clientId = await getTxClientId(tx.meta?.logMessages!)
-                    let cancelOrdersDuringFundSettlementTx = orderTxs.find(e => e.clientId === clientId)
-                    let record: any = [];
-                    record = (cancelOrdersDuringFundSettlementTx) ? JSON.parse(JSON.stringify(cancelOrdersDuringFundSettlementTx)) : null;
-                    if (record) {
-                      record.orderType = "ioc"
-                      record.txType = "cancel order"
-                      record.timestamp = new Date(tx.blockTime! * 1000);
-                      orderTxs.push(record)
+                    let clientIds = await getTxClientId(tx.meta?.logMessages!)
+                    for (let clientId of clientIds) {
+                      let cancelOrdersDuringFundSettlementTx = orderTxs.find(e => e.clientId === clientId)
+                      let record: any = [];
+                      record = (cancelOrdersDuringFundSettlementTx) ? JSON.parse(JSON.stringify(cancelOrdersDuringFundSettlementTx)) : null;
+                      if (record) {
+                        record.txType = "cancel order"
+                        record.timestamp = new Date(tx.blockTime! * 1000);
+                        orderTxs.push(record)
+                      }
                     }
                   }
                   else if (decodedInx.name == "liquidationRegister") {//liquidate tx
-                    let clientId = await getTxClientId(tx.meta?.logMessages!)
-                    let liquidateTx = orderTxs.find(e => e.clientId === clientId)
-                    let record: any = [];
-                    record = JSON.parse(JSON.stringify(liquidateTx));
-                    if (record && (! await placedLiquidateOrder(clientId, orderTxs))) {//sometime there are mul same tx. Avoid place duplicate orders
-                      record.orderType = "Liquidation"
-                      record.txType = "cancel order"
-                      record.timestamp = new Date(tx.blockTime! * 1000);
-                      record.liquidateAmount = await getLiquidateAmount(tx.meta?.logMessages!);
-                      orderTxs.push(record)
+                    let clientIds = await getTxClientId(tx.meta?.logMessages!)
+                    for (let clientId of clientIds) {
+                      let liquidateTx = orderTxs.find(e => e.clientId === clientId)
+                      let record: any = [];
+                      record = JSON.parse(JSON.stringify(liquidateTx));
+                      if (record && (! await placedLiquidateOrder(clientId, orderTxs))) {//sometime there are mul same tx. Avoid place duplicate orders
+                        record.orderType = "Liquidation"
+                        record.txType = "cancel order"
+                        record.timestamp = new Date(tx.blockTime! * 1000);
+                        record.liquidateAmount = await getLiquidateAmount(tx.meta?.logMessages!);
+                        orderTxs.push(record)
+                      }
                     }
                   }
                 }
