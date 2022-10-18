@@ -5,7 +5,7 @@ import { findUserAccount } from "../utils/accounts";
 import { UserAccount } from "../types/optifi-exchange-types";
 import UserPosition from "../types/user";
 import { calcPnLForUserPositions } from "../utils/user";
-import { getAllTradesForAccount ,getFilterTradesForAccount} from "../utils/tradeHistory";
+import { getAllTradesForAccount, getFilterTradesForAccount } from "../utils/tradeHistory";
 import { Connection, Keypair, PublicKey, ConnectionConfig, Commitment } from "@solana/web3.js";
 import Decimal from "decimal.js";
 initializeContext(undefined, undefined, undefined, undefined, undefined, { commitment: "confirmed" }).then(async (context) => {
@@ -42,8 +42,8 @@ initializeContext(undefined, undefined, undefined, undefined, undefined, { commi
     let marketPrices: number[] = []
     userPositions.forEach(position => {
         let market = marketsInfos.find(market => market.marketAddress.toString() == position.marketId.toString())!
-        //marketPrices.push((market.askPrice + market.bidPrice) / 2)
-        marketPrices.push((new Decimal(market.bidPrice)).add(new Decimal(market.askPrice)).div(2).toNumber())
+        let price = (position.positionType == "long") ? market.bidPrice : market.askPrice;
+        marketPrices.push(price)
     })
 
     // prepare trade history
