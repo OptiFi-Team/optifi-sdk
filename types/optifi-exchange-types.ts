@@ -1710,120 +1710,143 @@ export type OptifiExchangeIDL = {
 };
 import { IdlAccounts } from "@project-serum/anchor";
 
-export type Asset = Record<string, Record<string, any>>;
+export type Asset = Record<string, Record<string, any>>
 export const Asset = {
   Bitcoin: { bitcoin: {} },
   Ethereum: { ethereum: {} },
   USDC: { usdc: {} },
-  Solana: { solana: {} },
-};
+  Solana: { solana: {} }
+}
+    
 
-export type InstrumentType = Record<string, Record<string, any>>;
+export type InstrumentType = Record<string, Record<string, any>>
 export const InstrumentType = {
   Put: { put: {} },
-  Call: { call: {} },
-};
+  Call: { call: {} }
+}
+    
 
-export type ExpiryType = Record<string, Record<string, any>>;
+export type ExpiryType = Record<string, Record<string, any>>
 export const ExpiryType = {
   Standard: { standard: {} },
-  Perpetual: { perpetual: {} },
-};
+  Perpetual: { perpetual: {} }
+}
+    
 
-export type InstrumentData = Record<string, Record<string, any>>;
-export const InstrumentData = {};
+export type InstrumentData = Record<string, Record<string, any>>
+export const InstrumentData = {
+  
+}
+    
 
-export type InstrumentExpiryType = Record<string, Record<string, any>>;
+export type InstrumentExpiryType = Record<string, Record<string, any>>
 export const InstrumentExpiryType = {
   Standard: { standard: {} },
-  Perpetual: { perpetual: {} },
-};
+  Perpetual: { perpetual: {} }
+}
+    
 
-export type SpotInputOption = Record<string, Record<string, any>>;
+export type SpotInputOption = Record<string, Record<string, any>>
 export const SpotInputOption = {
   SingleSpot: { singlespot: {} },
-  MultiSpots: { multispots: {} },
-};
+  MultiSpots: { multispots: {} }
+}
+    
 
-export type OrderSide = Record<string, Record<string, any>>;
+export type OrderSide = Record<string, Record<string, any>>
 export const OrderSide = {
   Bid: { bid: {} },
-  Ask: { ask: {} },
-};
+  Ask: { ask: {} }
+}
+    
 
-export type AmmState = Record<string, Record<string, any>>;
+export type AmmState = Record<string, Record<string, any>>
 export const AmmState = {
   Sync: { sync: {} },
   CalculateDelta: { calculatedelta: {} },
   CalculateProposal: { calculateproposal: {} },
-  Execute: { execute: {} },
-};
+  Execute: { execute: {} }
+}
+    
 
-export type Duration = Record<string, Record<string, any>>;
+export type Duration = Record<string, Record<string, any>>
 export const Duration = {
   Weekly: { weekly: {} },
-  Monthly: { monthly: {} },
-};
+  Monthly: { monthly: {} }
+}
+    
 
-export type FeeTier = Record<string, Record<string, any>>;
+export type FeeTier = Record<string, Record<string, any>>
 export const FeeTier = {
   Level1: { level1: {} },
   Level2: { level2: {} },
   Level3: { level3: {} },
   Level4: { level4: {} },
-  Level5: { level5: {} },
-};
+  Level5: { level5: {} }
+}
+    
 
-export type LiquidationStatus = Record<string, Record<string, any>>;
+export type LiquidationStatus = Record<string, Record<string, any>>
 export const LiquidationStatus = {
   Healthy: { healthy: {} },
   CancelOrder: { cancelorder: {} },
   PlaceOrder: { placeorder: {} },
-  SettleOrder: { settleorder: {} },
-};
+  SettleOrder: { settleorder: {} }
+}
+    
 
-export type MarginStressState = Record<string, Record<string, any>>;
+export type MarginStressState = Record<string, Record<string, any>>
 export const MarginStressState = {
   Sync: { sync: {} },
   Calculate: { calculate: {} },
-  Available: { available: {} },
-};
+  Available: { available: {} }
+}
+    
 
-export type MmState = Record<string, Record<string, any>>;
+export type MmState = Record<string, Record<string, any>>
 export const MmState = {
   Calculation: { calculation: {} },
-  Available: { available: {} },
-};
+  Available: { available: {} }
+}
+    
 
-export type AccountState = Record<string, Record<string, any>>;
+export type AccountState = Record<string, Record<string, any>>
 export const AccountState = {
   Uninitialized: { uninitialized: {} },
   Initialized: { initialized: {} },
-  Frozen: { frozen: {} },
-};
+  Frozen: { frozen: {} }
+}
+    
 
-export type OracleDataType = Record<string, Record<string, any>>;
+export type OracleDataType = Record<string, Record<string, any>>
 export const OracleDataType = {
   Spot: { spot: {} },
-  IV: { iv: {} },
-};
+  IV: { iv: {} }
+}
+    
 
-export type AmmAccount = IdlAccounts<OptifiExchangeIDL>["ammAccount"];
+  
 
-export type AmmWithdrawRequestQueue = IdlAccounts<OptifiExchangeIDL>["ammWithdrawRequestQueue"];
+export type AmmAccount = IdlAccounts<OptifiExchangeIDL>["ammAccount"]
 
-export type Chain = IdlAccounts<OptifiExchangeIDL>["chain"];
+export type AmmWithdrawRequestQueue = IdlAccounts<OptifiExchangeIDL>["ammWithdrawRequestQueue"]
 
-export type Exchange = IdlAccounts<OptifiExchangeIDL>["exchange"];
+export type Chain = IdlAccounts<OptifiExchangeIDL>["chain"]
 
-export type FeeAccount = IdlAccounts<OptifiExchangeIDL>["feeAccount"];
+export type ExchangeV0 = IdlAccounts<OptifiExchangeIDL>["exchangeV0"]
 
-export type LiquidationState = IdlAccounts<OptifiExchangeIDL>["liquidationState"];
+export type Exchange = IdlAccounts<OptifiExchangeIDL>["exchange"]
 
-export type MarginStressAccount = IdlAccounts<OptifiExchangeIDL>["marginStressAccount"];
+export type FeeAccount = IdlAccounts<OptifiExchangeIDL>["feeAccount"]
 
-export type MarketMakerAccount = IdlAccounts<OptifiExchangeIDL>["marketMakerAccount"];
+export type LiquidationState = IdlAccounts<OptifiExchangeIDL>["liquidationState"]
 
-export type OptifiMarket = IdlAccounts<OptifiExchangeIDL>["optifiMarket"];
+export type MarginStressAccount = IdlAccounts<OptifiExchangeIDL>["marginStressAccount"]
 
-export type UserAccount = IdlAccounts<OptifiExchangeIDL>["userAccount"];
+export type MarketMakerAccount = IdlAccounts<OptifiExchangeIDL>["marketMakerAccount"]
+
+export type OptifiMarket = IdlAccounts<OptifiExchangeIDL>["optifiMarket"]
+
+export type UserAccount = IdlAccounts<OptifiExchangeIDL>["userAccount"]
+  
+          
