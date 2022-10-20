@@ -1,5 +1,5 @@
 {
-  "version": "1.2.3",
+  "version": "1.2.5",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -4506,6 +4506,61 @@
           }
         }
       ]
+    },
+    {
+      "name": "updateFeeTier",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "the optifi_exchange account"
+          ]
+        },
+        {
+          "name": "userAccount",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "the user's optifi account"
+          ]
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "the user's fee_account"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "upgradeOptifiExchange",
+      "docs": [
+        "upgrade optifi exchange to new version"
+      ],
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account   // has_one = exchange_authority"
+          ]
+        },
+        {
+          "name": "exchangeAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "optifi exchange's authority"
+          ]
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -4831,6 +4886,139 @@
       }
     },
     {
+      "name": "ExchangeV0",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "uuid",
+            "docs": [
+              "id of the OptiFi Exchange"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "docs": [
+              "OptiFi Exchange version"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "exchangeAuthority",
+            "docs": [
+              "the authority address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcMint",
+            "docs": [
+              "the recognized usdc token mint"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcCentralPool",
+            "docs": [
+              "usdc central pool for fund settlement"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcFeePool",
+            "docs": [
+              "usdc fee pool"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "userAccountIdCounter",
+            "docs": [
+              "user account id counter"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "oracle",
+            "docs": [
+              "oracle data by assets"
+            ],
+            "type": {
+              "vec": {
+                "defined": "OracleData"
+              }
+            }
+          },
+          {
+            "name": "markets",
+            "docs": [
+              "a list of all created optifi markets, it should be updated when new market is created"
+            ],
+            "type": {
+              "vec": {
+                "defined": "OptifiMarketKeyData"
+              }
+            }
+          },
+          {
+            "name": "instrumentCommon",
+            "type": {
+              "vec": {
+                "defined": "InstrumentCommonV0"
+              }
+            }
+          },
+          {
+            "name": "instrumentUnique",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "InstrumentUnique"
+                }
+              }
+            }
+          },
+          {
+            "name": "ogNftMint",
+            "docs": [
+              "pubkey of og nft mint. None means og nft mode is turned off"
+            ],
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "userDepositLimit",
+            "docs": [
+              "user deposit limit"
+            ],
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "operationAuthority",
+            "docs": [
+              "operation authority address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "ivAuthority",
+            "docs": [
+              "iv authority address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "deliveryFee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "Exchange",
       "type": {
         "kind": "struct",
@@ -5009,19 +5197,12 @@
             "type": "u64"
           },
           {
-            "name": "weeklyNotionalTradingVolume",
+            "name": "weeklyLog",
             "type": {
               "array": [
-                "u64",
-                4
-              ]
-            }
-          },
-          {
-            "name": "weeklyAccFee",
-            "type": {
-              "array": [
-                "u64",
+                {
+                  "defined": "WeeklyLog"
+                },
                 4
               ]
             }
@@ -5465,26 +5646,22 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "price",
+            "name": "optionPrice",
             "type": {
-              "vec": {
-                "vec": "f64"
-              }
+              "vec": "u64"
             }
           },
           {
             "name": "intrinsicValue",
             "type": {
-              "vec": {
-                "vec": "f64"
-              }
+              "vec": "u64"
             }
           },
           {
             "name": "stressPriceDelta",
             "type": {
               "vec": {
-                "vec": "f64"
+                "vec": "i64"
               }
             }
           }
@@ -5959,6 +6136,39 @@
       }
     },
     {
+      "name": "InstrumentCommonV0",
+      "docs": [
+        "keep the common data for an instrument group"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "docs": [
+              "underlying asset"
+            ],
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "expiryDate",
+            "docs": [
+              "expiry date of the instrument, unix timestamp"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "expiryType",
+            "type": {
+              "defined": "ExpiryType"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "InstrumentCommon",
       "docs": [
         "keep the common data for an instrument group"
@@ -6082,6 +6292,26 @@
           },
           {
             "name": "spotPrice",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WeeklyLog",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "expiryDate",
+            "type": "u64"
+          },
+          {
+            "name": "weeklyAccFee",
+            "type": "u64"
+          },
+          {
+            "name": "weeklyNotionalTradingVolume",
             "type": "u64"
           }
         ]
@@ -6338,9 +6568,7 @@
             "name": "MultiSpots",
             "fields": [
               {
-                "vec": {
-                  "vec": "f64"
-                }
+                "vec": "f64"
               }
             ]
           }
@@ -6822,9 +7050,14 @@
       "code": 6059,
       "name": "InstrumentGroupNotFound",
       "msg": "Instrument group not found"
+    },
+    {
+      "code": 6060,
+      "name": "TransferAmountNotPositive",
+      "msg": "Transfer amount should be larger than 0"
     }
   ],
   "metadata": {
-    "address": "2GaTQRMXs8QsDuHsxb1iGzT5SR8PtdYwqPUDrPJmuYat"
+    "address": "opDV2tLVsRPGk9aYqm4gdtGotiRwjuYKUmWzWB7NfCR"
   }
 }
