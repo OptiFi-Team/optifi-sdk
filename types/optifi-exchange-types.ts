@@ -1,5 +1,5 @@
 export type OptifiExchangeIDL = {
-  version: "1.2.2";
+  version: "1.2.4";
   name: "optifi_exchange";
   instructions: [
     {
@@ -1148,6 +1148,15 @@ export type OptifiExchangeIDL = {
         { name: "feeAccount"; isMut: true; isSigner: false; docs: ["the user's fee_account"] }
       ];
       args: [{ name: "feeTier"; type: { defined: "FeeTier" } }];
+    },
+    {
+      name: "updateFeeTier";
+      accounts: [
+        { name: "optifiExchange"; isMut: false; isSigner: false; docs: ["the optifi_exchange account"] },
+        { name: "userAccount"; isMut: false; isSigner: false; docs: ["the user's optifi account"] },
+        { name: "feeAccount"; isMut: true; isSigner: false; docs: ["the user's fee_account"] }
+      ];
+      args: [];
     }
   ];
   accounts: [
@@ -1257,7 +1266,9 @@ export type OptifiExchangeIDL = {
           { name: "accFee"; type: "u64" },
           { name: "referrer"; type: { option: "publicKey" } },
           { name: "accRebateFee"; type: "u64" },
-          { name: "openOrderFee"; type: { vec: { defined: "FeeLog" } } }
+          { name: "openOrderFee"; type: { vec: { defined: "FeeLog" } } },
+          { name: "referreeNum"; type: "u64" },
+          { name: "weeklyLog"; type: { array: [{ defined: "WeeklyLog" }, 4] } }
         ];
       };
     },
@@ -1544,6 +1555,13 @@ export type OptifiExchangeIDL = {
       type: {
         kind: "struct";
         fields: [{ name: "maxCoinQty"; type: "u64" }, { name: "fee"; type: "u64" }, { name: "clientOrderId"; type: "u64" }, { name: "spotPrice"; type: "u64" }];
+      };
+    },
+    {
+      name: "WeeklyLog";
+      type: {
+        kind: "struct";
+        fields: [{ name: "expiryDate"; type: "u64" }, { name: "weeklyAccFee"; type: "u64" }, { name: "weeklyNotionalTradingVolume"; type: "u64" }];
       };
     },
     {

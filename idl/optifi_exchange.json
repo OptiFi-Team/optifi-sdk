@@ -1,5 +1,5 @@
 {
-  "version": "1.2.2",
+  "version": "1.2.4",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -3958,6 +3958,30 @@
           }
         }
       ]
+    },
+    {
+      "name": "updateFeeTier",
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false,
+          "docs": ["the optifi_exchange account"]
+        },
+        {
+          "name": "userAccount",
+          "isMut": false,
+          "isSigner": false,
+          "docs": ["the user's optifi account"]
+        },
+        {
+          "name": "feeAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": ["the user's fee_account"]
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -4353,6 +4377,21 @@
               "vec": {
                 "defined": "FeeLog"
               }
+            }
+          },
+          {
+            "name": "referreeNum",
+            "type": "u64"
+          },
+          {
+            "name": "weeklyLog",
+            "type": {
+              "array": [
+                {
+                  "defined": "WeeklyLog"
+                },
+                4
+              ]
             }
           }
         ]
@@ -5230,6 +5269,26 @@
           },
           {
             "name": "spotPrice",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WeeklyLog",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "expiryDate",
+            "type": "u64"
+          },
+          {
+            "name": "weeklyAccFee",
+            "type": "u64"
+          },
+          {
+            "name": "weeklyNotionalTradingVolume",
             "type": "u64"
           }
         ]
