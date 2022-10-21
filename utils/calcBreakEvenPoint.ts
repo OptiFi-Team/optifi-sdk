@@ -29,9 +29,9 @@ export async function calcBreakEvenPoint(
 
                 let strike = market?.strike
 
-                let asset = (market.asset == "BTC") ? 0 : (market.asset == "ETH") ? 1 : (market.asset == "SOL") ? 3 : null
+                let asset = (market.asset == "BTC") ? 0 : (market.asset == "ETH") ? 1 : (market.asset == "SOL") ? 3 : -1
 
-                if (asset) {
+                if (asset != -1) {
 
                     let spot = await getSpotPrice(context, asset)
 
@@ -72,7 +72,7 @@ export async function calcBreakEvenPoint(
                         }
 
                     }
-                } console.log("can't find asset in calcBreakEvenPoint")
+                } else console.log("can't find asset in calcBreakEvenPoint")
             } else { console.log("can't find market in calcBreakEvenPoint") }
         } catch (err) {
             reject(err)
