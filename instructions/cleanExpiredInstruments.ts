@@ -2,6 +2,7 @@ import Context from "../types/context";
 import { SYSVAR_CLOCK_PUBKEY, TransactionSignature } from "@solana/web3.js";
 import InstructionResult from "../types/instructionResult";
 import { findOptifiExchange } from "../utils/accounts";
+import { increaseComputeUnitsIx } from "../utils/transactions";
 
 export default function cleanExpiredInstruments(
     context: Context,
@@ -14,6 +15,7 @@ export default function cleanExpiredInstruments(
                         optifiExchange: exchangeAddress,
                         clock: SYSVAR_CLOCK_PUBKEY
                     },
+                    preInstructions: [increaseComputeUnitsIx],
                 }
             ).then((res) => {
                 resolve({

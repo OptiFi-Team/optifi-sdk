@@ -1,8 +1,8 @@
 // @ts-ignore
-import {initializeContext} from "../index";
-import Context from "../types/context";
-import boostrap from "../sequences/boostrap";
-import {createInstruments} from "../sequences/createInstruments";
+import {initializeContext} from "../../index";
+import Context from "../../types/context";
+import boostrap from "../../sequences/boostrap";
+import {createInstruments} from "../../sequences/createInstruments";
 
 initializeContext().then((context: Context) => {
     console.log("Initialized")
