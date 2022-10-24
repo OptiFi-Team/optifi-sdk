@@ -59,9 +59,9 @@ export const SUPPORTED_EXPIRATION_TYPES: ExpirationMapping = {
   // Calls
   1: [ExpiryType.Standard],
   // Futures
-  // 2: [
-  //     ExpiryType.Perpetual
-  // ]
+  2: [
+    ExpiryType.Perpetual
+  ]
 };
 
 // We want our maturities to end on Friday, 8:00AM UTC as same as Deribit

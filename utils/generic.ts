@@ -133,8 +133,8 @@ export function instrumentTypeToNumber(instrumentType: OptifiInstrumentType): nu
             return 0;
         case OptifiInstrumentType.Call:
             return 1;
-        // case OptifiInstrumentType.Future:
-        //     return 2;
+        case OptifiInstrumentType.Future:
+            return 2;
         default:
             return -1;
     }
@@ -146,8 +146,8 @@ export function instrumentTypeToOptifiInstrumentType(instrumentType: InstrumentT
             return OptifiInstrumentType.Call;
         case InstrumentType.Put:
             return OptifiInstrumentType.Put;
-        // case InstrumentType.Future:
-        //     return OptifiInstrumentType.Future;
+        case InstrumentType.Future:
+            return OptifiInstrumentType.Future;
     }
 }
 
