@@ -16,12 +16,13 @@ import {
 import { PublicKey } from "@solana/web3.js";
 
 initializeContext().then(async (context) => {
+  let asset = Asset.Bitcoin
   let expirations = generateExpirations();
   let maturity = SUPPORTED_MATURITIES[0];
   let expirationDate = expirations[maturity];
   console.log("expirationDate: ", expirationDate)
   let instrumentContext: InstrumentContext = {
-    asset: Asset.Bitcoin,
+    asset: asset,
     instrumentType: instrumentType.Put,
     duration: Duration.Weekly,
     start: new Date(),
@@ -30,7 +31,7 @@ initializeContext().then(async (context) => {
   };
 
   let instrumentContext2: InstrumentContext = {
-    asset: Asset.Bitcoin,
+    asset: asset,
     instrumentType: instrumentType.Call,
     duration: Duration.Weekly,
     start: new Date(),
