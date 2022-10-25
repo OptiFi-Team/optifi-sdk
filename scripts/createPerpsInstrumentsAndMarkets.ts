@@ -1,19 +1,15 @@
 // @ts-ignore
 import { initializeContext } from "../index";
 import Context from "../types/context";
-import { createPerpsInstrumentsAndMarkets } from "../sequences/createPerpsInstrumentsAndMarkets";
-
+import { createPerpsInstrumentsAndMarkets } from "../instructions/createOptifiPerpsMarket";
+import { SUPPORTED_ASSETS } from "../constants";
 initializeContext().then((context: Context) => {
-    console.log("Initialized")
-    createPerpsInstrumentsAndMarkets(context).then((res) => {
-        console.log("res.length")
-        console.log(res.length)
-        console.log("created instruments")
-    }).catch((err) => {
-        console.error(err);
-        console.error("Got error in createPerpsInstruments");
-    })
-}).catch((err) => {
-    console.error(err);
-    console.error("Got error in initializeContext");
+    for (let asset of SUPPORTED_ASSETS) {
+        createPerpsInstrumentsAndMarkets(context, asset).then((res) => {
+            console.log(res)
+        }).catch((err) => {
+            console.error(err);
+            console.error("Got error in createPerpsInstrumentsAndMarkets");
+        })
+    }
 })

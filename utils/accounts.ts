@@ -26,7 +26,7 @@ import { findAssociatedTokenAccount } from "./token";
 import { initializeUserAccount } from "../index";
 import base58 from "bs58";
 import { parseAggregatorAccountData } from "@switchboard-xyz/switchboard-api";
-
+import Asset from "../types/asset";
 /**
  * Helper function for finding an account with a list of seeds
  *
@@ -212,6 +212,43 @@ export function findInstrument(
     });
   });
 }
+
+export function findPerpsInstrument(
+  context: Context,
+  asset: Asset,
+  exchangeAddress: PublicKey
+): Promise<[PublicKey, number, string]> {
+  return new Promise((resolve, reject) => {
+    let seedStr: string =
+      "perp" + asset.toString()
+    findAccountWithSeeds(context, [Buffer.from(INSTRUMENT_PREFIX), exchangeAddress.toBuffer(), Buffer.from(seedStr)])
+      .then((res) => {
+        console.log("Address for signed seed ", seedStr, " is , ", res[0].toString(), res[1]);
+        resolve([...res, seedStr]);
+      })
+      .catch((err) => reject(err));
+
+  });
+}
+
+export function findPerpAccount(
+  context: Context,
+  asset: Asset,
+  exchangeAddress: PublicKey
+): Promise<[PublicKey, number]> {
+  return new Promise((resolve, reject) => {
+    let seedStr1: string =
+      "perp" + asset.toString()
+    let seedStr2: string = asset.toString()
+    findAccountWithSeeds(context, [Buffer.from(seedStr1), exchangeAddress.toBuffer(), Buffer.from(seedStr2)])
+      .then((res) => {
+        resolve([...res]);
+      })
+      .catch((err) => reject(err));
+
+  });
+}
+
 export enum OracleAccountType {
   Spot,
   Iv,
