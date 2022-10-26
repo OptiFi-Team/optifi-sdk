@@ -139,6 +139,25 @@ export async function createSerumMarkets(context: Context, initialInstrument: Pu
     }
 }
 
+export async function createSerumMarketsWithAsset(context: Context, asset: number): Promise<PublicKey> {
+    // Intentionally do this the slow way because creating the serum markets is a super expensive process -
+    // if there's a problem, we want to know before we've committed all our capital
+    try {
+        let decimal = numberAssetToDecimal(asset)!;
+        console.log("decimal: ", decimal);
+
+        let res = await initializeSerumMarket(context, decimal);
+        if (res.successful) {
+            return res.data as PublicKey;
+        } else {
+            console.error(res);
+            throw new Error("Couldn't create markets")
+        }
+    } catch (e: unknown) {
+        console.error(e);
+        throw new Error(e as string | undefined);
+    }
+}
 
 function createOrRetreiveSerumMarkets(context: Context, instrumentKeys: PublicKey[]): Promise<PublicKey[]> {
     return new Promise((resolve, reject) => {

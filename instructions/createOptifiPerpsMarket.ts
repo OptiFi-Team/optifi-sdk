@@ -1,10 +1,9 @@
 import Context from "../types/context";
 import { PublicKey, TransactionSignature, SystemProgram } from "@solana/web3.js";
-import InstrumentType from "../types/instrumentType";
 import { Duration } from "../types/optifi-exchange-types";
-import { createSerumMarkets } from "../sequences/boostrap";
+import { createSerumMarkets, createSerumMarketsWithAsset } from "../sequences/boostrap";
 import Asset from "../types/asset";
-import { findExchangeAccount, findAccountWithSeeds } from "../utils/accounts";
+import { findExchangeAccount } from "../utils/accounts";
 import {
     assetToOptifiAsset,
     optifiAssetToNumber,
@@ -13,47 +12,61 @@ import * as anchor from "@project-serum/anchor";
 import { increaseComputeUnitsIx, signAndSendTransaction, TransactionResultType } from "../utils/transactions";
 import { formatExplorerAddress, SolanaEntityType } from "../utils/debug";
 import { getSerumMarket } from "../utils/serum";
-import { findPerpsInstrument, findPerpAccount } from "../utils/accounts"
-import { OPTIFI_MARKET_PREFIX } from "../constants";
+import { findPerpsInstrument, findPerpAccount, findPerpsMarket } from "../utils/accounts"
+
 /**
  * Create new perps instruments for an exchange
  *
  * @param context
  */
-export function createPerpsInstrumentsAndMarkets(context: Context, asset: Asset): Promise<PublicKey[]> {
+export async function createPerpsInstrumentsAndMarkets(context: Context, asset: Asset): Promise<string> {
     return new Promise(async (resolve, reject) => {
         try {
             //1. prepare instrument data
-            let exchangeAddress = await findExchangeAccount(context)
+            let [exchangeAddress,] = await findExchangeAccount(context)
+            // console.log("exchangeAddress: " + exchangeAddress)
 
-            let perpsInstrument = await findPerpsInstrument(
+            let [perpsInstrument,] = await findPerpsInstrument(
                 context,
                 asset,
-                exchangeAddress[0],
+                exchangeAddress,
             )
-
-            let perpAccount = await findPerpAccount(
+            // console.log("perpsInstrument address: " + perpsInstrument)
+            let [perpAccount,] = await findPerpAccount(
                 context,
                 asset,
-                exchangeAddress[0],
+                exchangeAddress,
             )
-
-            let derivedMarketAddress = findAccountWithSeeds(context, [
-                Buffer.from(OPTIFI_MARKET_PREFIX),
-                Buffer.from(exchangeAddress.toString()),
-                // new anchor.BN(idx).toArrayLike(Buffer, "be", 8)// TODO optifi_market.rs ->exchange.markets.len()
-            ])
+            // console.log("perpAccount address: " + perpAccount)
+            let [derivedMarketAddress,] = await findPerpsMarket(
+                context,
+                asset,
+                exchangeAddress,
+            )
+            // console.log("optifi market address: " + derivedMarketAddress)
 
             //2. create serum market
-            let serumMarketKey = await createSerumMarkets(
+            let serumMarketKey = await createSerumMarketsWithAsset(
                 context,
-                perpsInstrument[0]
+                asset,
             );
-            console.log("create serum markets successful: ", serumMarketKey)
+            console.log("create serum markets successful: ", serumMarketKey.toString())
 
             //3. call ix
-
             let serumMarket = await getSerumMarket(context, serumMarketKey)
+
+            // let account = {
+            //     optifiExchange: exchangeAddress,
+            //     instrument: perpsInstrument[0],
+            //     systemProgram: SystemProgram.programId,
+            //     perpAccount: perpAccount[0],
+            //     payer: context.provider.wallet.publicKey,
+            //     optifiMarket: derivedMarketAddress[0],
+            //     serumMarket: serumMarketKey,
+            //     longSplTokenMint: serumMarket.baseMintAddress,
+            //     shortSplTokenMint: anchor.web3.Keypair.generate().publicKey,
+            // }
+
             let newInstrumentTx = context.program.transaction.createOptifiPerpsMarket(
                 optifiAssetToNumber(assetToOptifiAsset(asset)),
                 {
@@ -63,7 +76,7 @@ export function createPerpsInstrumentsAndMarkets(context: Context, asset: Asset)
                         systemProgram: SystemProgram.programId,
                         perpAccount: perpAccount[0],
                         payer: context.provider.wallet.publicKey,
-                        optifiMarket: derivedMarketAddress,
+                        optifiMarket: derivedMarketAddress[0],
                         serumMarket: serumMarketKey,
                         longSplTokenMint: serumMarket.baseMintAddress,
                         shortSplTokenMint: anchor.web3.Keypair.generate().publicKey,
@@ -74,14 +87,15 @@ export function createPerpsInstrumentsAndMarkets(context: Context, asset: Asset)
             await signAndSendTransaction(context, newInstrumentTx)
                 .then((res) => {
                     console.log(res);
-                    if (res.resultType === TransactionResultType.Successful) {
-                        console.log("Created new instrument -",
+                    if (res.txId && res.resultType === TransactionResultType.Successful) {
+                        console.log("Created new perps instrument -",
                             formatExplorerAddress(
                                 context,
                                 res.txId as string,
                                 SolanaEntityType.Transaction,
                             )
                         )
+                        resolve(res.txId)
                     } else {
                         console.error(res);
                         reject(res);
@@ -92,11 +106,11 @@ export function createPerpsInstrumentsAndMarkets(context: Context, asset: Asset)
                     console.error("Got error trying to sign and send chain instruction ", err);
                     reject(err);
                 })
-        } catch {
-            (e) => {
-                console.log("createPerpsInstrumentsAndMarkets err: " + e)
-            }
+        } catch (e) {
+            console.log("createPerpsInstrumentsAndMarkets err: " + e);
+            reject(e)
         }
+
     })
 
 }

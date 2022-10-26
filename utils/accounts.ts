@@ -16,6 +16,7 @@ import {
   OPTIFI_USDC_PROGRAM_ID,
   OPTIFI_USDC_MINT_PREFIX,
   USDC_TOKEN_MINT,
+  OPTIFI_MARKET_PREFIX
 } from "../constants";
 import { Chain, Exchange, FeeAccount, UserAccount } from "../types/optifi-exchange-types";
 import { Asset as OptifiAsset } from "../types/optifi-exchange-types";
@@ -219,9 +220,8 @@ export function findPerpsInstrument(
   exchangeAddress: PublicKey
 ): Promise<[PublicKey, number, string]> {
   return new Promise((resolve, reject) => {
-    let seedStr: string =
-      "perp" + asset.toString()
-    findAccountWithSeeds(context, [Buffer.from(INSTRUMENT_PREFIX), exchangeAddress.toBuffer(), Buffer.from(seedStr)])
+    let seedStr: string = "perp"
+    findAccountWithSeeds(context, [Buffer.from(INSTRUMENT_PREFIX), exchangeAddress.toBuffer(), Buffer.from(seedStr), Uint8Array.of(asset)])
       .then((res) => {
         console.log("Address for signed seed ", seedStr, " is , ", res[0].toString(), res[1]);
         resolve([...res, seedStr]);
@@ -241,6 +241,23 @@ export function findPerpAccount(
       "perp" + asset.toString()
     let seedStr2: string = asset.toString()
     findAccountWithSeeds(context, [Buffer.from(seedStr1), exchangeAddress.toBuffer(), Buffer.from(seedStr2)])
+      .then((res) => {
+        resolve([...res]);
+      })
+      .catch((err) => reject(err));
+
+  });
+}
+
+export function findPerpsMarket(
+  context: Context,
+  asset: Asset,
+  exchangeAddress: PublicKey
+): Promise<[PublicKey, number]> {
+  return new Promise((resolve, reject) => {
+    let seedStr: string =
+      "perp" + asset.toString()
+    findAccountWithSeeds(context, [Buffer.from(OPTIFI_MARKET_PREFIX), exchangeAddress.toBuffer(), Buffer.from(seedStr)])
       .then((res) => {
         resolve([...res]);
       })
