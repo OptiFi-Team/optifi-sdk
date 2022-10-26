@@ -226,20 +226,7 @@ export async function executeAmmOrderProposal(context: Context, ammIndex: number
 
             // @ts-ignore
             if (!ammInfo.flags[i + 1]) {
-                // @ts-ignore
-                let proposalsForOneInstrument = ammInfo.proposals[i]
-                // console.log("ammInfo.quoteTokenVault: ", ammInfo.quoteTokenVault.toString())
-                // console.log(`proposalsForOneInstrument for instrument: ${proposalsForOneInstrument.instrument.toString()} with flag ${i}`,)
-                // console.log(proposalsForOneInstrument)
-                // proposalsForOneInstrument.askOrdersPrice.forEach((e, i) => {
-                //     console.log("askOrdersPrice", e.toString())
-                //     console.log("askOrdersSize: ", proposalsForOneInstrument.askOrdersSize[i].toString())
-                // });
-                // proposalsForOneInstrument.bidOrdersPrice.forEach((e, i) => {
-                //     console.log("bidOrdersPrice", e.toString())
-                //     console.log("bidOrdersSize: ", proposalsForOneInstrument.bidOrdersSize[i].toString())
-                // });
-                let market = optifiMarkets.find(e => e[0].instrument.toString() == proposalsForOneInstrument.instrument.toString())!
+                let market = optifiMarkets.find(e => e[0].instrument.toString() == ammInfo.tradingInstruments[i + 1].toString())!
                 console.log(`start to update orders for amm ${ammAddress.toString()} with id ${ammIndex}, flag idx: ${i}`)
                 // execute all the proposal orders
                 let res = await ammUpdateOrders(context, 5, ammAddress, i, market[1])

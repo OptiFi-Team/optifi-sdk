@@ -95,7 +95,7 @@ export function findInstrumentIndexFromAMM(context: Context,
     let ammPositions = amm.positions as Position[];
     for (let i = 0; i < ammPositions.length; i++) {
         let position = ammPositions[i];
-        if (position.instruments.toString() === instrumentAddress.toString()) {
+        if (amm.tradingInstruments[i].toString() === instrumentAddress.toString()) {
             return [position, i];
         }
     }
