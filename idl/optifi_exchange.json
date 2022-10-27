@@ -2857,11 +2857,6 @@
           "docs": [
             "the instrumnet to remove from amm's trading instrument list"
           ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
@@ -2900,21 +2895,6 @@
           "docs": [
             "the instrumnet to add into amm's trading instrument list, it must not be expired"
           ]
-        },
-        {
-          "name": "ammLongTokenVault",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ammShortTokenVault",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
@@ -4602,6 +4582,9 @@
   "accounts": [
     {
       "name": "AmmAccountV0",
+      "docs": [
+        "old amm account state"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -6178,6 +6161,9 @@
     },
     {
       "name": "ProposalV0",
+      "docs": [
+        "old amm proposal structure"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -6265,6 +6251,9 @@
     },
     {
       "name": "PositionV0",
+      "docs": [
+        "old amm position structure"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
