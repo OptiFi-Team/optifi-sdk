@@ -1,5 +1,5 @@
 {
-  "version": "1.2.5",
+  "version": "1.2.6",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -83,7 +83,10 @@
         {
           "name": "instrument",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "the instrument to be created"
+          ]
         },
         {
           "name": "payer",
@@ -103,7 +106,10 @@
         {
           "name": "marginStressAccount",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "margin stress account for getting iv"
+          ]
         }
       ],
       "args": [
@@ -2851,11 +2857,6 @@
           "docs": [
             "the instrumnet to remove from amm's trading instrument list"
           ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
@@ -2894,21 +2895,6 @@
           "docs": [
             "the instrumnet to add into amm's trading instrument list, it must not be expired"
           ]
-        },
-        {
-          "name": "ammLongTokenVault",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "ammShortTokenVault",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
@@ -4561,9 +4547,255 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "upgradeAmm",
+      "docs": [
+        "upgrade amm account to new version"
+      ],
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account"
+          ]
+        },
+        {
+          "name": "amm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "exchangeAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "optifi exchange's authority"
+          ]
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
+    {
+      "name": "AmmAccountV0",
+      "docs": [
+        "old amm account state"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "optifiExchange",
+            "docs": [
+              "optifi exchange which the AMM belongs to"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "ammIdx",
+            "docs": [
+              "index of the amm"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "quoteTokenMint",
+            "docs": [
+              "quote token mint address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "quoteTokenVault",
+            "docs": [
+              "quote token account address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "lpTokenMint",
+            "docs": [
+              "LP tokens for liquidity providers"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "ammCapacity",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "bump seed used to derive this amm address"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "asset",
+            "docs": [
+              "underlying asset"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "tradingInstruments",
+            "docs": [
+              "a list of pubkeys of the instruments AMM will trade"
+            ],
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "positions",
+            "docs": [
+              "a list of Position struct by instruments"
+            ],
+            "type": {
+              "vec": {
+                "defined": "PositionV0"
+              }
+            }
+          },
+          {
+            "name": "proposals",
+            "docs": [
+              "a list of proposals of orders to excute for each instrument"
+            ],
+            "type": {
+              "vec": {
+                "defined": "ProposalV0"
+              }
+            }
+          },
+          {
+            "name": "state",
+            "docs": [
+              "amm's state indicator"
+            ],
+            "type": {
+              "defined": "AmmState"
+            }
+          },
+          {
+            "name": "flags",
+            "docs": [
+              "each instrument's state flag under the current AMM state",
+              "the first flag is for future, while remaining flags for options"
+            ],
+            "type": {
+              "vec": "bool"
+            }
+          },
+          {
+            "name": "iv",
+            "docs": [
+              "the implied volatility"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "price",
+            "docs": [
+              "the underlying asset price denominated in USDC"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "netDelta",
+            "docs": [
+              "the net delta denominated in underlying asset"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "timestamp",
+            "docs": [
+              "the timestamp when lastest update"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalLiquidityUsdc",
+            "docs": [
+              "the amm total liquidity denominated in USDC (with 6 decimals)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "duration",
+            "docs": [
+              "the duration type (Weekly/Monthly)"
+            ],
+            "type": {
+              "defined": "Duration"
+            }
+          },
+          {
+            "name": "expiryDate",
+            "docs": [
+              "the expiry date"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "contractSize",
+            "docs": [
+              "the contract size *10000 (f_to_u_repr)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "clientOrderIdCounter",
+            "docs": [
+              "client order id counter for amm placing orders"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "ammMangoAccount",
+            "docs": [
+              "amm's mango account for hedging on mango market"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "isHedgeNeeded",
+            "docs": [
+              "is mango hedging needed"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "isHedgeInProgress",
+            "docs": [
+              "is mango hedging in progress"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "tempPnl",
+            "docs": [
+              "temp PnL record for fund settlment purpose"
+            ],
+            "type": {
+              "defined": "TempPnL"
+            }
+          },
+          {
+            "name": "withdrawQueue",
+            "docs": [
+              "pubkey of amm's withdraw queue"
+            ],
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
     {
       "name": "AmmAccount",
       "type": {
@@ -5928,17 +6160,13 @@
       }
     },
     {
-      "name": "Proposal",
+      "name": "ProposalV0",
+      "docs": [
+        "old amm proposal structure"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "instrument",
-            "docs": [
-              "instrument pubkey"
-            ],
-            "type": "publicKey"
-          },
           {
             "name": "isStarted",
             "docs": [
@@ -6022,7 +6250,10 @@
       }
     },
     {
-      "name": "Position",
+      "name": "PositionV0",
+      "docs": [
+        "old amm position structure"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -6047,6 +6278,79 @@
             ],
             "type": "publicKey"
           },
+          {
+            "name": "latestPosition",
+            "docs": [
+              "latest position updated by update_amm_positions"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "usdcBalance",
+            "docs": [
+              "the usdc remains in the vault"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Proposal",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "isStarted",
+            "docs": [
+              "if the orders execution is started"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "askOrdersSize",
+            "docs": [
+              "all ask_orders_size"
+            ],
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "bidOrdersSize",
+            "docs": [
+              "all orders to execute"
+            ],
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "askOrdersPrice",
+            "docs": [
+              "all orders to execute"
+            ],
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "bidOrdersPrice",
+            "docs": [
+              "all orders to execute"
+            ],
+            "type": {
+              "vec": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Position",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
             "name": "latestPosition",
             "docs": [
@@ -7058,8 +7362,23 @@
     },
     {
       "code": 6061,
+      "name": "TransferAmountShouldNotBeZero",
+      "msg": "Transfer amount should not be 0"
+    },
+    {
+      "code": 6062,
       "name": "UnknownAccountState",
       "msg": "Unknown account state"
+    },
+    {
+      "code": 6063,
+      "name": "InvalidExpiryDate",
+      "msg": "Expiry Date should be larger than current timestamp"
+    },
+    {
+      "code": 6064,
+      "name": "InvalidOptionExpiryDate",
+      "msg": "Invalid option expiry date"
     }
   ],
   "metadata": {

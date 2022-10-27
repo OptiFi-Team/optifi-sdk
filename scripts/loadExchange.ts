@@ -12,6 +12,7 @@ initializeContext().then(async (context) => {
     let optifiExchange = res as Exchange;
     console.log("Got Optifi Exchange ", optifiExchange);
 
+    console.log("Got deliveryFee ", optifiExchange.deliveryFee.toString());
     let common = optifiExchange.instrumentCommon;
     console.log("Got instrument groups ", common);
     // @ts-ignore
@@ -27,6 +28,7 @@ initializeContext().then(async (context) => {
     console.log("usdcCentralPool: ", optifiExchange.usdcCentralPool.toString());
     console.log("usdcFeePool: ", optifiExchange.usdcFeePool.toString());
     console.log("exchangeAuthority: ", optifiExchange.exchangeAuthority.toString());
+    console.log("ivAuthority: ", optifiExchange.ivAuthority.toString());
 
     let a = await getAllUsersOnExchange(context)
     console.log(`\n OMG, Found ${a.length} users on OptiFi Exchange!!!`)

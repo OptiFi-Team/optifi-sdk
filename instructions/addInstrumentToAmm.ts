@@ -53,7 +53,12 @@ export default function addInstrumentToAmm(context: Context,
                     // let ammShortTokenVault = await findOrCreateAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammLiquidityAuth)
 
                     let [ammLongTokenVault,] = await findAssociatedTokenAccount(context, optifiMarket.instrumentLongSplToken, ammLiquidityAuth)
-                    let ammLongTokenVaultInfo = await context.connection.getAccountInfo(ammLongTokenVault)
+                    let [ammShortTokenVault,] = await findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammLiquidityAuth)
+                    let [ammLongTokenVaultInfo, ammShortTokenVaultInfo] = await Promise.all([
+                        context.connection.getAccountInfo(ammLongTokenVault),
+                        context.connection.getAccountInfo(ammShortTokenVault)
+                    ])
+
                     if (!ammLongTokenVaultInfo) {
                         inxs.push(
                             createAssociatedTokenAccountInstruction(
@@ -64,8 +69,6 @@ export default function addInstrumentToAmm(context: Context,
                             )
                         )
                     }
-                    let [ammShortTokenVault,] = await findAssociatedTokenAccount(context, optifiMarket.instrumentShortSplToken, ammLiquidityAuth)
-                    let ammShortTokenVaultInfo = await context.connection.getAccountInfo(ammShortTokenVault)
                     if (!ammShortTokenVaultInfo) {
                         inxs.push(
                             createAssociatedTokenAccountInstruction(
@@ -83,9 +86,6 @@ export default function addInstrumentToAmm(context: Context,
                             amm: ammAddress,
                             optifiMarket: marketAddress,
                             instrument: optifiMarket.instrument,
-                            ammLongTokenVault: ammLongTokenVault,
-                            ammShortTokenVault: ammShortTokenVault,
-                            clock: SYSVAR_CLOCK_PUBKEY
                         },
                         instructions: inxs
 

@@ -12,7 +12,6 @@ export default function removeInstrumentFromAmm(context: Context,
                     optifiExchange: exchangeAddress,
                     amm: ammAddress,
                     instrument: instrumentAddress,
-                    clock: SYSVAR_CLOCK_PUBKEY
                 }
             });
             removeMarketTx.then((removeMarketRes) => {

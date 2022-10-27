@@ -34,19 +34,14 @@ initializeContext().then(async (context) => {
         console.log("amm.tradingInstruments: ", amm.tradingInstruments[0].toString())
         console.log("amm.tradingInstruments: ", amm.tradingInstruments[1].toString())
     }
+    console.log("amm.tradingInstruments: ", amm.tradingInstruments[0].toString())
+
     // @ts-ignore
     amm.proposals.forEach(e => console.log(
-        "\n instrument: ", e.instrument.toString(),
         "\n askOrdersSize: ", e.askOrdersSize.map(e => e.toNumber()),
         "\n askOrdersPrice: ", e.askOrdersPrice.map(e => e.toNumber()),
         "\n bidOrdersSize: ", e.bidOrdersSize.map(e => e.toNumber()),
         "\n bidOrdersPrice: ", e.bidOrdersPrice.map(e => e.toNumber()),
-        "\n askClientOrderIds: ", e.askClientOrderIds.map(e => e.toNumber()),
-        "\n bidClientOrderIds: ", e.bidClientOrderIds.map(e => e.toNumber()),
-
-        "\n prevAskOrdersPrice: ", e.prevAskOrdersPrice.map(e => e.toNumber()),
-        "\n prevBidOrdersPrice: ", e.prevBidOrdersPrice.map(e => e.toNumber()),
-
     )),
 
         // @ts-ignore
