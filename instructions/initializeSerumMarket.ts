@@ -192,10 +192,10 @@ export default function initializeSerumMarket(context: Context, decimal: number)
                                     let tx = context.program.transaction.initializeSerumOrderbook(
                                         // authorityAddress, // Authority PK
                                         // pruneAuthorityAddress, // Prune authority PK
-                                        new anchor.BN(COIN_LOT_SIZE),
-                                        new anchor.BN(PC_LOT_SIZE),
+                                        // new anchor.BN(COIN_LOT_SIZE),
+                                        // new anchor.BN(PC_LOT_SIZE),
                                         vaultSignerNonce,
-                                        new anchor.BN(PC_DUST_THRESHOLD),
+                                        // new anchor.BN(PC_DUST_THRESHOLD),
                                         {
                                             accounts: {
                                                 optifiExchange: exchangeAddress,
