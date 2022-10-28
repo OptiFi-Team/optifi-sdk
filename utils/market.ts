@@ -30,30 +30,32 @@ export function findOptifiMarketWithIdx(context: Context,
 
 
 export function findOptifiMarkets(context: Context, inputMarkets?: PublicKey[]): Promise<[OptifiMarket, PublicKey][]> {
-    return new Promise((resolve, reject) => {
-        let marketsWithKeys: [OptifiMarket, PublicKey][] = [];
-        const retrieveMarket = async () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let marketsWithKeys: [OptifiMarket, PublicKey][] = [];
             let marketAddresses
-            let marketsRawInfos
             if (inputMarkets) {
                 marketAddresses = inputMarkets
-                marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(inputMarkets)
             } else {
-                let temp = await context.program.account.optifiMarket.all()
-                marketsRawInfos = temp.map(e => e.account);
-                marketAddresses = temp.map(e => e.publicKey);
+                let [exchangeAddress, _] = await findExchangeAccount(context)
+                let exchangeRes = await context.program.account.exchange.fetch(exchangeAddress)
+                let exchange = exchangeRes as Exchange;
+                let marketAddressesAndBumps = await Promise.all(
+                    // @ts-ignore
+                    exchange.markets.map((e, i) => findOptifiMarketWithIdx(context, exchangeAddress, i + 1))
+                )
+                marketAddresses = marketAddressesAndBumps.map(e => e[0])
+                let marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(marketAddresses)
+                let marketsInfos = marketsRawInfos as OptifiMarket[];
+                marketAddresses.forEach((marketAddress, i) => {
+                    marketsWithKeys.push([marketsInfos[i], marketAddress])
+                })
             }
-            let marketsInfos = marketsRawInfos as OptifiMarket[];
-            marketAddresses.forEach((marketAddress, i) => {
-                marketsWithKeys.push([marketsInfos[i], marketAddress])
-            })
-        }
-        retrieveMarket().then(() => {
             resolve(marketsWithKeys)
-        }).catch((err) => {
+        } catch (err) {
             console.error(err);
             reject(err);
-        })
+        }
     })
 }
 
