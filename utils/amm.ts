@@ -12,6 +12,7 @@ import { findAssociatedTokenAccount } from "./token";
 import { decodeBurnInstruction, getAccount, getMint } from "@solana/spl-token";
 import { populateInxAccountKeys } from "./transactions"
 import { ammIndex } from "../scripts/amm/constants";
+import fetch from 'cross-fetch';
 export const DELTA_LIMIT = 0.05;
 export const WITHDRAW_FEE_PERCENTAGE = 0.001;
 export const PERFORMANCE_FEE_PERCENTAGE = 0.1;
@@ -672,7 +673,35 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
             let amm = await context.program.account.ammAccount.fetch(ammAddress)
             let ammWithdrawRequestQueue = await getAmmWithdrawQueue(context, amm.withdrawQueue)
             let WithdrawRequestQueueHeadRequest = ammWithdrawRequestQueue.requests[ammWithdrawRequestQueue.head]
+            let [userAccountAddress, _] = await findUserAccount(context);
 
+            let AMMWithdrawAndDepositData = await getAMMWithdrawAndDepositData(context.program.programId.toString(), userAccountAddress.toString())
+            let txs: any[] = [];
+            let txIds = AMMWithdrawAndDepositData.result.txId;
+            for (let txId of txIds) {
+                txs.push(await getTxFromTxId(context.program.programId.toString(), txId.toString()))
+            }
+            AMMWithdrawAndDepositData.result.txs = txs
+            console.log(AMMWithdrawAndDepositData)
+            // {
+            //   result: {
+            //deposit
+            //     txs: [
+            //       'AFVCZpZKJuW6XxVyAdzrdF6bguKSw5KHENwGXJAGg893JGmjR8fKNAYQKAP5Jc35CPDR7jFVWsuZc5mFP7YiraD',
+            //       '4GhGScLG35twnnfvuRpXBF3taeTokjELUxC7ViD8XJAo2F63mbzs8h7dfinPxHPYvA5ikecEqkmq5nZx7ybb1m7U',
+            //       '9dqbXmgzvnK2jAM9tRMduFefGsC4tvvsQN7UK19ab3qgBhzDrnjCz9cFUXoLEE6rqi7U14YCPvLzTM9U2aDf1ge',
+            //       'xMfqJu9vR4z3FnziJo7ii12cWa7AKuH5d8nrSFShutMiccpCEGMrhbW5KHkJStsFd8LCjSJtQQ5pZZxZTddcNsE'
+            //     ]
+            //     ammUsdcBalanceChangeUi: [ 49899.99, 199, 37506.56, 1234 ],
+            //     ammUserLpBalanceChangeUi: [ 49833.665196, 196.669634, 36388.757099, 1197.223266 ],
+            //     depositAmmId: [ 2, 2, 2, 2 ],
+            //consume withdraw
+            //     requestId: [ 16 ],
+            //     consumeAmmId: [ 2 ],
+            //     userLpBalanceChangeUi: [ -196.661539 ],
+            //     userUsdcBalanceChangeUi: [ 198.806813 ],
+            //   }
+            // }
             for (const [asset, txs] of txsMap) {
                 for (let tx of txs) {//number of transactions people send
 
@@ -693,19 +722,20 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                     // Calculate USDC change
                                     let preTokenAccount = tx.meta?.preTokenBalances?.find(e => e.accountIndex == ammQuoteTokenVaultIndex)!
                                     let postTokenAccount = tx.meta?.postTokenBalances?.find(e => e.accountIndex == ammQuoteTokenVaultIndex)!
-                                    let usdcAmount = new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(
-                                        new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
+                                    // let usdcAmount = new Decimal(preTokenAccount.uiTokenAmount.uiAmountString!).minus(
+                                    //     new Decimal(postTokenAccount.uiTokenAmount.uiAmountString!)).toNumber()
 
                                     // Calculate lp token change
                                     let preTokenAccount2 = tx.meta?.preTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
                                     let postTokenAccount2 = tx.meta?.postTokenBalances?.find(e => e.accountIndex == userLpAccountIndex)!
-                                    let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
-                                        new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
-                                        : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
+                                    // let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
+                                    //     new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
+                                    //     : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
+                                    let [usdcAmount, lpAmount, ammId] = getUsdcAndLpForAmmDeposit(AMMWithdrawAndDepositData, tx.transaction.signatures[0])
 
                                     res.push(new AmmTx({
                                         type: "Deposit",
-                                        asset: asset,
+                                        asset: ammId,
                                         usdcAmount,
                                         lpAmount,
                                         gasFee: tx.meta?.fee! / Math.pow(10, SOL_DECIMALS),
@@ -815,10 +845,11 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                             //@ts-ignore
                                             let userBurnLpAmountAfterConsume: number = await getLpAmountAfterConsume(tx.meta?.logMessages)
                                             userBurnLpAmountAfterConsume = Number(userBurnLpAmountAfterConsume.toFixed(2))
-                                            e.lpAmount = Number(e.lpAmount.toFixed(2))
+                                            let [consumeWithdrawQueueUsdcAmount, consumeWithdrawQueueLpAmount, ammId] = getUsdcAndLpForAmmConsumeWithdraw(AMMWithdrawAndDepositData, requestId)
+                                            e.asset = ammId
+                                            e.lpAmount = Number(consumeWithdrawQueueLpAmount.toFixed(2))
                                             e.platformFee = e.platformFee ? e.platformFee + feeAmount : feeAmount;
-                                            e.usdcAmount += usdcAmount;
-
+                                            e.usdcAmount = Number(consumeWithdrawQueueUsdcAmount.toFixed(2))
                                             //status
                                             if (WithdrawRequestQueueHeadRequest.requestId == 0) {//no pending in queue
                                                 e.status = "Completed"
@@ -958,4 +989,69 @@ export async function getAmmWithdrawQueue(context: Context, withdrawQueue: Publi
     let ammWithdrawRequestQueue = context.program.account.ammAccount.coder.accounts.decode("AmmWithdrawRequestQueue", trimmedBytes)
     // console.log("decoded ammWithdrawRequestQueue: ", ammWithdrawRequestQueue)
     return ammWithdrawRequestQueue
+}
+
+async function getAMMWithdrawAndDepositData(programId: string, userAccountAddress: string) {
+    try {
+        let url = "https://lambda.optifi.app/get_amm_withdraw_and_deposit_data?optifi_program_id=" + programId +
+            "&user_account_address=" + userAccountAddress
+
+        let response = await fetch(url, {
+            method: "GET",
+        });
+        let res = await response.json()
+
+        if (!response.ok) {
+            console.log("err in getAMMWithdrawAndDepositData");
+        }
+        return res;
+    } catch (error) { console.log(error) }
+}
+
+async function getTxFromTxId(programId: string, txId: string) {
+    try {
+        let url = "https://lambda.optifi.app/get_tx_from_txid?optifi_program_id=" + programId +
+            "&tx_id=" + txId
+
+        let response = await fetch(url, {
+            method: "GET",
+        });
+        let res = await response.json()
+
+        if (!response.ok) {
+            console.log("err in getAMMWithdrawAndDepositData");
+        }
+        return res.result.tx[0];
+    } catch (error) { console.log(error) }
+}
+
+function getUsdcAndLpForAmmDeposit(data: any, tx: string) {
+    let index = -1
+    for (let i = 0; i < data.result.txs.length; i++) {
+        if (data.result.txs[i] == tx) {
+            index = i;
+            break
+        }
+    }
+    if (index != -1) {
+        return [data.result.ammUsdcBalanceChangeUi[index], data.result.ammUserLpBalanceChangeUi[index], data.result.depositAmmId[index]]
+    } else {
+        console.log("can't find user usdc and lp in getUsdcAndLpForAmmDeposit")
+        return [-1, -1, -1]
+    }
+}
+
+function getUsdcAndLpForAmmConsumeWithdraw(data: any, requestId: number) {
+    let userUsdcBalanceChangeUi = 0;
+    let userLpBalanceChangeUi = 0;
+    let asset = 0;
+    for (let i = 0; i < data.result.requestId.length; i++) {
+        //for the same requestId consume
+        if (Number(data.result.requestId[i]) == requestId) {
+            userUsdcBalanceChangeUi += data.result.userUsdcBalanceChangeUi[i];
+            userLpBalanceChangeUi += data.result.userLpBalanceChangeUi[i];
+            asset = data.result.consumeAmmId[i];
+        }
+    }
+    return [userUsdcBalanceChangeUi, userLpBalanceChangeUi, asset]
 }
