@@ -31,33 +31,28 @@ export function findOptifiMarketWithIdx(context: Context,
 
 export function findOptifiMarkets(context: Context, inputMarkets?: PublicKey[]): Promise<[OptifiMarket, PublicKey][]> {
     return new Promise((resolve, reject) => {
-        findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            context.program.account.exchange.fetch(exchangeAddress).then((exchangeRes) => {
-                let exchange = exchangeRes as Exchange;
-                let markets = exchange.markets as ExchangeMarket[];
-                let marketsWithKeys: [OptifiMarket, PublicKey][] = [];
-                const retrieveMarket = async () => {
-                    // for (let market of markets) {
-                    //     console.log("fetching optifi market")
-                    //     let marketRes = await context.program.account.optifiMarket.fetch(market.optifiMarketPubkey);
-                    //     let optifiMarket = marketRes as OptifiMarket;
-                    //     marketsWithKeys.push([optifiMarket, market.optifiMarketPubkey])
-                    // }
-
-                    let marketAddresses = inputMarkets || markets.map(e => e.optifiMarketPubkey)
-                    let marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(marketAddresses)
-                    let marketsInfos = marketsRawInfos as OptifiMarket[];
-                    marketAddresses.forEach((marketAddress, i) => {
-                        marketsWithKeys.push([marketsInfos[i], marketAddress])
-                    })
-                }
-                retrieveMarket().then(() => {
-                    resolve(marketsWithKeys)
-                }).catch((err) => {
-                    console.error(err);
-                    reject(err);
-                })
+        let marketsWithKeys: [OptifiMarket, PublicKey][] = [];
+        const retrieveMarket = async () => {
+            let marketAddresses
+            let marketsRawInfos
+            if (inputMarkets) {
+                marketAddresses = inputMarkets
+                marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(inputMarkets)
+            } else {
+                let temp = await context.program.account.optifiMarket.all()
+                marketsRawInfos = temp.map(e => e.account);
+                marketAddresses = temp.map(e => e.publicKey);
+            }
+            let marketsInfos = marketsRawInfos as OptifiMarket[];
+            marketAddresses.forEach((marketAddress, i) => {
+                marketsWithKeys.push([marketsInfos[i], marketAddress])
             })
+        }
+        retrieveMarket().then(() => {
+            resolve(marketsWithKeys)
+        }).catch((err) => {
+            console.error(err);
+            reject(err);
         })
     })
 }
