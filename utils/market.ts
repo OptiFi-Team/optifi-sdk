@@ -89,47 +89,31 @@ export function findStoppableOptifiMarkets(context: Context): Promise<[OptifiMar
 
 
 export function getTotalSupply(context: Context): Promise<[OptifiMarket, PublicKey, number, number][]> {
-    return new Promise((resolve, reject) => {
-        findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            context.program.account.exchange.fetch(exchangeAddress).then((exchangeRes) => {
-                let exchange = exchangeRes as Exchange;
-                let markets = exchange.markets as ExchangeMarket[];
-                let marketsWithKeys: [OptifiMarket, PublicKey, number, number][] = [];
-                const retrieveMarket = async () => {
-                    let marketAddresses = markets.map(e => e.optifiMarketPubkey)
-                    let marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(marketAddresses)
-                    let marketsInfos = marketsRawInfos as OptifiMarket[];
-                    let longAndShortMints: PublicKey[] = []
-                    let instrumentInfos = await context.program.account.chain.fetchMultiple(marketsInfos.map(e => e.instrument)) as Chain[];
-                    marketsInfos.forEach(e => longAndShortMints.push(e.instrumentLongSplToken, e.instrumentShortSplToken))
-                    let instrumentTokenMintsInfos = await context.connection.getMultipleAccountsInfo(longAndShortMints);
-                    let now = new anchor.BN(Math.floor(Date.now() / 1000));
-                    for (let i = 0; i < marketAddresses.length; i++) {
-                        let longSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i]!, longAndShortMints[i])
-                        let shortSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i + 1]!, longAndShortMints[2 * i + 1])
-                        let serumMarket = await getSerumMarket(context, marketsInfos[i].serumMarket);
+    return new Promise(async (resolve, reject) => {
+        try {
+            let marketsWithKeys: [OptifiMarket, PublicKey, number, number][] = [];
+            let optifiMarkets = await findOptifiMarkets(context)
+            let marketAddresses = optifiMarkets.map(e => e[1])
+            let marketsInfos = optifiMarkets.map(e => e[0])
+            let longAndShortMints: PublicKey[] = []
+            marketsInfos.forEach(e => longAndShortMints.push(e.instrumentLongSplToken, e.instrumentShortSplToken))
+            let instrumentTokenMintsInfos = await context.connection.getMultipleAccountsInfo(longAndShortMints);
+            for (let i = 0; i < marketAddresses.length; i++) {
+                let [longSupply, serumMarket] = await Promise.all([
+                    getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i]!, longAndShortMints[i]),
+                    getSerumMarket(context, marketsInfos[i].serumMarket)
+                ])
+                let baseVault = serumMarket.decoded.baseVault;
+                let tokenAmount = await context.connection.getTokenAccountBalance(baseVault);
+                let onOrderBook = tokenAmount.value.uiAmount!;
+                marketsWithKeys.push([marketsInfos[i], marketAddresses[i], Number(longSupply.supply) / (10 ** longSupply.decimals), onOrderBook])
+            }
+            resolve(marketsWithKeys)
+        } catch (err) {
+            console.error(err);
+            reject(err);
+        }
 
-                        let baseVault = serumMarket.decoded.baseVault;
-
-                        // console.log("baseVault ", baseVault.toString())
-
-                        let tokenAmount = await context.connection.getTokenAccountBalance(baseVault);
-
-                        // console.log("tokenAmount ", tokenAmount.value.uiAmount);
-                        let onOrderBook = tokenAmount.value.uiAmount!;
-
-
-                        marketsWithKeys.push([marketsInfos[i], marketAddresses[i], Number(longSupply.supply) / (10 ** longSupply.decimals), onOrderBook])
-                    }
-                }
-                retrieveMarket().then(() => {
-                    resolve(marketsWithKeys)
-                }).catch((err) => {
-                    console.error(err);
-                    reject(err);
-                })
-            })
-        })
     })
 }
 
