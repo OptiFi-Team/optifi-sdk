@@ -15,6 +15,7 @@ import {
     dateToAnchorTimestamp
 } from "./generic";
 import { getSerumMarket } from "./serum";
+
 const DECIMAL = 6;
 
 
@@ -45,12 +46,12 @@ export function findOptifiMarkets(context: Context, inputMarkets?: PublicKey[]):
                     exchange.markets.map((e, i) => findOptifiMarketWithIdx(context, exchangeAddress, i + 1))
                 )
                 marketAddresses = marketAddressesAndBumps.map(e => e[0])
-                let marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(marketAddresses)
-                let marketsInfos = marketsRawInfos as OptifiMarket[];
-                marketAddresses.forEach((marketAddress, i) => {
-                    marketsWithKeys.push([marketsInfos[i], marketAddress])
-                })
             }
+            let marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(marketAddresses)
+            let marketsInfos = marketsRawInfos as OptifiMarket[];
+            marketAddresses.forEach((marketAddress, i) => {
+                marketsWithKeys.push([marketsInfos[i], marketAddress])
+            })
             resolve(marketsWithKeys)
         } catch (err) {
             console.error(err);
@@ -327,27 +328,29 @@ export function reloadOptifiMarketsData(context: Context, optifiMarkets: OptifiM
 
 
 export function findExpiredMarkets(context: Context): Promise<[OptifiMarket, PublicKey][]> {
-    return new Promise((resolve, reject) => {
-        findOptifiMarkets(context).then(async (markets) => {
-            let expiredMarkets: [OptifiMarket, PublicKey][] = [];
+    return new Promise(async (resolve, reject) => {
+        try {
+            let [exchangeAddress, _] = await findExchangeAccount(context)
+            let exchangeRes = await context.program.account.exchange.fetch(exchangeAddress)
+            let exchange = exchangeRes as Exchange;
             let now = new anchor.BN(Math.floor(Date.now() / 1000));
-
-            let instruments = markets.map((m) => m[0].instrument)
-
-            let chains = await context.program.account.chain.fetchMultiple(instruments)
-
-            markets.forEach((m, i) => {
-                // @ts-ignore  
-                let chain = chains[i] as Chain;
-                if (chain.expiryDate <= now) {
-                    expiredMarkets.push(m);
+            let expiredMarketsAddress: PublicKey[] = []
+            // @ts-ignore
+            for (let i = 0; i < exchange.markets.length; i++) {
+                // @ts-ignore
+                let market = exchange.markets[i]
+                if (market.expiryDate <= now) {
+                    let [adddress] = await findOptifiMarketWithIdx(context, exchangeAddress, i + 1)
+                    expiredMarketsAddress.push(adddress)
                 }
-            })
-
+            }
+            let expiredMarketsAndAddresses = await findOptifiMarkets(context, expiredMarketsAddress)
             resolve(
-                expiredMarkets
+                expiredMarketsAndAddresses
             )
-        }).catch((err) => reject(err));
+        } catch (err) {
+            reject(err)
+        }
     })
 }
 
