@@ -60,37 +60,29 @@ export function findOptifiMarkets(context: Context, inputMarkets?: PublicKey[]):
 }
 
 export function findStoppableOptifiMarkets(context: Context): Promise<[OptifiMarket, PublicKey][]> {
-    return new Promise((resolve, reject) => {
-        findExchangeAccount(context).then(([exchangeAddress, _]) => {
-            context.program.account.exchange.fetch(exchangeAddress).then((exchangeRes) => {
-                let exchange = exchangeRes as Exchange;
-                let markets = exchange.markets as ExchangeMarket[];
-                let marketsWithKeys: [OptifiMarket, PublicKey][] = [];
-                const retrieveMarket = async () => {
-                    let marketAddresses = markets.map(e => e.optifiMarketPubkey)
-                    let marketsRawInfos = await context.program.account.optifiMarket.fetchMultiple(marketAddresses)
-                    let marketsInfos = marketsRawInfos as OptifiMarket[];
-                    let longAndShortMints: PublicKey[] = []
-                    let instrumentInfos = await context.program.account.chain.fetchMultiple(marketsInfos.map(e => e.instrument)) as Chain[];
-                    marketsInfos.forEach(e => longAndShortMints.push(e.instrumentLongSplToken, e.instrumentShortSplToken))
-                    let instrumentTokenMintsInfos = await context.connection.getMultipleAccountsInfo(longAndShortMints);
-                    let now = new anchor.BN(Math.floor(Date.now() / 1000));
-                    for (let i = 0; i < marketAddresses.length; i++) {
-                        let longSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i]!, longAndShortMints[i])
-                        let shortSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i + 1]!, longAndShortMints[2 * i + 1])
-                        if (instrumentInfos[i].expiryDate <= now && !marketsInfos[i].isStopped && longSupply.supply.toString() == "0" && shortSupply.supply.toString() == "0") {
-                            marketsWithKeys.push([marketsInfos[i], marketAddresses[i]])
-                        }
-                    }
+    return new Promise(async (resolve, reject) => {
+        try {
+            let marketsWithKeys: [OptifiMarket, PublicKey][] = [];
+            let optifiMarkets = await findOptifiMarkets(context)
+            let marketAddresses = optifiMarkets.map(e => e[1])
+            let marketsInfos = optifiMarkets.map(e => e[0])
+            let longAndShortMints: PublicKey[] = []
+            let instrumentInfos = await context.program.account.chain.fetchMultiple(marketsInfos.map(e => e.instrument)) as Chain[];
+            marketsInfos.forEach(e => longAndShortMints.push(e.instrumentLongSplToken, e.instrumentShortSplToken))
+            let instrumentTokenMintsInfos = await context.connection.getMultipleAccountsInfo(longAndShortMints);
+            let now = new anchor.BN(Math.floor(Date.now() / 1000));
+            for (let i = 0; i < marketAddresses.length; i++) {
+                let longSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i]!, longAndShortMints[i])
+                let shortSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i + 1]!, longAndShortMints[2 * i + 1])
+                if (instrumentInfos[i].expiryDate <= now && !marketsInfos[i].isStopped && longSupply.supply.toString() == "0" && shortSupply.supply.toString() == "0") {
+                    marketsWithKeys.push([marketsInfos[i], marketAddresses[i]])
                 }
-                retrieveMarket().then(() => {
-                    resolve(marketsWithKeys)
-                }).catch((err) => {
-                    console.error(err);
-                    reject(err);
-                })
-            })
-        })
+            }
+            resolve(marketsWithKeys)
+        } catch (err) {
+            console.error(err);
+            reject(err);
+        }
     })
 }
 
