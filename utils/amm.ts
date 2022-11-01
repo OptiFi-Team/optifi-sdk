@@ -1043,15 +1043,15 @@ function getUsdcAndLpForAmmDeposit(data: any, tx: string) {
 
 function getUsdcAndLpForAmmConsumeWithdraw(data: any, requestId: number) {
     let userUsdcBalanceChangeUi = 0;
-    let userLpBalanceChangeUi = 0;
+    let withdrawLpAmountUi = 0;
     let asset = 0;
     for (let i = 0; i < data.result.requestId.length; i++) {
         //for the same requestId consume
         if (Number(data.result.requestId[i]) == requestId) {
             userUsdcBalanceChangeUi += data.result.userUsdcBalanceChangeUi[i];
-            userLpBalanceChangeUi += data.result.userLpBalanceChangeUi[i];
+            withdrawLpAmountUi += data.result.withdrawLpAmountUi[i];
             asset = data.result.consumeAmmId[i];
         }
     }
-    return [userUsdcBalanceChangeUi, userLpBalanceChangeUi, asset]
+    return [userUsdcBalanceChangeUi, withdrawLpAmountUi, asset]
 }
