@@ -197,7 +197,7 @@ export async function calPnLForOnePosition(programId: string, postion: Position,
                     // netQuoteAmount += e.maxQuoteQuantity
                     netBaseAmount = netBaseAmount.sub(new Decimal(e.maxBaseQuantity))
                 }
-            }
+            } else tradePrice = -1 //can't find
         }
 
         if (!netBaseAmount.equals(new Decimal(0))) {
