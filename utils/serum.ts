@@ -29,7 +29,7 @@ export function getSerumMarketPrice(context: Context, serumMarketAddress: Public
                         resolve(0);
                     } else {
                         let diff = Math.abs(minAsk - maxBid) / 2;
-                        resolve(minAsk + diff);
+                        resolve(maxBid + diff);
                     }
                 }).catch((err) => reject(err))
             }).catch((err) => reject(err))
