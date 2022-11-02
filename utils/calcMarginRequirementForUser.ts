@@ -6,10 +6,9 @@ import { calculateMargin, stress_function, option_intrinsic_value, reshap } from
 import { PYTH, USDC_DECIMALS } from "../constants";
 import { getPythData, getSpotPrice } from "./pyth";
 import { getGvolIV } from "./getGvolIV";
-
+import Asset from '../types/asset';
 export const r = 0;
 export const q = 0;
-export const stress = 0.3;
 
 /**
  * calc user's margin requirement for all existing positions
@@ -304,7 +303,8 @@ async function calcMarginForOneAsset(
     expiryDateRaw: number[]
 ): Promise<[number, number]> {
     let strike = reshap(strikeRaw);
-
+    let stress = (asset == Asset.Bitcoin) ? 0.35 : (asset == Asset.Ethereum) ? 0.4 : (asset == Asset.Solana) ? 0.5 : -1
+    if (stress == -1) console.log("asset err in calcMarginForOneAsset")
     let tRaw = expiryDateRaw.map((expiryDate) => {
         let maturity = (expiryDate - new Date().getTime() / 1000) / (60 * 60 * 24 * 365);
         if (maturity < 0) {
