@@ -11,7 +11,7 @@ interface BreakEven {
 }
 
 function calcToBreakEven(breakEven: number, spot: number) {
-    return (new Decimal(breakEven).div(new Decimal(spot))).sub(new Decimal(1)).toNumber().toFixed(2)
+    return (new Decimal(breakEven).div(new Decimal(spot))).sub(new Decimal(1)).toNumber().toFixed(4)
 }
 
 export async function calcBreakEvenPoint(
