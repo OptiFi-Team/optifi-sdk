@@ -4524,10 +4524,32 @@
       "args": []
     },
     {
-      "name": "upgradeOptifiExchange",
+      "name": "upgradeOptifiExchangeV1ToV2",
       "docs": [
         "upgrade optifi exchange to new version"
       ],
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account   // has_one = exchange_authority"
+          ]
+        },
+        {
+          "name": "exchangeAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "optifi exchange's authority"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "upgradeOptifiExchangeV2ToV3",
       "accounts": [
         {
           "name": "optifiExchange",
@@ -5118,7 +5140,7 @@
       }
     },
     {
-      "name": "ExchangeV0",
+      "name": "ExchangeV1",
       "type": {
         "kind": "struct",
         "fields": [
@@ -5197,7 +5219,140 @@
             "name": "instrumentCommon",
             "type": {
               "vec": {
-                "defined": "InstrumentCommonV0"
+                "defined": "InstrumentCommonV1"
+              }
+            }
+          },
+          {
+            "name": "instrumentUnique",
+            "type": {
+              "vec": {
+                "vec": {
+                  "defined": "InstrumentUnique"
+                }
+              }
+            }
+          },
+          {
+            "name": "ogNftMint",
+            "docs": [
+              "pubkey of og nft mint. None means og nft mode is turned off"
+            ],
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "userDepositLimit",
+            "docs": [
+              "user deposit limit"
+            ],
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "operationAuthority",
+            "docs": [
+              "operation authority address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "ivAuthority",
+            "docs": [
+              "iv authority address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "deliveryFee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExchangeV2",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "uuid",
+            "docs": [
+              "id of the OptiFi Exchange"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "docs": [
+              "OptiFi Exchange version"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "exchangeAuthority",
+            "docs": [
+              "the authority address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcMint",
+            "docs": [
+              "the recognized usdc token mint"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcCentralPool",
+            "docs": [
+              "usdc central pool for fund settlement"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcFeePool",
+            "docs": [
+              "usdc fee pool"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "userAccountIdCounter",
+            "docs": [
+              "user account id counter"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "oracle",
+            "docs": [
+              "oracle data by assets"
+            ],
+            "type": {
+              "vec": {
+                "defined": "OracleData"
+              }
+            }
+          },
+          {
+            "name": "markets",
+            "docs": [
+              "a list of all created optifi markets, it should be updated when new market is created"
+            ],
+            "type": {
+              "vec": {
+                "defined": "OptifiMarketKeyDataV2"
+              }
+            }
+          },
+          {
+            "name": "instrumentCommon",
+            "type": {
+              "vec": {
+                "defined": "InstrumentCommon"
               }
             }
           },
@@ -6405,6 +6560,71 @@
       }
     },
     {
+      "name": "InstrumentCommonV1",
+      "docs": [
+        "keep the common data for an instrument group"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "docs": [
+              "underlying asset"
+            ],
+            "type": {
+              "defined": "Asset"
+            }
+          },
+          {
+            "name": "expiryDate",
+            "docs": [
+              "expiry date of the instrument, unix timestamp"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "expiryType",
+            "type": {
+              "defined": "ExpiryType"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OptifiMarketKeyDataV2",
+      "docs": [
+        "only keep the key data for a created OptiFi Market"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "optifiMarketPubkey",
+            "docs": [
+              "pubkey of created optifi market"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "expiryDate",
+            "docs": [
+              "expiry date of the instrument which is listed on this market"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "isStopped",
+            "docs": [
+              "whether the optitfi market is stopped, which may be updated when the listing instruments is expired"
+            ],
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
       "name": "OracleData",
       "docs": [
         "only keep the key data for a created Instrument"
@@ -6434,39 +6654,6 @@
             ],
             "type": {
               "option": "publicKey"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "InstrumentCommonV0",
-      "docs": [
-        "keep the common data for an instrument group"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "asset",
-            "docs": [
-              "underlying asset"
-            ],
-            "type": {
-              "defined": "Asset"
-            }
-          },
-          {
-            "name": "expiryDate",
-            "docs": [
-              "expiry date of the instrument, unix timestamp"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "expiryType",
-            "type": {
-              "defined": "ExpiryType"
             }
           }
         ]
@@ -6553,13 +6740,6 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "optifiMarketPubkey",
-            "docs": [
-              "pubkey of created optifi market"
-            ],
-            "type": "publicKey"
-          },
           {
             "name": "expiryDate",
             "docs": [
