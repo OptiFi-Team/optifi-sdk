@@ -1,5 +1,5 @@
 {
-  "version": "1.2.7",
+  "version": "1.2.8",
   "name": "optifi_exchange",
   "instructions": [
     {
@@ -4526,7 +4526,7 @@
     {
       "name": "upgradeOptifiExchangeV1ToV2",
       "docs": [
-        "upgrade optifi exchange to new version"
+        "upgrade optifi exchange from v1 to v2"
       ],
       "accounts": [
         {
@@ -4550,6 +4550,34 @@
     },
     {
       "name": "upgradeOptifiExchangeV2ToV3",
+      "docs": [
+        "upgrade optifi exchange from v2 to v3"
+      ],
+      "accounts": [
+        {
+          "name": "optifiExchange",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "optifi exchange account   // has_one = exchange_authority"
+          ]
+        },
+        {
+          "name": "exchangeAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "optifi exchange's authority"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "upgradeOptifiExchangeV1ToV3",
+      "docs": [
+        "upgrade optifi exchange from v1 to v3 directly"
+      ],
       "accounts": [
         {
           "name": "optifiExchange",
@@ -7457,8 +7485,8 @@
     },
     {
       "code": 6044,
-      "name": "DontNeedGenerateNextInstrument",
-      "msg": "spot price is in strike interval"
+      "name": "NoNeedToGenerateNextStrike",
+      "msg": "no need to genereate next strike"
     },
     {
       "code": 6045,
