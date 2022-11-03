@@ -245,6 +245,36 @@ export function option_delta(spot, strike, iv, r, q, t, isCall) {
     return arrplusarr(arrmularr(call, isCall), arrmularr(minus(1, isCall), put));
 }
 
+export function option_gamma(spot, strike, iv, r, q, t) {
+    // strike *  np.exp(-r * t) * norm.pdf(d2(spot, strike, iv, r, q, t)) / (spot* spot * iv * (t^0.5) )
+
+    //strike *  np.exp(-r * t)
+    let tmp1 = arrmularr(strike, arrexp(arrmul((-r), t)))
+    // console.log("tmp1:" + tmp1)
+
+    // norm.pdf(d2(spot, strike, iv, r, q, t))
+    let tmp2 = pdf(d2Origin(spot, strike, iv, r, q, t), 1)//1 not sure 
+    // console.log("tmp2:" + tmp2)
+
+    // (spot* spot * iv * (t^0.5)
+    t = check_positive(t)//make sure t is positive
+    let tmp3 = arrmul(spot * spot * iv, arrsqrt(t))
+    // console.log("tmp3:" + tmp3)
+
+    return arrdivdearr(arrmularr(tmp1, tmp2), tmp3)
+}
+
+export function option_vega(spot, strike, iv, r, q, t) {
+    //0.01 * spot * norm.cdf(d1(spot, strike, iv, r, q, t)) 
+    let tmp1 = cdf(d1(spot, strike, iv, r, q, t))
+    return arrmul(0.01 * spot, tmp1)
+}
+
+function check_positive(data) {
+    if (data[0][0] < 0) return [[-data[0][0]]]
+    else return data
+}
+
 export function generate_stress_spot(spot, stress, step) {
     var incr1 = incr(stress, step, spot);
 
@@ -312,19 +342,6 @@ export function priceErrorCalc(S, q, T, nd1, x, r, nd2, p) {
     let PriceError = arrmul(S, arrmularr(Math.exp(arrmul((-q), T)), nd1))
         - arrmul(arrmularr(arrmul((-r), T), nd2), x[0]) - p[0]
     return PriceError;
-}
-
-//var Vega = S*Math.sqrt(T)*Math.exp(-q*T)*npd1;
-export function vegaCalc(S, T, q, npd1) {
-    // console.log('vega1: ', arrmul(S, arrsqrt(T)))
-    // console.log('vega2: ', arrmularr(arrexp(arrmul((-q), T)), npd1))
-    // console.log('Vega params: ')
-    // console.log('S', S)
-    // console.log('T', T)
-    // console.log('q', q)
-    // console.log('npd1', npd1)
-    let vega = arrmularr(arrmul(S, arrsqrt(T)), arrmularr(arrexp(arrmul((-q), T)), npd1))
-    return vega;
 }
 
 export function clip(arr, x) {
