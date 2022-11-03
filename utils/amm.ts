@@ -677,10 +677,12 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
 
             let AMMWithdrawAndDepositData = await getAMMWithdrawAndDepositData(context.program.programId.toString(), userAccountAddress.toString())
             let txs: any[] = [];
-            let txIds = AMMWithdrawAndDepositData.result.txId;
-            for (let txId of txIds) {
-                txs.push(await getTxFromTxId(context.program.programId.toString(), txId.toString()))
-            }
+            let txIds = (AMMWithdrawAndDepositData.result) ? AMMWithdrawAndDepositData.result.txId : null;
+            if (txIds) {
+                for (let txId of txIds) {
+                    txs.push(await getTxFromTxId(context.program.programId.toString(), txId.toString()))
+                }
+            } else { console.log("no data from getAMMWithdrawAndDepositData") }
             AMMWithdrawAndDepositData.result.txs = txs
             console.log(AMMWithdrawAndDepositData)
             // {
@@ -731,7 +733,7 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                     // let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
                                     //     new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
                                     //     : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
-                                    let [usdcAmount, lpAmount, ammId] = getUsdcAndLpForAmmDeposit(AMMWithdrawAndDepositData, tx.transaction.signatures[0])
+                                    let [usdcAmount, lpAmount, ammId] = (txIds) ? getUsdcAndLpForAmmDeposit(AMMWithdrawAndDepositData, tx.transaction.signatures[0]) : [-1, -1, -1]
 
                                     res.push(new AmmTx({
                                         type: "Deposit",
