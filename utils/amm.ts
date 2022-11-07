@@ -1021,7 +1021,7 @@ async function getTxFromTxId(programId: string, txId: string) {
         let res = await response.json()
 
         if (!response.ok) {
-            console.log("err in getAMMWithdrawAndDepositData");
+            console.log("err in getTxFromTxId");
         }
         return res.result.tx[0];
     } catch (error) { console.log(error) }
@@ -1036,7 +1036,7 @@ function getUsdcAndLpForAmmDeposit(data: any, tx: string) {
         }
     }
     if (index != -1) {
-        return [data.result.ammUsdcBalanceChangeUi[index], data.result.ammUserLpBalanceChangeUi[index], data.result.depositAmmId[index]]
+        return [data.result.ammUsdcBalanceChangeUi[index], data.result.ammUserLpBalanceChangeUi[index], data.result.depositAsset[index]]
     } else {
         console.log("can't find user usdc and lp in getUsdcAndLpForAmmDeposit")
         return [-1, -1, -1]
@@ -1052,7 +1052,7 @@ function getUsdcAndLpForAmmConsumeWithdraw(data: any, requestId: number) {
         if (Number(data.result.requestId[i]) == requestId) {
             userUsdcBalanceChangeUi += data.result.userUsdcBalanceChangeUi[i];
             withdrawLpAmountUi += data.result.withdrawLpAmountUi[i];
-            asset = data.result.consumeAmmId[i];
+            asset = data.result.consumeWithdrawAsset[i];
         }
     }
     return [userUsdcBalanceChangeUi, withdrawLpAmountUi, asset]
