@@ -119,6 +119,24 @@ async function getCancelledQuantity(logs: string[]): Promise<string> {
   })
 }
 
+async function getCancelledQuantityDuringFundSettlement(logs: string[], clientId: number): Promise<number> {
+  return new Promise(async (resolve, reject) => {
+    let stringRes: string;
+    let stringLen = 16
+    for (let i = 0; i < logs.length; i++) {
+      if (logs[i].search("remaining_size:") != -1) {
+        let clientIdFromLog = logs[i].substring(logs[i].search("client_order_id:") + 17, logs[i].search("remaining_size") - 2)
+        if (clientIdFromLog == clientId.toString()) {
+          stringRes = logs[i].substring(logs[i].search("remaining_size:") + stringLen, logs[i].search("price") - 2)
+          resolve(Number(stringRes))
+        }
+      }
+    }
+    resolve(-1)
+  })
+}
+
+
 async function getLiquidateAmount(logs: string[]): Promise<number> {
   return new Promise(async (resolve, reject) => {
     let stringRes: string;
@@ -283,6 +301,10 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       let instrument = instruments.find((instrument: any) => {
                         return marketAddress === instrument.marketAddress.toString();
                       });
+                      if (!instrument) {
+                        console.log("can't find instrument in tradeHistory")
+                        continue;
+                      }
                       let baseTokenDecimal = numberAssetToDecimal(instrument.asset)!
                       record.maxBaseQuantity = record.maxBaseQuantity / 10 ** baseTokenDecimal//original size
 
@@ -370,6 +392,9 @@ const parseOrderTxs = async (context: Context, txs: TransactionResponse[], serum
                       let record: any = [];
                       record = (cancelOrdersDuringFundSettlementTx) ? JSON.parse(JSON.stringify(cancelOrdersDuringFundSettlementTx)) : null;
                       if (record) {
+                        //add cancelledQuantity for cancel order from fund settlement
+                        record.cancelledQuantity = await getCancelledQuantityDuringFundSettlement(tx.meta?.logMessages!, clientId);
+                        record.cancelledQuantity = Number(new Decimal(record.cancelledQuantity).div(10 ** record.decimal))
                         record.txType = "cancel order"
                         record.timestamp = new Date(tx.blockTime! * 1000);
                         orderTxs.push(record)

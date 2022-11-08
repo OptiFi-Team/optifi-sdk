@@ -663,6 +663,10 @@ export function getAllOpenOrdersForUser(
       let res: Order[] = []
       for (let marketAddress of userAccountRaw.tradingMarkets) {
         let optifiMarket = optifiMarkets.find(e => e.marketAddress.toString() == marketAddress.toString())!
+        if (!optifiMarket) {
+          console.log("can't find optifiMarket in getAllOpenOrdersForUser")
+          continue;
+        }
         const myOrder: any = await loadOrdersForOwner(context.connection, optifiMarket.serumMarket, optifiMarket.asks!, optifiMarket.bids!, userAddress)
         if (myOrder.length > 0 && myOrder !== undefined) {
           const openOrders: Array<Order> = myOrder.map((order: any) => {
