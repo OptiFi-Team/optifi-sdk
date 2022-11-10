@@ -45,3 +45,24 @@ export function upgradeOptifiExchangeV2ToV3(context: Context): Promise<Instructi
         }).catch((err) => reject(err))
     })
 }
+
+export function upgradeOptifiExchangeV1ToV3(context: Context): Promise<InstructionResult<TransactionSignature>> {
+    return new Promise((resolve, reject) => {
+        findExchangeAccount(context).then(([exchangeAddress, _]) => {
+            context.program.rpc.upgradeOptifiExchangeV1ToV3(
+                {
+                    accounts: {
+                        optifiExchange: exchangeAddress,
+                        exchangeAuthority: context.provider.wallet.publicKey
+                    },
+                    preInstructions: [increaseComputeUnitsIx]
+                }
+            ).then((res) => {
+                resolve({
+                    successful: true,
+                    data: res as TransactionSignature
+                })
+            }).catch((err) => reject(err))
+        }).catch((err) => reject(err))
+    })
+}
