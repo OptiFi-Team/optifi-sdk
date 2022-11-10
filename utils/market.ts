@@ -15,10 +15,9 @@ import {
     dateToAnchorTimestamp
 } from "./generic";
 import { getSerumMarket } from "./serum";
-import { splitToBatch } from "../scripts/amm/utils";
+import { getMultipleAccountsInfoV2 } from "./rpc";
 
 const DECIMAL = 6;
-
 
 export function findOptifiMarketWithIdx(context: Context,
     exchangeAddress: PublicKey,
@@ -71,7 +70,7 @@ export function findStoppableOptifiMarkets(context: Context): Promise<[OptifiMar
             let longAndShortMints: PublicKey[] = []
             let instrumentInfos = await context.program.account.chain.fetchMultiple(marketsInfos.map(e => e.instrument)) as Chain[];
             marketsInfos.forEach(e => longAndShortMints.push(e.instrumentLongSplToken, e.instrumentShortSplToken))
-            let instrumentTokenMintsInfos = await context.connection.getMultipleAccountsInfo(longAndShortMints);
+            let instrumentTokenMintsInfos = await getMultipleAccountsInfoV2(context.connection, longAndShortMints);
             let now = new anchor.BN(Math.floor(Date.now() / 1000));
             for (let i = 0; i < marketAddresses.length; i++) {
                 let longSupply = await getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i]!, longAndShortMints[i])
@@ -98,7 +97,7 @@ export function getTotalSupply(context: Context): Promise<[OptifiMarket, PublicK
             let marketsInfos = optifiMarkets.map(e => e[0])
             let longAndShortMints: PublicKey[] = []
             marketsInfos.forEach(e => longAndShortMints.push(e.instrumentLongSplToken, e.instrumentShortSplToken))
-            let instrumentTokenMintsInfos = await context.connection.getMultipleAccountsInfo(longAndShortMints);
+            let instrumentTokenMintsInfos = await getMultipleAccountsInfoV2(context.connection, longAndShortMints)
             for (let i = 0; i < marketAddresses.length; i++) {
                 let [longSupply, serumMarket] = await Promise.all([
                     getTokenMintFromAccountInfo(instrumentTokenMintsInfos[2 * i]!, longAndShortMints[i]),
@@ -202,7 +201,7 @@ export function findOptifiMarketsWithFullData(context: Context): Promise<OptifiM
                 let instrumentInfos = instrumentRawInfos as Chain[]
 
                 // console.log("start to fetch serumMarketInfos")
-                let serumMarketInfos = await context.connection.getMultipleAccountsInfo(serumMarketAddresses)
+                let serumMarketInfos = await getMultipleAccountsInfoV2(context.connection, serumMarketAddresses)
                 let asksAndBidsAddresses: PublicKey[] = []
                 let decodedSerumMarkets: Market[] = []
                 let serumDexProgramId = new PublicKey(SERUM_DEX_PROGRAM_ID[context.cluster])
@@ -269,14 +268,7 @@ function getLatestAskNBidForMarkets(context: Context, serumMarkets: Market[], as
     return new Promise(async (resolve, reject) => {
         try {
             // console.log("start to fetch asksAndBidsInfos")
-            let batches = splitToBatch(asksAndBidsAddresses, 100)
-            let asksAndBidsInfoBatchs = await Promise.all(batches.map(batch => context.connection.getMultipleAccountsInfo(batch)))
-            let asksAndBidsInfos: (AccountInfo<Buffer> | null)[] = []
-            asksAndBidsInfoBatchs.forEach(batch => {
-                batch.forEach(e => {
-                    asksAndBidsInfos.push(e)
-                })
-            })
+            let asksAndBidsInfos = await getMultipleAccountsInfoV2(context.connection, asksAndBidsAddresses)
             asksAndBidsInfos.forEach((e, i) => {
                 if (i % 2 == 0) {
                     let marketIdx = i / 2
@@ -597,7 +589,7 @@ export function getUserPositions(
                 longAndShortVaults.push(userLongTokenVault, userShortTokenVault)
             }
 
-            let tokenAccountsInfos = await context.connection.getMultipleAccountsInfo(longAndShortVaults)
+            let tokenAccountsInfos = await getMultipleAccountsInfoV2(context.connection, longAndShortVaults)
             let vaultBalances: number[] = []
             for (let i = 0; i < tokenAccountsInfos.length; i++) {
                 let account = await getTokenAccountFromAccountInfo(tokenAccountsInfos[i]!, longAndShortVaults[i])
@@ -652,7 +644,7 @@ export function loadPositionsFromUserAccount(
                 longAndShortVaults.push(userLongTokenVault, userShortTokenVault)
             }
 
-            let tokenAccountsInfos = await context.connection.getMultipleAccountsInfo(longAndShortVaults)
+            let tokenAccountsInfos = await getMultipleAccountsInfoV2(context.connection, longAndShortVaults)
             let vaultBalances: number[] = []
             for (let i = 0; i < tokenAccountsInfos.length; i++) {
                 let account = await getTokenAccountFromAccountInfo(tokenAccountsInfos[i]!, longAndShortVaults[i])

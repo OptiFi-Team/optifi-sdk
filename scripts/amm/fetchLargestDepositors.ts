@@ -5,6 +5,7 @@ import { initializeContext } from "../../index";
 import { findExchangeAccount } from "../../utils/accounts";
 import { findAllTokenAccountsByMint, getTokenMintFromAccountInfo } from "../../utils/token";
 import fs from "fs";
+import { getMultipleAccountsInfoV2 } from "../../utils/rpc";
 
 initializeContext().then(async (context) => {
 
@@ -22,7 +23,7 @@ initializeContext().then(async (context) => {
     let lpTokenMintAddresses = allAmms.map(e => e.account.lpTokenMint)
     let ammIdxes = allAmms.map(e => e.account.ammIdx)
 
-    let tokenMintsInfo = await context.connection.getMultipleAccountsInfo(lpTokenMintAddresses)
+    let tokenMintsInfo = await getMultipleAccountsInfoV2(context.connection, lpTokenMintAddresses)
 
     // console.log("lpTokenMintAddresses: ", lpTokenMintAddresses.map(e => e.toString()))
 
@@ -91,6 +92,6 @@ function findDepositor(userAccount: string, depositors: Depositor[]): [number, D
 
 export function saveJsonFile(data: Depositor[]) {
     let dateTime = new Date();
-    let filename = path.resolve(__dirname,"amm-depositors-" + dateTime.toISOString() + ".json");
+    let filename = path.resolve(__dirname, "amm-depositors-" + dateTime.toISOString() + ".json");
     fs.writeFileSync(filename, JSON.stringify(data, null, 4));
 }

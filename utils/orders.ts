@@ -34,6 +34,7 @@ import OrderType from "../types/OrderType";
 import { findUserFeeAccount } from "../instructions/user/initializeFeeAccount";
 import { max } from "superstruct";
 import { findOptifiMarketsWithFullData } from "../utils/market";
+import { getMultipleAccountsInfoV2 } from "./rpc";
 export enum TxType {
   PlaceOrder = 0,
   CancelOrder = 1,
@@ -731,7 +732,7 @@ export async function loadOrdersAccountsForOwnerV2(context: Context, optifiMarke
     userOpenOrdersAccountsAddresses.push(openOrdersAccountAddr)
   }
 
-  let openOrdersAccountsInfo = await context.connection.getMultipleAccountsInfo(userOpenOrdersAccountsAddresses)
+  let openOrdersAccountsInfo = await getMultipleAccountsInfoV2(context.connection, userOpenOrdersAccountsAddresses)
   let res: { optifiMarketAddress: PublicKey, openOrdersAccount: OpenOrders }[] = []
 
   openOrdersAccountsInfo.forEach((e, i) => {
