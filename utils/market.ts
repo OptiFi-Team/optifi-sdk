@@ -1,5 +1,5 @@
 import Context from "../types/context";
-import { Commitment, PublicKey } from "@solana/web3.js";
+import { AccountInfo, Commitment, PublicKey } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import { Market, Orderbook, OpenOrders } from "@project-serum/serum"
 import { Chain, Exchange, OptifiMarket, UserAccount } from "../types/optifi-exchange-types";
@@ -15,6 +15,7 @@ import {
     dateToAnchorTimestamp
 } from "./generic";
 import { getSerumMarket } from "./serum";
+import { splitToBatch } from "../scripts/amm/utils";
 
 const DECIMAL = 6;
 
@@ -268,7 +269,14 @@ function getLatestAskNBidForMarkets(context: Context, serumMarkets: Market[], as
     return new Promise(async (resolve, reject) => {
         try {
             // console.log("start to fetch asksAndBidsInfos")
-            let asksAndBidsInfos = await context.connection.getMultipleAccountsInfo(asksAndBidsAddresses)
+            let batches = splitToBatch(asksAndBidsAddresses, 100)
+            let asksAndBidsInfoBatchs = await Promise.all(batches.map(batch => context.connection.getMultipleAccountsInfo(batch)))
+            let asksAndBidsInfos: (AccountInfo<Buffer> | null)[] = []
+            asksAndBidsInfoBatchs.forEach(batch => {
+                batch.forEach(e => {
+                    asksAndBidsInfos.push(e)
+                })
+            })
             asksAndBidsInfos.forEach((e, i) => {
                 if (i % 2 == 0) {
                     let marketIdx = i / 2
