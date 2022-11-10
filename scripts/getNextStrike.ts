@@ -1,5 +1,5 @@
 import { initializeContext } from "../index";
-import { getNextStrike, instrumentIdx } from "../instructions/getNextStrike";
+import { getNextStrike } from "../instructions/getNextStrike";
 import { InstrumentContext } from "../instructions/initializeChain";
 import Asset from "../types/asset";
 import instrumentType from "../types/instrumentType";
@@ -17,6 +17,7 @@ import { PublicKey } from "@solana/web3.js";
 
 initializeContext().then(async (context) => {
   let asset = Asset.Bitcoin
+  let instrumentIdx = 5;
   let expirations = generateExpirations(0);
   let maturity = SUPPORTED_MATURITIES[0];
   let expirationDate = expirations[maturity];
@@ -61,6 +62,6 @@ initializeContext().then(async (context) => {
 
   let bump2: number = res2[1];
 
-  let result = await getNextStrike(context, instrument, instrument2, instrumentContext, instrumentContext2, bump, bump2);
+  let result = await getNextStrike(context, instrument, instrument2, instrumentContext, instrumentContext2, bump, bump2, instrumentIdx);
   console.log(result)
 });

@@ -20,8 +20,6 @@ import * as anchor from "@project-serum/anchor";
 import InstructionResult from "../types/instructionResult";
 import { increaseComputeUnitsIx } from "../utils/transactions";
 import { findMarginStressWithAsset } from "../utils/margin";
-//TODO: use account.chain.account
-export const instrumentIdx = 5; //if instrument address is already in use, plus 1
 
 export function getNextStrike(
   context: Context,
@@ -30,7 +28,8 @@ export function getNextStrike(
   instrumentContext: InstrumentContext,
   instrumentContext2: InstrumentContext,
   bump: number,
-  bump2: number
+  bump2: number,
+  instrumentIdx: number
 ): Promise<InstructionResult<TransactionSignature>> {
   return new Promise((resolve, reject) => {
     findExchangeAccount(context)
