@@ -45,7 +45,7 @@ export function generateExpirations(shift?: number): { [maturity in MaturityType
         let expirationDate: Date;
         switch (supportedMaturity) {
             case MaturityType.Weekly:
-                expirationDate = shift ? getWeekExpiration(shift) : getWeekExpiration(1);
+                expirationDate = shift? getWeekExpiration(shift) : getWeekExpiration(0);
                 break;
             case MaturityType.Monthly:
                 expirationDate = endOfMonthExpiration(1);

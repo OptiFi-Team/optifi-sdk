@@ -22,7 +22,7 @@ import { dateToAnchorTimestamp, optifiAssetObjectToNumber } from "../utils/gener
  * @param context
  */
 export function createInstruments(context: Context): Promise<PublicKey[]> {
-    let expirations = generateExpirations();
+    let expirations = generateExpirations(1);
     let start = new Date();
 
     return new Promise(async (resolve, reject) => {
