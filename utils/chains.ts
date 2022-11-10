@@ -38,14 +38,14 @@ function getWeekExpiration(offset: number,
     return expiration;
 }
 
-export function generateExpirations(): { [maturity in MaturityType]: Date } {
+export function generateExpirations(shift?: number): { [maturity in MaturityType]: Date } {
     let expirations: any = {};
 
     for (let supportedMaturity of SUPPORTED_MATURITIES) {
         let expirationDate: Date;
         switch (supportedMaturity) {
             case MaturityType.Weekly:
-                expirationDate = getWeekExpiration(1);
+                expirationDate = shift ? getWeekExpiration(shift) : getWeekExpiration(1);
                 break;
             case MaturityType.Monthly:
                 expirationDate = endOfMonthExpiration(1);

@@ -17,7 +17,7 @@ import { PublicKey } from "@solana/web3.js";
 
 initializeContext().then(async (context) => {
   let asset = Asset.Bitcoin
-  let expirations = generateExpirations();
+  let expirations = generateExpirations(0);
   let maturity = SUPPORTED_MATURITIES[0];
   let expirationDate = expirations[maturity];
   console.log("expirationDate: ", expirationDate)
