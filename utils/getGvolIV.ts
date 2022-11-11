@@ -6,8 +6,11 @@ import { getGvolTermStructure } from "./getGvolTermStructure";
 // expiryDate = marginStressAccount.expiryDate[0] * 1000
 export async function getGvolIV(asset: Asset, expiryDate: number) {
 
-    let termStructure = await getGvolTermStructure(asset);
-
+    let termStructure = (await getGvolTermStructure(asset));
+    if (!termStructure) {
+        console.log("can't get getGvolTermStructure data for asset" + asset)
+        return [null, Math.floor(Date.now() / 1000)]
+    }
     let iv;
     let now;
     let method;
@@ -30,7 +33,7 @@ export async function getGvolIV(asset: Asset, expiryDate: number) {
 
     // Third source
     if (iv == null) {
-        iv = termStructure[0].markIv
+        iv = (termStructure[0]) ? termStructure[0].markIv : -1
         now = Math.floor(Date.now() / 1000);
         method = 3;
     }
