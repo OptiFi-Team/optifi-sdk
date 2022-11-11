@@ -45,7 +45,7 @@ export default function placeOrder(
             // console.log("totalPcQty: ", totalPcQty);
 
             let ixs = [increaseComputeUnitsIx];
-            ixs.push(...(await marginStress(context, asset)));
+            // ixs.push(...(await marginStress(context, asset)));
 
             // add place order ix
             let placeOrderIx = context.program.instruction.placeOrder(
