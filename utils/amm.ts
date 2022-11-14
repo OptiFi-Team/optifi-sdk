@@ -733,7 +733,7 @@ export function parseAmmDepositAndWithdrawTx(context: Context, txsMap: Map<numbe
                                     // let lpAmount = preTokenAccount2 ? new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).minus(
                                     //     new Decimal(preTokenAccount2.uiTokenAmount.uiAmountString!)).toNumber()
                                     //     : new Decimal(postTokenAccount2.uiTokenAmount.uiAmountString!).toNumber()
-                                    let [usdcAmount, lpAmount, ammId] = (txIds) ? getUsdcAndLpForAmmDeposit(AMMWithdrawAndDepositData, tx.transaction.signatures[0]) : [-1, -1, -1]
+                                    let [usdcAmount, lpAmount, ammId] = (txIds) ? getUsdcAndLpForAmmDeposit(AMMWithdrawAndDepositData, tx.transaction.signatures[0]) : [1, -1, -1]
 
                                     res.push(new AmmTx({
                                         type: "Deposit",
@@ -1036,10 +1036,10 @@ function getUsdcAndLpForAmmDeposit(data: any, tx: string) {
         }
     }
     if (index != -1) {
-        return [data.result.ammUsdcBalanceChangeUi[index], data.result.ammUserLpBalanceChangeUi[index], data.result.depositAsset[index]]
+        return [-data.result.ammUsdcBalanceChangeUi[index], data.result.ammUserLpBalanceChangeUi[index], data.result.depositAsset[index]]
     } else {
         console.log("can't find user usdc and lp in getUsdcAndLpForAmmDeposit")
-        return [-1, -1, -1]
+        return [1, -1, -1]
     }
 }
 
