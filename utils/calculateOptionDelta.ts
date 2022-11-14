@@ -39,7 +39,7 @@ function reshap(arr: number[]) {
 export function calculateOptionDelta(
     context: Context,
     optifiMarket: OptifiMarketFullData[]
-): Promise<any[]> {
+): Promise<number[]> {
     return new Promise(async (resolve, reject) => {
         try {
             let res: any = [];
@@ -47,7 +47,7 @@ export function calculateOptionDelta(
             for (let i = 0; i < optifiMarket.length; i++) {
                 let isCall = optifiMarket[i].instrumentType === "Call" ? 1 : 0
                 let temp = option_delta(data[i].spot, data[i].strike, data[i].iv, data[i].r, data[i].q, data[i].t, reshap([isCall]))
-                res.push(temp[0][0])
+                res.push(Number(Number(temp[0][0]).toFixed(2)))
             }
 
             resolve(res)
